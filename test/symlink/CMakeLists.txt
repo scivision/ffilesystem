@@ -48,7 +48,7 @@ SKIP_RETURN_CODE 77
 foreach(t IN ITEMS is_symlink_fortran symlink_fortran)
   target_link_libraries(test_${t} PRIVATE ffilesystem)
   target_compile_options(test_${t} PRIVATE ${ffilesystem_fortran_test_flags})
-  set_property(TARGET test_${t} PROPERTY LINKER_LANGUAGE Fortran)
+  set_property(TARGET test_${t} PROPERTY LINKER_LANGUAGE ${ffilesystem_linker_lang})
 endforeach()
 
 endif()

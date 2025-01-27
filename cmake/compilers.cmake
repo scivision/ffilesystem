@@ -23,6 +23,17 @@ if(NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 17)
   endif()
 endif()
 
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.24 AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+  # otherwise failed to link since -lc++ is missing
+  set(ffilesystem_linker_lang CXX)
+else()
+  # IntelLLVM|NVHPC need Fortran.
+  # For other compilers (except as above) don't need it set, but Fortran doesn't hurt.
+  set(ffilesystem_linker_lang Fortran)
+endif()
+
+
 if(NOT MSVC AND NOT DEFINED ffilesystem_stdcpp_version)
 
 message(CHECK_START "Checking C++ standard library version")

@@ -218,8 +218,7 @@ if(ffilesystem_cli)
   add_executable(filesystem_cli app/fortran/main.f90)
   target_link_libraries(filesystem_cli PRIVATE ffilesystem)
   set_property(TARGET filesystem_cli PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-  set_property(TARGET filesystem_cli PROPERTY LINKER_LANGUAGE Fortran)
-  # Intel/NVHPC needs linker_language Fortran else error "undefined reference to `main'"
+  set_property(TARGET filesystem_cli PROPERTY LINKER_LANGUAGE ${ffilesystem_linker_lang})
 
   install(TARGETS filesystem_cli EXPORT ${PROJECT_NAME}-targets)
   endif()

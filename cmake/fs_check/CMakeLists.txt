@@ -29,7 +29,7 @@ if(ffilesystem_fortran)
   # this is a Fortran main program using Ffilesystem standin
   add_executable(fortran_main main.f90)
   target_link_libraries(fortran_main PRIVATE ffilesystem_standin)
-  set_property(TARGET fortran_main PROPERTY LINKER_LANGUAGE Fortran)
+  set_property(TARGET fortran_main PROPERTY LINKER_LANGUAGE ${ffilesystem_linker_lang})
 
   add_test(NAME Fortran_fs COMMAND fortran_main)
 endif()
