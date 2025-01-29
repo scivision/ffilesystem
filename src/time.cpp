@@ -97,8 +97,11 @@ bool fs_set_modtime(std::string_view path, const bool quiet)
     // https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemtimeasfiletime
     GetSystemTimeAsFileTime(&t);
     BOOL ok = SetFileTime(h, nullptr, nullptr, &t);
-    CloseHandle(h);
-    if (ok) FFS_LIKELY
+
+    if(!CloseHandle(h))
+      ec = std::make_error_code(std::errc::io_error);
+
+    if (ok && !ec) FFS_LIKELY
       return true;
   }
 #else

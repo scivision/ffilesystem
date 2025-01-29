@@ -1,4 +1,5 @@
 #include <string>
+#include <system_error>
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
@@ -17,6 +18,8 @@ std::string
 fs_get_shell()
 {
 
+  std::error_code ec;
+
 #if defined(_WIN32)
   const HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
   // 0: current process
@@ -32,34 +35,31 @@ fs_get_shell()
     const DWORD pid = GetCurrentProcessId();
     do {
       if (pe.th32ProcessID == pid) {
-        HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION |
-                              PROCESS_VM_READ,
-                              FALSE, pe.th32ParentProcessID );
-        if ( EnumProcessModules( hProcess, &hMod, sizeof(hMod), &cbNeeded) ) {
-            const auto L = GetModuleBaseNameA( hProcess, hMod, name.data(), static_cast<DWORD>(name.size()) );
-            CloseHandle( hProcess );
-            if(L == 0){
-              fs_print_error("", "get_shell");
-              return {};
-            }
+        HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pe.th32ParentProcessID);
 
+        if ( EnumProcessModules( hProcess, &hMod, sizeof(hMod), &cbNeeded) ) {
+          const auto L = GetModuleBaseNameA( hProcess, hMod, name.data(), static_cast<DWORD>(name.size()) );
+
+          if(!CloseHandle(hProcess) || L == 0)
+            ec = std::make_error_code(std::errc::io_error);
+          else
             name.resize(L);
-            break;
+
+          break;
         }
-        CloseHandle( hProcess );
 if(fs_trace) std::cout << "TRACE: get_shell: " << name << " PID: " << pid << " PPID: " << pe.th32ParentProcessID << "\n";
       }
     } while( Process32Next(h, &pe));
   }
 
-  CloseHandle(h);
-  return name;
+  if (CloseHandle(h) && !ec)
+    return name;
 #else
   const struct passwd *pw = fs_getpwuid();
   if (pw)
-      return pw->pw_shell;
+    return pw->pw_shell;
 #endif
 
-  fs_print_error("", "get_shell");
+  fs_print_error("", "get_shell", ec);
   return {};
 }

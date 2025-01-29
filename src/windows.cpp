@@ -70,11 +70,17 @@ static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer
 // https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
 // that has a BSD 3-clause license
 
+  std::error_code ec;
+
   const DWORD attr = GetFileAttributesA(path.data());
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesa
 
 // https://learn.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
-  if (attr == INVALID_FILE_ATTRIBUTES || !(attr & FILE_ATTRIBUTE_REPARSE_POINT))
+  if (attr == INVALID_FILE_ATTRIBUTES)
+    // ec = std::make_error_code(std::errc::no_such_file_or_directory);
+    // don't emit error for non-existent files
+    return false;
+  else if (!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
     return false;
 
   // Using 0 instead of GENERIC_READ as it allows reading of file attributes
@@ -87,22 +93,31 @@ static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer
   // FILE_ATTRIBUTE_REPARSE_POINT means:
   // * a file or directory that has an associated reparse point, or
   // * a file that is a symbolic link.
+
   HANDLE h = CreateFileA(
     path.data(), 0, 0, nullptr, OPEN_EXISTING,
     FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
   if (h == INVALID_HANDLE_VALUE)
-    return false;
+    ec = std::make_error_code(std::errc::io_error);
+  else {
 
-  DWORD bytesReturned = 0;
+    DWORD bytesReturned = 0;
 
-  BOOL ok = DeviceIoControl(h, FSCTL_GET_REPARSE_POINT, nullptr, 0, buffer,
-                        MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &bytesReturned,
-                        nullptr);
+    BOOL ok = DeviceIoControl(h, FSCTL_GET_REPARSE_POINT, nullptr, 0, buffer,
+                          MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &bytesReturned,
+                          nullptr);
 
-  CloseHandle(h);
+    if(!CloseHandle(h))
+      ec = std::make_error_code(std::errc::io_error);
 
-  return ok;
+    if (ok && !ec)
+      return true;
+  }
+
+
+  fs_print_error(path, "win32_get_reparse_buffer", ec);
+  return false;
 }
 #endif
 
@@ -228,20 +243,22 @@ std::string fs_win32_final_path(std::string_view path)
   std::string r(fs_get_max_path(), '\0');
 
   const DWORD L = GetFinalPathNameByHandleA(h, r.data(), static_cast<DWORD>(r.size()), FILE_NAME_NORMALIZED);
-  CloseHandle(h);
 
-if(L){
-  r.resize(L);
+  if(!CloseHandle(h))
+    ec = std::make_error_code(std::errc::io_error);
+
+  if(L && !ec){
+    r.resize(L);
 
 #ifdef __cpp_lib_starts_ends_with  // C++20
-  if (r.starts_with("\\\\?\\"))
+    if (r.starts_with("\\\\?\\"))
 #else  // C++98
-  if (r.substr(0, 4) == "\\\\?\\")
+    if (r.substr(0, 4) == "\\\\?\\")
 #endif
-    r = r.substr(4);
+      r = r.substr(4);
 
-  return fs_as_posix(r);
-}
+    return fs_as_posix(r);
+  }
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif

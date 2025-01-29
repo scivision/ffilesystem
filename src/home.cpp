@@ -1,6 +1,8 @@
 #include <string>
 #include <string_view>
 
+#include <system_error>
+
 #if __has_include(<format>) && defined(_WIN32)
 #include <format>  // IWYU pragma: keep
 #endif
@@ -55,19 +57,23 @@ std::string fs_get_homedir()
 std::string fs_get_profile_dir()
 {
   // has no trailing slash
+
+  std::error_code ec;
+
   #if defined(_WIN32)
   // https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-getuserprofiledirectorya
   std::string path(fs_get_max_path(), '\0');
   // works on MSYS2, MSVC, oneAPI
-  HANDLE hToken = nullptr;
+  HANDLE h = nullptr;
   auto N = static_cast<DWORD>(path.size());
 
-  const bool ok = OpenProcessToken( GetCurrentProcess(), TOKEN_QUERY, &hToken) != 0 &&
-    GetUserProfileDirectoryA(hToken, path.data(), &N);
+  const bool ok = OpenProcessToken( GetCurrentProcess(), TOKEN_QUERY, &h) != 0 &&
+    GetUserProfileDirectoryA(h, path.data(), &N);
 
-  CloseHandle(hToken);
+  if(!CloseHandle(h))
+    ec = std::make_error_code(std::errc::io_error);
 
-  if (ok){
+  if (ok && !ec){
     path.resize(N-1);
     return fs_drop_slash(path);
   }
@@ -77,7 +83,7 @@ std::string fs_get_profile_dir()
     return fs_drop_slash(pw->pw_dir);
 #endif
 
-  fs_print_error("", "get_profile_dir");
+  fs_print_error("", "get_profile_dir", ec);
   return {};
 }
 

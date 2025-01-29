@@ -33,6 +33,31 @@
 #endif
 
 
+#if defined(_WIN32)
+bool fs_win32_is_type(std::string_view path, const DWORD type){
+
+  std::error_code ec;
+
+  HANDLE h = CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ,
+                nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+
+  if(h == INVALID_HANDLE_VALUE)
+    ec = std::make_error_code(std::errc::no_such_file_or_directory);
+  else {
+// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
+    DWORD t = GetFileType(h);
+    if(!CloseHandle(h))
+      ec = std::make_error_code(std::errc::io_error);
+    if (!ec)
+      return t == type;
+  }
+
+  fs_print_error(path, "win32_is_type", ec);
+  return false;
+}
+#endif
+
+
 bool fs_has_statx()
 {
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
@@ -72,21 +97,21 @@ fs_exists(std::string_view path)
   // fs_exists() is true even if path is non-readable
   // this is like Python pathlib.Path.exists()
   // unlike kwSys:SystemTools:FileExists which uses R_OK instead of F_OK like this project.
+  // MSVC / MinGW std::filesystem::exists and _access_s don't detect App Execution Aliases
 
-  // MSVC / MinGW ::exists and _access_s don't detect App Execution Aliases
-  if(fs_is_appexec_alias(path))
-    return true;
-
+  bool ok;
 #if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
-  return (std::filesystem::exists(path, ec) && !ec);
+  ok = (std::filesystem::exists(path, ec) && !ec);
 #elif defined(_MSC_VER)
   // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
-  return _access_s(path.data(), 0) == 0;
+  ok = _access_s(path.data(), 0) == 0;
 #else
   // unistd.h
-  return !access(path.data(), F_OK);
+  ok = !access(path.data(), F_OK);
 #endif
+
+  return ok || (fs_is_windows() && fs_is_appexec_alias(path));
 }
 
 
@@ -94,18 +119,22 @@ bool
 fs_is_dir(std::string_view path)
 {
   // is path a directory or a symlink to a directory
+
+  bool ok;
 #if defined(HAVE_CXX_FILESYSTEM)
 // NOTE: Windows top-level drive "C:" needs a trailing slash "C:/"
   std::error_code ec;
-  return std::filesystem::is_directory(path, ec) && !ec;
+  ok = std::filesystem::is_directory(path, ec) && !ec;
 #elif defined(_WIN32)
 // stat() & S_IFDIR works on Windows, but we use GetFileAttributesA for didactic reasons
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesa
   const DWORD attr = GetFileAttributesA(path.data());
-  return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
+  ok = attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
 #else
-  return S_ISDIR(fs_st_mode(path));
+  ok = S_ISDIR(fs_st_mode(path));
 #endif
+
+  return ok;
 }
 
 
@@ -114,42 +143,36 @@ fs_is_file(std::string_view path)
 {
   // is path a regular file or a symlink to a regular file.
   // not a directory, device, or symlink to a directory.
+  // MSVC / MinGW std::filesystem::is_regular_file and stat() don't detect App Execution Aliases
 
-  // MSVC / MinGW ::is_regular_file and stat() don't detect App Execution Aliases
-  if(fs_is_appexec_alias(path))
-    return true;
-
+  bool ok;
 #if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
-  return std::filesystem::is_regular_file(path, ec) && !ec;
+  ok = std::filesystem::is_regular_file(path, ec) && !ec;
 #else
-    return fs_st_mode(path) & S_IFREG;
+  ok = fs_st_mode(path) & S_IFREG;
   // S_ISREG not available with MSVC
 #endif
+
+  return ok || (fs_is_windows() && fs_is_appexec_alias(path));
 }
 
 
 bool
 fs_is_fifo(std::string_view path)
 {
+
+  bool ok;
 #if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
-  return std::filesystem::is_fifo(path, ec) && !ec;
+  ok = std::filesystem::is_fifo(path, ec) && !ec;
 #elif defined(_MSC_VER)
-  HANDLE h =
-    CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ,
-                nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
-  if (h == INVALID_HANDLE_VALUE){
-    fs_print_error(path, "is_fifo:CreateFile");
-    return false;
-  }
-// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
-  const DWORD type = GetFileType(h);
-  CloseHandle(h);
-  return type == FILE_TYPE_PIPE;
+  ok = fs_win32_is_type(path, FILE_TYPE_PIPE);
 #else
-  return S_ISFIFO(fs_st_mode(path));
+  ok = S_ISFIFO(fs_st_mode(path));
 #endif
+
+  return ok;
 }
 
 
@@ -157,26 +180,19 @@ bool fs_is_char_device(std::string_view path)
 {
 // character device like /dev/null or CONIN$
 
+  bool ok;
 #if defined(WIN32)
 // currently broken in MSVC STL and MinGW Clang ARM for <filesystem>
-  HANDLE h =
-    CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ,
-                nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
-  if (h == INVALID_HANDLE_VALUE){
-    fs_print_error(path, "is_char_device:CreateFile");
-    return false;
-  }
-  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
-  const DWORD type = GetFileType(h);
-  CloseHandle(h);
-  return type == FILE_TYPE_CHAR;
+  ok = fs_win32_is_type(path, FILE_TYPE_CHAR);
 #elif defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
-  return std::filesystem::is_character_file(path, ec) && !ec;
+  ok = std::filesystem::is_character_file(path, ec) && !ec;
 #else
   // Windows: https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/fstat-fstat32-fstat64-fstati64-fstat32i64-fstat64i32
-  return S_ISCHR(fs_st_mode(path));
+  ok = S_ISCHR(fs_st_mode(path));
 #endif
+
+  return ok;
 }
 
 
@@ -184,7 +200,7 @@ bool fs_is_exe(std::string_view path)
 {
   // is path (file or directory or symlink) executable by the user
 
-  if(fs_is_appexec_alias(path))
+  if(fs_is_windows() && fs_is_appexec_alias(path))
     return fs_is_readable(path);
 
 #if defined(HAVE_CXX_FILESYSTEM)

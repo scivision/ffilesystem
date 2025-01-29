@@ -18,18 +18,17 @@
 bool fs_is_admin(){
   // running as admin / root / superuser
 #ifdef _WIN32
-	HANDLE hToken = nullptr;
+	HANDLE h = nullptr;
 	TOKEN_ELEVATION elevation;
 	DWORD dwSize;
 
-  const bool ok = (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken) &&
-     GetTokenInformation(hToken, TokenElevation, &elevation, sizeof(elevation), &dwSize));
+  const bool ok = (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &h) &&
+     GetTokenInformation(h, TokenElevation, &elevation, sizeof(elevation), &dwSize));
 
-  if(hToken)  FFS_LIKELY
-    CloseHandle(hToken);
-  if(ok)  FFS_LIKELY
+  if(CloseHandle(h) && ok)  FFS_LIKELY
     return elevation.TokenIsElevated;
 
+  fs_print_error("", "is_admin");
   return false;
 #else
   return geteuid() == 0;
@@ -69,8 +68,15 @@ std::string fs_get_terminal()
 
   // https://learn.microsoft.com/en-us/windows/console/getconsolewindow
   // encourages Virtual Terminal Sequences
+
+  //  The `GetConsoleWindow()` API returns a window handle (HWND), but it should not be closed by the application.
+  // This handle is owned and managed by the system, so calling CloseWindow() on it could
+  // disrupt the console window's operation.
+
   if (HWND h = GetConsoleWindow(); h) {
-    if (int L = GetClassNameA(h, name.data(), static_cast<int>(name.size())); L > 0) {
+    int L = GetClassNameA(h, name.data(), static_cast<int>(name.size()));
+
+    if (L > 0){
       name.resize(L);
       return name;
     }
