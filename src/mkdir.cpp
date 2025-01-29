@@ -42,11 +42,9 @@ bool fs_mkdir(std::string_view path)
 #else
 
   std::string buf;
-  std::string p(path);
-
+ 
+  std::string const p = fs_resolve(path, false, false);
   // ERROR_PATH_NOT_FOUND if relative directory
-  if(fs_is_windows() && !fs_is_absolute(p))
-    p = fs_absolute(p, false);
 
   const std::vector<std::string> parts = fs_split(p);
 
