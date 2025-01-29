@@ -58,11 +58,11 @@ bool fs_is_empty(std::string_view path)
 {
   // directory or file empty
   // returns false if path doesn't exist
-#ifdef HAVE_CXX_FILESYSTEM
+
   std::error_code ec;
 
-  bool e = std::filesystem::is_empty(path, ec);
-  if (!ec) FFS_LIKELY
+#ifdef HAVE_CXX_FILESYSTEM
+  if (bool e = std::filesystem::is_empty(path, ec); !ec)  FFS_LIKELY
     return e;
 #else
 
@@ -137,7 +137,7 @@ bool fs_is_empty(std::string_view path)
 
 #endif
 
-  fs_print_error(path, "is_empty");
+  fs_print_error(path, "is_empty", ec);
   return false;
 
 }
