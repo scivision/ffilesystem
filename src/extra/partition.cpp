@@ -2,6 +2,7 @@
 #include <string_view>
 
 #include <iostream>
+#include <system_error>
 
 #if defined(__unix__)
 // https://github.com/cpredef/predef/blob/master/OperatingSystems.md#bsd-environment
@@ -74,6 +75,8 @@ std::string fs_filesystem_type(std::string_view path)
 {
   // return name of filesystem type if known
 
+  std::error_code ec;
+
 #if defined(_WIN32) || defined(__CYGWIN__)
 
   std::string r(path);
@@ -95,20 +98,20 @@ std::string fs_filesystem_type(std::string_view path)
   if(std::string name(MAX_PATH+1, '\0');
       GetVolumeInformationA(r.data(), nullptr, 0, nullptr, nullptr, nullptr, name.data(), static_cast<DWORD>(name.size())))
     return fs_trim(name);
-
-  fs_print_error(path, "filesystem_type");
 #elif defined(__linux__)
 # ifdef HAVE_LINUX_MAGIC_H
   return fs_type_linux(path);
 # else
-  fs_print_error(path, "filesystem_type: linux/magic.h not found");
+  ec = std::make_error_code(std::errc::function_not_supported);
 # endif
 #elif defined(__APPLE__) || defined(BSD)
   struct statfs s;
   if(!statfs(path.data(), &s))
     return s.f_fstypename;
 #else
-  fs_print_error(path, "filesystem_type: Unknown operating system");
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
+
+  fs_print_error(path, "filesystem_type", ec);
   return {};
 }
