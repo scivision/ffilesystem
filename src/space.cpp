@@ -33,10 +33,8 @@ std::uintmax_t fs_space_available(std::string_view path)
     return s.available;
 #elif defined(_WIN32)
   // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdiskfreespaceexa
-
-  ULARGE_INTEGER b;
-
-  if(GetDiskFreeSpaceExA(path.data(), &b, nullptr, nullptr) != 0)  FFS_LIKELY
+  if(ULARGE_INTEGER b;
+      GetDiskFreeSpaceExA(path.data(), &b, nullptr, nullptr) != 0)  FFS_LIKELY
     return b.QuadPart;
 #elif defined(HAVE_STATVFS)
   // https://www.man7.org/linux/man-pages/man3/statvfs.3.html
@@ -49,7 +47,6 @@ std::uintmax_t fs_space_available(std::string_view path)
 #endif
 
   fs_print_error(path, "space_available", ec);
-
   return {};
 }
 
@@ -60,36 +57,24 @@ std::uintmax_t fs_space_capacity(std::string_view path)
   // total size of the filesystem, in bytes
   // This is the quantity available to the non-priviliged user,
   // not the total physical disk size.
-#ifdef HAVE_CXX_FILESYSTEM
 
   std::error_code ec;
+
+#ifdef HAVE_CXX_FILESYSTEM
   if(auto s = std::filesystem::space(path, ec); !ec)  FFS_LIKELY
     return s.capacity;
-
-  fs_print_error(path, "space_capacity", ec);
-
-#else
-
-  const std::string r = fs_root(fs_absolute(path, false));
-  if (r.empty())
-    return {};
-
-#ifdef _WIN32
-  ULARGE_INTEGER b;
-  if(GetDiskFreeSpaceExA(r.data(), nullptr, &b, nullptr) != 0)
+#elif defined(_WIN32)
+  if(ULARGE_INTEGER b;
+      GetDiskFreeSpaceExA(path.data(), nullptr, &b, nullptr) != 0)  FFS_LIKELY
     return b.QuadPart;
-
-  fs_print_error(path, "space_capacity:GetDiskSpaceEx");
 #elif defined(HAVE_STATVFS)
   struct statvfs stat;
-  if (!statvfs(r.data(), &stat))
+  if (!statvfs(path.data(), &stat))  FFS_LIKELY
     return (stat.f_frsize ? stat.f_frsize : stat.f_bsize) * stat.f_blocks;
-
-  fs_print_error(path, "space_capacity:statvfs");
 #else
-  fs_print_error(path, "space_capacity: function not implemented on this platform");
-#endif
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
+  fs_print_error(path, "space_capacity", ec);
   return {};
 }
