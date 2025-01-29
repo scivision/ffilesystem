@@ -18,10 +18,14 @@ to access filesystem and system parameters.
 Ffilesystem uses C++ `std::string` and (optional) Fortran `character`.
 [UTF-8 encoding](https://utf8everywhere.org/)
 allows for multibyte characters in paths.
+Ffilesystem does not throw or catch C++ exceptions, although the underlying C++ STL may.
+
 Ffilesystem header
 [ffilesystem.h](./include/ffilesystem.h)
 can be used from C and C++ project code--see
 [example](./example).
+The C interface allows reuse of Ffilesystem functions in other code languages such as
+[Matlab](./example/matlab_ffilesystem.m).
 
 The optional Fortran interface is built by default.
 Ffilesystem brings full filesystem functionality to Fortran.
