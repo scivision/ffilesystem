@@ -4,17 +4,21 @@
 #include <cstdint> // uintmax_t
 
 #include <iostream>
+#include <system_error>
 
 #include <string>
 #include <string_view>
 
 #include "ffilesystem.h"
 
+
 std::string::size_type fs_str2char(std::string_view s, char* result, const std::string::size_type buffer_size)
 {
   if(s.length() >= buffer_size) FFS_UNLIKELY
   {
-    std::cerr << "ERROR:Ffs:str2char(" << s << ") output buffer " << buffer_size << " too small for string: " << s << " length " << s.length() << "\n";
+    if(fs_trace) std::cerr << "ERROR:Ffs:str2char(" << s << ") output buffer " << buffer_size << " too small for string: " << s << " length " << s.length() << "\n";
+
+    fs_print_error(s, "str2char", std::make_error_code(std::errc::result_out_of_range));
     return 0;
   }
 

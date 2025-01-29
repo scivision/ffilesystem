@@ -1,8 +1,8 @@
 #include <string>
 #include <string_view>
 
+#include <system_error>
 #include <cstring>
-#include <iostream>
 
 #ifdef HAVE_CXX_FILESYSTEM
 #include <filesystem>
@@ -35,7 +35,7 @@ std::string::size_type fs_strncpy(const char* path, char* result, const std::str
 // check size before copy
   std::string::size_type L = std::strlen(path);
   if(L >= buffer_size){
-    std::cerr << "ERROR:Ffilesystem:strncpy: output buffer " << buffer_size << " too small for length " << L << "\n";
+    fs_print_error(path, "strncpy", std::make_error_code(std::errc::result_out_of_range));
     return 0;
   }
 
@@ -205,7 +205,7 @@ std::string fs_lexically_normal(std::string_view path){
 #ifdef HAVE_CXX_FILESYSTEM
   return std::filesystem::path(path).lexically_normal().generic_string();
 #else
-  std::cerr << "ERROR:fs_lexically_normal(" << path << "): C++ <filesystem> not available\n";
+  fs_print_error(path, "fs_lexically_normal", std::make_error_code(std::errc::function_not_supported));
   return {};
 #endif
 }
@@ -215,7 +215,7 @@ std::string fs_make_preferred(std::string_view path){
 #ifdef HAVE_CXX_FILESYSTEM
   return std::filesystem::path(path).make_preferred().generic_string();
 #else
-  std::cerr << "ERROR:fs_make_preferred(" << path << "): C++ <filesystem> not available\n";
+  fs_print_error(path, "fs_make_preferred", std::make_error_code(std::errc::function_not_supported));
   return {};
 #endif
 }
