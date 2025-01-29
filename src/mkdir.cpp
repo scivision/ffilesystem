@@ -26,23 +26,21 @@
 
 bool fs_mkdir(std::string_view path)
 {
- // for clarity
-  if(path.empty()){
-    std::cerr << "ERROR:Ffs:mkdir empty path\n";
-    return false;
-  }
+ // make directory with parents
 
   std::error_code ec;
 
 #ifdef HAVE_CXX_FILESYSTEM
-
   if (std::filesystem::create_directories(path, ec) || (!ec)) FFS_LIKELY
     return true;
-
 #else
 
+if(path.empty())
+  ec = std::make_error_code(std::errc::invalid_argument);
+else {
+
   std::string buf;
- 
+
   std::string const p = fs_resolve(path, false, false);
   // ERROR_PATH_NOT_FOUND if relative directory
 
@@ -66,18 +64,24 @@ bool fs_mkdir(std::string_view path)
       const auto err = GetLastError();
       // ERROR_PATH_NOT_FOUND if relative directory, thus we absolute() before loop.
       // ERROR_ACCESS_DENIED is OK if it's not the last part
-      ok = err == ERROR_ALREADY_EXISTS || (err == ERROR_ACCESS_DENIED && p != parts.back());
+      ok = err == ERROR_ALREADY_EXISTS ||
+            (err == ERROR_ACCESS_DENIED && p != parts.back());
     }
 #else
   // https://www.man7.org/linux/man-pages/man2/mkdir.2.html
-   ok = mkdir(buf.data(), S_IRWXU) == 0 || errno == EEXIST || (errno == EACCES && p != parts.back());
+    ok = mkdir(buf.data(), S_IRWXU) == 0 ||
+          errno == EEXIST ||
+          (errno == EACCES && p != parts.back());
 #endif
-  if(!ok)  FFS_UNLIKELY
-    break;
-  }
+
+    if(!ok)  FFS_UNLIKELY
+      break;
+  } // for
 
   if(ok)  FFS_LIKELY
     return true;
+
+} // if path.empty()
 
 #endif
 

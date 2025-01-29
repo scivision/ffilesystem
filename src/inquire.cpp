@@ -61,7 +61,7 @@ fs_st_mode(std::string_view path)
       !stat(path.data(), &s))
     return s.st_mode;
 #endif
-  // std::cerr << "ERROR:ffilesystem:fs_st_mode(" << path << ") " << strerror(errno)) << "\n";
+  // fs_print_error(path, "st_mode");
   return 0;
 }
 
