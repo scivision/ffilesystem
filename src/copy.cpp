@@ -53,7 +53,7 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
 // WORKAROUND: Windows MinGW GCC 11..13, Intel oneAPI Linux: bug with overwrite_existing failing on overwrite
 
   if(overwrite && fs_is_file(dest) && !fs_remove(dest)) FFS_UNLIKELY
-    fs_print_error(dest, "copy_file:remove");
+    fs_print_error(dest, "copy_file:remove", std::make_error_code(std::errc::io_error));
 
   if(std::filesystem::copy_file(source, dest, opt, ec) && !ec) FFS_LIKELY
     return true;
@@ -109,7 +109,6 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
     return false;
   }
 
-  off_t ret = len;
   off_t remaining = len;
   int rc = 0;
   int wc = 0;
@@ -120,9 +119,10 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
     // https://linux.die.net/man/3/open
   if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using copy_file_range\n";
 
-  while (remaining > 0 && ret > 0) {
+  off_t ret = 0;
+  while (remaining > 0) {
     ret = copy_file_range(rid, nullptr, wid, nullptr, remaining, 0);
-    if (ret == -1)
+    if (ret <= 0)
       break;
 
     remaining -= ret;
@@ -135,17 +135,15 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
   const int bufferSize = 16384;
   std::string buf(bufferSize, '\0');
 
-  ssize_t bytes;
+  ssize_t ret = 0;
   while (remaining > 0) {
-    bytes = read(rid, buf.data(), remaining);
-    if (bytes <= 0 || write(wid, buf.data(), bytes) != bytes) {
-      // value should not be zero because we tell the file size in "len"
-      close(rid);
-      close(wid);
-      fs_print_error(source, dest, "copy_file");
-      return false;
-    }
-    remaining -= bytes;
+    ret = read(rid, buf.data(), remaining);
+
+    // value should not be zero because we tell the file size in "len"
+    if (ret <= 0 || write(wid, buf.data(), ret) != ret)
+      break;
+
+    remaining -= ret;
   }
 
 #endif
