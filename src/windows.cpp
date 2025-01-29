@@ -10,6 +10,8 @@
 #include <string>
 #include <string_view>
 
+#include <system_error>
+
 #include "ffilesystem.h"
 
 #if defined(_WIN32)
@@ -105,11 +107,7 @@ static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer
 #endif
 
 
-bool fs_is_appexec_alias(
-#if __has_cpp_attribute(maybe_unused)
-  [[maybe_unused]]
-#endif
-  std::string_view path)
+bool fs_is_appexec_alias(std::string_view path)
 {
 // Windows App Execution Alias allow easy access to Windows Store apps
 // from the Windows Terminal. However, they don't work with _access_s()
@@ -121,6 +119,8 @@ bool fs_is_appexec_alias(
 // this function is adapted from
 // https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
 // that has a BSD 3-clause license
+
+  std::error_code ec;
 
 #if defined(_WIN32)
   std::byte buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
@@ -135,17 +135,15 @@ bool fs_is_appexec_alias(
   return data->ReparseTag == IO_REPARSE_TAG_APPEXECLINK;
 
 #else
-  return false;
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
+  fs_print_error(path, "is_appexec_alias", ec);
+  return false;
 }
 
 
-bool fs_win32_is_symlink(
-#if __has_cpp_attribute(maybe_unused)
-  [[maybe_unused]]
-#endif
-  std::string_view path)
+bool fs_win32_is_symlink(std::string_view path)
 {
 // distinguish between Windows symbolic links and reparse points as
 // reparse points can be unlike symlinks.
@@ -153,6 +151,8 @@ bool fs_win32_is_symlink(
 // this function is adapted from
 // https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
 // that has a BSD 3-clause license
+
+  std::error_code ec;
 
 #if defined(_WIN32)
   std::byte buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
@@ -167,8 +167,11 @@ bool fs_win32_is_symlink(
   return (reparseTag == IO_REPARSE_TAG_SYMLINK) ||
          (reparseTag == IO_REPARSE_TAG_MOUNT_POINT);
 #else
-  return false;
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
+
+  fs_print_error(path, "is_symlink", ec);
+  return false;
 }
 
 
@@ -177,27 +180,26 @@ std::string fs_win32_full_name(std::string_view path)
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfullpathnameA
 // GetFinalPathNameByHandle or GetFullPathName returns the unresolved symlink
 
-#ifdef _WIN32
-  const DWORD L = GetFullPathNameA(path.data(), 0, nullptr, nullptr);
-  if(L == 0)  FFS_UNLIKELY
-  {
-    fs_print_error(path, "realpath:GetFullPathName");
-    return {};
-  }
-  // this form includes the null terminator
-  std::string r(L, '\0');
-  // weak detection of race condition (cwd change)
-  if(GetFullPathNameA(path.data(), L, r.data(), nullptr) == L-1)  FFS_LIKELY
-  {
-    r.resize(L-1);
-    return fs_as_posix(r);
-  }
+  std::error_code ec;
 
-  fs_print_error(path, "realpath:GetFullPathName");
-  return {};
+#ifdef _WIN32
+  auto const L = GetFullPathNameA(path.data(), 0, nullptr, nullptr);
+  // this form includes the null terminator
+  // weak detection of race condition (cwd change)
+  if(L){
+    if(std::string r(L, '\0');
+        GetFullPathNameA(path.data(), L, r.data(), nullptr) == L-1)  FFS_LIKELY
+    {
+      r.resize(L-1);
+      return fs_as_posix(r);
+    }
+  }
 #else
-  return std::string(path);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
+
+  fs_print_error(path, "win32_full_name", ec);
+  return {};
 }
 
 
@@ -212,6 +214,8 @@ std::string fs_win32_final_path(std::string_view path)
   // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
   // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfinalpathnamebyhandlea
 
+  std::error_code ec;
+
 #if defined(_WIN32)
   if(fs_trace) std::cout << "TRACE: win32_final_path(" << path << ")\n";
   // dwDesiredAccess=0 to allow getting parameters even without read permission
@@ -225,11 +229,8 @@ std::string fs_win32_final_path(std::string_view path)
 
   const DWORD L = GetFinalPathNameByHandleA(h, r.data(), static_cast<DWORD>(r.size()), FILE_NAME_NORMALIZED);
   CloseHandle(h);
-  if(L == 0){
-    fs_print_error("win32_final_path:GetFinalPathNameByHandle", path);
-    return {};
-  }
 
+if(L){
   r.resize(L);
 
 #ifdef __cpp_lib_starts_ends_with  // C++20
@@ -240,9 +241,13 @@ std::string fs_win32_final_path(std::string_view path)
     r = r.substr(4);
 
   return fs_as_posix(r);
+}
 #else
-  return std::string(path);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
+
+  fs_print_error(path, "win32_final_path", ec);
+  return {};
 }
 
 
@@ -250,6 +255,9 @@ std::string fs_longname(std::string_view in)
 {
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getlongpathnamea
 // the path must exist
+
+  std::error_code ec;
+
 #ifdef _WIN32
   std::string out(fs_get_max_path(), '\0');
 // size does not include null terminator
@@ -259,12 +267,12 @@ std::string fs_longname(std::string_view in)
     out.resize(L);
     return out;
   }
-
-  fs_print_error(in, "longname");
-  return {};
 #else
-  return std::string(in);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
+
+  fs_print_error(in, "longname", ec);
+  return {};
 }
 
 
@@ -272,6 +280,9 @@ std::string fs_shortname(std::string_view in)
 {
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getshortpathnamew
 // the path must exist
+
+  std::error_code ec;
+
 #ifdef _WIN32
   std::string out(fs_get_max_path(), '\0');
 // size does not include null terminator
@@ -280,12 +291,12 @@ std::string fs_shortname(std::string_view in)
     out.resize(L);
     return out;
   }
-
-  fs_print_error(in, "shortname");
-  return {};
 #else
-  return std::string(in);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
+
+  fs_print_error(in, "shortname", ec);
+  return {};
 }
 
 
@@ -295,6 +306,7 @@ std::string fs_win32_to_narrow(
 #endif
   std::wstring_view w)
 {
+  std::error_code ec;
 
 #if defined(_WIN32)
   int L = WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, nullptr, 0, nullptr, nullptr);
@@ -307,19 +319,19 @@ std::string fs_win32_to_narrow(
       return buf;
     }
   }
+#else
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error("", "fs_win32_to_narrow");
+  fs_print_error("", "fs_win32_to_narrow", ec);
   return {};
 }
 
 
-std::wstring fs_win32_to_wide(
-#if __has_cpp_attribute(maybe_unused)
-[[maybe_unused]]
-#endif
-  std::string_view n)
+std::wstring fs_win32_to_wide(std::string_view n)
 {
+  std::error_code ec;
+
 #if defined(_WIN32)
   // https://docs.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
   int L = MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, nullptr, 0);
@@ -332,8 +344,10 @@ std::wstring fs_win32_to_wide(
       return buf;
     }
   }
+#else
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error("", "fs_win32_to_wide");
+  fs_print_error(n, "fs_win32_to_wide", ec);
   return {};
 }
