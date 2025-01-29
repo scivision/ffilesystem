@@ -1,6 +1,8 @@
-#include "ffilesystem.h"
+#if defined(__linux__) && !defined(_DEFAULT_SOURCE)
+#define _DEFAULT_SOURCE // for realpath
+#endif
 
-#include <iostream>  // IWYU pragma: keep
+#include "ffilesystem.h"
 
 #include <string>
 #include <string_view>
@@ -8,6 +10,10 @@
 
 #ifdef HAVE_CXX_FILESYSTEM
 #include <filesystem>
+#endif
+
+#if !defined(_WIN32)
+#include <cstdlib> // for realpath
 #endif
 
 
@@ -29,7 +35,7 @@ fs_canonical(
     : std::string(path);
 
   std::error_code ec;
-  
+
 #ifdef HAVE_CXX_FILESYSTEM
 
   if (fs_is_mingw() && fs_is_symlink(ex))
@@ -41,7 +47,7 @@ fs_canonical(
 
   if(!ec) FFS_LIKELY
     return fs_drop_slash(c.generic_string());
-  
+
 #else
 
   if (std::string c = fs_realpath(ex); !c.empty())
@@ -64,4 +70,22 @@ std::string fs_resolve(std::string_view path, const bool strict, const bool expa
   // https://docs.python.org/3/library/pathlib.html#pathlib.Path.resolve
 
   return fs_canonical(fs_absolute(path, expand_tilde), strict, false);
+}
+
+
+std::string fs_realpath(std::string_view path)
+{
+  // resolve real path
+  // not well-defined for non-existing path--may return empty string.
+
+#ifdef _WIN32
+  return fs_win32_final_path(path);
+#else
+  std::string r(fs_get_max_path(), '\0');
+
+  return realpath(path.data(), r.data())
+    ? fs_trim(r)
+    : std::string();
+#endif
+
 }

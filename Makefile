@@ -71,7 +71,6 @@ COMM_SRCS = \
 	$(comdir)permissions.cpp \
 	$(comdir)platform.cpp \
 	$(comdir)random.cpp \
-	$(comdir)realpath.cpp \
 	$(comdir)relative.cpp \
 	$(comdir)resolve.cpp \
 	$(comdir)shell.cpp \
