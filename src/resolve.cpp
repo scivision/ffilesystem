@@ -14,16 +14,13 @@
 std::string
 fs_canonical(
   std::string_view path,
-#if __has_cpp_attribute(maybe_unused)
-[[maybe_unused]]
-#endif
   const bool strict,
   const bool expand_tilde)
 {
   // canonicalize path, i.e. resolve all symbolic links, remove ".", ".." and extra slashes
   // if strict is true, then path must exist
 
-  if (path.empty()) FFS_UNLIKELY
+  if (path.empty())
     return {};
     // need this for macOS otherwise it returns the current working directory instead of empty string
 
@@ -31,12 +28,12 @@ fs_canonical(
     ? fs_expanduser(path)
     : std::string(path);
 
+  std::error_code ec;
+  
 #ifdef HAVE_CXX_FILESYSTEM
 
   if (fs_is_mingw() && fs_is_symlink(ex))
     return fs_win32_final_path(ex);
-
-  std::error_code ec;
 
   const auto c = strict
     ? std::filesystem::canonical(ex, ec)
@@ -44,25 +41,19 @@ fs_canonical(
 
   if(!ec) FFS_LIKELY
     return fs_drop_slash(c.generic_string());
+  
+#else
+
+  if (std::string c = fs_realpath(ex); !c.empty())
+    return c;
+
+  if (!strict)
+    return fs_normal(ex);
+
+#endif
 
   fs_print_error(path, "canonical", ec);
   return {};
-
-#else
-
-  std::string c = fs_realpath(ex);
-  if (!c.empty())
-    return c;
-
-  if (strict){
-    fs_print_error(path, "canonical");
-    return {};
-  }
-
-  // weakly canonicalize
-  return fs_normal(ex);
-
-#endif
 }
 
 
