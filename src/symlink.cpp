@@ -40,10 +40,10 @@ bool fs_is_symlink(std::string_view path)
 #if defined(__MINGW32__) || (defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM))
   return fs_win32_is_symlink(path);
 #elif defined(HAVE_CXX_FILESYSTEM)
-// std::filesystem::symlink_status doesn't detect symlinks on MinGW
+// std::filesystem::symlink_status or std::filesystem::is_symlink
+// don't detect symlinks on MinGW
   std::error_code ec;
-  const auto s = std::filesystem::symlink_status(path, ec);
-  return !ec && std::filesystem::is_symlink(s);
+  return std::filesystem::is_symlink(path, ec) && !ec;
 #elif defined(STATX_MODE) && defined(USE_STATX)
 // Linux Glibc only
 // https://www.gnu.org/software/gnulib/manual/html_node/statx.html
@@ -63,17 +63,13 @@ bool fs_is_symlink(std::string_view path)
 
 std::string fs_read_symlink(std::string_view path)
 {
+  // read the target of a symlink
 
-  if(!fs_is_symlink(path))  FFS_UNLIKELY
-  {
-    std::cerr << "ERROR:Ffilesystem:read_symlink(" << path << ") is not a symlink\n";
-    return {};
-  }
-
-  std::error_code ec;
+  std::error_code ec = std::make_error_code(std::errc::invalid_argument);
 
 #if defined(__MINGW32__) || (defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM))
-  return fs_win32_final_path(path);
+  if(fs_is_symlink(path))
+    return fs_win32_final_path(path);
 #elif defined(HAVE_CXX_FILESYSTEM)
   if(auto p = std::filesystem::read_symlink(path, ec); !ec) FFS_LIKELY
     return p.generic_string();
@@ -81,8 +77,7 @@ std::string fs_read_symlink(std::string_view path)
   // https://www.man7.org/linux/man-pages/man2/readlink.2.html
   std::string r(fs_get_max_path(), '\0');
 
-  const ssize_t Lr = readlink(path.data(), r.data(), r.size());
-  if (Lr > 0){
+  if (ssize_t Lr = readlink(path.data(), r.data(), r.size()); Lr > 0){
     // readlink() does not null-terminate the result
     r.resize(Lr);
     return r;
@@ -97,22 +92,15 @@ std::string fs_read_symlink(std::string_view path)
 bool fs_create_symlink(std::string_view target, std::string_view link)
 {
   // create symlink to file or directory
-  if(target.empty()) FFS_UNLIKELY
-  {
-    std::cerr << "ERROR: create_symlink: target path must not be empty\n";
-    // confusing program errors if target is "" -- we'd never make such a symlink in real use.
-    return false;
-  }
-
-  if(link.empty()) FFS_UNLIKELY
-  {
-    std::cerr << "ERROR: create_symlink: link path must not be empty\n";
-    // macOS needs empty check to avoid SIGABRT
-    return false;
-  }
 
   std::error_code ec;
 
+  // confusing program errors if target is "" -- we'd never make such a symlink in real use.
+  // macOS needs empty check to avoid SIGABRT
+
+  if(target.empty() || link.empty()) FFS_UNLIKELY
+    ec = std::make_error_code(std::errc::invalid_argument);
+  else {
 #if defined(__MINGW32__) || (defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM))
 
   DWORD p = SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
@@ -137,8 +125,8 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
   // https://linux.die.net/man/3/symlink
   if(symlink(target.data(), link.data()) == 0)  FFS_LIKELY
     return true;
-
 #endif
+  }
 
   fs_print_error(target, link, "create_symlink", ec);
   return false;
