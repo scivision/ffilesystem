@@ -4,11 +4,7 @@
 
 #include "ffilesystem.h"
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#else
-#include <cerrno>
+#ifndef _WIN32
 #include <cstdlib> // for realpath
 #endif
 
@@ -26,10 +22,9 @@ std::string fs_realpath(std::string_view path)
 #else
   std::string r(fs_get_max_path(), '\0');
 
-  if(!realpath(path.data(), r.data()))
-    return {};
-
-  return fs_trim(r);
+  return realpath(path.data(), r.data())
+    ? fs_trim(r)
+    : std::string();
 #endif
 
 }
