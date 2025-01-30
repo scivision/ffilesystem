@@ -17,11 +17,11 @@ static void fs_emit_error()
 {
 #if defined(_WIN32) || defined(__CYGWIN__)
   if (DWORD error = GetLastError(); error)
-    std::cerr << std::system_category().message(error) << "\n";
+    std::cerr << "GetLastError:" << std::system_category().message(error) << " ";
 #else
   if(errno){
     auto econd = std::generic_category().default_error_condition(errno);
-    std::cerr << econd.message() << "\n";
+    std::cerr << "errno:" << econd.message() << " ";
   }
 #endif
 }
@@ -64,7 +64,7 @@ void fs_print_error(std::string_view path1, std::string_view path2, std::string_
   std::cerr << "ERROR: Ffilesystem:" << fname << "(" << path1 <<  ", " << path2 << ")  ";
 
   if(ec)
-    std::cerr << ec.message();
+    std::cerr << "C++ exception:" << ec.message() <<  " " << ec.value() << " ";
 
   fs_emit_error();
 
