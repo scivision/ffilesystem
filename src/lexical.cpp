@@ -141,7 +141,11 @@ fs_is_prefix(std::string_view prefix, std::string_view path)
   if (pr.size() > p.size())
     return false;
 
+#ifdef __cpp_lib_starts_ends_with  // C++20
+  return p.starts_with(pr);
+#else
   return p.substr(0, pr.size()) == pr;
+#endif
 
 }
 
@@ -164,6 +168,10 @@ fs_is_subdir(std::string_view subdir, std::string_view dir)
   if(s.size() < d.size())
     return false;
 
+#ifdef __cpp_lib_starts_ends_with  // C++20
+  return s.starts_with(d);
+#else
   return s.substr(0, d.size()) == d;
+#endif
 
 }
