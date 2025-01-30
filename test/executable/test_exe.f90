@@ -56,11 +56,6 @@ call touch(noexe)
 print '(a)', "set_permissions(" // trim(noexe) // ", executable=.false.)"
 call set_permissions(noexe, executable=.false.)
 
-if(.not. is_exe(parent(exe))) then
-  write(stderr, '(a)') "FAILED: test_exe(" // parent(exe) // ") directory should have executable permissions"
-  error stop
-end if
-
 print '(a)', "permissions: " // trim(exe) // " = " // get_permissions(exe)
 
 if (.not. is_exe(exe)) then

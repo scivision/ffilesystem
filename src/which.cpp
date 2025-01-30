@@ -111,6 +111,9 @@ std::string fs_which(std::string_view name, std::string_view path, const bool fi
     return {};
   }
 
+  if(!fs_is_exe(r))
+    return {};
+
   r.resize(L);
   return fs_as_posix(r);
 

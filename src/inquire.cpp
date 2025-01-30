@@ -198,20 +198,20 @@ bool fs_is_char_device(std::string_view path)
 
 bool fs_is_exe(std::string_view path)
 {
-  // is path (file or directory or symlink) executable by the user
+  // is path (file or symlink to a file) executable by the user
+  // directories are not considered executable--use fs_get_permissions() for that.
 
-  if(fs_is_windows() && fs_is_appexec_alias(path))
-    return fs_is_readable(path);
-
-#if defined(HAVE_CXX_FILESYSTEM)
-
-  // need reserved check for Windows
-  if(fs_is_reserved(path))
+  if(!fs_is_file(path))
     return false;
 
-  // Windows MinGW bug with executable bit
-  if(fs_is_mingw())
-    return fs_is_readable(path);
+#if defined(_WIN32)
+  // on Windows, std::filesystem isn't well-suited for executable file detection
+  // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getbinarytypea
+  // GetBinaryTypeA(path.data(), nullptr) != 0 crashes with -1073741819 on MinGW GCC 14.2.0
+  // MSVC, Windows oneAPI need is_appexec_alias
+  return (fs_st_mode(path) & _S_IEXEC) || fs_is_appexec_alias(path);
+
+#elif defined(HAVE_CXX_FILESYSTEM)
 
 #if defined(__cpp_using_enum)  // C++20
   using enum std::filesystem::perms;
@@ -223,18 +223,10 @@ bool fs_is_exe(std::string_view path)
 #endif
 
   std::error_code ec;
-
   const auto s = std::filesystem::status(path, ec);
-  if (ec)
-    return false;
 
-  return (s.permissions() & (owner_exec | group_exec | others_exec)) != none;
+  return !ec && (s.permissions() & (owner_exec | group_exec | others_exec)) != none;
 
-#elif defined(_WIN32)
-  // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
-  // on Windows, readable paths are executable.
-  // We don't use _S_IEXEC, as it is not reliable.
-  return fs_is_readable(path);
 #else
   return access(path.data(), X_OK) == 0;
 #endif

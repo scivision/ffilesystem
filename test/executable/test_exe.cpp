@@ -52,16 +52,16 @@ fs_touch(noexe);
 fs_set_permissions(exe, 0, 0, 1);
 fs_set_permissions(noexe, 0, 0, -1);
 
-if(!fs_is_exe(fs_parent(exe)))
-  err("test_exe: is_exe(" + fs_parent(exe) + ") directory should have executable permisisons");
-
 p = fs_get_permissions(exe);
 if(p.empty())
   err("test_exe: get_permissions(" + exe + ") failed");
 
 std::cout << "permissions: " << exe << " = " << p << "\n";
 
-if (!fs_is_exe(exe))
+if(p[2] != 'x')
+  err("test_exe: expected perms for " + exe + " to be 'x' in index 2 but got " + p);
+
+if (!fs_is_windows() && !fs_is_exe(exe))
   err("test_exe: " + exe + " is not executable and should be.");
 
 p = fs_get_permissions(noexe);
@@ -94,7 +94,8 @@ if(p.empty())
 
 std::cout << "permissions before chmod(" << exe << ", true)  = " << p << "\n";
 
-fs_set_permissions(exe, 0, 0, 1);
+fs_set_permissions(exe, -1, 0, 1);
+// test executable even without read permission
 
 p = fs_get_permissions(exe);
 if(p.empty())
@@ -124,7 +125,7 @@ if(p.empty())
   err("test_exe: get_permissions(" + noexe + ") failed after touch");
 std::cout << "permissions before chmod(" << noexe << ", false)  = " << p << "\n";
 
-fs_set_permissions(noexe, 0, 0, 0);
+fs_set_permissions(noexe, 0, 0, -1);
 
 p = fs_get_permissions(noexe);
 if(p.empty())

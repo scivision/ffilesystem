@@ -258,7 +258,8 @@ static bool two_arg(std::string_view fun, std::string_view a1, std::string_view 
   using fs_two_arg_function = std::function<std::variant<std::string, bool>(std::string_view, std::string_view)>;
 
   std::unordered_map<std::string_view, fs_two_arg_function> fs_two_arg_function_map = {
-    {"which", [](std::string_view a1, std::string_view a2) { return fs_which(a1, a2, true); }},
+    {"which", [](std::string_view a1, std::string_view a2) { return fs_which(a1, a2, false); }},
+    {"which_all", [](std::string_view a1, std::string_view a2) { return fs_which(a1, a2, true); }},
     {"same", [](std::string_view a1, std::string_view a2) { return fs_equivalent(a1, a2); }},
     {"join", [](std::string_view a1, std::string_view a2) { return fs_join(a1, a2); }},
     {"with_suffix", [](std::string_view a1, std::string_view a2) { return fs_with_suffix(a1, a2); }},

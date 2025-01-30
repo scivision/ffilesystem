@@ -119,8 +119,6 @@ if (.not. p1%is_dir()) error stop "ERROR:test: is_dir(dir)"
 !> is_exe
 p1 = path_t(s2)
 if (.not. p1%is_exe()) error stop "ERROR:test: is_exe(exe)"
-p1 = path_t(p1%parent())
-if (.not. p1%is_exe()) error stop "ERROR:test: is_exe(dir)"
 
 !> file_size
 p1 = path_t(s2)
