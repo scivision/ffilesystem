@@ -6,6 +6,9 @@ option(ffilesystem_fortran "use Fortran" on)
 
 if(ffilesystem_fortran)
   enable_language(Fortran)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.29)
+    message(VERBOSE "Fortran Linker: ${CMAKE_Fortran_COMPILER_LINKER_ID}")
+  endif()
 endif()
 
 enable_testing()

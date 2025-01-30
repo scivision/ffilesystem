@@ -72,11 +72,12 @@ static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer
 
   std::error_code ec;
 
-  const DWORD attr = GetFileAttributesA(path.data());
+
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesa
 
 // https://learn.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
-  if (attr == INVALID_FILE_ATTRIBUTES)
+  if (const DWORD attr = GetFileAttributesA(path.data());
+        attr == INVALID_FILE_ATTRIBUTES)
     // ec = std::make_error_code(std::errc::no_such_file_or_directory);
     // don't emit error for non-existent files
     return false;
@@ -135,8 +136,6 @@ bool fs_is_appexec_alias(std::string_view path)
 // https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
 // that has a BSD 3-clause license
 
-  std::error_code ec;
-
 #if defined(_WIN32)
   std::byte buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
 
@@ -150,11 +149,10 @@ bool fs_is_appexec_alias(std::string_view path)
   return data->ReparseTag == IO_REPARSE_TAG_APPEXECLINK;
 
 #else
-  ec = std::make_error_code(std::errc::function_not_supported);
+  fs_print_error(path, "is_appexec_alias", std::make_error_code(std::errc::function_not_supported));
+  return false;
 #endif
 
-  fs_print_error(path, "is_appexec_alias", ec);
-  return false;
 }
 
 
@@ -166,8 +164,6 @@ bool fs_win32_is_symlink(std::string_view path)
 // this function is adapted from
 // https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
 // that has a BSD 3-clause license
-
-  std::error_code ec;
 
 #if defined(_WIN32)
   std::byte buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
@@ -182,11 +178,10 @@ bool fs_win32_is_symlink(std::string_view path)
   return (reparseTag == IO_REPARSE_TAG_SYMLINK) ||
          (reparseTag == IO_REPARSE_TAG_MOUNT_POINT);
 #else
-  ec = std::make_error_code(std::errc::function_not_supported);
+  fs_print_error(path, "is_symlink", std::make_error_code(std::errc::function_not_supported));
+  return false;
 #endif
 
-  fs_print_error(path, "is_symlink", ec);
-  return false;
 }
 
 
@@ -251,9 +246,9 @@ std::string fs_win32_final_path(std::string_view path)
     r.resize(L);
 
 #ifdef __cpp_lib_starts_ends_with  // C++20
-    if (r.starts_with("\\\\?\\"))
+    if (r.starts_with(R"(\\\\?\\)"))
 #else  // C++98
-    if (r.substr(0, 4) == "\\\\?\\")
+    if (r.substr(0, 4) == R"(\\\\?\\)")
 #endif
       r = r.substr(4);
 
@@ -326,8 +321,8 @@ std::string fs_win32_to_narrow(
   std::error_code ec;
 
 #if defined(_WIN32)
-  int L = WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, nullptr, 0, nullptr, nullptr);
-  if (L > 0) {
+  if (int L = WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, nullptr, 0, nullptr, nullptr);
+        L > 0) {
     std::string buf(L, '\0');
     L = WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, buf.data(), L, nullptr, nullptr);
 
@@ -351,8 +346,9 @@ std::wstring fs_win32_to_wide(std::string_view n)
 
 #if defined(_WIN32)
   // https://docs.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
-  int L = MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, nullptr, 0);
-  if (L > 0) {
+
+  if (int L = MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, nullptr, 0);
+        L > 0) {
     std::wstring buf(L, L'\0');
     L = MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, buf.data(), L);
 
