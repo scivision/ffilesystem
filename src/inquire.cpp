@@ -224,8 +224,12 @@ bool fs_is_exe(std::string_view path)
 
   std::error_code ec;
   const auto s = std::filesystem::status(path, ec);
+  if(ec){
+    fs_print_error(path, "is_exe", ec);
+    return false;
+  }
 
-  return !ec && (s.permissions() & (owner_exec | group_exec | others_exec)) != none;
+  return (s.permissions() & (owner_exec | group_exec | others_exec)) != none;
 
 #else
   return access(path.data(), X_OK) == 0;
@@ -248,7 +252,12 @@ bool fs_is_readable(std::string_view path)
 
   std::error_code ec;
   const auto s = std::filesystem::status(path, ec);
-  if(ec || !std::filesystem::exists(s))
+  if(ec){
+    fs_print_error(path, "is_readable", ec);
+    return false;
+  }
+
+  if(!std::filesystem::exists(s))
     return false;
 
 #if defined(__cpp_using_enum)  // C++20
@@ -274,7 +283,12 @@ bool fs_is_writable(std::string_view path)
 #if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
   const auto s = std::filesystem::status(path, ec);
-  if(ec || !std::filesystem::exists(s))
+  if(ec){
+    fs_print_error(path, "is_writable", ec);
+    return false;
+  }
+
+  if(!std::filesystem::exists(s))
     return false;
 
 #if defined(__cpp_using_enum)  // C++20
