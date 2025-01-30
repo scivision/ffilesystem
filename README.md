@@ -252,16 +252,20 @@ There is no "is_musl()" function due to MUSL designers
 a
 [MUSL feature macro](https://wiki.musl-libc.org/faq.html).
 
-### Windows long paths
+### Windows
 
 Like
 [Microsoft STL](https://github.com/microsoft/STL/issues/2256),
-Ffilesystem is not designed for UNC paths.
+Ffilesystem is not designed for UNC "long" paths.
 We recommend using a UNC path to a mapped drive letter.
 Windows
 [long paths](https://github.com/microsoft/STL/issues/1921)
 are not implemented due to
 [limitations](https://www.boost.org/doc/libs/1_86_0/libs/filesystem/doc/reference.html#windows-path-prefixes).
+
+Enable Windows
+[developer mode](https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging)
+to use symbolic links if needed.
 
 ### C++ filesystem discussion
 
