@@ -239,6 +239,7 @@ static bool one_arg(std::string_view fun, std::string_view a1)
         std::cout << " " << s;
 
       std::cout << " " << fs_get_permissions(p.generic_string());
+      std::cout << std::endl;
     }
 #else
       std::cerr << "ERROR: ls requires C++17 filesystem\n";

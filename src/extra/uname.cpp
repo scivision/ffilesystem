@@ -76,10 +76,8 @@ std::string fs_os_version()
 {
 // get operating system version
 #ifdef HAVE_UTSNAME
-  if (struct utsname buf;
-    uname(&buf) == 0)
-
-  return buf.version;
+  if (struct utsname buf; uname(&buf) == 0)
+    return buf.version;
 #elif defined(_WIN32)
   OSVERSIONINFOA osvi;
   ZeroMemory(&osvi, sizeof(OSVERSIONINFOA));

@@ -246,9 +246,9 @@ std::string fs_win32_final_path(std::string_view path)
     r.resize(L);
 
 #ifdef __cpp_lib_starts_ends_with  // C++20
-    if (r.starts_with(R"(\\\\?\\)"))
+    if (r.starts_with(R"(\\?\)"))
 #else  // C++98
-    if (r.substr(0, 4) == R"(\\\\?\\)")
+    if (r.substr(0, 4) == R"(\\?\)")
 #endif
       r = r.substr(4);
 

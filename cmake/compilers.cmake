@@ -143,7 +143,11 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU|^Intel")
   "$<$<COMPILE_LANGUAGE:C,CXX>:-Wall>"
   "$<$<COMPILE_LANGUAGE:C>:-Werror=implicit-function-declaration>"
   )
-elseif(CMAKE_C_COMPILER_ID MATCHES "MSVC")
+endif()
+
+if(MSVC)
+  # if, not elseif, because IntelLLVM uses MSVC flags
+  # /wd4996 quiets warning: 'GetVersionExA' is deprecated
   add_compile_options("$<$<COMPILE_LANGUAGE:C,CXX>:/W3;/wd4996>")
 endif()
 
