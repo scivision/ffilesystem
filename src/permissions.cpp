@@ -150,7 +150,10 @@ std::string fs_get_permissions(std::string_view path)
 
   const int m = fs_st_mode(path);
   if(m == 0) FFS_UNLIKELY
+  {
+    fs_print_error(path, "get_permissions");
     return {};
+  }
 
 #if defined(_MSC_VER)
   if (m & _S_IREAD)
