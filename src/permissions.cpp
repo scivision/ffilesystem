@@ -21,6 +21,8 @@
 
 bool fs_set_permissions(std::string_view path, int readable, int writable, int executable)
 {
+// only sets permission for owner, not group or others
+
 #ifdef HAVE_CXX_FILESYSTEM
 
 #if defined(__cpp_using_enum)  // C++20
@@ -56,9 +58,8 @@ bool fs_set_permissions(std::string_view path, int readable, int writable, int e
 
   fs_print_error(path, "set_permissions", ec);
   return false;
-#else
 
-  // on POSIX, only sets permission for user, not group or others
+#else
 
   int m = fs_st_mode(path);
 #ifdef _MSC_VER
@@ -133,6 +134,9 @@ std::string fs_get_permissions(std::string_view path)
     r[1] = 'w';
   if ((p & owner_exec) != none)
     r[2] = 'x';
+
+  if(!fs_is_windows()){
+
   if ((p & group_read) != none)
     r[3] = 'r';
   if ((p & group_write) != none)
@@ -145,6 +149,8 @@ std::string fs_get_permissions(std::string_view path)
     r[7] = 'w';
   if ((p & others_exec) != none)
     r[8] = 'x';
+
+  }
 
 #else
 
@@ -169,6 +175,9 @@ std::string fs_get_permissions(std::string_view path)
     r[1] = 'w';
   if (m & S_IXUSR)
     r[2] = 'x';
+#endif
+
+#if !defined(_WIN32)
   if (m & S_IRGRP)
     r[3] = 'r';
   if (m & S_IWGRP)
