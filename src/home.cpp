@@ -11,7 +11,11 @@
 // get_profile_dir
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
+#ifndef SECURITY_WIN32
+#define SECURITY_WIN32
+#endif
 #include <UserEnv.h> // GetUserProfileDirectoryA
+#include <Security.h> // GetUserNameExA
 #include <Windows.h>
 #else
 #include <sys/types.h>  // IWYU pragma: keep
@@ -60,7 +64,7 @@ std::string fs_get_profile_dir()
 
   std::error_code ec;
 
-  #if defined(_WIN32)
+#if defined(_WIN32)
   // https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-getuserprofiledirectorya
   std::string path(fs_get_max_path(), '\0');
   // works on MSYS2, MSVC, oneAPI
@@ -125,19 +129,24 @@ std::string fs_expanduser(std::string_view path)
 
 std::string fs_get_username()
 {
+  // Get username of the current user
+
 #if defined(_WIN32)
-  // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getusernamea
+
+// https://learn.microsoft.com/en-us/windows/win32/api/secext/nf-secext-getusernameexa
   std::string name(fs_get_max_path(), '\0');
-  DWORD L = static_cast<DWORD>(name.size());
-  // Windows.h
-  if(GetUserNameA(name.data(), &L) != 0){
-    name.resize(L-1);
+  ULONG L = static_cast<ULONG>(name.size());
+// https://learn.microsoft.com/en-us/windows/win32/api/secext/ne-secext-extended_name_format
+  if(GetUserNameExA(NameSamCompatible, name.data(), &L) != 0){
+    name.resize(L);
     return name;
   }
+
 #else
-  const struct passwd *pw = fs_getpwuid();
-  if (pw)
+
+  if (struct passwd *pw = fs_getpwuid(); pw)
     return pw->pw_name;
+
 #endif
 
   fs_print_error("", "get_username");
