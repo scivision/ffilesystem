@@ -59,8 +59,12 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
     return true;
 
 #elif defined(_WIN32)
-  // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfilea
-  if(CopyFileA(source.data(), dest.data(), !overwrite) != 0)
+  DWORD opts = 0;
+  if(!overwrite)
+    opts |= COPY_FILE_FAIL_IF_EXISTS;
+
+  // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfileexa
+  if(CopyFileExA(source.data(), dest.data(), nullptr, nullptr, FALSE, opts) != 0)
     return true;
 
 #elif defined(HAVE_MACOS_COPYFILE)
