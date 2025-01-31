@@ -38,16 +38,21 @@ bool fs_win32_is_type(std::string_view path, const DWORD type){
 
   std::error_code ec;
 
-  HANDLE h = CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ,
-                nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+  HANDLE h = CreateFileA(path.data(), GENERIC_READ | GENERIC_WRITE, 0,
+              nullptr, OPEN_EXISTING, 0, nullptr);
 
-  if(h == INVALID_HANDLE_VALUE)
+  if(h == INVALID_HANDLE_VALUE) {
     ec = std::make_error_code(std::errc::no_such_file_or_directory);
-  else {
+  } else {
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
     DWORD t = GetFileType(h);
-    if(!CloseHandle(h))
+    if (!CloseHandle(h))
       ec = std::make_error_code(std::errc::io_error);
+
+    DWORD err = GetLastError();
+    if (t == FILE_TYPE_UNKNOWN && err != NO_ERROR)
+      ec = std::make_error_code(std::errc::io_error);
+
     if (!ec)
       return t == type;
   }
@@ -196,13 +201,14 @@ fs_is_file(std::string_view path)
 bool
 fs_is_fifo(std::string_view path)
 {
-
+  // mkfifo() or CreateNamedPipe()
   bool ok;
-#if defined(HAVE_CXX_FILESYSTEM)
+
+#if defined(_WIN32)
+  ok = fs_win32_is_type(path, FILE_TYPE_PIPE);
+#elif defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
   ok = std::filesystem::is_fifo(path, ec) && !ec;
-#elif defined(_MSC_VER)
-  ok = fs_win32_is_type(path, FILE_TYPE_PIPE);
 #else
   ok = S_ISFIFO(fs_st_mode(path));
 #endif
@@ -216,7 +222,7 @@ bool fs_is_char_device(std::string_view path)
 // character device like /dev/null or CONIN$
 
   bool ok;
-#if defined(WIN32)
+#if defined(_WIN32)
 // currently broken in MSVC STL and MinGW Clang ARM for <filesystem>
   ok = fs_win32_is_type(path, FILE_TYPE_CHAR);
 #elif defined(HAVE_CXX_FILESYSTEM)
