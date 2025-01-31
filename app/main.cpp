@@ -233,11 +233,21 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     }
   } else if (fun == "ls") {
 #ifdef HAVE_CXX_FILESYSTEM
-    for (auto const& dir_entry : std::filesystem::directory_iterator{fs_expanduser(a1)}){
+    std::error_code ec;
+    for (auto const& dir_entry :
+         std::filesystem::directory_iterator{a1,
+          std::filesystem::directory_options::skip_permission_denied, ec}){
+
+      if(ec)
+        std::cerr << "ERROR: " << ec.message() << " " << ec.value() << "\n";
+
       std::filesystem::path p = dir_entry.path();
       std::cout << p;
-      if (const auto &s = std::filesystem::file_size(p, ec); s && !ec)
-        std::cout << " " << s;
+
+      if (std::filesystem::is_regular_file(p, ec)){
+        if (const auto &s = std::filesystem::file_size(p, ec); s && !ec)
+          std::cout << " " << s;
+      }
 
       std::cout << " " << fs_get_permissions(p.generic_string());
       std::cout << std::endl;
