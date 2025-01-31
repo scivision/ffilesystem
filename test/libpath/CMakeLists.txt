@@ -12,6 +12,9 @@ endif()
 add_executable(test_libpath_cpp test_libpath.cpp)
 target_link_libraries(test_libpath_cpp PRIVATE ffilesystem)
 target_include_directories(test_libpath_cpp PRIVATE ..)
+if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+  target_compile_features(test_libpath_cpp PRIVATE cxx_std_20)
+endif()
 
 add_test(NAME Cpp_libpath COMMAND test_libpath_cpp)
 

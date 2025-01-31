@@ -12,11 +12,19 @@ message(VERBOSE "CMake test link file ${test_symlink_file}")
 
 
 add_executable(test_is_symlink_cpp test_is_symlink.cpp)
+target_include_directories(test_is_symlink_cpp PRIVATE ..)
+if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+  target_compile_features(test_is_symlink_cpp PRIVATE cxx_std_20)
+endif()
+
 add_test(NAME Cpp_is_symlink COMMAND test_is_symlink_cpp ${test_symlink_file} ${test_symlink_dir2})
 set_tests_properties(Cpp_is_symlink PROPERTIES FIXTURES_SETUP is_symlink)
 
 add_executable(test_symlink_cpp test_symlink.cpp)
 target_include_directories(test_symlink_cpp PRIVATE ..)
+if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+  target_compile_features(test_symlink_cpp PRIVATE cxx_std_20)
+endif()
 
 add_test(NAME Cpp_symlink COMMAND test_symlink_cpp)
 set_tests_properties(Cpp_symlink PROPERTIES

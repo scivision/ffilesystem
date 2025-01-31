@@ -11,6 +11,9 @@ foreach(t IN LISTS extra_tests_cpp)
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
   target_include_directories(test_${t}_cpp PRIVATE ..)
+  if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+    target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
+  endif()
 
   add_test(NAME Cpp_${t} COMMAND ${CMAKE_COMMAND} -E env $<TARGET_FILE:test_${t}_cpp>)
   set_tests_properties(Cpp_${t} PROPERTIES
