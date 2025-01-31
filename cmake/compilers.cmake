@@ -24,12 +24,12 @@ if(NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 17)
 endif()
 
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.24 AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-  # otherwise failed to link since -lc++ is missing
-  set(ffilesystem_linker_lang CXX)
-elseif(NOT CMAKE_GENERATOR MATCHES "Visual Studio")
-  # IntelLLVM|NVHPC need Fortran.
-  # For other compilers (except as above) don't need it set, but Fortran doesn't hurt.
+# also MinGW Flang on ARM
+#if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.24 AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+# otherwise failed to link since -lc++ is missing
+set(ffilesystem_linker_lang)
+if(LINUX AND CMAKE_CXX_COMPILER_ID MATCHES "IntelLLVM|NVHPC")
+  # IntelLLVM|NVHPC need Fortran. For other compilers best to leave default.
   set(ffilesystem_linker_lang Fortran)
 endif()
 
