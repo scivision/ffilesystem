@@ -270,7 +270,7 @@ std::string fs_longname(std::string_view in)
 
   std::error_code ec;
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
   std::string out(fs_get_max_path(), '\0');
 // size does not include null terminator
 
@@ -295,7 +295,7 @@ std::string fs_shortname(std::string_view in)
 
   std::error_code ec;
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
   std::string out(fs_get_max_path(), '\0');
 // size does not include null terminator
   if(auto L = GetShortPathNameA(in.data(), out.data(), static_cast<DWORD>(out.size()));

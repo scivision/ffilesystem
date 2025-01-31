@@ -106,7 +106,9 @@ touch
 with_suffix
 )
 
-if(WIN32)
+if(CYGWIN)
+  list(APPEND cpp_tests windows)
+elseif(WIN32)
   list(APPEND cpp_tests windows is_appexec_alias)
 endif()
 

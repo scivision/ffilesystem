@@ -65,7 +65,7 @@ if(p.empty())
 std::cout << "Permissions for " << noread << ": " << p << "\n";
 
 if (p[0] != '-'){
-  if (!fs_is_windows())
+  if (!(fs_is_windows() || fs_is_cygwin()))
     err(noread + " should not have owner read get_permissions()");
 
   std::cerr << "Windows no-read permissions settings don't always work\n";
