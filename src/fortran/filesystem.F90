@@ -17,7 +17,7 @@ is_appexec_alias, &
 is_readable, is_writable, is_reserved, &
 is_empty, &
 is_symlink, read_symlink, create_symlink, &
-exists, &
+is_removable, exists, &
 join, &
 copy_file, mkdir, &
 relative_to, proximate_to, &
@@ -257,6 +257,11 @@ character(kind=C_CHAR), intent(in) :: oldpath(*), newpath(*)
 end function
 
 logical(C_BOOL) function fs_exists(path) bind(C)
+import
+character(kind=C_CHAR), intent(in) :: path(*)
+end function
+
+logical(C_BOOL) function fs_is_removable(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
@@ -775,10 +780,17 @@ end if
 end subroutine
 
 
-logical function exists(path)
+logical function exists(path) result(r)
 !! a file or directory exists
 character(*), intent(in) :: path
-exists = fs_exists(trim(path) // C_NULL_CHAR)
+r = fs_exists(trim(path) // C_NULL_CHAR)
+end function
+
+
+logical function is_removable(path) result(r)
+!! is path removable like a USB drive or CD/DVD/Bluray
+character(*), intent(in) :: path
+r = fs_is_removable(trim(path) // C_NULL_CHAR)
 end function
 
 

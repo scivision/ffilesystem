@@ -159,6 +159,7 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     {"is_file", [](std::string_view a1) { return fs_is_file(a1); }},
     {"is_fifo", [](std::string_view a1) { return fs_is_fifo(a1); }},
     {"is_symlink", [](std::string_view a1) { return fs_is_symlink(a1); }},
+    {"is_removable", [](std::string_view a1) { return fs_is_removable(a1); }},
     {"is_readable", [](std::string_view a1) { return fs_is_readable(a1); }},
     {"is_writable", [](std::string_view a1) { return fs_is_writable(a1); }},
     {"perm", [](std::string_view a1) { return fs_get_permissions(a1); }},

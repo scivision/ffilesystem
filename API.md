@@ -391,6 +391,12 @@ p%is_dir()
 is_dir("my/dir")
 ```
 
+Is the drive removable (USB drive, CD/DVD drive):
+
+```fortran
+is_removable("c:/")
+```
+
 Error stop if directory does not exist
 
 ```fortran
@@ -605,7 +611,7 @@ transform to/from Windows path to Cygwin POSIX path
 ---
 
 Find executable file on environment variable PATH if present.
-Windows must include the ".exe" suffix.
+Windows must include the ".exe" or ".bat" etc. suffix.
 Windows prioritizes CWD.
 Does not resolve path--if Windows CWD or relative path is in PATH, may output relative path.
 Does not expanduser tilde.

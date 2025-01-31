@@ -63,6 +63,7 @@ std::string fs_drop_slash(std::string_view);
 
 bool fs_equivalent(std::string_view, std::string_view);
 
+bool fs_is_removable(std::string_view);
 bool fs_exists(std::string_view);
 
 std::string fs_exe_path();
@@ -311,7 +312,9 @@ bool fs_create_symlink(const char*, const char*);
 size_t fs_read_symlink(const char*, char*, const size_t);
 
 bool fs_mkdir(const char*);
+
 bool fs_exists(const char*);
+bool fs_is_removable(const char*);
 
 bool fs_is_absolute(const char*);
 bool fs_is_case_sensitive(const char*);

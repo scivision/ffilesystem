@@ -298,6 +298,8 @@ bool fs_is_file(const char* path){ return fs_is_file(std::string_view(path)); }
 
 bool fs_is_readable(const char* path){ return fs_is_readable(std::string_view(path)); }
 
+bool fs_is_removable(const char* path){ return fs_is_removable(std::string_view(path)); }
+
 bool fs_is_writable(const char* path){ return fs_is_writable(std::string_view(path)); }
 
 bool fs_create_symlink(const char* target, const char* link){

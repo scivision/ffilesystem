@@ -92,6 +92,41 @@ fs_st_mode(std::string_view path)
 
 
 bool
+fs_is_removable(std::string_view path)
+{
+  // is path a removable device like a USB stick or SD card or CD-ROM, DVD, Blu-ray
+  // not a fixed disk like a hard drive or SSD
+#if defined(_WIN32)
+  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdrivetypea
+  UINT t = GetDriveTypeA(fs_root(path).data());
+  switch (t)
+  {
+    case DRIVE_REMOVABLE:
+    case DRIVE_CDROM:
+      return true;
+    case DRIVE_FIXED:
+    case DRIVE_REMOTE:
+    case DRIVE_RAMDISK:
+      return false;
+    case DRIVE_UNKNOWN:
+    case DRIVE_NO_ROOT_DIR:
+      fs_print_error(path, "is_removable", std::make_error_code(std::errc::no_such_device));
+      return false;
+    default:
+      return false;
+  }
+
+#else
+  // Linux: find the device and check /sys/block/*/removable == 1
+  // macOS: check /Volumes/*/ for a removable device
+  fs_print_error(path, "is_removable", std::make_error_code(std::errc::function_not_supported));
+#endif
+
+  return false;
+}
+
+
+bool
 fs_exists(std::string_view path)
 {
   // fs_exists() is true even if path is non-readable
