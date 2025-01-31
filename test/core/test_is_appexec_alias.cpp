@@ -20,23 +20,34 @@ std::string path;
 if (argc > 1)
   path = argv[1];
 else {
-  const std::string appdir = fs_user_config_dir() + "/Microsoft";
+  const std::string confdir = fs_user_config_dir();
+  if(confdir.empty())
+    err("didn't find a User Config directory to test");
+
+  std::string appdir = confdir + "/Microsoft/WindowsApps";
+  if (!fs_is_dir(appdir))
+    err("didn't find an App Execution Alias directory to test");
+
   std::cout << "App Execution Alias directory: " << appdir << "\n";
 
-  std::string s = fs_which("wt.exe");
-  if (!s.empty() && fs_is_subdir(s, appdir))
-    path = s;
+  for (const auto& exe : {"wt.exe", "winget.exe", "wsl.exe", "bash.exe"}){
+    path = fs_which(exe, appdir);
+    if (!path.empty())
+      break;
+  }
 
-  std::cout << "which: " << s << "\n";
-
-  if(path.empty())
-    skip("didn't find any App Execution Alias to test");
+  if(path.empty()){
+    if (fs_getenv("CI") == "true")
+      skip("didn't find an App Execution Alias to test");
+    else
+      err("didn't find an App Execution Alias to test");
+  }
 }
 
 std::cout << "Testing fs_is_appexec_alias(" << path << ")\n";
 
 if (!fs_is_appexec_alias(path))
-  err("fs_is_appexec_alias(" + std::string(path) + ") was not an App Execution Alias");
+  err("fs_is_appexec_alias(" + std::string(path) + ") was not detected as an App Execution Alias");
 
 ok_msg("fs_is_appexec_alias(" + std::string(path) + ")");
 
