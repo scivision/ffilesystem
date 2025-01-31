@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include <algorithm> // for std::move
 #include <string>
-#include <string_view>
 #include <vector>
 #include <tuple>
 #include <iterator> // for std::back_inserter
@@ -15,7 +14,8 @@ int main() {
 
 int fail = 0;
 
-std::vector<std::tuple<std::string_view, std::string_view, std::string_view>>
+// string_view wouldn't allow modifying MSVC-like compilers, so use string
+std::vector<std::tuple<std::string, std::string, std::string>>
 tests = {{"", "", "."},
     {"Hello", "Hello", "."},
     {"Hello", "Hello/", "."},
@@ -34,19 +34,26 @@ tests = {{"", "", "."},
     {"./a/b", "./a/c", "../c"}
 };
 
-std::vector<std::tuple<std::string_view, std::string_view, std::string_view>> tos;
+std::vector<std::tuple<std::string, std::string, std::string>> tos;
 
 if(fs_is_windows()){
-tos = {
-    {"C:/", "C:/a/b", "a/b"},
-    {"C:/a/b", "C:/a/b", "."},
-    {"C:/a/b", "C:/a", ".."},
-    {"C:/a", "D:/a", ""}
-};
+  std::string c = fs_getenv("SYSTEMDRIVE");
+  std::cout << "SYSTEMDRIVE: " << c << " length " << c.length() << "\n";
+
+  if (c.length() == 2){
+    tos = {
+        {c+"/", c+"/a/b", "a/b"},
+        {c+"/a/b", c+"/a/b", "."},
+        {c+"/a/b", c+"/a", ".."},
+        // {c+"/a", "b", ""} //  ambiguous with Clang/Flang ARM MinGW <filesystem>
+    };
+  } else {
+    std::cerr << "Warning: SYSTEMDRIVE not set, skipping tests\n";
+  }
 // NOTE: on Windows, if a path is real, finalPath is used, which makes drive letters upper case.
 
 } else {
-tos = {
+  tos = {
     {"", "a", "a"},
     {"/", "/", "."},
     {"Hello", "Hello", "."},
@@ -55,7 +62,7 @@ tos = {
     {"a/b", "c/d", "../../c/d"},
     {"c", "a/b", "../a/b"},
     {"a/b", "a/c", "../c"}
-};
+  };
 // NOTE: use relative non-existing paths, as on macOS AppleClang, the <filesystem> gives incorrect results on non-existing absolute paths,
 // Which don't make sense anyway.
 
