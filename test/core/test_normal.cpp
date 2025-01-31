@@ -72,13 +72,13 @@ int main() {
 // some tests from https://github.com/gulrak/filesystem/blob/b1982f06c84f08a99fb90bac43c2d03712efe921/test/filesystem_test.cpp#L950
 
 if(fs_is_windows()){
-    test_cases.emplace_back("\\/\\///\\/", "/");
-    test_cases.emplace_back("a/b/..\\//..///\\/../c\\\\/", "../c");
-    test_cases.emplace_back("..a/b/..\\//..///\\/../c\\\\/", "../c");
-    test_cases.emplace_back("..\\" , "..");
-    test_cases.emplace_back("c:\\", "c:/");
-    test_cases.emplace_back("c:\\\\", "c:/");
-    test_cases.emplace_back("c:\\\\a/b/../", "c:/a");
+    test_cases.emplace_back(R"(\/\///\/)", "/");
+    test_cases.emplace_back(R"(a/b/..\//..///\/../c\\/)", "../c");
+    test_cases.emplace_back(R"(..a/b/..\//..///\/../c\\/)", "../c");
+    test_cases.emplace_back(R"(..\)" , "..");
+    test_cases.emplace_back(R"(c:\)", "c:/");
+    test_cases.emplace_back(R"(c:\\)", "c:/");
+    test_cases.emplace_back(R"(c:\a/b/../)", "c:/a");
 }
 
     for (const auto& [input, expected] : test_cases) {
