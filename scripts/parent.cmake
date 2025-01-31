@@ -15,6 +15,7 @@ if(fscli)
 endif()
 
 # find_package(Matlab COMPONENTS MAIN_PROGRAM)  # requires Project role due to add_library()
+find_program(Matlab_EXECUTABLE NAMES matlab HINTS $ENV{Matlab_ROOT})
 
 # set(CMAKE_EXECUTE_PROCESS_COMMAND_ECHO STDOUT)
 
