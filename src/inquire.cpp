@@ -21,7 +21,7 @@
 
 #if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
-#elif !defined(_MSC_VER)
+#elif !defined(_WIN32)
 #include <unistd.h>
 #endif
 
@@ -38,24 +38,29 @@ bool fs_win32_is_type(std::string_view path, const DWORD type){
 
   std::error_code ec;
 
-  HANDLE h = CreateFileA(path.data(), GENERIC_READ | GENERIC_WRITE, 0,
-              nullptr, OPEN_EXISTING, 0, nullptr);
+// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
+  HANDLE h = CreateFileA(path.data(), 0, 0, nullptr, OPEN_EXISTING, 0, nullptr);
 
-  if(h == INVALID_HANDLE_VALUE) {
-    ec = std::make_error_code(std::errc::no_such_file_or_directory);
-  } else {
-// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
-    DWORD t = GetFileType(h);
-    if (!CloseHandle(h))
-      ec = std::make_error_code(std::errc::io_error);
-
+  if(h == INVALID_HANDLE_VALUE){
     DWORD err = GetLastError();
-    if (t == FILE_TYPE_UNKNOWN && err != NO_ERROR)
-      ec = std::make_error_code(std::errc::io_error);
+    switch (err) {
+      case ERROR_CANT_ACCESS_FILE: case ERROR_FILE_NOT_FOUND: case ERROR_PATH_NOT_FOUND: case ERROR_SUCCESS:
+        return false;
+      default:
+        ec = std::make_error_code(std::errc::io_error);
+    }
 
-    if (!ec)
-      return t == type;
+    fs_print_error(path, "win32_is_type");
+    return false;
   }
+
+// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
+  DWORD t = GetFileType(h);
+  if (!CloseHandle(h))
+    ec = std::make_error_code(std::errc::io_error);
+
+  if (!ec)
+    return t == type;
 
   fs_print_error(path, "win32_is_type", ec);
   return false;
@@ -87,8 +92,7 @@ fs_st_mode(std::string_view path)
     return s.stx_mode;
 #else
 // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions
-  if(struct stat s;
-      !stat(path.data(), &s))
+  if(struct stat s; !stat(path.data(), &s))
     return s.st_mode;
 #endif
   // fs_print_error(path, "st_mode");
@@ -137,21 +141,21 @@ fs_exists(std::string_view path)
   // fs_exists() is true even if path is non-readable
   // this is like Python pathlib.Path.exists()
   // unlike kwSys:SystemTools:FileExists which uses R_OK instead of F_OK like this project.
-  // MSVC / MinGW std::filesystem::exists and _access_s don't detect App Execution Aliases
 
   bool ok;
 #if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
-  ok = (std::filesystem::exists(path, ec) && !ec);
-#elif defined(_MSC_VER)
-  // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
-  ok = _access_s(path.data(), 0) == 0;
+  ok = (std::filesystem::exists(path, ec) && !ec) ||
+        (fs_is_msvc() && fs_is_appexec_alias(path));
+#elif defined(_WIN32)
+  WIN32_FILE_ATTRIBUTE_DATA fad;
+  ok = GetFileAttributesExA(path.data(), GetFileExInfoStandard, &fad);
 #else
   // unistd.h
   ok = !access(path.data(), F_OK);
 #endif
 
-  return ok || (fs_is_windows() && fs_is_appexec_alias(path));
+  return ok;
 }
 
 
@@ -166,10 +170,10 @@ fs_is_dir(std::string_view path)
   std::error_code ec;
   ok = std::filesystem::is_directory(path, ec) && !ec;
 #elif defined(_WIN32)
-// stat() & S_IFDIR works on Windows, but we use GetFileAttributesA for didactic reasons
-// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesa
-  const DWORD attr = GetFileAttributesA(path.data());
-  ok = attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
+// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesexa
+  WIN32_FILE_ATTRIBUTE_DATA fad;
+  ok = GetFileAttributesExA(path.data(), GetFileExInfoStandard, &fad) &&
+       (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 #else
   ok = S_ISDIR(fs_st_mode(path));
 #endif
@@ -183,18 +187,22 @@ fs_is_file(std::string_view path)
 {
   // is path a regular file or a symlink to a regular file.
   // not a directory, device, or symlink to a directory.
-  // MSVC / MinGW std::filesystem::is_regular_file and stat() don't detect App Execution Aliases
+  // stat() doesn't detect App Execution Aliases
+  // AppExec Alias have FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_ARCHIVE
+  // but need to check the reparse point data for IO_REPARSE_TAG_APPEXECLINK
 
   bool ok;
 #if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
-  ok = std::filesystem::is_regular_file(path, ec) && !ec;
+  ok = (std::filesystem::is_regular_file(path, ec) && !ec) ||
+        (fs_is_msvc() && fs_is_appexec_alias(path));
+#elif defined(_WIN32)
+  ok = fs_win32_is_type(path, FILE_TYPE_DISK) || fs_is_appexec_alias(path);
 #else
-  ok = fs_st_mode(path) & S_IFREG;
-  // S_ISREG not available with MSVC
+  ok = S_ISREG(fs_st_mode(path));
 #endif
 
-  return ok || (fs_is_windows() && fs_is_appexec_alias(path));
+  return ok;
 }
 
 
@@ -342,7 +350,7 @@ bool fs_is_writable(std::string_view path)
 #endif
 
   return (s.permissions() & (owner_write | group_write | others_write)) != none;
-#elif defined(_MSC_VER)
+#elif defined(_WIN32)
   // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
   return !_access_s(path.data(), 2);
 #else
