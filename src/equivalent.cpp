@@ -20,6 +20,7 @@
 
 #endif
 
+
 bool fs_equivalent(std::string_view path1, std::string_view path2)
 {
   // non-existent paths are not equivalent

@@ -20,31 +20,20 @@
 
 std::string fs_getenv(std::string_view name)
 {
+  // convenience function to get environment variable without needing to check for nullptr
   // don't emit error because sometimes we just check if envvar is defined
 
-#if defined(_MSC_VER)
-    std::size_t L;
-    getenv_s(&L, nullptr, 0, name.data());
-    if (L == 0)
-      return {};
+  if (auto buf = std::getenv(name.data()); buf)
+    return buf;
 
-    std::string buf(L, '\0');
-    getenv_s(&L, &buf[0], L, name.data());
-    buf.resize(L - 1); // remove the null terminator
-#else
-    auto buf = std::getenv(name.data());
-    if(!buf)
-      return {};
-#endif
-
-  return buf;
+  return {};
 }
 
 
 bool fs_setenv(std::string_view name, std::string_view value)
 {
 
-#ifdef _WIN32
+#if defined(_WIN32)
   // SetEnvironmentVariable returned OK but set blank values
   // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/putenv-wputenv
 
@@ -59,6 +48,7 @@ bool fs_setenv(std::string_view name, std::string_view value)
   fs_print_error(name, "setenv");
   return false;
 }
+
 
 std::string fs_user_config_dir()
 {
@@ -78,14 +68,16 @@ std::string fs_user_config_dir()
   return {};
 
 #else
-  std::string xdg = fs_getenv("XDG_CONFIG_HOME");
-  if(!xdg.empty())
-    return xdg;
+  std::string home;
 
-  std::string home = fs_get_homedir();
+  home = fs_getenv("XDG_CONFIG_HOME");
+  if(!home.empty())
+    return home;
+
+  home = fs_get_homedir();
   if(home.empty())
     return {};
 
-  return home + "/" + ".config";
+  return home + "/.config";
 #endif
 }
