@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef _MSC_VER
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #else
@@ -37,6 +37,20 @@ std::uintmax_t fs_file_size(std::string_view path)
 #ifdef HAVE_CXX_FILESYSTEM
   if(auto s = std::filesystem::file_size(path, ec); !ec)  FFS_LIKELY
     return s;
+#elif defined(_WIN32)
+  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfilesizeex
+  if (HANDLE h = CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+      h != INVALID_HANDLE_VALUE)
+  {
+    LARGE_INTEGER size;
+    BOOL ok = GetFileSizeEx(h, &size);
+    CloseHandle(h);
+
+    if (ok)  FFS_LIKELY
+      return size.QuadPart;
+  } else {
+    ec = std::make_error_code(std::errc::no_such_file_or_directory);
+  }
 #elif defined(STATX_SIZE) && defined(USE_STATX)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
   if (fs_trace) std::cout << "TRACE: statx() file_size " << path << "\n";
@@ -44,8 +58,7 @@ std::uintmax_t fs_file_size(std::string_view path)
   if(statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_SIZE, &s) == 0) FFS_LIKELY
     return s.stx_size;
 #else
-  if (struct stat s;
-        !stat(path.data(), &s))  FFS_LIKELY
+  if (struct stat s; !stat(path.data(), &s))  FFS_LIKELY
     return s.st_size;
 #endif
 
@@ -70,7 +83,7 @@ bool fs_is_empty(std::string_view path)
     return fs_file_size(path) == 0 && fs_is_file(path);
 
   // directory empty
-#ifdef _MSC_VER
+#if defined(_WIN32)
   // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findfirstfilea
   WIN32_FIND_DATAA ffd;
   HANDLE hFind = FindFirstFileA((std::string(path) + "/*").data(), &ffd);
