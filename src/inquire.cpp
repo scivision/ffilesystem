@@ -256,9 +256,9 @@ bool fs_is_exe(std::string_view path)
 #if defined(_WIN32)
   // on Windows, std::filesystem isn't well-suited for executable file detection
   // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getbinarytypea
-  // GetBinaryTypeA(path.data(), nullptr) != 0 crashes with -1073741819 on MinGW GCC 14.2.0
   // MSVC, Windows oneAPI need is_appexec_alias
-  return (fs_st_mode(path) & _S_IEXEC) || fs_is_appexec_alias(path);
+  DWORD t;
+  return (GetBinaryTypeA(path.data(), &t) != 0) || fs_is_appexec_alias(path);
 
 #elif defined(HAVE_CXX_FILESYSTEM)
 
