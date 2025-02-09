@@ -48,7 +48,9 @@ fs_remove(noexe);
 // chmod(true)
 fs_touch(exe);
 if (!fs_is_file(exe))
-  err("test_exe: " + exe + " is not a file.");
+  err("test_exe: " + exe + " is not an executable file.");
+if (fs_is_executable_binary(exe))
+  err("test_exe: " + exe + " is not an executable binary.");
 
 p = fs_get_permissions(exe);
 if(p.empty())
@@ -156,6 +158,9 @@ if(self.empty())
 
 if (!fs_is_exe(self))
   err("test_exe: " + self + " should be executable");
+
+if (!fs_is_executable_binary(self))
+  err("test_exe: " + self + " should be an executable binary");
 
 ok_msg("is_exe C++");
 

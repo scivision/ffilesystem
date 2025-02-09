@@ -113,7 +113,10 @@ bool fs_is_case_sensitive(std::string_view);
 bool fs_is_char_device(std::string_view);
 bool fs_is_dir(std::string_view);
 bool fs_is_empty(std::string_view);
+
 bool fs_is_exe(std::string_view);
+bool fs_is_executable_binary(std::string_view);
+
 bool fs_is_fifo(std::string_view);
 bool fs_is_file(std::string_view);
 bool fs_is_prefix(std::string_view, std::string_view);
@@ -324,7 +327,10 @@ bool fs_is_fifo(const char*);
 
 bool fs_is_dir(const char*);
 bool fs_is_file(const char*);
+
 bool fs_is_exe(const char*);
+bool fs_is_executable_binary(const char*);
+
 bool fs_is_readable(const char*);
 bool fs_is_writable(const char*);
 bool fs_is_reserved(const char*);

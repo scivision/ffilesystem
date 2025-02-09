@@ -55,6 +55,7 @@ COMM_SRCS = \
 	$(comdir)equivalent.cpp \
 	$(comdir)exepath.cpp \
 	$(comdir)env.cpp \
+	$(comdir)executable.cpp \
 	$(comdir)lang.cpp \
 	$(comdir)lexical.cpp \
 	$(comdir)libpath.cpp \

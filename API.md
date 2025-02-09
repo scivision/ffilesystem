@@ -12,7 +12,7 @@ integer :: m
 m = max_path()
 ```
 
-The maximium length of path segments are also limited, typically to 255 characters.
+The maximum length of path segments are also limited, typically to 255 characters.
 That is, the overall path might be allowed to be thousands of characters long, but each segment is limited individually as well.
 
 ```fortran
@@ -225,7 +225,7 @@ call create_symlink(target, link)
 These methods emit a new "path_t" object.
 It can be a new path_t object, or reassign to the existing path_t object.
 
-On Windows, force file separators (if any) to Posix "/"
+On Windows, force file separators (if any) to POSIX "/"
 
 ```fortran
 p = path_t('my\path')
@@ -257,7 +257,7 @@ Realpath(): usually users will want resolve() or canonical() instead
 character(:), allocatable :: realpath(".././mypath")
 ```
 
-Resolve path. This means to absoluteize, canonicalize, resolving symbolic links.
+Resolve path. This means to absolutize, canonicalize, resolving symbolic links.
 
 * "strict" if true required the path to exist (default false).
 * "expand_tilde" if true expands the tilde "~" (default true).
@@ -281,7 +281,7 @@ p%path() == "<absolute path of current working directory>/b"
 
 Canonicalize path. This means to normalize, resolve symbolic links, resolve relative paths.
 For case-insensitive filesystems, the path's actual case is returned.
-If the path doesn't exist and no absolute path is given, the path is resolved as far as possible with existing path components, and then ".", ".." are lexiographically resolved.
+If the path doesn't exist and no absolute path is given, the path is resolved as far as possible with existing path components, and then ".", ".." are lexicographically resolved.
 The non-existing path may be absolutized based on the current working directory depending on the system (macOS does this).
 
 * "strict" if true required the path to exist (default false).
@@ -522,9 +522,10 @@ same_file(path1, path2)
 
 ## file permissions
 
-Is path (file or directory) executable by the user.
-For non-Windows systems, if the path does not have read permission, it still may be executable.
-On Windows, a readable path is considered executable.
+Is file (script or binary executable) executable by the user.
+
+* Windows: readable file with a path suffix in environment variable PATHEXT (at least, .com|.exe|.bat|.cmd) is executable.
+* non-Windows: executable permission bits for the owner, group, or others file determine if it is executable.
 
 ```fortran
 !! logical
@@ -532,6 +533,17 @@ On Windows, a readable path is considered executable.
 p%is_exe()
 ! or
 is_exe("my/file.exe")
+```
+
+---
+
+Is file detected as a binary executable AND readable.
+
+* Windows: GetBinaryType() is used to determine if a file is a binary executable.
+* non-Windows: magic number of the file is checked, which is a heuristic and may not be 100% accurate.
+
+```fortran
+is_executable_binary("my/file.exe")
 ```
 
 ---
@@ -730,7 +742,7 @@ expanduser("~/my/path")   !< "/home/user/my/path" on Unix, "<root>/Users/user/my
 ---
 
 Canonicalize path. This means to normalize, resolve symbolic links, and resolve relative paths when the path exists.
-If the path doesn't exist and no absolute path is given, the path is resolved as far as possible with existing path components, and then ".", ".." are lexiographically resolved.
+If the path doesn't exist and no absolute path is given, the path is resolved as far as possible with existing path components, and then ".", ".." are lexicographically resolved.
 
 * "strict" if true required the path to exist (default false).
 * "expand_tilde" if true expands the tilde "~" (default true).
@@ -749,7 +761,7 @@ canonical("../b")
 
 Resolve path.
 First attempts to resolve an existing path.
-If that fails, the path is resolved as far as possible with existing path components, and then ".", ".." are lexiographically resolved.
+If that fails, the path is resolved as far as possible with existing path components, and then ".", ".." are lexicographically resolved.
 
 * "strict" if true required the path to exist (default false).
 * "expand_tilde" if true expands the tilde "~" (default true).

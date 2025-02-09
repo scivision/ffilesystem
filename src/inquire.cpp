@@ -245,47 +245,6 @@ bool fs_is_char_device(std::string_view path)
 }
 
 
-bool fs_is_exe(std::string_view path)
-{
-  // is path (file or symlink to a file) executable by the user
-  // directories are not considered executable--use fs_get_permissions() for that.
-
-  if(!fs_is_file(path))
-    return false;
-
-#if defined(_WIN32)
-  // on Windows, std::filesystem isn't well-suited for executable file detection
-  // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getbinarytypea
-  // MSVC, Windows oneAPI need is_appexec_alias
-  DWORD t;
-  return (GetBinaryTypeA(path.data(), &t) != 0) || fs_is_appexec_alias(path);
-
-#elif defined(HAVE_CXX_FILESYSTEM)
-
-#if defined(__cpp_using_enum)  // C++20
-  using enum std::filesystem::perms;
-#else
-  constexpr std::filesystem::perms none = std::filesystem::perms::none;
-  constexpr std::filesystem::perms others_exec = std::filesystem::perms::others_exec;
-  constexpr std::filesystem::perms group_exec = std::filesystem::perms::group_exec;
-  constexpr std::filesystem::perms owner_exec = std::filesystem::perms::owner_exec;
-#endif
-
-  std::error_code ec;
-  const auto s = std::filesystem::status(path, ec);
-  if(ec){
-    fs_print_error(path, "is_exe", ec);
-    return false;
-  }
-
-  return (s.permissions() & (owner_exec | group_exec | others_exec)) != none;
-
-#else
-  return access(path.data(), X_OK) == 0;
-#endif
-}
-
-
 bool fs_is_readable(std::string_view path)
 {
   // is directory or file readable by the user

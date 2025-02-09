@@ -76,6 +76,7 @@ src/extra/compiler.cpp
 src/extra/cygwin.cpp
 src/equivalent.cpp
 src/env.cpp
+src/executable.cpp
 src/home.cpp
 src/inquire.cpp
 src/lang.cpp

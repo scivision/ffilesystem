@@ -173,6 +173,8 @@ main : do
     print '(L1)', is_file(arg1)
   case ("is_exe")
     print '(L1)', is_exe(arg1)
+  case ("is_exe_bin")
+    print '(L1)', is_executable_binary(arg1)
   case ("is_reserved")
     print '(L1)', is_reserved(arg1)
   case ("is_readable")

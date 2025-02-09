@@ -11,7 +11,8 @@ public :: get_homedir, get_profile_dir, user_config_dir, get_username, hostname,
  canonical, resolve, realpath, fs_getpid, &
  get_cwd, set_cwd, which
 public :: normal, expanduser, as_posix, &
-is_absolute, is_char_device, is_fifo, is_case_sensitive, is_dir, is_file, is_exe, &
+is_absolute, is_char_device, is_fifo, is_case_sensitive, is_dir, is_file, &
+is_exe, is_executable_binary, &
 is_prefix, is_subdir, &
 is_appexec_alias, &
 is_readable, is_writable, is_reserved, &
@@ -403,6 +404,11 @@ character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
 logical(c_bool) function fs_is_exe(path) bind(C)
+import
+character(kind=C_CHAR), intent(in) :: path(*)
+end function
+
+logical(C_BOOL) function fs_is_executable_binary(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
@@ -814,11 +820,11 @@ include "ifc0b.inc"
 end function
 
 
-logical function is_safe_name(filename)
+logical function is_safe_name(filename) result(r)
 !! is filename a safe name for this filesystem
 character(*), intent(in) :: filename
 
-is_safe_name = fs_is_safe_name(trim(filename) // C_NULL_CHAR)
+r = fs_is_safe_name(trim(filename) // C_NULL_CHAR)
 end function
 
 
@@ -903,20 +909,28 @@ r = fs_is_case_sensitive(trim(path) // C_NULL_CHAR)
 end function
 
 
-logical function is_dir(path)
+logical function is_dir(path) result(r)
 !! .true.: "path" is a directory OR symlink pointing to a directory
 !! .false.: "path" is a broken symlink, does not exist, or is some other type of filesystem entity
 character(*), intent(in) :: path
 
-is_dir = fs_is_dir(trim(path) // C_NULL_CHAR)
+r = fs_is_dir(trim(path) // C_NULL_CHAR)
 end function
 
 
-logical function is_exe(path)
+logical function is_exe(path) result(r)
 !! is "path" executable?
 character(*), intent(in) :: path
 
-is_exe = fs_is_exe(trim(path) // C_NULL_CHAR)
+r = fs_is_exe(trim(path) // C_NULL_CHAR)
+end function
+
+
+logical function is_executable_binary(path) result(r)
+!! is "path" an executable binary?
+character(*), intent(in) :: path
+
+r = fs_is_executable_binary(trim(path) // C_NULL_CHAR)
 end function
 
 
@@ -936,12 +950,12 @@ r = fs_is_writable(trim(path) // C_NULL_CHAR)
 end function
 
 
-logical function is_file(path)
+logical function is_file(path) result(r)
 !! .true.: "path" is a file OR symlink pointing to a file
 !! .false.: "path" is a directory, broken symlink, or does not exist
 character(*), intent(in) :: path
 
-is_file = fs_is_file(trim(path) // C_NULL_CHAR)
+r = fs_is_file(trim(path) // C_NULL_CHAR)
 end function
 
 

@@ -292,6 +292,8 @@ bool fs_is_dir(const char* path){ return fs_is_dir(std::string_view(path)); }
 
 bool fs_is_exe(const char* path){ return fs_is_exe(std::string_view(path)); }
 
+bool fs_is_executable_binary(const char* path){ return fs_is_executable_binary(std::string_view(path)); }
+
 bool fs_exists(const char* path){ return fs_exists(std::string_view(path)); }
 
 bool fs_is_file(const char* path){ return fs_is_file(std::string_view(path)); }
