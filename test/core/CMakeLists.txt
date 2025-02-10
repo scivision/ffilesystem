@@ -70,6 +70,7 @@ set(cpp_tests
 absolute
 canonical
 copyfile
+drop_slash
 env
 equivalent
 expanduser

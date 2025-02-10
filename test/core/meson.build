@@ -47,6 +47,7 @@ cpp_core = [
 'absolute',
 'canonical',
 'copyfile',
+'drop_slash',
 'env',
 'equivalent',
 'expanduser',
