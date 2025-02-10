@@ -42,10 +42,12 @@ bool fs_is_executable_binary(std::string_view path)
 #else
   // https://github.com/jart/cosmopolitan/blob/master/ape/specification.md
 
-  if(std::ifstream f{path.data(), std::ios::binary}){
-
   std::array<char, 4> magic;
-  if(f.read(magic.data(), 4).gcount() != 4)
+
+  if(std::ifstream f{path.data(), std::ios::binary}){
+    if(f.read(magic.data(), 4).gcount() != 4)
+      return false;
+  } else
     return false;
 
 #if defined __APPLE__
@@ -73,9 +75,6 @@ bool fs_is_executable_binary(std::string_view path)
     ok = magic[0] == 0x7f && magic[1] == 'E' && magic[2] == 'L' && magic[3] == 'F';
   // does not consider PE or COFF formats.
 #endif
-  }
-  else
-    fs_print_error(path, "is_executable_binary");
 #endif
 
   return ok;
