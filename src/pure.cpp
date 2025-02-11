@@ -6,8 +6,8 @@
 
 #ifdef HAVE_CXX_FILESYSTEM
 #include <filesystem>
-#else
-#include <cctype> // std::isalpha
+#elif defined(_WIN32)
+#include <cstdlib> // _splitpath_s, _MAX_DRIVE
 #endif
 
 #include "ffilesystem.h"
@@ -88,9 +88,6 @@ std::string fs_root(std::string_view path)
 #ifdef HAVE_CXX_FILESYSTEM
   return std::filesystem::path(path).root_path().generic_string();
 #else
-  if(path.empty())
-    return {};
-
   const std::string r = fs_root_name(path);
   if (r.empty())
     return fs_slash_first(path) ? "/" : "";
@@ -100,16 +97,21 @@ std::string fs_root(std::string_view path)
 }
 
 
-std::string fs_root_name(std::string_view path)
+std::string fs_root_name(
+#if __has_cpp_attribute(maybe_unused)
+[[maybe_unused]]
+#endif
+  std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
   return std::filesystem::path(path).root_name().string();
-#else
-  if(fs_is_windows() && path.length() > 1 && path[1] == ':' && std::isalpha(path.front()))
-    return std::string(path.substr(0, 2));
-
-  return {};
+#elif defined(_WIN32)
+  char drive[_MAX_DRIVE];
+// https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/splitpath-s-wsplitpath-s
+  if(_splitpath_s(path.data(), drive, _MAX_DRIVE, nullptr, 0, nullptr, 0, nullptr, 0) == 0)
+    return drive;
 #endif
+  return {};
 }
 
 
