@@ -18,6 +18,10 @@ on:
       - "!concepts/**"
   workflow_dispatch:
 
+# avoid wasted runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
 
@@ -40,7 +44,8 @@ jobs:
     steps:
 
     - uses: actions/checkout@v4
-    - uses: ./.github/workflows/composite-action
+    - uses: ./.github/workflows/composite-ninja
+    - uses: ./.github/workflows/composite-build
 
 
   linux-flang:
@@ -61,8 +66,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
-    - uses: ./.github/workflows/composite-action
+    - uses: ./.github/workflows/composite-ninja
+    - uses: ./.github/workflows/composite-build
 
 
   gcc-9-10-11:
@@ -88,11 +93,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - uses: ./.github/workflows/composite-action
+    - uses: ./.github/workflows/composite-ninja
+    - uses: ./.github/workflows/composite-build
 
 
   gcc-7-8:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:20.04
+      env:
+        DEBIAN_FRONTEND: noninteractive
+
     timeout-minutes: 15
 
     strategy:
@@ -111,14 +122,25 @@ jobs:
       CXX: g++-${{ matrix.gcc-version }}
       FC: gfortran-${{ matrix.gcc-version }}
 
+
     steps:
     - name: install compilers
       run: |
-        sudo apt update
-        sudo apt install --no-install-recommends ${{ env.CC }} ${{ env.CXX }} ${{ env.FC }}
+        apt update -y
+        apt install -y --no-install-recommends ca-certificates gpg curl ninja-build ${{ env.CC }} ${{ env.CXX }} ${{ env.FC }}
+
+    - name: install CMake
+      run: |
+        curl -s https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+        echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ focal main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null
+        apt-get update
+        test -f /usr/share/doc/kitware-archive-keyring/copyright || rm /usr/share/keyrings/kitware-archive-keyring.gpg
+        apt-get install --no-install-recommends -y kitware-archive-keyring
+        apt-get install --no-install-recommends -y cmake
 
     - uses: actions/checkout@v4
-    - uses: ./.github/workflows/composite-action
+
+    - uses: ./.github/workflows/composite-build
 
 
   cxx-std:
@@ -140,7 +162,8 @@ jobs:
     steps:
 
     - uses: actions/checkout@v4
-    - uses: ./.github/workflows/composite-action
+    - uses: ./.github/workflows/composite-ninja
+    - uses: ./.github/workflows/composite-build
 
 
   valgrind-memory:
@@ -247,7 +270,8 @@ jobs:
       run: brew install flang
 
     - uses: actions/checkout@v4
-    - uses: ./.github/workflows/composite-action
+    - uses: ./.github/workflows/composite-ninja
+    - uses: ./.github/workflows/composite-build
 
 
   cmake-older:
