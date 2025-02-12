@@ -7,21 +7,21 @@
 
 #ifdef HAVE_CXX_FILESYSTEM
 #include <filesystem>
+#elif defined(_WIN32)
+#include <cstdlib> // _splitpath_s, _MAX_*
 #else
-#include <vector>
+#include <libgen.h> // dirname
 #endif
 
 
 std::string fs_parent(std::string_view path)
 {
 
-  if(path.empty())
-    return ".";
-
-  std::string p = fs_drop_slash(path);
+  std::string p(path);
 
 #ifdef HAVE_CXX_FILESYSTEM
-  // have to drop_slash on input to get expected parent path -- necessary for AppleClang
+  p = fs_drop_slash(p);
+  // have to drop trailing slash to get expected parent path -- necessary for AppleClang
   p = std::filesystem::path(p).parent_path().generic_string();
 
   if(fs_trace) std::cout << "TRACE:parent(" << path << ") => " << p << std::endl;
@@ -32,52 +32,24 @@ std::string fs_parent(std::string_view path)
 // Otherwise (for POSIX-like systems other than Cygwin), the implementation-defined root-name
 // is an unspecified string which does not appear in any pathnames.
 
+#elif defined(_WIN32)
+  p = fs_drop_slash(p);
+  std::string dir(_MAX_DIR, '\0');
+  std::string drive(_MAX_DRIVE, '\0');
+  if(_splitpath_s(p.data(), drive.data(), _MAX_DRIVE, dir.data(), _MAX_DIR, nullptr, 0, nullptr, 0) != 0)
+    return {};
+
+  p = fs_drop_slash(fs_trim(drive) + fs_trim(dir));
 #else
-
-  if(fs_trace) std::cout << "TRACE:parent(" << path << ") drop_slash => " << p << std::endl;
-
-  // don't fully normalize to preserve possible symlinks above parent
-  std::vector<std::string> parts = fs_split(p);
-  p.clear();
-
-  if(parts.empty()){
-    if (!path.empty() && path.front() == '/')
-      return "/";
-    else
-      return ".";
-  }
-
-  if (fs_is_windows() && parts.size() == 1 && !fs_root_name(parts[0]).empty())
-    return fs_root(path);
-
-  // drop last part
-  parts.pop_back();
-
-  // rebuild path
-  // preserve leading slash
-  if (path.front() == '/')
-    p.push_back('/');
-
-  for (const auto& part : parts){
-    if(!part.empty())
-      p.append(part).push_back('/');
-  }
-
-  if(p.length() > 1 && p.back() == '/')
-    p.pop_back();
-
+  char* d = dirname(p.data());
+  return d ? d : "";
 #endif
 
-  // handle "/" and other no parent cases
-  if (p.empty()){
-    if (!path.empty() && path.front() == '/')
-      return "/";
-    else
-      return ".";
-  }
+  if (p.empty())
+    return ".";
 
-  // need this for <filesystem> and our method to make x: x:/
-  if (fs_is_windows() && p.length() == 2 && !fs_root_name(p).empty())
+  // need this for <filesystem> or _splitpath_s to make x: x:/
+  if (fs_is_windows() && !p.empty() && p == fs_root_name(p))
     p.push_back('/');
 
   return p;

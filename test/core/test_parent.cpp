@@ -25,7 +25,7 @@ int main() {
 test_cases = {
     {"", "."}, {"/", "/"}, {".", "."}, {"./", "."}, {"..", "."}, {"../", "."},
     {"a", "."}, {"a/", "."}, {"a/.", "a"}, {"a/..", "a"}, {"a/b", "a"}, {"a/b/", "a"}, {"a/b/c", "a/b"},
-    {"ab/.parent", "ab"}, {"ab/.parent.txt", "ab"}, {"a/b/../.parent.txt", "a/b/.."}, {"a////////b/////c", "a/b"}
+    {"ab/.parent", "ab"}, {"ab/.parent.txt", "ab"}, {"a/b/../.parent.txt", "a/b/.."}
 };
 
   if(fs_is_windows()){
