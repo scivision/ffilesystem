@@ -16,7 +16,7 @@ std::string fs_relative_to(std::string_view base, std::string_view other)
   // "base" and "other" are treated as weakly canonical paths
 
   std::error_code ec;
-  
+
 #ifdef HAVE_CXX_FILESYSTEM
   std::string r = std::filesystem::relative(other, base, ec).generic_string();
   // this implements
@@ -27,7 +27,7 @@ std::string fs_relative_to(std::string_view base, std::string_view other)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(base, other, "relative", ec);
+  fs_print_error(base, other, __func__, ec);
   return {};
 }
 
@@ -38,7 +38,7 @@ std::string fs_proximate_to(std::string_view base, std::string_view other)
   // "base" and "other" are treated as weakly canonical paths
 
   std::error_code ec;
-  
+
 #ifdef HAVE_CXX_FILESYSTEM
   std::string r = std::filesystem::proximate(other, base, ec).generic_string();
   if(!ec)
@@ -47,6 +47,6 @@ std::string fs_proximate_to(std::string_view base, std::string_view other)
    ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(base, other, "proximate", ec);
+  fs_print_error(base, other, __func__, ec);
   return {};
 }

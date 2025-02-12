@@ -126,7 +126,7 @@ bool fs_is_exe(std::string_view path)
   std::error_code ec;
   const auto s = std::filesystem::status(path, ec);
   if(ec){
-    fs_print_error(path, "is_exe", ec);
+    fs_print_error(path, __func__, ec);
     return false;
   }
 

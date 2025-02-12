@@ -43,6 +43,6 @@ std::string fs_get_tempdir()
 
 #endif
 
-  fs_print_error("", "get_tempdir", ec);
+  fs_print_error("", __func__, ec);
   return {};
 }

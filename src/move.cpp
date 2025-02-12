@@ -46,7 +46,7 @@ fs_remove(std::string_view path)
 
 #endif
 
-  fs_print_error(path, "remove", ec);
+  fs_print_error(path, __func__, ec);
   return false;
 }
 
@@ -69,7 +69,7 @@ fs_rename(std::string_view from, std::string_view to)
 #endif
     return true;
 
-  fs_print_error(from, to, "rename", ec);
+  fs_print_error(from, to, __func__, ec);
   return false;
 
 }

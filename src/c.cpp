@@ -18,7 +18,7 @@ std::string::size_type fs_str2char(std::string_view s, char* result, const std::
   {
     if(fs_trace) std::cerr << "ERROR:Ffs:str2char(" << s << ") output buffer " << buffer_size << " too small for string: " << s << " length " << s.length() << "\n";
 
-    fs_print_error(s, "str2char", std::make_error_code(std::errc::result_out_of_range));
+    fs_print_error(s, __func__, std::make_error_code(std::errc::result_out_of_range));
     return 0;
   }
 
@@ -345,82 +345,82 @@ std::string::size_type fs_with_suffix(const char* path, const char* new_suffix,
 #if !defined(ffilesystem_extra)
 
   std::string fs_cpu_arch(){
-    fs_print_error("", "fs_cpu_arch: not enabled");
+    fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   std::string fs_exe_path(){
-    fs_print_error("", "fs_exepath: not enabled");
+    fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   std::string fs_filesystem_type(std::string_view path){
-    fs_print_error(path, "fs_filesystem_type: not enabled");
+    fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   std::string fs_generate_random_alphanumeric_string(const std::string::size_type n){
-    fs_print_error(std::to_string(n), "fs_generate_random_alphanumeric_string: not enabled");
+    fs_print_error(std::to_string(n), __func__, std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   int fs_getpid(){
-    fs_print_error("", "fs_getpid: not enabled");
+    fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
     return -1;
   }
 
   std::string fs_get_shell(){
-    fs_print_error("", "fs_get_shell: not enabled");
+    fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   std::string fs_hostname(){
-    fs_print_error("", "fs_hostname: not enabled");
+    fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   bool fs_is_admin(){
-    fs_print_error("", "fs_is_admin: not enabled");
+    fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
     return false;
   }
 
   bool fs_is_case_sensitive(std::string_view path){
-    fs_print_error(path, "fs_is_case_sensitive: not enabled");
+    fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
     return false;
   }
 
   bool fs_is_rosetta(){
-    fs_print_error("", "fs_is_rosetta: not enabled");
+    fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
     return false;
   }
 
   int fs_is_wsl(){
-    fs_print_error("", "fs_is_wsl: not enabled");
+    fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
     return -1;
   }
 
   std::string fs_lib_path(){
-    fs_print_error("", "fs_libpath: not enabled");
+    fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   std::string::size_type fs_max_component(std::string_view path){
-    fs_print_error(path, "fs_max_component: not enabled");
+    fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
     return 0;
   }
 
   std::string fs_os_version(){
-    fs_print_error("", "fs_os_version: not enabled");
+    fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   bool fs_stdin_tty(){
-    fs_print_error("", "fs_stdin_tty: not enabled");
+    fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
     return false;
   }
 
   std::string fs_get_terminal(){
-    fs_print_error("", "fs_get_terminal: not enabled");
+    fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 #endif

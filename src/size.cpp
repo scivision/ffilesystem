@@ -62,7 +62,7 @@ std::uintmax_t fs_file_size(std::string_view path)
     return s.st_size;
 #endif
 
-  fs_print_error(path, "file_size", ec);
+  fs_print_error(path, __func__, ec);
   return {};
 }
 
@@ -88,7 +88,7 @@ bool fs_is_empty(std::string_view path)
   WIN32_FIND_DATAA ffd;
   HANDLE hFind = FindFirstFileA((std::string(path) + "/*").data(), &ffd);
   if (hFind == INVALID_HANDLE_VALUE) {
-    fs_print_error(path, "is_empty:FindFirstFile");
+    fs_print_error(path, __func__);
     return false;
   }
 
@@ -150,7 +150,7 @@ bool fs_is_empty(std::string_view path)
 
 #endif
 
-  fs_print_error(path, "is_empty", ec);
+  fs_print_error(path, __func__, ec);
   return false;
 
 }

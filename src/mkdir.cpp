@@ -85,6 +85,6 @@ else {
 
 #endif
 
-  fs_print_error(path, "mkdir", ec);
+  fs_print_error(path, __func__, ec);
   return false;
 }

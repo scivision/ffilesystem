@@ -38,7 +38,7 @@ std::string fs_absolute(std::string_view path, const bool expand_tilde)
   if(!ec) FFS_LIKELY
     return a.generic_string();
 
-  fs_print_error(path, "absolute", ec);
+  fs_print_error(path, __func__, ec);
   return {};
 #else
   std::string a = fs_get_cwd();
