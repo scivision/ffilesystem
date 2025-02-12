@@ -66,11 +66,7 @@ std::cout << "Home directory " << p << "\n";
 if(!fs_is_dir(p))
   err("Fortran: home dir " + p + " does not exist");
 
-if (p.length() != pdir.length())
-  std::cerr << "length of profile dir " << pdir.length() << " != home dir " << p.length() << "\n";
-
-if (p != pdir)
-  err("profile dir " + pdir + " != home dir " + p);
+// NOTE: profiledir does not always (but may) equal homedir in general, for example when root user.
 
 if (p != fs_expanduser("~"))
   err("home dir " + p + " != expanduser('~') " + fs_expanduser("~"));
