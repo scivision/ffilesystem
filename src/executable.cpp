@@ -90,8 +90,6 @@ bool fs_is_exe(std::string_view path)
     return false;
 
 #if defined(_WIN32)
-  // like Python shutil.which() on Windows, consider env var PATHEXT
-  // https://docs.python.org/3/library/shutil.html#shutil.which
   std::string suffix = fs_suffix(path);
   if (suffix.empty())
     return fs_is_executable_binary(path);

@@ -13,7 +13,7 @@
 
 static std::string fs_which_generic(std::string_view name, std::string_view path, const bool find_all)
 {
-  if (fs_is_file(name) && fs_is_exe(name))
+  if (fs_is_exe(name))
     return fs_as_posix(name);
 
   // relative directory component, but path was not a file
