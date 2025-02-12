@@ -33,7 +33,7 @@ runs:
 
   - name: example workflow
     shell: bash
-    run: cmake -S example -B example/build
+    run: cmake -G Ninja -S example -B example/build
 
   - run: cmake --build example/build
     shell: bash
