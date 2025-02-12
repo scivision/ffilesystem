@@ -61,6 +61,6 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
     return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
 #endif
 
-  fs_print_error(path1, path2, "equivalent", ec);
+  fs_print_error(path1, path2, __func__, ec);
   return false;
 }

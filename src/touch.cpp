@@ -14,6 +14,6 @@ bool fs_touch(std::string_view path)
     return true;
   }
 
-  fs_print_error(path, "touch");
+  fs_print_error(path, __func__);
   return false;
 }

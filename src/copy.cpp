@@ -53,7 +53,7 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
 // WORKAROUND: Windows MinGW GCC 11..13, Intel oneAPI Linux: bug with overwrite_existing failing on overwrite
 
   if(overwrite && fs_is_file(dest) && !fs_remove(dest)) FFS_UNLIKELY
-    fs_print_error(dest, "copy_file:remove", std::make_error_code(std::errc::io_error));
+    fs_print_error(dest, __func__, std::make_error_code(std::errc::io_error));
 
   if(std::filesystem::copy_file(source, dest, opt, ec) && !ec) FFS_LIKELY
     return true;
@@ -88,14 +88,14 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
 
   const int rid = open(source.data(), O_RDONLY);
   if (rid == -1) {
-    fs_print_error(source, "copy_file:open");
+    fs_print_error(source, __func__);
     return false;
   }
 
   // leave fstat here to avoid source file race condition
   struct stat  stat;
   if (fstat(rid, &stat) == -1) {
-    fs_print_error(source, "copy_file:fstat");
+    fs_print_error(source, __func__);
     close(rid);
     return false;
   }
@@ -108,7 +108,7 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
 
   const int wid = open(dest.data(), opt, 0644);
   if (wid == -1) {
-    fs_print_error(dest, "copy_file:open");
+    fs_print_error(dest, __func__);
     close(rid);
     return false;
   }
@@ -160,7 +160,7 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
 
 #endif
 
-  fs_print_error(source, dest, "copy_file", ec);
+  fs_print_error(source, dest, __func__, ec);
   return false;
 
 }

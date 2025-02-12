@@ -45,7 +45,7 @@ bool fs_setenv(std::string_view name, std::string_view value)
     return true;
 #endif
 
-  fs_print_error(name, "setenv");
+  fs_print_error(name, __func__);
   return false;
 }
 
@@ -64,7 +64,7 @@ std::string fs_user_config_dir()
   if (!r.empty())  FFS_LIKELY
     return r;
 
-  fs_print_error("", "user_config_dir:SHGetKnownFolderPath");
+  fs_print_error("", __func__);
   return {};
 
 #else

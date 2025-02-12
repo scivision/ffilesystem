@@ -46,7 +46,7 @@ std::uintmax_t fs_space_available(std::string_view path)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(path, "space_available", ec);
+  fs_print_error(path, __func__, ec);
   return {};
 }
 
@@ -75,6 +75,6 @@ std::uintmax_t fs_space_capacity(std::string_view path)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(path, "space_capacity", ec);
+  fs_print_error(path, __func__, ec);
   return {};
 }

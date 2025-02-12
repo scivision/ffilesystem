@@ -50,7 +50,7 @@ bool fs_win32_is_type(std::string_view path, const DWORD type){
         ec = std::make_error_code(std::errc::io_error);
     }
 
-    fs_print_error(path, "win32_is_type");
+    fs_print_error(path, __func__);
     return false;
   }
 
@@ -62,7 +62,7 @@ bool fs_win32_is_type(std::string_view path, const DWORD type){
   if (!ec)
     return t == type;
 
-  fs_print_error(path, "win32_is_type", ec);
+  fs_print_error(path, __func__, ec);
   return false;
 }
 #endif
@@ -95,7 +95,7 @@ fs_st_mode(std::string_view path)
   if(struct stat s; !stat(path.data(), &s))
     return s.st_mode;
 #endif
-  // fs_print_error(path, "st_mode");
+  // fs_print_error(path, __func__);
   return 0;
 }
 
@@ -119,7 +119,7 @@ fs_is_removable(std::string_view path)
       return false;
     case DRIVE_UNKNOWN:
     case DRIVE_NO_ROOT_DIR:
-      fs_print_error(path, "is_removable", std::make_error_code(std::errc::no_such_device));
+      fs_print_error(path, __func__, std::make_error_code(std::errc::no_such_device));
       return false;
     default:
       return false;
@@ -128,7 +128,7 @@ fs_is_removable(std::string_view path)
 #else
   // Linux: find the device and check /sys/block/*/removable == 1
   // macOS: check /Volumes/*/ for a removable device
-  fs_print_error(path, "is_removable", std::make_error_code(std::errc::function_not_supported));
+  fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
 #endif
 
   return false;
@@ -261,7 +261,7 @@ bool fs_is_readable(std::string_view path)
   std::error_code ec;
   const auto s = std::filesystem::status(path, ec);
   if(ec){
-    fs_print_error(path, "is_readable", ec);
+    fs_print_error(path, __func__, ec);
     return false;
   }
 
@@ -292,7 +292,7 @@ bool fs_is_writable(std::string_view path)
   std::error_code ec;
   const auto s = std::filesystem::status(path, ec);
   if(ec){
-    fs_print_error(path, "is_writable", ec);
+    fs_print_error(path, __func__, ec);
     return false;
   }
 
@@ -342,6 +342,6 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 
 #endif
 
-  fs_print_error(path, "hard_link_count", ec);
+  fs_print_error(path, __func__, ec);
   return {};
 }

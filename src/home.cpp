@@ -40,7 +40,7 @@ struct passwd* fs_getpwuid()
 #else
     ""
 #endif
-    , "getpwuid");
+    , __func__);
 #endif
 
   return {};
@@ -87,7 +87,7 @@ std::string fs_get_profile_dir()
     return fs_drop_slash(pw->pw_dir);
 #endif
 
-  fs_print_error("", "get_profile_dir", ec);
+  fs_print_error("", __func__, ec);
   return {};
 }
 
@@ -149,6 +149,6 @@ std::string fs_get_username()
 
 #endif
 
-  fs_print_error("", "get_username");
+  fs_print_error("", __func__);
   return {};
 }

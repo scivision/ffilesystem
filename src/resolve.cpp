@@ -58,7 +58,7 @@ fs_canonical(
 
 #endif
 
-  fs_print_error(path, "canonical", ec);
+  fs_print_error(path, __func__, ec);
   return {};
 }
 
