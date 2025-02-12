@@ -96,9 +96,8 @@ if (p(2:2) == "w") then
     if(.not. is_windows()) error stop
 end if
 
-if(index(p, "w") == 0) then
-  if(is_writable(nowrite)) error stop "is_writable: " // trim(nowrite)//" should not be writable"
-end if
+if(index(p, "w") == 0 .and. .not. is_admin() .and. is_writable(nowrite)) &
+  error stop "is_writable: " // trim(nowrite)//" should not be writable"
 
 if (.not. exists(nowrite)) error stop trim(nowrite)//" should exist"
 
