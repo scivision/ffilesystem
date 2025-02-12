@@ -121,9 +121,6 @@ std::string fs_stem(std::string_view path)
   return std::filesystem::path(path).filename().stem().generic_string();
 #else
   std::string r = fs_file_name(path);
-  if(r.empty())
-    return {};
-
   // handle special case a/..
   if (r == "..")
     return r;
@@ -131,7 +128,7 @@ std::string fs_stem(std::string_view path)
   // find last dot
   if (auto pos = r.find_last_of('.');
         pos != std::string::npos && pos != 0)
-    return std::string(r.substr(0, pos));
+    return r.substr(0, pos);
 
   return r;
 #endif
@@ -144,13 +141,10 @@ std::string fs_suffix(std::string_view path)
   return std::filesystem::path(path).filename().extension().generic_string();
 #else
   const std::string p = fs_file_name(path);
-  if(p.empty())
-    return {};
-
   // find last dot
   if (auto pos = p.find_last_of('.');
         pos != std::string::npos && pos != 0)
-    return std::string(p.substr(pos));
+    return p.substr(pos);
 
   return {};
 #endif
