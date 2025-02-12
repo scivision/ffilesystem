@@ -84,10 +84,11 @@ fs_drop_slash(std::string_view in)
   // drop all trailing "/" and duplicated internal "/"
   std::string s = fs_as_posix(in);
 
-  if(!fs_is_windows() || (s.length() != 3 || s != fs_root(s))){
-    while(s.length() > 1 && s.back() == '/')
-      s.pop_back();
-  }
+  while(s.length() > 1 && s.back() == '/')
+    s.pop_back();
+
+  if (fs_is_windows() && !in.empty() && s == fs_root_name(in))
+    s.append("/");
 
   if(fs_trace > 1) std::cout << "TRACE:drop_slash(" << in << "): removed trailing slash: " << s << std::endl;
 
