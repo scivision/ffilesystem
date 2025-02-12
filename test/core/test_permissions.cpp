@@ -93,8 +93,12 @@ std::cout << "Permissions for " << nowrite << " " << p << "\n";
 
 if(p[1] != '-'){
   // MSVC with <filesystem>, but we'll skip all windows
-  if (!fs_is_windows())
+  if (!fs_is_windows()){
     err(nowrite + " should not have owner write get_permissions()");
+
+    if (!fs_is_admin() && fs_is_writable(nowrite))
+      err(nowrite + " should not be writable");
+  }
 
   std::cerr << "Windows no-write permissions settings don't always work\n";
 }
