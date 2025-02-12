@@ -42,7 +42,7 @@ bool fs_set_cwd(std::string_view path)
     return true;
 #endif
 
-  fs_print_error(path, "set_cwd", ec);
+  fs_print_error(path, __func__, ec);
   return false;
 }
 
@@ -58,17 +58,14 @@ std::string fs_get_cwd()
 #elif defined(_WIN32)
 // windows.h https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcurrentdirectory
   const DWORD L = GetCurrentDirectoryA(0, nullptr);
-  if (L == 0)  FFS_UNLIKELY
+  if (L > 0)  FFS_LIKELY
   {
-    fs_print_error("", "get_cwd:GetCurrentDirectory");
-    return {};
-  }
-
-  std::string r(L, '\0');
-  if(GetCurrentDirectoryA(L, r.data()) == L-1)  FFS_LIKELY
-  {
-    r.resize(L-1);
-    return fs_drop_slash(r);
+    std::string r(L, '\0');
+    if(GetCurrentDirectoryA(L, r.data()) == L-1)  FFS_LIKELY
+    {
+      r.resize(L-1);
+      return fs_as_posix(r);
+    }
   }
 #else
 // unistd.h https://www.man7.org/linux/man-pages/man3/getcwd.3.html
@@ -77,6 +74,6 @@ std::string fs_get_cwd()
     return fs_drop_slash(fs_trim(buf));
 #endif
 
-  fs_print_error("", "get_cwd", ec);
+  fs_print_error("", __func__, ec);
   return {};
 }
