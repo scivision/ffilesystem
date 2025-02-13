@@ -124,14 +124,13 @@ fs_is_removable(std::string_view path)
     default:
       return false;
   }
-
 #else
   // Linux: find the device and check /sys/block/*/removable == 1
   // macOS: check /Volumes/*/ for a removable device
   fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
+  return false;
 #endif
 
-  return false;
 }
 
 
