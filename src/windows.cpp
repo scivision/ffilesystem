@@ -317,13 +317,12 @@ std::string fs_win32_to_narrow(FFS_MAYBE_UNUSED std::wstring_view w)
   std::error_code ec;
 
 #if defined(_WIN32)
-  if (int L = WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, nullptr, 0, nullptr, nullptr);
-        L > 0) {
+  if (int L = WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, nullptr, 0, nullptr, nullptr); L > 0)  FFS_LIKELY
+  {
     std::string buf(L, '\0');
-    L = WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, buf.data(), L, nullptr, nullptr);
-
-    if(L > 0){
-      buf.resize(L-1);
+    if(WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, buf.data(), L, nullptr, nullptr) > 0)  FFS_LIKELY
+    {
+      buf.resize(L-1);  // discard null terminator
       return buf;
     }
   }
@@ -343,13 +342,12 @@ std::wstring fs_win32_to_wide(std::string_view n)
 #if defined(_WIN32)
   // https://docs.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
 
-  if (int L = MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, nullptr, 0);
-        L > 0) {
+  if (int L = MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, nullptr, 0); L > 0)  FFS_LIKELY
+  {
     std::wstring buf(L, L'\0');
-    L = MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, buf.data(), L);
-
-    if(L > 0){
-      buf.resize(L-1);
+    if(MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, buf.data(), L) > 0)  FFS_LIKELY
+    {
+      buf.resize(L-1);  // discard null terminator
       return buf;
     }
   }
