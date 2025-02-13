@@ -64,7 +64,7 @@ fs_is_reserved(std::string_view path)
 
 #ifdef __cpp_lib_ranges_contains  // C++23
   if (std::ranges::contains(r, s))
-#elif __cpp_lib_ranges // C++20
+#elif defined(__cpp_lib_ranges) // C++20
   if (std::ranges::find(r, s) != r.end())
 #else // C++98
   if (std::find(r.begin(), r.end(), s) != r.end())

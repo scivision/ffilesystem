@@ -137,7 +137,7 @@ for (std::string_view func : funcs)
   else {
 #ifdef __cpp_lib_ranges_contains  // C++23
   if (std::ranges::contains(tf, func))
-#elif __cpp_lib_ranges // C++20
+#elif defined(__cpp_lib_ranges) // C++20
   if (std::ranges::find(tf, func) != tf.end())
 #else // C++98
   if (std::find(tf.begin(), tf.end(), func) != tf.end())
