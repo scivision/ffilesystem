@@ -15,7 +15,7 @@
 #include <iostream> // IWYU pragma: keep
 #include <system_error>
 
-#include <string>  // IWYU pragma: keep
+#include <memory>
 #include <string_view>
 
 #ifdef HAVE_CXX_FILESYSTEM
@@ -31,7 +31,7 @@
 // macOS 10.12 or later
 #define HAVE_MACOS_COPYFILE
 #include <copyfile.h>
-#elif defined(__linux__) || defined(BSD) || defined(__CYGWIN__)
+#else
 #include <sys/types.h>  // off_t
 #include <sys/stat.h>
 #include <unistd.h>
@@ -64,29 +64,22 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
     opts |= COPY_FILE_FAIL_IF_EXISTS;
 
   // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfileexa
+  // preserves source file attributes
   if(CopyFileExA(source.data(), dest.data(), nullptr, nullptr, FALSE, opts) != 0)
     return true;
 
 #elif defined(HAVE_MACOS_COPYFILE)
-  /* copy-on-write file
-  * based on kwSys:SystemTools:CloneFileContent
-  * https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/copyfile.3.html
-  * COPYFILE_CLONE is a 'best try' flag, which falls back to a copy if the clone fails.
-  * These flags are meant to be COPYFILE_METADATA | COPYFILE_CLONE, but CLONE
-  * forces COPYFILE_NOFOLLOW_SRC and that violates the invariant that this
-  * should result in a file.
-  * https://gitlab.kitware.com/utils/kwsys/-/commit/ee3223d7ae9a5b52b0a30efb932436def80c0d92
-  */
-  auto opt = COPYFILE_METADATA | COPYFILE_STAT | COPYFILE_XATTR | COPYFILE_DATA;
+  // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/copyfile.3.html
+  // preserves source file attributes
+  auto opt = COPYFILE_ALL;
   if (!overwrite)
     opt |= COPYFILE_EXCL;
 
-  const int r = copyfile(source.data(), dest.data(), nullptr, opt);
-  if(r == 0)
+  if(copyfile(source.data(), dest.data(), nullptr, opt) == 0)
     return true;
 #else
 
-  const int rid = open(source.data(), O_RDONLY);
+  int const rid = open(source.data(), O_RDONLY);
   if (rid == -1) {
     fs_print_error(source, __func__);
     return false;
@@ -106,7 +99,7 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
   if(!overwrite)
     opt |= O_EXCL;
 
-  const int wid = open(dest.data(), opt, 0644);
+  int const wid = open(dest.data(), opt, stat.st_mode);
   if (wid == -1) {
     fs_print_error(dest, __func__);
     close(rid);
@@ -132,24 +125,25 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
     remaining -= ret;
   }
 
-#else
+#elif defined(__cpp_lib_make_unique)
 
   if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using plain file buffer read / write\n";
 
-  const int bufferSize = 16384;
-  std::string buf(bufferSize, '\0');
+  constexpr int bufferSize = 16384;
+  auto buf = std::make_unique<char[]>(bufferSize);
 
   ssize_t ret = 0;
   while (remaining > 0) {
-    ret = read(rid, buf.data(), remaining);
-
+    ret = read(rid, buf.get(), remaining);
     // value should not be zero because we tell the file size in "len"
-    if (ret <= 0 || write(wid, buf.data(), ret) != ret)
+    if (ret <= 0 || write(wid, buf.get(), ret) != ret)
       break;
 
     remaining -= ret;
   }
-
+#else
+  int ret = -1;
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
   rc = close(rid);
