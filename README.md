@@ -97,7 +97,7 @@ scl enable gcc-toolset-10 "which g++"
 
 ## Build
 
-Ffilesystem can be built with CMake or Fortran Package Manager (FPM).
+Ffilesystem can be built with CMake, Meson, or Fortran Package Manager (FPM).
 
 "libffilesystem.a" is the library binary built that contains the Fortran "filesystem" module--it is the only binary you need to use in your project.
 
@@ -144,8 +144,8 @@ meson setup -Ddefault_library=static build
 Fortran Package Manager (FPM):
 
 ```sh
-
-fpm build
+fpm --cxx-flag=-std=c++17 build
+# c++17 is the minimum, can use newer
 ```
 
 ---

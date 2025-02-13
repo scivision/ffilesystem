@@ -6,6 +6,9 @@ on:
       - "fpm.toml"
       - ".github/workflows/ci_fpm.yml"
 
+env:
+  FPM_CXXFLAGS: -std=c++17
+
 
 jobs:
 
