@@ -1,18 +1,19 @@
-# Ffilesystem: for Fortran using C++17 and libc
+# Fast-filesystem: platform-independent, compiler-agnostic path manipulation and filesystem library
 
 [![DOI](https://zenodo.org/badge/433875623.svg)](https://zenodo.org/badge/latestdoi/433875623)
-[![ci](https://github.com/scivision/fortran-filesystem/actions/workflows/ci.yml/badge.svg)](https://github.com/scivision/fortran-filesystem/actions/workflows/ci.yml)
-[![ci_windows](https://github.com/scivision/fortran-filesystem/actions/workflows/ci_windows.yml/badge.svg)](https://github.com/scivision/fortran-filesystem/actions/workflows/ci_windows.yml)
-[![oneapi-linux](https://github.com/scivision/fortran-filesystem/actions/workflows/oneapi-linux.yml/badge.svg)](https://github.com/scivision/fortran-filesystem/actions/workflows/oneapi-linux.yml)
-[![ci_fpm](https://github.com/scivision/fortran-filesystem/actions/workflows/ci_fpm.yml/badge.svg)](https://github.com/scivision/fortran-filesystem/actions/workflows/ci_fpm.yml)
-[![ci_meson](https://github.com/scivision/fortran-filesystem/actions/workflows/ci_meson.yml/badge.svg)](https://github.com/scivision/fortran-filesystem/actions/workflows/ci_meson.yml)
+[![ci](https://github.com/scivision/fast-filesystem/actions/workflows/ci.yml/badge.svg)](https://github.com/scivision/fast-filesystem/actions/workflows/ci.yml)
+[![ci_windows](https://github.com/scivision/fast-filesystem/actions/workflows/ci_windows.yml/badge.svg)](https://github.com/scivision/fast-filesystem/actions/workflows/ci_windows.yml)
+[![oneapi-linux](https://github.com/scivision/fast-filesystem/actions/workflows/oneapi-linux.yml/badge.svg)](https://github.com/scivision/fast-filesystem/actions/workflows/oneapi-linux.yml)
+[![ci_fpm](https://github.com/scivision/fast-filesystem/actions/workflows/ci_fpm.yml/badge.svg)](https://github.com/scivision/fast-filesystem/actions/workflows/ci_fpm.yml)
+[![ci_meson](https://github.com/scivision/fast-filesystem/actions/workflows/ci_meson.yml/badge.svg)](https://github.com/scivision/fast-filesystem/actions/workflows/ci_meson.yml)
 
-Platform independent (Linux, macOS, Windows, Cygwin, WSL, BSD, ...) Fortran filesystem "Ffilesystem" path manipulation library.
-Ffilesystem core functions are implemented in C++17 using `<string_view>`.
+Platform independent (Linux, macOS, Windows, Cygwin, WSL, BSD, ...) and compiler-agnostic Fast-filesystem "Ffilesystem" path manipulation library.
+Simplicity and efficiency are focuses of Ffilesystem.
+Ffilesystem backend is implemented in C++17 using `<string_view>` for simplicity and speed.
 If available,
 [C++ standard library `<filesystem>`](https://en.cppreference.com/w/cpp/filesystem)
 is used.
-Otherwise, plain C++ code is used with the
+The C++ backend accesses the
 [C standard library](https://en.wikipedia.org/wiki/C_standard_library)
 to access filesystem and system parameters.
 Ffilesystem uses C++ `std::string` and (optional) Fortran `character`.
@@ -28,7 +29,7 @@ The C interface allows reuse of Ffilesystem functions in other code languages su
 [Matlab](./example/matlab_ffilesystem.m).
 
 The optional Fortran interface is built by default.
-Ffilesystem brings full filesystem functionality to Fortran.
+Ffilesystem brings full, fast filesystem functionality to Fortran.
 
 The language standards must be at least:
 

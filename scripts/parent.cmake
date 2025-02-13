@@ -2,7 +2,7 @@
 #
 # CMake: cmake_path() and get_filename_component()
 # Python: pathlib.Path()
-# fortran-filesystem
+# Ffilesystem
 #
 
 cmake_minimum_required(VERSION 3.20)
@@ -54,7 +54,7 @@ execute_process(
   RESULT_VARIABLE ret
 )
 if(ret EQUAL 0)
-message(STATUS "fortran-filesystem C++ ${ffs_cpp}: fs_parent(${in}) => ${ffs}")
+message(STATUS "Ffilesystem C++ ${ffs_cpp}: fs_parent(${in}) => ${ffs}")
 endif()
 
 endif(fscli)
