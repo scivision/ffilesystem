@@ -5,6 +5,7 @@ option(ffilesystem_fallback "Fallback to non-C++ if C++ stdlib is not working" o
 option(ffilesystem_trace "debug trace output" off)
 option(ffilesystem_locale "enable locale-based functions")
 option(ffilesystem_extra "enable extra functions not strictly filesystem-based" on)
+option(ffilesystem_unicode "Windows Unicode support" on)
 
 option(ffilesystem_statx "use statx() if available" on)
 

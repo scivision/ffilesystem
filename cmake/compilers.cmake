@@ -149,6 +149,10 @@ if(MSVC)
   # if, not elseif, because IntelLLVM uses MSVC flags
   # /wd4996 quiets warning: 'GetVersionExA' is deprecated
   add_compile_options("$<$<COMPILE_LANGUAGE:C,CXX>:/W3;/wd4996>")
+
+  if(ffilesystem_unicode)
+    add_compile_definitions("$<$<COMPILE_LANGUAGE:C,CXX>:_UNICODE>")
+  endif()
 endif()
 
 add_compile_options("$<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang,GNU>:-Wold-style-cast>")
