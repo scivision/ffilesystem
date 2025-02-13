@@ -312,11 +312,7 @@ std::string fs_shortname(std::string_view in)
 }
 
 
-std::string fs_win32_to_narrow(
-#if __has_cpp_attribute(maybe_unused)
-[[maybe_unused]]
-#endif
-  std::wstring_view w)
+std::string fs_win32_to_narrow(FFS_MAYBE_UNUSED std::wstring_view w)
 {
   std::error_code ec;
 

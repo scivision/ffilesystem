@@ -97,12 +97,9 @@ std::string fs_root(std::string_view path)
 }
 
 
-std::string fs_root_name(
-#if __has_cpp_attribute(maybe_unused)
-[[maybe_unused]]
-#endif
-  std::string_view path)
+std::string fs_root_name(FFS_MAYBE_UNUSED ::string_view path)
 {
+
 #ifdef HAVE_CXX_FILESYSTEM
   return std::filesystem::path(path).root_name().string();
 #elif defined(_WIN32)
