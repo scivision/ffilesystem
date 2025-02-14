@@ -96,7 +96,7 @@ realpath
 relative
 remove
 rename
-reserved root
+reserved
 safe
 separator
 set_cwd
@@ -112,7 +112,7 @@ elseif(WIN32)
   list(APPEND cpp_tests windows is_appexec_alias)
 endif()
 
-set(gtest_tests stem suffix)
+set(gtest_tests root stem suffix)
 
 foreach(t IN LISTS cpp_tests gtest_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)

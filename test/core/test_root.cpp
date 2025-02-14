@@ -1,77 +1,43 @@
-#include <iostream>
-#include <vector>
-#include <tuple>
-#include <string>
-#include <string_view>
-#include <cstdlib>
-
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
 
+#include <gtest/gtest.h>
 
-int main() {
+TEST(TestRoot, Root){
 
-int fail = 0;
+EXPECT_EQ(fs_root(""), "");
+EXPECT_EQ(fs_root("a/b"), "");
+EXPECT_EQ(fs_root("./a/b"), "");
+EXPECT_EQ(fs_root("../a/b"), "");
 
-std::vector<std::tuple<std::string_view, std::string_view>> tests = {
-  {"", ""},
-  {"a/b", ""},
-  {"./a/b", ""},
-  {"../a/b", ""}
-};
 
 if (fs_is_windows()) {
-  tests.emplace_back("c:", "c:");
-  tests.emplace_back("c:/a/b", "c:/");
-  tests.emplace_back("/etc", "/");
-  tests.emplace_back("\\etc", "/");
-  tests.emplace_back(R"(c:\)", "c:/");
-  tests.emplace_back("c:/", "c:/");
-  tests.emplace_back("\\", "/");
+  EXPECT_EQ(fs_root("c:"), "c:");
+  EXPECT_EQ(fs_root("c:/a/b"), "c:/");
+  EXPECT_EQ(fs_root("/etc"), "/");
+  EXPECT_EQ(fs_root("\\etc"), "/");
+  EXPECT_EQ(fs_root(R"(c:\)"), "c:/");
+  EXPECT_EQ(fs_root("c:/"), "c:/");
+  EXPECT_EQ(fs_root("\\"), "/");
 } else {
-  tests.emplace_back("/a/b", "/");
-  tests.emplace_back("c:/etc", "");
+  EXPECT_EQ(fs_root("/a/b"), "/");
+  EXPECT_EQ(fs_root("c:/etc"), "");
 }
 
-for (const auto& [input, expected] : tests) {
-  const std::string r = fs_root(input);
-  if (r != expected) {
-    std::cerr << "FAILED: root(" << input << ") = " << r << " != " << expected << "\n";
-    fail++;
-  }
 }
 
-// test root_name
-tests = {
-  {"", ""},
-  {"a/b", ""},
-  {"./a/b", ""},
-  {"../a/b", ""}
-};
+TEST(TestRoot, RootName){
+EXPECT_EQ(fs_root_name(""), "");
+EXPECT_EQ(fs_root_name("a/b"), "");
+EXPECT_EQ(fs_root_name("./a/b"), "");
+EXPECT_EQ(fs_root_name("../a/b"), "");
 
 if(fs_is_windows()){
-  tests.emplace_back("c:/a/b", "c:");
-  tests.emplace_back("/etc", "");
-  tests.emplace_back(R"(C:\)", "C:");
+  EXPECT_EQ(fs_root_name("c:/a/b"), "c:");
+  EXPECT_EQ(fs_root_name("/etc"), "");
+  EXPECT_EQ(fs_root_name(R"(C:\)"), "C:");
 } else {
-  tests.emplace_back("/a/b", "");
-  tests.emplace_back("c:/etc", "");
+  EXPECT_EQ(fs_root_name("/a/b"), "");
+  EXPECT_EQ(fs_root_name("c:/etc"), "");
 }
 
-for(const auto& [input, expected] : tests){
-  const std::string r = fs_root_name(input);
-  if (r != expected) {
-    std::cerr << "FAILED: root_name(" << input << ") = " << r << " != " << expected << "\n";
-    fail++;
-  }
-}
-
-if(fail){
-  std::cerr << "ERROR: root(), root_name(): " << fail << " tests failed\n";
-  return EXIT_FAILURE;
-}
-
-  ok_msg("root, root_name C++");
-
-  return EXIT_SUCCESS;
 }

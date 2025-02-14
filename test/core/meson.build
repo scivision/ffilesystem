@@ -72,7 +72,6 @@ cpp_core = [
 'remove',
 'rename',
 'reserved',
-'root',
 'safe',
 'separator',
 'set_cwd',
@@ -101,7 +100,7 @@ endforeach
 
 
 gtest_tests = [
-'stem', 'suffix'
+'root', 'stem', 'suffix'
 ]
 
 foreach t : gtest_tests
