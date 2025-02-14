@@ -37,10 +37,13 @@ fs_remove(std::string_view path)
   // may need these when deleting a symlink
   // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsymboliclinka#remarks
 
-  if(fs_is_file(path) && DeleteFileA(path.data()) != 0)
-    return true;
-  if(fs_is_dir(path) && RemoveDirectoryA(path.data()) != 0)
-    return true;
+  if(fs_is_file(path)){
+    if(DeleteFileA(path.data()) != 0)
+      return true;
+  } else if(fs_is_dir(path)){
+    if(RemoveDirectoryA(path.data()) != 0)
+      return true;
+  }
 
 #endif
 
