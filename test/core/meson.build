@@ -69,6 +69,7 @@ cpp_core = [
 'parent',
 'permissions',
 'realpath',
+'remove',
 'rename',
 'reserved',
 'root',

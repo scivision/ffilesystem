@@ -94,6 +94,7 @@ permissions
 proximate
 realpath
 relative
+remove
 rename
 reserved root
 safe
@@ -185,28 +186,6 @@ endif()
 if(NOT WIN32 AND NOT HAVE_CXX_FILESYSTEM)
   set_tests_properties(Cpp_filesize PROPERTIES DISABLED $<NOT:$<BOOL:${ffilesystem_HAVE_SYS_STATVFS}>>)
 endif()
-
-# --- fs_remove
-set(to_remove "${CMAKE_CURRENT_BINARY_DIR}/日本語_remove.txt")
-add_test(NAME RemoveTouch COMMAND ${CMAKE_COMMAND} -E touch ${to_remove})
-set_tests_properties(RemoveTouch PROPERTIES FIXTURES_SETUP "remove_touch")
-
-set(t remove)
-add_executable(test_${t}_cpp test_${t}.cpp)
-target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
-target_include_directories(test_${t}_cpp PRIVATE ..)
-if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-  target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
-endif()
-
-add_test(NAME Cpp_${t} COMMAND test_${t}_cpp ${to_remove})
-set_tests_properties(Cpp_${t} PROPERTIES
-LABELS "Cpp"
-FIXTURES_REQUIRED "remove_touch"
-SKIP_RETURN_CODE 77
-FIXTURES_SETUP remove
-)
-# --- fs_remove
 
 # C
 

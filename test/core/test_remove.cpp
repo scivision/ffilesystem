@@ -7,20 +7,13 @@
 #include "ffilesystem_test.h"
 
 
-int main(int argc, char* argv[])
+int main()
 {
 
-  if(argc < 2){
-    std::cerr << "Please specify filename to remove\n";
-    return EXIT_FAILURE;
-  }
+  const std::string j = "日本語_remove.txt";
 
-  const std::string j = argv[1];
-
-  std::cout << "Test file " << j << "\n";
-
-  if(!fs_is_file(j))
-    skip("is_file(" + j + ") should be true for existing regular file");
+  if(!fs_touch(j))
+    err("touch failed for " + j);
 
   if(!fs_remove(j)){
     if(fs_exists(j))
