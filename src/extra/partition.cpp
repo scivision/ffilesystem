@@ -36,33 +36,41 @@ static inline std::string fs_type_linux(std::string_view path)
     return {};
   }
 
+#ifndef FUSE_SUPER_MAGIC
+#define FUSE_SUPER_MAGIC 0x65735546
+#endif
+#ifndef EXFAT_SUPER_MAGIC
+#define EXFAT_SUPER_MAGIC 0x2011BAB0
+#endif
+#ifndef F2FS_SUPER_MAGIC
+#define F2FS_SUPER_MAGIC 0xF2F52010
+#endif
+#ifndef TRACEFS_MAGIC
+#define TRACEFS_MAGIC 0x74726163
+#endif
+#ifndef UDF_SUPER_MAGIC
+#define UDF_SUPER_MAGIC 0x15013346
+#endif
+#ifndef XFS_SUPER_MAGIC
+#define XFS_SUPER_MAGIC 0x58465342
+#endif
+
   switch (s.f_type) {
     case BTRFS_SUPER_MAGIC: return "btrfs";
     case EXT4_SUPER_MAGIC: return "ext4";
-#ifdef EXFAT_SUPER_MAGIC
     case EXFAT_SUPER_MAGIC: return "exfat";
-#endif
-#ifdef F2FS_SUPER_MAGIC
     case F2FS_SUPER_MAGIC: return "f2fs";
-#endif
-#ifdef FUSE_SUPER_MAGIC
     case FUSE_SUPER_MAGIC: return "fuse";
-#endif
     case NFS_SUPER_MAGIC: return "nfs";
     case SQUASHFS_MAGIC: return "squashfs";
     case TMPFS_MAGIC: return "tmpfs";
-#ifdef TRACEFS_MAGIC
     case TRACEFS_MAGIC: return "tracefs";
-#endif
-#ifdef UDF_SUPER_MAGIC
     case UDF_SUPER_MAGIC: return "udf";
-#endif
     case V9FS_MAGIC: return "v9fs";
     // used for WSL
     // https://devblogs.microsoft.com/commandline/whats-new-for-wsl-in-windows-10-version-1903/
-#ifdef XFS_SUPER_MAGIC
     case XFS_SUPER_MAGIC: return "xfs";
-#endif
+
     default:
       std::cerr << "ERROR:fs_filesystem_type " << path << " unknown type ID: " << s.f_type << "\n";
       return {};
