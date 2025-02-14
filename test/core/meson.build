@@ -62,7 +62,6 @@ cpp_core = [
 'is_file',
 'is_prefix',
 'is_subdir',
-'join',
 'mkdir',
 'owner',
 'parent',
@@ -98,7 +97,7 @@ endforeach
 
 
 gtest_tests = [
-'normal',
+'join', 'normal',
 'root', 'space','stem', 'suffix'
 ]
 
