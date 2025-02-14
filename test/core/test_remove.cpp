@@ -10,10 +10,12 @@
 int main()
 {
 
-  const std::string j = "日本語_remove.txt";
+  const std::string j = "test_remove.txt";
 
   if(!fs_touch(j))
     err("touch failed for " + j);
+  if(!fs_is_file(j))
+    err(j + " is not a file");
 
   if(!fs_remove(j)){
     if(fs_exists(j))
