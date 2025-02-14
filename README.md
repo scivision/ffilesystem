@@ -7,7 +7,7 @@
 [![ci_fpm](https://github.com/scivision/ffilesystem/actions/workflows/ci_fpm.yml/badge.svg)](https://github.com/scivision/ffilesystem/actions/workflows/ci_fpm.yml)
 [![ci_meson](https://github.com/scivision/ffilesystem/actions/workflows/ci_meson.yml/badge.svg)](https://github.com/scivision/ffilesystem/actions/workflows/ci_meson.yml)
 
-Platform independent (Linux, macOS, Windows, Cygwin, WSL, BSD, ...) and compiler-agnostic Ffilesystem "Ffilesystem" path manipulation library.
+Platform independent (Linux, macOS, Windows, Cygwin, WSL, BSD, ...) and compiler-agnostic Ffilesystem path manipulation library.
 Simplicity and efficiency are focuses of Ffilesystem.
 Ffilesystem backend is implemented in C++17 using `<string_view>` for simplicity and speed.
 If available,
@@ -16,10 +16,13 @@ is used.
 The C++ backend accesses the
 [C standard library](https://en.wikipedia.org/wiki/C_standard_library)
 to access filesystem and system parameters.
-Ffilesystem uses C++ `std::string` and (optional) Fortran `character`.
-[UTF-8 encoding](https://utf8everywhere.org/)
-allows for multibyte characters in paths.
-Ffilesystem does not throw or catch C++ exceptions, although the underlying C++ STL may.
+Networked file systems and FUSE (e.g. SSHFS) are supported as well as local filesystems.
+
+Ffilesystem supports
+[UTF-8](https://utf8everywhere.org/)
+via C++ `std::string` or Fortran `character` as the path input / output argument types.
+
+Ffilesystem does not throw or catch C++ exceptions itself.
 
 Ffilesystem header
 [ffilesystem.h](./include/ffilesystem.h)
@@ -29,6 +32,14 @@ The C interface allows reuse of Ffilesystem functions in other code languages su
 [Matlab](./example/matlab_ffilesystem.m).
 
 The optional Fortran interface is built by default.
+Disable Fortran by
+
+```sh
+cmake -Dffilesystem_fortran=false -Bbuild
+# or
+meson setup -Dfortran=false build
+```
+
 Ffilesystem brings full, fast filesystem functionality to Fortran.
 
 The language standards must be at least:
@@ -211,7 +222,8 @@ find_package(ffilesystem CONFIG REQUIRED)
 
 CMake package variables `ffilesystem_cpp` and `ffilesystem_fortran` indicate whether ffilesystem was built with C++ `<filesystem>` and/or Fortran support.
 
-[ffilesystem.cmake](./cmake/ffilesystem.cmake) would be included from the other project to find or build Ffilesystem automatically.
+[ffilesystem.cmake](./cmake/ffilesystem.cmake)
+would be included from the other project to find or build Ffilesystem automatically.
 It provides the appropriate imported targets for shared or static builds, including Windows DLL handling.
 
 ## Notes
@@ -227,6 +239,8 @@ Use statx() if available to inquire if a file is encrypted or compressed, etc.
 Ffilesystem emphasizes simplicity and reasonable performance and reliability for scientific computing, particularly on HPC systems.
 A highly performance-oriented C++ low-level no TOCTOU filesystem library is
 [LLFIO](https://github.com/ned14/llfio).
+An older C++ object-oriented interface is
+[CppFS](https://github.com/cginternals/cppfs).
 
 Other implementations of C++ filesystem include:
 
