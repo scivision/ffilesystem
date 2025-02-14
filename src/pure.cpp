@@ -123,11 +123,11 @@ std::string fs_stem(std::string_view path)
     return r;
 
   // find last dot
-  if (auto pos = r.find_last_of('.');
-        pos != std::string::npos && pos != 0)
-    return r.substr(0, pos);
+  std::string::size_type i = r.find_last_of('.');
 
-  return r;
+  return (i != std::string::npos && i != 0)
+    ? r.substr(0, i)
+    : r;
 #endif
 }
 
@@ -139,11 +139,11 @@ std::string fs_suffix(std::string_view path)
 #else
   const std::string p = fs_file_name(path);
   // find last dot
-  if (auto pos = p.find_last_of('.');
-        pos != std::string::npos && pos != 0)
-    return p.substr(pos);
+  std::string::size_type i = p.find_last_of('.');
 
-  return {};
+  return (i != std::string::npos && i != 0)
+    ? p.substr(i)
+    : "";
 #endif
 }
 

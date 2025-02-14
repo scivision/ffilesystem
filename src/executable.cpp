@@ -35,7 +35,7 @@ bool fs_is_executable_binary(std::string_view path)
   // is path a binary executable file as determined by the magic number
   // beginning the file.  This is a heuristic and may not be 100% accurate.
   bool ok = false;
-#if defined _WIN32
+#if defined(_WIN32)
   // MinGW, MSVC, oneAPI at least need || is_appexec_alias()
   DWORD t;
   ok = (GetBinaryTypeA(path.data(), &t) != 0) || fs_is_appexec_alias(path);
@@ -50,7 +50,7 @@ bool fs_is_executable_binary(std::string_view path)
   } else
     return false;
 
-#if defined __APPLE__
+#if defined(__APPLE__)
   // https://ss64.com/mac/file.html
     // Mach-O magic numbers
     // https://stackoverflow.com/q/27669766
