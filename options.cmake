@@ -15,6 +15,6 @@ option(ffilesystem_tidy "Run clang-tidy on the code")
 option(ffilesystem_cppcheck "Run cppcheck on the code")
 option(ffilesystem_iwyu "Run include-what-you-use on the code")
 
-option(ffilesystem_BUILD_TESTING "Build tests" ${ffilesystem_IS_TOP_LEVEL})
+option(ffilesystem_BUILD_TESTING "Build tests")
 
 file(GENERATE OUTPUT .gitignore CONTENT "*")

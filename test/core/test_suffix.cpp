@@ -1,46 +1,25 @@
-#include <iostream>
-#include <cstdlib>
-
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
+
+#include <gtest/gtest.h>
 
 
-int main()
+TEST(TestSuffix, Suffix)
 {
 
-if(fs_suffix("") != "")
-  err("suffix empty");
+EXPECT_EQ(fs_suffix(""), "");
+EXPECT_EQ(fs_suffix("a"), "");
+EXPECT_EQ(fs_suffix("a."), ".");
+EXPECT_EQ(fs_suffix("a.b"), ".b");
+EXPECT_EQ(fs_suffix("a.b.c"), ".c");
+EXPECT_EQ(fs_suffix("a/b.c"), ".c");
+EXPECT_EQ(fs_suffix("a/b.c.d"), ".d");
+EXPECT_EQ(fs_suffix("a/b/c.d"), ".d");
+EXPECT_EQ(fs_suffix("a/b/c.d.e"), ".e");
+EXPECT_EQ(fs_suffix("a/b/c.d/e"), "");
+EXPECT_EQ(fs_suffix(".a"), "");
+EXPECT_EQ(fs_suffix(".a."), ".");
+EXPECT_EQ(fs_suffix(".a.b"), ".b");
+EXPECT_EQ(fs_suffix("./b.c"), ".c");
+EXPECT_EQ(fs_suffix("../.b.c"), ".c");
 
-std::string s1 = fs_suffix("suffix_name.a.b");
-
-if (s1 != ".b")
-  err("suffix failed: " + s1);
-
-s1 = fs_suffix(s1);
-if (s1 != "")
-  err("suffix recursive failed: " + s1);
-
-s1 = fs_suffix(".suffix");
-if (!s1.empty())
-  err("suffix leading dot failed: " + s1);
-
-s1 = fs_suffix("./.suffix");
-if (!s1.empty())
-  err("suffix leading dot filename cwd failed: " + s1);
-
-s1 = fs_suffix(".suffix.txt");
-if (s1 != ".txt")
-  err("suffix leading dot filename w/ext failed: " + s1);
-
-s1 = fs_suffix("./.suffix.txt");
-if (s1 != ".txt")
-  err("suffix leading dot filename w/ext and cwd failed: " + s1);
-
-s1 = fs_suffix("../.suffix.txt");
-if (s1 != ".txt")
-  err("suffix leading dot filename w/ext up failed: " + s1);
-
-ok_msg("suffix");
-
-return EXIT_SUCCESS;
 }

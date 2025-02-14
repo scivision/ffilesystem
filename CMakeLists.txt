@@ -10,8 +10,6 @@ LANGUAGES C CXX
 VERSION 6.3.0
 )
 
-enable_testing()
-
 include(GNUInstallDirs)
 
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
@@ -227,6 +225,7 @@ endif()
 
 # --- Tests
 if(ffilesystem_BUILD_TESTING)
+  enable_testing()
   add_subdirectory(test)
 endif()
 

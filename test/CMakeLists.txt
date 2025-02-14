@@ -62,6 +62,16 @@ if(ffilesystem_extra)
   list(APPEND test_dirs extra libpath)
 endif()
 
+# Do not use find_package(GTest), in general it finds some other library's GTest that may have an incompatible ABI.
+include(FetchContent)
+
+set(FETCHCONTENT_QUIET OFF)
+FetchContent_Declare(googletest
+URL https://github.com/google/googletest/archive/refs/tags/v1.16.0.tar.gz
+)
+FetchContent_MakeAvailable(googletest)
+
+
 foreach(t IN LISTS test_dirs)
 
 add_subdirectory(${t})

@@ -168,7 +168,7 @@ libwin = []
 
 if is_windows
 
-libwin = [cc.find_library('Userenv'), cc.find_library('ws2_32')]
+libwin = [cc.find_library('Secur32'), cc.find_library('Userenv'), cc.find_library('ws2_32')]
 
 endif
 
@@ -204,15 +204,14 @@ endif
 
 endif
 
-if not meson.is_subproject()
-  test_dirs = ['core', 'executable']
-  if get_option('extra')
-    test_dirs += ['extra']
+if get_option('test')
+  gtest_proj = subproject('gtest')
+  gtest_dep = gtest_proj.get_variable('gtest_main_dep')
+  if not gtest_dep.found()
+    error('MESON_SKIP_TEST: gtest not installed.')
   endif
 
-  foreach d : test_dirs
-    subdir('test/' + d)
-  endforeach
+  subdir('test')
 
   executable('ffilesystem_bench', 'app/benchmark.cpp', link_with: filesystem, include_directories: inc, install: true)
 endif

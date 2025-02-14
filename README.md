@@ -115,14 +115,23 @@ Ffilesystem can be built with CMake, Meson, or Fortran Package Manager (FPM).
 
 Please see the [API docs](./API.md) for extensive list of functions/subroutines.
 
-Use any one of these methods to build Ffilesystem:
+Use any one of these methods to build Ffilesystem.
+The self-tests are optional and not built by default.
+Some of the tests use GoogleTest framework.
 
-CMake:
+### CMake
 
 ```sh
 cmake -B build
 cmake --build build
-# optional
+```
+
+
+Optionally, build and run the self-tests:
+
+```sh
+cmake -B build -Dffilesystem_BUILD_TESTING=on
+cmake --build build
 ctest --test-dir build
 ```
 
@@ -133,14 +142,17 @@ cmake -B build -DBUILD_SHARED_LIBS=on
 ...
 ```
 
----
-
-Meson:
+### Meson
 
 ```sh
 meson setup build
 meson compile -C build
-# optional
+```
+
+Optionally, build and run the self-tests:
+
+```sh
+meson setup -Dtest=true build --reconfigure
 meson test -C build
 ```
 
@@ -148,7 +160,7 @@ The default library with Meson is shared; to build static library:
 
 ```sh
 meson setup -Ddefault_library=static build
-...
+meson compile -C build
 ```
 
 ---

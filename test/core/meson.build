@@ -78,7 +78,6 @@ cpp_core = [
 'set_cwd',
 'space',
 'stem',
-'suffix',
 'system',
 'touch',
 'with_suffix'
@@ -94,12 +93,27 @@ endif
 
 foreach t : cpp_core
 
-    t_cpp = executable(t + '_cpp', 'test_' + t + '.cpp', link_with: filesystem,
-      include_directories: [inc, '..'])
+  t_cpp = executable(t + '_cpp', 'test_' + t + '.cpp', link_with: filesystem,
+    include_directories: [inc, '..'])
 
-    test(t + '_cpp', t_cpp, suite: 'cpp', workdir: meson.current_build_dir())
+  test(t + '_cpp', t_cpp, suite: 'cpp', workdir: meson.current_build_dir())
 
 endforeach
+
+
+gtest_tests = ['suffix']
+
+foreach t : gtest_tests
+
+  t_cpp = executable(t + '_cpp', 'test_' + t + '.cpp',
+    link_with: filesystem,
+    dependencies: gtest_dep,
+    include_directories: [inc, '..'])
+
+  test(t + '_cpp', t_cpp, suite: 'cpp', workdir: meson.current_build_dir())
+
+endforeach
+
 
 tenv = executable('noenv_cpp', 'test_env.cpp', link_with: filesystem, include_directories: [inc, '..'])
 

@@ -9,7 +9,8 @@
     "CMAKE_COMPILE_WARNING_AS_ERROR": true,
     "CMAKE_LINK_WARNING_AS_ERROR": true,
     "ffilesystem_fallback": false,
-    "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE"
+    "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE",
+    "ffilesystem_BUILD_TESTING": true
   }
 },
 {
