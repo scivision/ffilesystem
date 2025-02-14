@@ -29,7 +29,7 @@ int main() {
 
   if(fs_is_windows()){
     test_cases.emplace_back("C:/", "");
-    test_cases.emplace_back("C:\\ab\\asb", "asb");
+    test_cases.emplace_back(R"(C:\ab\asb)", "asb");
   }
 
   int i = 0;

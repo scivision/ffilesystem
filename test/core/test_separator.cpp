@@ -21,7 +21,7 @@ void test_as_posix(){
     if(fs_as_posix(p) != "a/b")
       err("test_as_posix: " + fs_as_posix(p) + " != a/b");
 
-    p = "C:\\my\\path";
+    p = R"(C:\my\path)";
     if(fs_as_posix(p) != "C:/my/path")
       err("test_as_posix: " + p);
   }

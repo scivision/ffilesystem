@@ -25,7 +25,7 @@ if (fs_is_windows()) {
   tests.emplace_back("c:/a/b", "c:/");
   tests.emplace_back("/etc", "/");
   tests.emplace_back("\\etc", "/");
-  tests.emplace_back("c:\\", "c:/");
+  tests.emplace_back(R"(c:\)", "c:/");
   tests.emplace_back("c:/", "c:/");
   tests.emplace_back("\\", "/");
 } else {
@@ -52,7 +52,7 @@ tests = {
 if(fs_is_windows()){
   tests.emplace_back("c:/a/b", "c:");
   tests.emplace_back("/etc", "");
-  tests.emplace_back("c:\\", "c:");
+  tests.emplace_back(R"(C:\)", "C:");
 } else {
   tests.emplace_back("/a/b", "");
   tests.emplace_back("c:/etc", "");

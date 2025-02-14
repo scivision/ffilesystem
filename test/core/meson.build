@@ -77,7 +77,6 @@ cpp_core = [
 'separator',
 'set_cwd',
 'space',
-'stem',
 'system',
 'touch',
 'with_suffix'
@@ -101,7 +100,9 @@ foreach t : cpp_core
 endforeach
 
 
-gtest_tests = ['suffix']
+gtest_tests = [
+'stem', 'suffix'
+]
 
 foreach t : gtest_tests
 
