@@ -65,7 +65,6 @@ cpp_core = [
 'join',
 'mkdir',
 'owner',
-'normal',
 'parent',
 'permissions',
 'realpath',
@@ -99,6 +98,7 @@ endforeach
 
 
 gtest_tests = [
+'normal',
 'root', 'space','stem', 'suffix'
 ]
 

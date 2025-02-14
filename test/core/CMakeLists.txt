@@ -88,7 +88,6 @@ is_subdir
 join
 mkdir
 owner
-normal
 parent
 permissions
 proximate
@@ -111,7 +110,7 @@ elseif(WIN32)
   list(APPEND cpp_tests windows is_appexec_alias)
 endif()
 
-set(gtest_tests root space stem suffix)
+set(gtest_tests normal root space stem suffix)
 
 foreach(t IN LISTS cpp_tests gtest_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)
