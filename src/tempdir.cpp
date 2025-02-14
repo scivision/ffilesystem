@@ -25,18 +25,18 @@ std::string fs_get_tempdir()
     return p.generic_string();
 #else
 
-  std::string path(fs_get_max_path(), '\0');
 #ifdef _WIN32
+  std::string t(fs_get_max_path(), '\0');
   // GetTempPath2A is not in MSYS2
-  auto L = GetTempPathA(static_cast<DWORD>(path.size()), path.data());
-  if (L > 0 && L < path.size())  FFS_LIKELY
-    path.resize(L);
+  auto L = GetTempPathA(static_cast<DWORD>(t.size()), t.data());
+  if (L > 0)  FFS_LIKELY
+    t.resize(L);
 #else
-  path = fs_getenv("TMPDIR");
+  std::string t(fs_getenv("TMPDIR"));
 #endif
 
-  if(!path.empty()) FFS_LIKELY
-    return fs_as_posix(path);
+  if(!t.empty()) FFS_LIKELY
+    return fs_as_posix(t);
 
   if (fs_is_dir("/tmp"))
     return "/tmp";
