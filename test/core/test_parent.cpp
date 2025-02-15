@@ -1,24 +1,13 @@
-#include <iostream>
-#include <string>
 #include <string_view>
 #include <vector>
 #include <tuple>
-#include <cstdlib>
 
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
+
+#include <gtest/gtest.h>
 
 
-int check(std::string_view in, std::string_view ref){
-  std::string r = fs_parent(in);
-  if (r != ref) {
-    std::cerr << "FAIL: parent(" << in << ") " << r << "  expected: " << ref << "\n";
-    return 1;
-  }
-  return 0;
-}
-
-int main() {
+TEST(TestParent, Parent){
 
   std::vector<std::tuple<std::string_view, std::string_view>> test_cases;
 
@@ -33,18 +22,7 @@ test_cases = {
     test_cases.emplace_back("x:/", "x:/");
   }
 
-  int i = 0;
+  for (const auto& [input, expected] : test_cases)
+    EXPECT_EQ(fs_parent(input), expected);
 
-  for (const auto& [input, expected] : test_cases) {
-    i += check(input, expected);
-  }
-
-  if (i != 0) {
-    std::cerr << "FAIL: parent()  backend: " << fs_backend() << "\n";
-    return EXIT_FAILURE;
-  }
-
-  ok_msg("parent C++");
-
-  return EXIT_SUCCESS;
 }
