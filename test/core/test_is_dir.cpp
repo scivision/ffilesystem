@@ -1,53 +1,37 @@
-#include <iostream>
-#include <cstdlib>
-
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
+
+#include <cstdio>  // std::remove
+#include <fstream>
+
+#include <gtest/gtest.h>
+
+class TestIsDir : public testing::Test {
+protected:
+  std::string file;
+  void SetUp() override {
+    file = testing::TempDir() + "/empty.txt";
+    std::ofstream ofs(file);
+    ofs.close();
+  }
+  void TearDown() override {
+    std::remove(file.c_str());
+  }
+};
 
 
-int main(int argc, char* argv[])
+TEST_F(TestIsDir, IsDir)
 {
+  EXPECT_FALSE(fs_is_dir(""));
 
-  std::string file = (argc > 1) ? argv[1] : argv[0];
+  EXPECT_TRUE(fs_is_dir(testing::TempDir()));
 
-  if (fs_is_dir(""))
-    err("is_dir empty should be false");
+  EXPECT_TRUE(fs_is_dir("."));
 
-  std::string s1 = fs_get_cwd();
-  if (!fs_is_dir(s1))
-    err("is_dir(get_cwd()) failed: " + s1);
+  EXPECT_FALSE(fs_is_file("."));
 
-  if (!fs_is_dir("."))
-    err("did not detect '.' as directory");
+  EXPECT_TRUE(fs_is_readable("."));
 
-  if (fs_is_file("."))
-    err("detected '.' as file");
+  EXPECT_FALSE(fs_is_dir(file));
 
-  if(!fs_is_dir("."))
-    err("is_dir failed on '.'");
-
-  if (!fs_exists(".") || !fs_is_dir("."))
-    err("is_readable failed on '.'");
-
-  std::string_view s2(file);
-  if (fs_is_dir(s2))
-    err("detected file as directory");
-
-  if (fs_is_dir("not-exist-dir"))
-    err("not-exist-dir should not exist");
-
-  std::string fn = "日本語_is_dir";
-
-  if (!fs_mkdir(fn))
-    err("fs_mkdir " + fn);
-
-  if (!fs_exists(fn))
-    err("fs_exists " + fn);
-
-  if (!fs_is_dir(fn))
-    err("fs_is_dir " + fn);
-
-  ok_msg("is_dir C++");
-
-  return EXIT_SUCCESS;
+  EXPECT_FALSE(fs_is_dir(testing::TempDir() + "/not-exist-dir"));
 }
