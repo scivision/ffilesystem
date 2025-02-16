@@ -1,38 +1,34 @@
-#include <iostream>
-#include <cstdlib>
-
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
 
+#include <cstdio>  // std::remove
+#include <fstream>
 
-int main(){
+#include <gtest/gtest.h>
 
-  std::string fn = "日本語_is_file.txt";
-
-  if(!fs_touch(fn))
-    err("fs_touch " + fn);
-
-  if(!fs_exists(fn)){
-    if(fs_is_mingw())
-      std::cerr << "MinGW: fs_exists on MinGW has bugs\n";
-    else
-      err("fs_exists " + fn);
+class TestIsFile : public testing::Test {
+protected:
+  std::string file;
+  void SetUp() override {
+    file = testing::TempDir() + "/empty.txt";
+    std::ofstream ofs(file);
+    ofs.close();
   }
-
-  if(!fs_is_file(fn)){
-    if(fs_is_mingw())
-      std::cerr << "MinGW: fs_is_file on MinGW has bugs\n";
-    else
-      err("fs_is_file " + fn);
+  void TearDown() override {
+    std::remove(file.c_str());
   }
+};
 
-  if(fs_is_file("not-exist"))
-    err("fs_is_file not-exist");
 
-  if(fs_is_file("."))
-    err("fs_is_file .");
+TEST_F(TestIsFile, IsFile)
+{
 
-  ok_msg("is_file C++");
+  EXPECT_TRUE(fs_exists(file));
+  EXPECT_TRUE(fs_is_file(file));
+  EXPECT_FALSE(fs_is_dir(file));
+  EXPECT_TRUE(fs_is_readable(file));
+  EXPECT_FALSE(fs_is_exe(file));
+  EXPECT_FALSE(fs_is_file(testing::TempDir() + "/not-exist-file"));
+  EXPECT_FALSE(fs_is_file(""));
+  EXPECT_FALSE(fs_is_file(testing::TempDir()));
 
-  return EXIT_SUCCESS;
 }

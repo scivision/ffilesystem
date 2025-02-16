@@ -81,7 +81,6 @@ is_absolute
 is_char
 is_empty
 is_fifo
-is_file
 is_prefix
 is_subdir
 mkdir
@@ -108,7 +107,8 @@ elseif(WIN32)
 endif()
 
 set(gtest_tests
-is_dir join normal parent root space stem suffix
+is_dir
+is_file join normal parent root space stem suffix
 )
 
 foreach(t IN LISTS cpp_tests gtest_tests)
