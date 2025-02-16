@@ -54,7 +54,6 @@ cpp_core = [
 'filename',
 'filesize',
 'hard_link',
-'is_absolute',
 'is_char',
 'is_empty',
 'is_fifo',
@@ -93,6 +92,7 @@ endforeach
 
 
 gtest_tests = [
+'is_absolute',
 'is_dir',
 'is_file',
 'join', 'normal',

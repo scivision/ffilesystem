@@ -77,7 +77,6 @@ expanduser
 filename
 filesize
 hard_link
-is_absolute
 is_char
 is_empty
 is_fifo
@@ -106,6 +105,7 @@ elseif(WIN32)
 endif()
 
 set(gtest_tests
+is_absolute
 is_dir
 is_file join normal parent root
 safe space stem suffix
