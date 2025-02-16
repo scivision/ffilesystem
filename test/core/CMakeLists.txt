@@ -117,7 +117,11 @@ foreach(t IN LISTS cpp_tests gtest_tests)
 
   if(t IN_LIST gtest_tests)
     target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main)
-  elseif(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+    gtest_discover_tests(test_${t}_cpp)
+    continue()
+  endif()
+
+  if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
     # enable source_location
     target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
   endif()

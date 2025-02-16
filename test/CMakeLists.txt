@@ -71,6 +71,8 @@ URL https://github.com/google/googletest/archive/refs/tags/v1.16.0.tar.gz
 )
 FetchContent_MakeAvailable(googletest)
 
+include(GoogleTest)
+
 
 foreach(t IN LISTS test_dirs)
 
