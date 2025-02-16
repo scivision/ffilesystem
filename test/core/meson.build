@@ -67,7 +67,6 @@ cpp_core = [
 'remove',
 'rename',
 'reserved',
-'safe',
 'separator',
 'set_cwd',
 'system',
@@ -98,7 +97,8 @@ gtest_tests = [
 'is_file',
 'join', 'normal',
 'parent',
-'root', 'space','stem', 'suffix'
+'root',
+'safe', 'space','stem', 'suffix'
 ]
 
 foreach t : gtest_tests

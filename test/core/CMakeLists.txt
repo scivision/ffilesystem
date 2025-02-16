@@ -92,7 +92,6 @@ relative
 remove
 rename
 reserved
-safe
 separator
 set_cwd
 system
@@ -108,7 +107,8 @@ endif()
 
 set(gtest_tests
 is_dir
-is_file join normal parent root space stem suffix
+is_file join normal parent root
+safe space stem suffix
 )
 
 foreach(t IN LISTS cpp_tests gtest_tests)
