@@ -77,8 +77,6 @@ hard_link
 is_char
 is_empty
 is_fifo
-is_prefix
-is_subdir
 mkdir
 permissions
 proximate
@@ -105,6 +103,8 @@ equivalent
 is_absolute
 is_dir
 is_file
+is_prefix
+is_subdir
 join
 owner
 normal parent
