@@ -97,10 +97,8 @@ touch
 with_suffix
 )
 
-if(CYGWIN)
-  list(APPEND cpp_tests windows)
-elseif(WIN32)
-  list(APPEND cpp_tests windows is_appexec_alias)
+if(WIN32)
+  list(APPEND cpp_tests is_appexec_alias)
 endif()
 
 set(gtest_tests
@@ -110,6 +108,9 @@ is_dir
 is_file join normal parent root
 safe space stem suffix
 )
+if(WIN32 OR CYGWIN)
+  list(APPEND gtest_tests windows)
+endif()
 
 foreach(t IN LISTS cpp_tests gtest_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)

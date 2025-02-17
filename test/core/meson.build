@@ -73,7 +73,7 @@ cpp_core = [
 ]
 
 if is_windows
-  cpp_core += ['is_appexec_alias', 'windows']
+  cpp_core += ['is_appexec_alias']
 endif
 
 if backend_filesystem
@@ -100,6 +100,9 @@ gtest_tests = [
 'root',
 'safe', 'space','stem', 'suffix'
 ]
+if is_windows
+  gtest_tests += ['windows']
+endif
 
 foreach t : gtest_tests
 
