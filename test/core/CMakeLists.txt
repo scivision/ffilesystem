@@ -21,7 +21,8 @@ separator
 stem
 suffix
 with_suffix
-owner permissions
+owner
+permissions
 copyfile mkdir touch
 )
 
@@ -80,7 +81,6 @@ is_fifo
 is_prefix
 is_subdir
 mkdir
-owner
 permissions
 proximate
 realpath
@@ -105,7 +105,10 @@ canonical
 env
 is_absolute
 is_dir
-is_file join normal parent root
+is_file
+join
+owner
+normal parent root
 safe space stem suffix
 )
 if(WIN32 OR CYGWIN)

@@ -57,7 +57,6 @@ cpp_core = [
 'is_prefix',
 'is_subdir',
 'mkdir',
-'owner',
 'permissions',
 'realpath',
 'remove',
@@ -95,7 +94,9 @@ gtest_tests = [
 'is_absolute',
 'is_dir',
 'is_file',
-'join', 'normal',
+'join',
+'owner',
+'normal',
 'parent',
 'root',
 'safe', 'space','stem', 'suffix'

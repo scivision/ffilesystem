@@ -1,40 +1,21 @@
-#include <iostream>
-#include <cstdlib>
-
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
+#include <string>
 
+#include <gtest/gtest.h>
 
-int main(int argc, char *argv[]) {
+TEST(TestOwner, Owner){
 
-  std::string_view exe = (argc > 1) ? argv[1] : argv[0];
+std::string name = fs_get_username();
+EXPECT_FALSE(name.empty());
 
-  std::cout << "Executable: " << exe << "\n";
+std::string owner = fs_get_owner_name(testing::TempDir());
+EXPECT_FALSE(owner.empty());
 
-  const std::string user = fs_get_username();
-  std::cout << "User: " << user << "\n";;
+EXPECT_FALSE(fs_get_owner_group(testing::TempDir()).empty());
 
-  const std::string name = fs_get_owner_name(exe);
-  std::cout << "Owner name: " << name << "\n";;
-  if (name.empty())
-    err("No owner information");
+if (fs_getenv("CI") != "true"){
+// mismatched username and owner can happen on CI systems
+  EXPECT_EQ(name, owner);
+}
 
-  const std::string group = fs_get_owner_group(exe);
-  std::cout << "Owner group: " << group << std::endl;
-  if (group.empty())
-    err("No owner group information");
-
-  if (user == name) {
-    std::cout << "OK: User and owner match\n";
-    return EXIT_SUCCESS;
-  }
-
-  std::cerr << "User and owner didn't match\n";
-
-  if (fs_getenv("CI") == "true")
-    std::cerr << "mismatched username and owner can happen on CI systems\n";
-
-  ok_msg("get_owner C++");
-
-  return EXIT_SUCCESS;
 }
