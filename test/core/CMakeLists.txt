@@ -87,7 +87,6 @@ realpath
 relative
 remove
 rename
-reserved
 separator
 set_cwd
 system
@@ -108,7 +107,9 @@ is_dir
 is_file
 join
 owner
-normal parent root
+normal parent
+reserved
+root
 safe space stem suffix
 )
 if(WIN32 OR CYGWIN)

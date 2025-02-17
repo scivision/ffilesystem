@@ -61,7 +61,6 @@ cpp_core = [
 'realpath',
 'remove',
 'rename',
-'reserved',
 'separator',
 'set_cwd',
 'system',
@@ -98,6 +97,7 @@ gtest_tests = [
 'owner',
 'normal',
 'parent',
+'reserved',
 'root',
 'safe', 'space','stem', 'suffix'
 ]
