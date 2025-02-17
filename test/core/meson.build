@@ -44,7 +44,6 @@ endif
 
 
 cpp_core = [
-'absolute',
 'canonical',
 'copyfile',
 'drop_slash',
@@ -92,6 +91,7 @@ endforeach
 
 
 gtest_tests = [
+'absolute',
 'is_absolute',
 'is_dir',
 'is_file',

@@ -1,204 +1,43 @@
-#include <iostream>
-#include <cstdlib>
-
-#ifdef _MSC_VER
-#include <crtdbg.h>
-#endif
-
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
 
+#include <gtest/gtest.h>
 
-int main() {
-#ifdef _MSC_VER
-_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
-_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
-_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
-_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
-_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif
-std::string in = "rel";
-std::string base, ref, out;
-const std::string cwd = fs_get_cwd();
-
-int err = 0;
-
-if (fs_is_windows()) {
-  base = "j:/foo";
-  ref = "j:/foo/rel";
-} else {
-  base = "/foo";
-  ref = "/foo/rel";
-}
-
-out = fs_absolute(in, base, false);
-if (out.empty()) {
-  std::cerr << "absolute() has empty output\n";
-  err++;
-}
-if (out != ref) {
-  std::cerr << "Mismatch: absolute(" << in << ", " << base << ") " << out << " != " << ref << "\n";
-  err++;
-}
-
-// relative path alone
-ref = cwd + "/" + in;
-out = fs_absolute(in, false);
-if (out.empty()) {
-  std::cerr << "absolute(" << in << ") has empty output\n";
-  err++;
-}
-if (out != ref) {
-  std::cerr << "absolute(" << in << ") = " << out << " != " << ref << "\n";
-  err++;
-}
-
-    ref = cwd + "/./" + in;
-    std::string ref_normalized = fs_normal(ref);
-
-    out = fs_absolute("./" + in, false);
-    if (out.empty()) {
-        std::cerr << "test 3: absolute(./" << in << ") has empty output\n";
-        err++;
+class TestAbs : public testing::Test {
+protected:
+  std::string base, ref;
+  std::string cwd = fs_get_cwd();
+  void SetUp() override {
+    if (fs_is_windows()) {
+      base = "j:/foo";
+      ref = "j:/foo/rel";
+    } else {
+      base = "/foo";
+      ref = "/foo/rel";
     }
-    if (out != ref && out != ref_normalized) {
-        std::cerr << "test 3: absolute(./" << in << "): " << out << " != " << ref << " || != " << ref_normalized << "\n";
-        err++;
-    }
+  }
+};
 
-    ref = cwd + "/../" + in;
-    ref_normalized = fs_normal(ref);
 
-    out = fs_absolute("../" + in, false);
-    if (out.empty()) {
-        std::cerr << "test 4: absolute(../" << in << ") has empty output\n";
-        err++;
-    }
-    if (out != ref && out != ref_normalized) {
-        std::cerr << "test 4: absolute(../" << in << "): " << out << " != " << ref << " || != " << ref_normalized << "\n";
-        err++;
-    }
+TEST_F(TestAbs, Absolute){
+
+EXPECT_EQ(fs_absolute("", false), cwd);
+EXPECT_EQ(fs_absolute("", "", false), cwd);
+
+EXPECT_EQ(fs_absolute("rel", base, false), ref);
+
+EXPECT_EQ(fs_absolute(cwd + "/rel", false), cwd + "/rel");
+
+// absolute("./rel") may be "/fullpath/./rel" (our method, and most <filesystem> except Windows)
+//                     or "/fullpath/rel" (Windows <filesystem>)
+// using for base "." or ".." and similar has similar ambiguity for testing.
 
 // relative path, empty base
-ref = cwd + "/" + in;
-out = fs_absolute(in, "", false);
-if (out.empty()) {
-  std::cerr << "test 5: absolute(" << in << ", '') has empty output\n";
-  err++;
-}
-if (out != ref) {
-  std::cerr << "test 5: absolute(" << in << ", ''): " << out << " != " << ref << "\n";
-  err++;
-}
-
-    // relative path, '.' base
-    ref = cwd + "/./" + in;
-    ref_normalized = fs_normal(ref);
-
-    out = fs_absolute(in, ".", false);
-    if (out.empty()) {
-        std::cerr << "test 6: absolute(" << in << ", '.') has empty output\n";
-        err++;
-    }
-    if (out != ref && out != ref_normalized) {
-        std::cerr << "test 6: absolute(" << in << ", '.'): " << out << " != " << ref << " || != " << ref_normalized << "\n";
-        err++;
-    }
-
-    // relative path, '..' base
-    ref = cwd + "/../" + in;
-    ref_normalized = fs_normal(ref);
-
-    out = fs_absolute(in, "..", false);
-    if (out.empty()) {
-        std::cerr << "test 7: absolute(" << in << ", '..') has empty output\n";
-        err++;
-    }
-    if (out != ref && out != ref_normalized) {
-        std::cerr << "test 7: absolute(" << in << ", '..'): " << out << " != " << ref << " || != " << ref_normalized << "\n";
-        err++;
-    }
+EXPECT_EQ(fs_absolute("rel", "", false), cwd + "/rel");
 
 // empty path, relative base
-ref = cwd + "/" + in;
-out = fs_absolute("", in, false);
-if (out.empty()) {
-  std::cerr << "absolute() has empty output\n";
-  err++;
-}
-if (out != ref) {
-  std::cerr << "Mismatch: absolute('', " << in << ") " << out << " != " << in << "\n";
-  err++;
-}
+EXPECT_EQ(fs_absolute("", "rel", false), cwd + "/rel");
 
-// empty in
-ref = cwd;
-out = fs_absolute("", false);
-if (out.empty()) {
-  std::cerr << "absolute('') has empty output\n";
-  err++;
-}
-if (out != ref) {
-  std::cerr << "absolute(''): " << out << " != " << ref << "\n";
-  err++;
-}
+EXPECT_EQ(fs_absolute("日本語", false), cwd + "/日本語");
+EXPECT_EQ(fs_absolute("have space", false), cwd + "/have space");
 
-out = fs_absolute("", "", false);
-if (out.empty()) {
-  std::cerr << "absolute('', '') has empty output\n";
-  err++;
-}
-if (out != ref) {
-  std::cerr << "absolute('', ''): " << out << " != " << ref << "\n";
-  err++;
-}
-
-// base only
-ref = cwd + "/" + in;
-out = fs_absolute("", in, false);
-if (out.empty()) {
-  std::cerr << "absolute('', path) has empty output\n";
-  err++;
-}
-if (out != ref) {
-  std::cerr << "absolute('', " << in << "): " << out << " != " << ref << "\n";
-  err++;
-}
-std::cout << "PASSED: absolute('', " << in << ")\n";
-
-// non-ASCII
-in = "日本語";
-ref = cwd + "/" + in;
-out = fs_absolute(in, false);
-if (out.empty()) {
-  std::cerr << "absolute(" << in << ") has empty output\n";
-  err++;
-}
-if (out != ref) {
-  std::cerr << "absolute(" << in << "): " << out << " != " << ref << "\n";
-  err++;
-}
-
-// space
-in = "some space here";
-ref = cwd + "/" + in;
-out = fs_absolute(in, false);
-if (out.empty()) {
-  std::cerr << "absolute(" << in << ") has empty output\n";
-  err++;
-}
-if (out != ref) {
-  std::cerr << "absolute(" << in << "): " << out << " != " << ref << "\n";
-  err++;
-}
-
-if(err){
-  std::cerr << "FAILED: absolute C++ " << err << " tests.\n";
-  return EXIT_FAILURE;
-}
-
-ok_msg("absolute C++");
-
-return EXIT_SUCCESS;
 }

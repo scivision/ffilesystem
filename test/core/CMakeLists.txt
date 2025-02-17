@@ -67,7 +67,6 @@ endif()
 
 
 set(cpp_tests
-absolute
 canonical
 copyfile
 drop_slash
@@ -105,6 +104,7 @@ elseif(WIN32)
 endif()
 
 set(gtest_tests
+absolute
 is_absolute
 is_dir
 is_file join normal parent root
