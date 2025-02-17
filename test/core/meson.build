@@ -47,7 +47,6 @@ cpp_core = [
 'canonical',
 'copyfile',
 'drop_slash',
-'env',
 'equivalent',
 'expanduser',
 'filename',
@@ -92,6 +91,7 @@ endforeach
 
 gtest_tests = [
 'absolute',
+'env',
 'is_absolute',
 'is_dir',
 'is_file',
@@ -116,6 +116,10 @@ foreach t : gtest_tests
 endforeach
 
 
-tenv = executable('noenv_cpp', 'test_env.cpp', link_with: filesystem, include_directories: [inc, '..'])
+tenv = executable('noenv_cpp', 'test_env.cpp',
+link_with: filesystem,
+dependencies: [gtest_dep, gmock_dep],
+include_directories: [inc, '..']
+)
 
 test('NoEnv_cpp', tenv, suite: 'cpp', env: env)

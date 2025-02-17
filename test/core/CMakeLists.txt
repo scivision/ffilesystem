@@ -70,7 +70,6 @@ set(cpp_tests
 canonical
 copyfile
 drop_slash
-env
 equivalent
 expanduser
 filename
@@ -103,6 +102,7 @@ endif()
 
 set(gtest_tests
 absolute
+env
 is_absolute
 is_dir
 is_file join normal parent root
