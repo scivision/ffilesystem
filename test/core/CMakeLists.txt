@@ -74,7 +74,6 @@ expanduser
 filename
 filesize
 hard_link
-is_char
 is_empty
 is_fifo
 mkdir
@@ -101,6 +100,7 @@ canonical
 env
 equivalent
 is_absolute
+is_char
 is_dir
 is_file
 is_prefix

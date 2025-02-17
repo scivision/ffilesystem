@@ -1,25 +1,18 @@
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
+#include <string>
 
-#include <string_view>
+#include <gtest/gtest.h>
 
-#include <iostream>
-#include <cstdlib>
-
-int main() {
 
 // /dev/stdin may not be available on CI systems
 
-const std::string p = fs_is_windows() ? "NUL" : "/dev/null";
+TEST(TestChar, IsChar)
+{
+std::string const p = fs_is_windows() ? "NUL" : "/dev/null";
 
-if (!fs_is_char_device(p))
-  err("is_char_device(" + p + ") should be true");
+EXPECT_TRUE(fs_is_char_device(p));
 
-if (fs_is_file(p))
-  err("is_file(" + p + ") should be false");
+EXPECT_FALSE(fs_is_file(p));
 
-ok_msg("is_char_device(" + p + ")");
-
-return EXIT_SUCCESS;
 
 }
