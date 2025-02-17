@@ -44,7 +44,6 @@ endif
 
 
 cpp_core = [
-'copyfile',
 'drop_slash',
 'expanduser',
 'filename',
@@ -85,6 +84,7 @@ endforeach
 gtest_tests = [
 'absolute',
 'canonical',
+'copyfile',
 'env',
 'equivalent',
 'is_absolute',

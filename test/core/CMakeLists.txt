@@ -68,7 +68,6 @@ endif()
 
 
 set(cpp_tests
-copyfile
 drop_slash
 expanduser
 filename
@@ -97,6 +96,7 @@ endif()
 set(gtest_tests
 absolute
 canonical
+copyfile
 env
 equivalent
 is_absolute

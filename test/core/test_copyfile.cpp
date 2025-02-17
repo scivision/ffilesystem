@@ -1,90 +1,57 @@
-#include <iostream>
-#include <fstream>
 #include <string>
-#include <cstdlib>
+#include <fstream>
+#include <cstdint>
 
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
+
+#include <gtest/gtest.h>
 
 
-int main() {
-  // use full path for clarity of user messages
+class TestCopyFile : public testing::Test {
+  protected:
+    std::string s1, s2, s3, s4, t1;
+    std::uintmax_t iref;
 
-  const std::string cwd = fs_get_cwd();
+    void SetUp() override {
+      s1 = testing::TempDir() + "/dummy_cpp.txt";
+      s2 = testing::TempDir() + "/dummy_cpp.txt.copy";
+      s3 = testing::TempDir() + "/empty_copyfile.txt";
+      s4 = testing::TempDir() + "/empty_copyfile_copy.txt";
+      t1 = "及せゃ市人購ゅトてへ投際ト点吉で速流つ今日";
 
-  const std::string s1 = cwd + "/dummy_cpp.txt";
+      // Write to the first file
+      std::ofstream ofs(s1);
+      ASSERT_TRUE(ofs);
+      ofs << t1;
+      ofs.close();
 
-  std::string s2 = cwd;
-  if(fs_is_windows() && fs_backend() == "<filesystem>"){
-    std::cerr << "bug in MinGW, oneAPI, MSVC, and <filesystem> with non-Ascii\n";
-    s2 += "/dummy_cpp.txt.copy";
-  } else
-    s2 += "/copy_cpp_日本語.txt";
+      iref = fs_file_size(s1);
+      ASSERT_NE(iref, 0);
 
-  const std::string t1 = "及せゃ市人購ゅトてへ投際ト点吉で速流つ今日";
+      ASSERT_TRUE(fs_touch(s3));
+    }
+};
+
+TEST_F(TestCopyFile, CopyFile){
+
   std::string t2;
 
-  // Write to the first file
-  std::ofstream ofs(s1);
-  if (!ofs)
-    err("could not open file for writing " + s1);
-  ofs << t1;
-  ofs.close();
-
-  auto iref = fs_file_size(s1);
-  if(iref == 0)
-    err("input file size is zero " + s1);
-
   // Copy the file
-  bool ok = fs_copy_file(s1, s2, true);
-  if (!fs_is_file(s2))
-      err("did not detect file after copy " + s2);
-  if (!ok)
-    err("copy_file ok logical is false despite success of copy ");
+  EXPECT_TRUE(fs_copy_file(s1, s2, true));
+  EXPECT_TRUE(fs_is_file(s2));
 
-  auto i64 = fs_file_size(s2);
-  if(i64 == 0)
-    err("file size is zero after copy " + s2);
-
-  std::cout << "file sizes (bytes) original, copy: " << iref << " " << i64 << "\n";
-
-  if (i64 != iref)
-    err("file size mismatch after copy " + s1 + " " + s2);
+  EXPECT_EQ(fs_file_size(s2), iref);
 
   // Read from the copied file
   std::ifstream ifs(s2);
-  if (!ifs)
-    err("could not open file for reading " + s2);
-
   std::getline(ifs, t2);
   ifs.close();
 
-  // Check file contents
+  EXPECT_EQ(t1, t2);
 
-  std::cout << "text lengths (bytes) original, copy: " << t1.length() << " " << t2.length() << "\n";
-  std::cout << "File text contents:\n" << t1 << "\nCopy contents:\n" << t2 << "\n";
+  EXPECT_TRUE(fs_copy_file(s3, s4, true));
+  EXPECT_TRUE(fs_is_file(s4));
 
-  if (t1 != t2) {
-      std::cerr << "file content mismatch after copy:\n" << s1 << " => " << s2 << "\n";
-      return EXIT_FAILURE;
-  }
+  EXPECT_EQ(fs_file_size(s4), 0);
 
-  // copy empty file
-  const std::string s3 = cwd + "/empty_copyfile.txt";
-  const std::string s4 = cwd + "/empty_copyfile_copy.txt";
-
-  fs_touch(s3);
-  ok = fs_copy_file(s3, s4, true);
-  if (!fs_is_file(s4))
-    err("did not detect file after copy " + s4);
-  if (!ok)
-    err("copy_file ok logical is false despite success of copy ");
-
-  i64 = fs_file_size(s4);
-  if(i64 != 0)
-    err("empty file size is not zero after copy " + s4);
-
-  ok_msg("copy_file C++");
-
-  return EXIT_SUCCESS;
 }
