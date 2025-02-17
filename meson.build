@@ -207,8 +207,12 @@ endif
 if get_option('test')
   gtest_proj = subproject('gtest')
   gtest_dep = gtest_proj.get_variable('gtest_main_dep')
+  gmock_dep = gtest_proj.get_variable('gmock_dep')
   if not gtest_dep.found()
     error('MESON_SKIP_TEST: gtest not installed.')
+  endif
+  if not gmock_dep.found()
+    error('MESON_SKIP_TEST: gmock not installed.')
   endif
 
   subdir('test')

@@ -67,7 +67,6 @@ endif()
 
 
 set(cpp_tests
-canonical
 copyfile
 drop_slash
 equivalent
@@ -102,6 +101,7 @@ endif()
 
 set(gtest_tests
 absolute
+canonical
 env
 is_absolute
 is_dir
@@ -118,7 +118,7 @@ foreach(t IN LISTS cpp_tests gtest_tests)
   target_include_directories(test_${t}_cpp PRIVATE ..)
 
   if(t IN_LIST gtest_tests)
-    target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main)
+    target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
     gtest_discover_tests(test_${t}_cpp)
     continue()
   endif()

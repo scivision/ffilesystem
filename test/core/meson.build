@@ -44,7 +44,6 @@ endif
 
 
 cpp_core = [
-'canonical',
 'copyfile',
 'drop_slash',
 'equivalent',
@@ -91,6 +90,7 @@ endforeach
 
 gtest_tests = [
 'absolute',
+'canonical',
 'env',
 'is_absolute',
 'is_dir',
@@ -108,7 +108,7 @@ foreach t : gtest_tests
 
   t_cpp = executable(t + '_cpp', 'test_' + t + '.cpp',
     link_with: filesystem,
-    dependencies: gtest_dep,
+    dependencies: [gtest_dep, gmock_dep],
     include_directories: [inc, '..'])
 
   test(t + '_cpp', t_cpp, suite: 'cpp', workdir: meson.current_build_dir())
