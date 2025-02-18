@@ -70,7 +70,6 @@ endif()
 set(cpp_tests
 drop_slash
 expanduser
-filename
 filesize
 hard_link
 is_empty
@@ -99,6 +98,7 @@ canonical
 copyfile
 env
 equivalent
+filename
 is_absolute
 is_char
 is_dir
