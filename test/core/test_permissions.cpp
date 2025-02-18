@@ -29,8 +29,11 @@ std::string read = "readable.txt";
 std::string noread = "nonreadable.txt";
 std::string nowrite = "nonwritable.txt";
 
-fs_touch(read);
-fs_set_permissions(read, 1, 0, 0);
+if(!fs_touch(read))
+  err("touch('" + read + "') failed");
+
+if(!fs_set_permissions(read, 1, 0, 0))
+  err("set_permissions('" + read + "') failed");
 
 auto p = fs_get_permissions(read);
 if(p.empty())
