@@ -1,54 +1,26 @@
-#include <cstdlib>
-#include <iostream>
 #include <string>
 #include <fstream> // std::ofstream
 
-#ifdef _MSC_VER
-#include <crtdbg.h>
-#endif
-
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
+
+#include <gtest/gtest.h>
+
+class TestFilesize : public testing::Test {
+  protected:
+    std::string file;
+    void SetUp() override {
+      file = testing::TempDir() + "/hello.txt";
+      std::ofstream ofs(file);
+      ofs << "hello";
+      ofs.close();
+    }
+    void TearDown() override {
+      std::remove(file.c_str());
+    }
+  };
 
 
-int main(int argc, char *argv[]){
-
-#ifdef _MSC_VER
-  _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
-  _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
-  _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
-  _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
-  _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-  _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif
-
-
-  std::string d = (argc > 1) ? argv[1] : argv[0];
-
-// UTF-8 filesize
-  auto s = fs_file_size(d);
-  std::cout << "own file size " << d << " " << s << "\n";
-  if(!s)
-    err("failed to get own file size " + d);
-
-  std::string fn = "日本語.txt";
-  // write "hello" to file using std::ofstream
-  std::ofstream of(fn);
-  if(!of)
-    err("failed to open file for writing " + fn);
-  of << "hello";
-  of.close();
-
-  s = fs_file_size(fn);
-  std::cout << "file size " << fn << " " << s << "\n";
-  if(s != 5){
-    if((fs_is_mingw()))
-      std::cerr << "MINGW has a bug in fs_file_size\n";
-    else
-      err("failed to get correct file size " + fn);
-  }
-
-  ok_msg("file_size C++");
-
-  return EXIT_SUCCESS;
+TEST_F(TestFilesize, Filesize)
+{
+EXPECT_EQ(fs_file_size(file), 5);
 }

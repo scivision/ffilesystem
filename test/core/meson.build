@@ -45,7 +45,6 @@ endif
 
 cpp_core = [
 'drop_slash',
-'filesize',
 'hard_link',
 'is_empty',
 'is_fifo',
@@ -87,6 +86,7 @@ gtest_tests = [
 'equivalent',
 'expanduser',
 'filename',
+'filesize',
 'is_absolute',
 'is_char',
 'is_dir',

@@ -69,7 +69,6 @@ endif()
 
 set(cpp_tests
 drop_slash
-filesize
 hard_link
 is_empty
 is_fifo
@@ -99,6 +98,7 @@ env
 equivalent
 expanduser
 filename
+filesize
 is_absolute
 is_char
 is_dir
