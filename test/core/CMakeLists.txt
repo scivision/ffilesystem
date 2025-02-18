@@ -48,19 +48,9 @@ set_tests_properties(Fortran_${t} PROPERTIES
 LABELS Fortran
 SKIP_RETURN_CODE 77
 WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_fortran>
-FIXTURES_SETUP ${t}
 )
 
 endforeach()
-
-set_tests_properties(Fortran_absolute PROPERTIES FIXTURES_REQUIRED "is_absolute;join")
-
-set_tests_properties(Fortran_resolve PROPERTIES
-FIXTURES_REQUIRED "absolute;canonical")
-
-set_tests_properties(Fortran_root PROPERTIES FIXTURES_REQUIRED is_absolute)
-
-set_tests_properties(Fortran_canonical PROPERTIES FIXTURES_REQUIRED "expanduser")
 
 set_tests_properties(Fortran_relative Fortran_proximate PROPERTIES DISABLED $<NOT:$<BOOL:${HAVE_CXX_FILESYSTEM}>>)
 
@@ -71,7 +61,6 @@ set(cpp_tests
 drop_slash
 hard_link
 is_fifo
-mkdir
 permissions
 proximate
 realpath
@@ -106,6 +95,7 @@ is_file
 is_prefix
 is_subdir
 join
+mkdir
 owner
 normal parent
 reserved
@@ -182,16 +172,6 @@ endif()
 set_property(TEST Cpp_empty PROPERTY
 SKIP_REGULAR_EXPRESSION "not implemented;SIGABRT;[aA]bort;[sS]egmentation fault;segfault"
 )
-
-set_tests_properties(Cpp_mkdir PROPERTIES FIXTURES_REQUIRED root)
-
-if(HAVE_Fortran_FILESYSTEM)
-
-set_tests_properties(Fortran_with_suffix PROPERTIES FIXTURES_REQUIRED stem)
-set_property(TEST Fortran_is_empty PROPERTY FIXTURES_REQUIRED "touch;filesize;mkdir")
-set_property(TEST Fortran_equivalent PROPERTY FIXTURES_REQUIRED mkdir)
-
-endif()
 
 if(NOT WIN32 AND NOT HAVE_CXX_FILESYSTEM)
   set_tests_properties(Cpp_filesize PROPERTIES DISABLED $<NOT:$<BOOL:${ffilesystem_HAVE_SYS_STATVFS}>>)
