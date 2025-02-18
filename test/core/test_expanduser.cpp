@@ -1,62 +1,23 @@
-#include <iostream>
-#include <cstdlib>
+#include "ffilesystem.h"
 #include <string>
 
-#ifdef _MSC_VER
-#include <crtdbg.h>
-#endif
+#include <gtest/gtest.h>
 
-#include "ffilesystem.h"
-#include "ffilesystem_test.h"
+TEST(TestExpand, Expanduser)
+{
+std::string r;
+std::string const h = fs_get_homedir();
 
+ASSERT_TRUE(fs_expanduser("").empty());
+EXPECT_EQ(fs_expanduser("."), ".");
+EXPECT_EQ(fs_expanduser("~"), h);
+EXPECT_EQ(fs_expanduser("~/"), h);
+EXPECT_EQ(fs_expanduser("~//"), h);
+EXPECT_EQ(fs_expanduser("~//test"), h + "/test");
+EXPECT_EQ(fs_expanduser("~test"), "~test");
+EXPECT_EQ(fs_expanduser("test~"), "test~");
+EXPECT_EQ(fs_expanduser("test~test"), "test~test");
 
-int main(){
+EXPECT_EQ(fs_expanduser("日本語"), "日本語");
 
-#ifdef _MSC_VER
-  _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
-  _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
-  _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
-  _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
-  _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-  _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif
-
-  std::string r;
-  std::string h;
-
-  r = fs_expanduser("");
-
-  if(!r.empty())
-    err("expanduser('') != ''  " + r);
-
-  r = fs_expanduser(".");
-  if (r != ".")
-    err("expanduser('.') != '.'" + r);
-
-  r = fs_expanduser("~");
-  h = fs_get_homedir();
-  if(r != h)
-    err("expanduser('~') != homedir  => " + r + " != " + h);
-
-  std::cout << "~: " << h << "\n";
-
-  r = fs_expanduser("~/");
-  h = fs_get_homedir();
-  if (r != h)
-    err("expanduser('~/') != homedir + '/'  =>  " + r + " != " + h);
-
-  std::cout << "~/: " << h << "\n";
-
-  r = fs_expanduser("~//");
-  if (r != h)
-    err("expanduser('~//') != homedir");
-
-  std::string j = "日本語";
-  r = fs_expanduser(j);
-  if (r != j)
-    err("expanduser(" + j + ") != " + j);
-
-  ok_msg("expanduser C++");
-
-  return EXIT_SUCCESS;
 }
