@@ -49,7 +49,6 @@ cpp_core = [
 'is_fifo',
 'permissions',
 'realpath',
-'remove',
 'rename',
 'separator',
 'set_cwd',
@@ -97,6 +96,7 @@ gtest_tests = [
 'owner',
 'normal',
 'parent',
+'remove',
 'reserved',
 'root',
 'safe', 'space','stem', 'suffix'

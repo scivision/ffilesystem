@@ -65,7 +65,6 @@ permissions
 proximate
 realpath
 relative
-remove
 rename
 separator
 set_cwd
@@ -97,7 +96,9 @@ is_subdir
 join
 mkdir
 owner
-normal parent
+normal
+parent
+remove
 reserved
 root
 safe space stem suffix
