@@ -174,10 +174,6 @@ set_property(TEST Cpp_empty PROPERTY
 SKIP_REGULAR_EXPRESSION "not implemented;SIGABRT;[aA]bort;[sS]egmentation fault;segfault"
 )
 
-if(NOT WIN32 AND NOT HAVE_CXX_FILESYSTEM)
-  set_tests_properties(Cpp_filesize PROPERTIES DISABLED $<NOT:$<BOOL:${ffilesystem_HAVE_SYS_STATVFS}>>)
-endif()
-
 # C
 
 foreach(t IN ITEMS overflow)
