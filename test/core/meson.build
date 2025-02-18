@@ -46,7 +46,6 @@ endif
 cpp_core = [
 'drop_slash',
 'hard_link',
-'is_empty',
 'is_fifo',
 'mkdir',
 'permissions',
@@ -90,6 +89,7 @@ gtest_tests = [
 'is_absolute',
 'is_char',
 'is_dir',
+'is_empty',
 'is_file',
 'is_prefix',
 'is_subdir',
