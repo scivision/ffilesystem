@@ -59,7 +59,6 @@ endif()
 
 set(cpp_tests
 drop_slash
-hard_link
 is_fifo
 permissions
 proximate
@@ -86,6 +85,7 @@ equivalent
 expanduser
 filename
 filesize
+hard_link
 is_absolute
 is_char
 is_dir
