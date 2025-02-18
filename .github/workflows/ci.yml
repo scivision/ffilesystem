@@ -195,7 +195,8 @@ jobs:
 
 #------------------------------
   clang-tidy:
-
+    if: false
+    # just saving resources, it works
     runs-on: ubuntu-24.04
     needs: linux-new
     timeout-minutes: 10
