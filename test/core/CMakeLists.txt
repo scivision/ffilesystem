@@ -61,7 +61,6 @@ set(cpp_tests
 drop_slash
 is_fifo
 permissions
-proximate
 realpath
 rename
 separator
@@ -97,6 +96,7 @@ mkdir
 owner
 normal
 parent
+proximate
 relative
 remove
 reserved
@@ -134,7 +134,7 @@ endforeach()
 
 target_compile_definitions(test_touch_cpp PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 
-set_tests_properties(TestRelative.Relative Cpp_proximate PROPERTIES DISABLED $<NOT:$<BOOL:${HAVE_CXX_FILESYSTEM}>>)
+set_tests_properties(TestRelative.Relative TestProximate.Proximate PROPERTIES DISABLED $<NOT:$<BOOL:${HAVE_CXX_FILESYSTEM}>>)
 
 
 foreach(t IN ITEMS empty)

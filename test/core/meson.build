@@ -60,10 +60,6 @@ if is_windows
   cpp_core += ['is_appexec_alias']
 endif
 
-if backend_filesystem
-  cpp_core += ['proximate']
-endif
-
 foreach t : cpp_core
 
   t_cpp = executable(t + '_cpp', 'test_' + t + '.cpp', link_with: filesystem,
@@ -105,7 +101,7 @@ if is_windows
   gtest_tests += ['windows']
 endif
 if backend_filesystem
-  gtest_tests += ['relative']
+  gtest_tests += ['proximate','relative']
 endif
 
 foreach t : gtest_tests
