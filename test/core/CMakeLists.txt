@@ -63,7 +63,6 @@ is_fifo
 permissions
 proximate
 realpath
-relative
 rename
 separator
 set_cwd
@@ -98,6 +97,7 @@ mkdir
 owner
 normal
 parent
+relative
 remove
 reserved
 root
@@ -114,7 +114,7 @@ foreach(t IN LISTS cpp_tests gtest_tests)
 
   if(t IN_LIST gtest_tests)
     target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
-    gtest_discover_tests(test_${t}_cpp)
+    gtest_add_tests(TARGET test_${t}_cpp)
     continue()
   endif()
 
@@ -134,7 +134,7 @@ endforeach()
 
 target_compile_definitions(test_touch_cpp PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 
-set_tests_properties(Cpp_relative Cpp_proximate PROPERTIES DISABLED $<NOT:$<BOOL:${HAVE_CXX_FILESYSTEM}>>)
+set_tests_properties(TestRelative.Relative Cpp_proximate PROPERTIES DISABLED $<NOT:$<BOOL:${HAVE_CXX_FILESYSTEM}>>)
 
 
 foreach(t IN ITEMS empty)

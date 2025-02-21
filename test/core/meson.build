@@ -61,7 +61,7 @@ if is_windows
 endif
 
 if backend_filesystem
-  cpp_core += ['relative', 'proximate']
+  cpp_core += ['proximate']
 endif
 
 foreach t : cpp_core
@@ -103,6 +103,9 @@ gtest_tests = [
 ]
 if is_windows
   gtest_tests += ['windows']
+endif
+if backend_filesystem
+  gtest_tests += ['relative']
 endif
 
 foreach t : gtest_tests
