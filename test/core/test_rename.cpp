@@ -1,4 +1,5 @@
 #include <string>
+#include <cstdio> // for std::remove
 
 #include "ffilesystem.h"
 

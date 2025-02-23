@@ -60,7 +60,6 @@ endif()
 set(cpp_tests
 drop_slash
 permissions
-realpath
 set_cwd
 touch
 with_suffix
@@ -95,6 +94,7 @@ owner
 normal
 parent
 proximate
+realpath
 relative
 remove
 rename

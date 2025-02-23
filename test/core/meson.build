@@ -46,7 +46,6 @@ endif
 cpp_core = [
 'drop_slash',
 'permissions',
-'realpath',
 'set_cwd',
 'touch',
 'with_suffix'
@@ -90,6 +89,7 @@ gtest_tests = [
 'owner',
 'normal',
 'parent',
+'realpath',
 'remove',
 'rename',
 'reserved',
