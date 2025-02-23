@@ -15,7 +15,7 @@ class TestMkdir : public testing::Test {
     void TearDown() override {
       std::remove(dir.c_str());
     }
-  };
+};
 
 TEST_F(TestMkdir, Mkdir)
 {

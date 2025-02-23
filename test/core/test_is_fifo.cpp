@@ -1,10 +1,6 @@
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
 
 #include <string_view>
-
-#include <iostream>
-#include <cstdlib>
 #include <string>
 
 #if defined(_WIN32)
@@ -12,7 +8,7 @@
 #include <windows.h>
 #else
 #include <sys/types.h>
-#include <sys/stat.h>
+#include <sys/stat.h>  // mkfifo
 #include <unistd.h> // getpid
 #endif
 
@@ -20,53 +16,52 @@
 #include <format>
 #endif
 
+#include <gtest/gtest.h>
 
-int main()
-{
-
-std::string name;
-
+class TestFifo : public testing::Test {
+  protected:
+    std::string name;
 #if defined(_WIN32)
-// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createnamedpipea
-
-// must have this path prefix or INVALID_HANDLE_VALUE results
-#ifdef __cpp_lib_format  // C++20
-  name = std::format(R"(\\.\pipe\test_pipe_{})", GetCurrentProcessId());
-#else
-  name = R"(\\.\pipe\test_pipe_)" + std::to_string(GetCurrentProcessId());
+    HANDLE hPipe;
 #endif
+    void SetUp() override {
+#if defined(_WIN32)
+      // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createnamedpipea
 
-HANDLE hPipe = CreateNamedPipeA(name.data(),
-                             PIPE_ACCESS_DUPLEX,
-                             PIPE_TYPE_BYTE,
-                             1,
-                             0, 0, 0, nullptr);
+      // must have this path prefix or INVALID_HANDLE_VALUE results
+#ifdef __cpp_lib_format  // C++20
+      name = std::format(R"(\\.\pipe\test_pipe_{})", GetCurrentProcessId());
+#else
+      name = R"(\\.\pipe\test_pipe_)" + std::to_string(GetCurrentProcessId());
+#endif
+      hPipe = CreateNamedPipeA(name.data(),
+                                PIPE_ACCESS_DUPLEX,
+                                PIPE_TYPE_BYTE,
+                                1,
+                                0, 0, 0, nullptr);
 
-if (hPipe == INVALID_HANDLE_VALUE)
-  err("test_is_fifo:CreateNamedPipeA(" + name + ")");
-
+      ASSERT_NE(hPipe, INVALID_HANDLE_VALUE);
 #else
 
 #ifdef __cpp_lib_format
-  name = std::format("test_pipe_{}", getpid());
+      name = std::format("test_pipe_{}", getpid());
 #else
-  name = "test_pipe_" + std::to_string(getpid());
+      name = "test_pipe_" + std::to_string(getpid());
 #endif
 
-  if (mkfifo(name.c_str(), 0666) == -1)
-    err("mkfifo(" + name + ")");
+      ASSERT_NE(mkfifo(name.c_str(), 0666), -1);
 #endif
+    }
 
-if (!fs_is_fifo(name))
-  err("is_fifo(" + name + ") should be true");
-
+    void TearDown() override {
 #if defined(_WIN32)
-if (!CloseHandle(hPipe))
-  err("CloseHandle(" + name + ")");
+      CloseHandle(hPipe);
 #endif
+    }
+};
 
-ok_msg("is_fifo");
 
-return EXIT_SUCCESS;
-
+TEST_F(TestFifo, IsFIFO)
+{
+  EXPECT_TRUE(fs_is_fifo(name));
 }

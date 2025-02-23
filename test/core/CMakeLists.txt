@@ -59,7 +59,6 @@ endif()
 
 set(cpp_tests
 drop_slash
-is_fifo
 permissions
 realpath
 rename
@@ -89,6 +88,7 @@ is_absolute
 is_char
 is_dir
 is_empty
+is_fifo
 is_file
 is_prefix
 is_subdir
