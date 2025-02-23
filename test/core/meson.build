@@ -43,10 +43,7 @@ test('NoEnv_fortran', tenv, suite: 'fortran', env: env)
 endif
 
 
-cpp_core = [
-'drop_slash',
-'permissions'
-]
+cpp_core = ['permissions']
 
 if is_windows
   cpp_core += ['is_appexec_alias']
@@ -66,6 +63,7 @@ gtest_tests = [
 'absolute',
 'canonical',
 'copyfile',
+'drop_slash',
 'empty',
 'env',
 'equivalent',

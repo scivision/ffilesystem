@@ -58,7 +58,6 @@ endif()
 
 
 set(cpp_tests
-drop_slash
 permissions
 )
 
@@ -70,6 +69,7 @@ set(gtest_tests
 absolute
 canonical
 copyfile
+drop_slash
 empty
 env
 equivalent
