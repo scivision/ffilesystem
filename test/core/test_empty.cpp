@@ -1,124 +1,47 @@
 // verify functions handle empty input OK
 
-#include <cstdlib>
-#include <iostream>
 #include <string>
-#include <string_view>
-
-#ifdef _MSC_VER
-#include <crtdbg.h>
-#endif
 
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
 
+#include <gtest/gtest.h>
 
-int main(){
-
-#ifdef _MSC_VER
-_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
-_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
-_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
-_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
-_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif
+TEST(TestEmpty, EmptyInput){
 
 std::string_view e = "";
 
-if(!fs_as_posix(e).empty())
-  err("as_posix");
-
-if(!fs_file_name(e).empty())
-  err("file_name");
-
-if(!fs_stem("").empty())
-  err("stem");
-
-if(!fs_join("", "").empty())
-  err("join");
-
-if(!fs_suffix("").empty())
-  err("suffix");
-
-if(!fs_with_suffix("", "").empty())
-  err("with_suffix");
-
-if(fs_is_char_device(""))
-  err("is_char_device");
-
-if(fs_is_reserved(""))
-  err("is_reserved");
-
-if(fs_is_symlink(""))
-  err("is_symlink");
-
-if(fs_create_symlink("", ""))
-  err("create_symlink");
-
-if(fs_mkdir(""))
-  err("mkdir");
-
-if(!fs_which("").empty())
-  err("which");
-
-if(!fs_root("").empty())
-  err("root");
-
-if(fs_exists(""))
-  err("exists");
-
-if(fs_is_absolute(""))
-  err("is_absolute");
-
-if(fs_is_dir(""))
-  err("is_dir");
-
-if(fs_is_exe(""))
-  err("is_exe");
-
-if(fs_is_file(""))
-  err("is_file");
-
-if(fs_remove(""))
-  err("remove");
-
-if(!fs_canonical("", false, false).empty())
-  err("fs_canonical");
-
-if(fs_equivalent("", ""))
-  err("equivalent");
-
-if(!fs_expanduser("").empty())
-  err("expanduser");
-
-if(fs_copy_file("", "", false))
-  err("copy_file");
-
-if(fs_touch(""))
-  err("touch");
-
-
-if(fs_file_size(""))
-  err("file_size");
+EXPECT_TRUE(fs_as_posix(e).empty());
+EXPECT_TRUE(fs_file_name(e).empty());
+EXPECT_TRUE(fs_stem(e).empty());
+EXPECT_TRUE(fs_join(e, e).empty());
+EXPECT_TRUE(fs_suffix(e).empty());
+EXPECT_TRUE(fs_with_suffix(e, e).empty());
+EXPECT_FALSE(fs_is_char_device(e));
+EXPECT_FALSE(fs_is_reserved(e));
+EXPECT_FALSE(fs_is_symlink(e));
+EXPECT_FALSE(fs_create_symlink(e, e));
+EXPECT_FALSE(fs_mkdir(e));
+EXPECT_TRUE(fs_which(e).empty());
+EXPECT_TRUE(fs_root(e).empty());
+EXPECT_FALSE(fs_exists(e));
+EXPECT_FALSE(fs_is_absolute(e));
+EXPECT_FALSE(fs_is_dir(e));
+EXPECT_FALSE(fs_is_exe(e));
+EXPECT_FALSE(fs_is_file(e));
+EXPECT_FALSE(fs_remove(e));
+EXPECT_TRUE(fs_canonical(e, false, false).empty());
+EXPECT_FALSE(fs_equivalent(e, e));
+EXPECT_TRUE(fs_expanduser(e).empty());
+EXPECT_FALSE(fs_copy_file(e,e, false));
+EXPECT_FALSE(fs_touch(e));
+EXPECT_EQ(fs_file_size(e), 0);
+EXPECT_FALSE(fs_get_cwd().empty());
+EXPECT_FALSE(fs_get_homedir().empty());
 
 if(!fs_is_windows()){
 
-  if(fs_space_available(""))
-    err("space_available");
-
-  if(fs_set_permissions("", 0, 0, 0))
-    err("set_permissions");
-
+  EXPECT_EQ(fs_space_available(e), 0);
+  EXPECT_FALSE(fs_set_permissions(e, 0, 0, 0));
 }
 
-if(fs_get_cwd().empty())
-  err("get_cwd");
-
-if(fs_get_homedir().empty())
-  err("get_homedir");
-
-ok_msg("empty input C++");
-
-return EXIT_SUCCESS;
 }

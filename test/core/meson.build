@@ -74,6 +74,7 @@ gtest_tests = [
 'absolute',
 'canonical',
 'copyfile',
+'empty',
 'env',
 'equivalent',
 'expanduser',

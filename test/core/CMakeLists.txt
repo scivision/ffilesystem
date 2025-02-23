@@ -78,6 +78,7 @@ set(gtest_tests
 absolute
 canonical
 copyfile
+empty
 env
 equivalent
 expanduser
@@ -136,26 +137,6 @@ target_compile_definitions(test_touch_cpp PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_
 
 set_tests_properties(TestRelative.Relative TestProximate.Proximate PROPERTIES DISABLED $<NOT:$<BOOL:${HAVE_CXX_FILESYSTEM}>>)
 
-
-foreach(t IN ITEMS empty)
-
-  add_executable(test_${t}_cpp test_${t}.cpp)
-  target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
-  target_include_directories(test_${t}_cpp PRIVATE ..)
-  if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-    target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
-  endif()
-
-  add_test(NAME Cpp_${t} COMMAND ${CMAKE_COMMAND} -E env $<TARGET_FILE:test_${t}_cpp>)
-  set_tests_properties(Cpp_${t} PROPERTIES
-  LABELS "Cpp"
-  SKIP_RETURN_CODE 77
-  WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
-  FIXTURES_SETUP ${t}
-  )
-
-endforeach()
-
 if(TARGET test_env_fortran)
   add_test(NAME Fortran_NoEnv COMMAND test_env_fortran)
   set(_noenv Fortran_NoEnv)
@@ -169,10 +150,6 @@ if(CMAKE_VERSION VERSION_LESS 3.22 OR "$ENV{CI}")
 else()
   set_tests_properties(Cpp_NoEnv ${_noenv} PROPERTIES ENVIRONMENT_MODIFICATION "HOME=unset:;USERPROFILE=unset:;TEMP=unset:;TMPDIR=unset:")
 endif()
-
-set_property(TEST Cpp_empty PROPERTY
-SKIP_REGULAR_EXPRESSION "not implemented;SIGABRT;[aA]bort;[sS]egmentation fault;segfault"
-)
 
 # C
 
