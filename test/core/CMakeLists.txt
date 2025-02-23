@@ -60,7 +60,6 @@ endif()
 set(cpp_tests
 drop_slash
 permissions
-touch
 )
 
 if(WIN32)
@@ -105,6 +104,7 @@ space
 stem
 suffix
 system
+touch
 with_suffix
 )
 if(WIN32 OR CYGWIN)

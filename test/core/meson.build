@@ -45,8 +45,7 @@ endif
 
 cpp_core = [
 'drop_slash',
-'permissions',
-'touch',
+'permissions'
 ]
 
 if is_windows
@@ -98,6 +97,7 @@ gtest_tests = [
 'stem',
 'suffix',
 'system',
+'touch',
 'with_suffix'
 ]
 if is_windows

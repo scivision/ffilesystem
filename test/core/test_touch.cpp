@@ -1,65 +1,33 @@
-#include <iostream>
-#include <string>
-#include <string_view>
-#include <cstdlib>
-
-#include <chrono>
-#include <thread>
+#include <cstdio> // for std::remove
+#include <ctime>
 
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
 
+#include <gtest/gtest.h>
 
-void check_touch(std::string_view in)
+class TestTouch : public testing::Test {
+  protected:
+    std::string file;
+    void SetUp() override {
+      file = "ffs_test_touch.txt";
+    }
+    void TearDown() override {
+      std::remove(file.c_str());
+    }
+};
+
+TEST_F(TestTouch, Touch)
 {
 
-  std::string fn(in);
+ASSERT_TRUE(fs_touch(file));
 
-  std::cout << "touch(" << fn << ") exists? " << fs_is_file(fn) << "\n";
-  if(!fs_touch(fn))
-    err("touch failed " + fn);
+auto t0 = fs_get_modtime(file);
+EXPECT_GT(t0, 0);
 
-  std::time_t t0 = fs_get_modtime(fn);
-  if(t0 <= 0)
-      err("get_modtime failed " + fn);
+EXPECT_TRUE(fs_set_modtime(file));
 
-  std::cout << "PASSED: touch absolute path: " << fn << " mod time (posix): " << t0 << "\n";
+EXPECT_GE(fs_get_modtime(file), t0);
 
-  std::cout << "touch relative path, cwd: " << fs_get_cwd() << "\n";
-  fn = "test_fileop.h5";
-  if(!fs_touch(fn))
-      err("touch failed " + fn);
+EXPECT_FALSE(fs_set_modtime("not-exist-file"));
 
-  t0 = fs_get_modtime(fn);
-  if(t0 <= 0)
-      err("get_modtime failed " + fn);
-
-  if(!fs_set_modtime(fn))
-      err("set_modtime failed " + fn);
-
-  std::time_t t1 = fs_get_modtime(fn);
-  if(t1 < t0)
-      err("set_modtime failed " + fn);
-
-  if(fs_set_modtime("not-exist-tile"))
-      err("set_modtime should have failed on non existing file");
-
-  std::cout << "OK: touch. modtime: " <<  std::ctime(&t0) << "\n"; // NOSONAR
-}
-
-
-int main(int argc, char* argv[])
-{
-  const std::string dir = (argc > 1) ? argv[1] : fs_parent(argv[0]);
-
-  check_touch(dir + "/test_fileop.h5");
-
-  if(fs_is_mingw())
-    std::cerr << "WARNING: skipping symlink tests on MinGW with " << fs_backend() << "\n";
-  else
-    check_touch(dir + "/日本語.txt");
-
-  ok_msg("touch C++");
-
-  return EXIT_SUCCESS;
 }

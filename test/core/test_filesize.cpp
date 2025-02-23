@@ -18,7 +18,7 @@ class TestFilesize : public testing::Test {
     void TearDown() override {
       std::remove(file.c_str());
     }
-  };
+};
 
 
 TEST_F(TestFilesize, Filesize)
