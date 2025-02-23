@@ -61,7 +61,6 @@ set(cpp_tests
 drop_slash
 permissions
 touch
-with_suffix
 )
 
 if(WIN32)
@@ -106,6 +105,7 @@ space
 stem
 suffix
 system
+with_suffix
 )
 if(WIN32 OR CYGWIN)
   list(APPEND gtest_tests windows)

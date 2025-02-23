@@ -47,7 +47,6 @@ cpp_core = [
 'drop_slash',
 'permissions',
 'touch',
-'with_suffix'
 ]
 
 if is_windows
@@ -95,11 +94,11 @@ gtest_tests = [
 'root',
 'safe',
 'separator',
-'set_cwd',
 'space',
 'stem',
 'suffix',
 'system',
+'with_suffix'
 ]
 if is_windows
   gtest_tests += ['windows']

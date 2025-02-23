@@ -1,53 +1,20 @@
-#include <cstdlib>
-#include <iostream>
-#include <vector>
-#include <string_view>
-#include <tuple>
-
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
 
+#include <gtest/gtest.h>
 
-int main()
+TEST(TestWithSuffix, WithSuffix)
 {
-
-std::string r;
-std::string ref;
-
-int fail = 0;
-
-const std::vector<std::tuple<std::string_view, std::string_view, std::string_view>> tests = {
-  {"", ".h5", ".h5"},
-  {"foo.h5", "", "foo"},
-  {".foo.h5", ".txt", ".foo.txt"},
-  {".h5", "", ".h5"},
-  {".h5", ".h5", ".h5.h5"},
-  {"a//b///c/", ".h5", "a/b/c/.h5"},
-  {"c:/a/hi.nc", ".h5", "c:/a/hi.h5"},
-  {"my/file.h5", ".hdf5", "my/file.hdf5"},
-  {"a/boo", ".h5", "a/boo.h5"},
-  {"boo", ".h5", "boo.h5"},
-  {"a/b/c.d/", ".hdf5", "a/b/c.d/.hdf5"},
-  {"dir.h5/", ".hdf5", "dir.h5/.hdf5"},
-  {"a/b/.h5", ".nc", "a/b/.h5.nc"}
-};
-
-for (const auto& [input, suffix, expected] : tests) {
-  r = fs_with_suffix(input, suffix);
-
-  if (r != expected) {
-    std::cerr << "FAIL: with_suffix(" << input << ", " << suffix << " = " + r + "   expected: " << expected << "\n";
-    fail++;
-  } else
-    std::cout << "PASS: with_suffix(" << input << ", " << suffix << " = " + r + "\n";
-}
-
-  if(fail){
-    std::cerr << "Failed: " << fail << " tests  backend: " << fs_backend() << "\n";
-    return EXIT_FAILURE;
-  }
-
-  ok_msg("with_suffix C++");
-
-  return EXIT_SUCCESS;
+  EXPECT_EQ(fs_with_suffix("", ".h5"), ".h5");
+  EXPECT_EQ(fs_with_suffix("foo.h5", ""), "foo");
+  EXPECT_EQ(fs_with_suffix(".foo.h5", ".txt"), ".foo.txt");
+  EXPECT_EQ(fs_with_suffix(".h5", ""), ".h5");
+  EXPECT_EQ(fs_with_suffix(".h5", ".h5"), ".h5.h5");
+  EXPECT_EQ(fs_with_suffix("a//b///c/", ".h5"), "a/b/c/.h5");
+  EXPECT_EQ(fs_with_suffix("c:/a/hi.nc", ".h5"), "c:/a/hi.h5");
+  EXPECT_EQ(fs_with_suffix("my/file.h5", ".hdf5"), "my/file.hdf5");
+  EXPECT_EQ(fs_with_suffix("a/boo", ".h5"), "a/boo.h5");
+  EXPECT_EQ(fs_with_suffix("boo", ".h5"), "boo.h5");
+  EXPECT_EQ(fs_with_suffix("a/b/c.d/", ".hdf5"), "a/b/c.d/.hdf5");
+  EXPECT_EQ(fs_with_suffix("dir.h5/", ".hdf5"), "dir.h5/.hdf5");
+  EXPECT_EQ(fs_with_suffix("a/b/.h5", ".nc"), "a/b/.h5.nc");
 }
