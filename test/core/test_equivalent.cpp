@@ -21,8 +21,7 @@ EXPECT_TRUE(fs_equivalent("..", fs_parent(cwd)));
 EXPECT_TRUE(fs_equivalent(".", "./"));
 EXPECT_TRUE(fs_equivalent(".", cwd));
 
-s1 = testing::TempDir() + "/not-exist";
+s1 = "ffs_equiv_not-exist";
 EXPECT_FALSE(fs_equivalent(s1, s1));
-
 
 }

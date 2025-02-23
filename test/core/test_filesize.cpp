@@ -1,5 +1,6 @@
 #include <string>
 #include <fstream> // std::ofstream
+#include <cstdio>  // std::remove
 
 #include "ffilesystem.h"
 
@@ -9,7 +10,7 @@ class TestFilesize : public testing::Test {
   protected:
     std::string file;
     void SetUp() override {
-      file = testing::TempDir() + "/hello.txt";
+      file = "ffs_filesize_5bytes.txt";
       std::ofstream ofs(file);
       ofs << "hello";
       ofs.close();

@@ -1,6 +1,6 @@
 #include <string>
 #include <fstream>
-#include <cstdint>
+#include <cstdio>  // std::remove
 
 #include "ffilesystem.h"
 
@@ -13,10 +13,10 @@ class TestCopyFile : public testing::Test {
     std::uintmax_t iref;
 
     void SetUp() override {
-      s1 = testing::TempDir() + "/dummy_cpp.txt";
-      s2 = testing::TempDir() + "/dummy_cpp.txt.copy";
-      s3 = testing::TempDir() + "/empty_copyfile.txt";
-      s4 = testing::TempDir() + "/empty_copyfile_copy.txt";
+      s1 = "ffs_dummy_cpp.txt";
+      s2 = "ffs_dummy_cpp.txt.copy";
+      s3 = "ffs_empty_copyfile.txt";
+      s4 = "ffs_empty_copyfile_copy.txt";
       t1 = "及せゃ市人購ゅトてへ投際ト点吉で速流つ今日";
 
       // Write to the first file
@@ -29,6 +29,12 @@ class TestCopyFile : public testing::Test {
       ASSERT_NE(iref, 0);
 
       ASSERT_TRUE(fs_touch(s3));
+    }
+    void TearDown() override {
+      std::remove(s1.c_str());
+      std::remove(s2.c_str());
+      std::remove(s3.c_str());
+      std::remove(s4.c_str());
     }
 };
 

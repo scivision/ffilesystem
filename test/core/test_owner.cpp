@@ -8,10 +8,10 @@ TEST(TestOwner, Owner){
 std::string name = fs_get_username();
 EXPECT_FALSE(name.empty());
 
-std::string owner = fs_get_owner_name(testing::TempDir());
+std::string owner = fs_get_owner_name(".");
 EXPECT_FALSE(owner.empty());
 
-EXPECT_FALSE(fs_get_owner_group(testing::TempDir()).empty());
+EXPECT_FALSE(fs_get_owner_group(".").empty());
 
 if (fs_getenv("CI") != "true"){
 // mismatched username and owner can happen on CI systems

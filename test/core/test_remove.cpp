@@ -1,3 +1,5 @@
+#include <cstdio>  // std::remove
+
 #include "ffilesystem.h"
 
 #include <gtest/gtest.h>
@@ -7,7 +9,7 @@ class TestRemove : public testing::Test {
   protected:
     std::string file;
     void SetUp() override {
-      file = testing::TempDir() + "/test_remove.txt";
+      file = "ffs_remove_test.txt";
       ASSERT_TRUE(fs_touch(file));
     }
     void TearDown() override {
