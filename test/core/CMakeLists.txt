@@ -61,7 +61,6 @@ set(cpp_tests
 drop_slash
 permissions
 realpath
-rename
 set_cwd
 touch
 with_suffix
@@ -98,6 +97,7 @@ parent
 proximate
 relative
 remove
+rename
 reserved
 root
 safe

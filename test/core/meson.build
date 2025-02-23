@@ -47,7 +47,6 @@ cpp_core = [
 'drop_slash',
 'permissions',
 'realpath',
-'rename',
 'set_cwd',
 'touch',
 'with_suffix'
@@ -92,6 +91,7 @@ gtest_tests = [
 'normal',
 'parent',
 'remove',
+'rename',
 'reserved',
 'root',
 'safe',

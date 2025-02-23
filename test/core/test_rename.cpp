@@ -1,37 +1,28 @@
-#include <iostream>
-#include <cstdlib>
 #include <string>
-#include <string_view>
 
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
+
+#include <gtest/gtest.h>
+
+class TestRename: public testing::Test {
+  protected:
+    std::string f1, f2;
+    void SetUp() override {
+      f1 = "test_Ffs_rename.txt";
+      f2 = "test_Ffs_rename2.txt";
+      ASSERT_TRUE(fs_touch(f1));
+      ASSERT_TRUE(fs_is_file(f1));
+      if(fs_exists(f2))
+        ASSERT_TRUE(fs_remove(f2));
+    }
+    void TearDown() override {
+      std::remove(f2.c_str());
+    }
+  };
 
 
-int
-main()
-{
-  constexpr std::string_view f1 = "test_Ffs_rename.txt";
-  constexpr std::string_view f2 = "test_Ffs_rename2.txt";
+TEST_F(TestRename, Rename){
 
-  if(fs_exists(f2) && !fs_remove(f2))
-    err("remove() failed");
-
-  if(!fs_touch(f1))
-    err("touch() failed");
-
-  if(!fs_is_file(f1))
-    err("is_file() failed");
-
-  if(!fs_rename(f1, f2))
-    err("rename() failed");
-
-  if(!fs_is_file(f2))
-    err("is_file() failed after rename()");
-
-  if(!fs_remove(f2))
-    err("remove() failed");
-
-  ok_msg("rename C++");
-
-  return EXIT_SUCCESS;
+EXPECT_TRUE(fs_rename(f1, f2));
+EXPECT_TRUE(fs_is_file(f2));
 }
