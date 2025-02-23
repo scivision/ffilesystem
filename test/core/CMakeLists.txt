@@ -64,7 +64,6 @@ realpath
 rename
 separator
 set_cwd
-system
 touch
 with_suffix
 )
@@ -102,7 +101,11 @@ relative
 remove
 reserved
 root
-safe space stem suffix
+safe
+space
+stem
+suffix
+system
 )
 if(WIN32 OR CYGWIN)
   list(APPEND gtest_tests windows)

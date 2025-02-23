@@ -50,7 +50,6 @@ cpp_core = [
 'rename',
 'separator',
 'set_cwd',
-'system',
 'touch',
 'with_suffix'
 ]
@@ -96,7 +95,11 @@ gtest_tests = [
 'remove',
 'reserved',
 'root',
-'safe', 'space','stem', 'suffix'
+'safe',
+'space',
+'stem',
+'suffix',
+'system',
 ]
 if is_windows
   gtest_tests += ['windows']
