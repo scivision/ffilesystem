@@ -62,7 +62,6 @@ drop_slash
 permissions
 realpath
 rename
-separator
 set_cwd
 touch
 with_suffix
@@ -102,6 +101,7 @@ remove
 reserved
 root
 safe
+separator
 space
 stem
 suffix

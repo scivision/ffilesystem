@@ -48,7 +48,6 @@ cpp_core = [
 'permissions',
 'realpath',
 'rename',
-'separator',
 'set_cwd',
 'touch',
 'with_suffix'
@@ -96,6 +95,7 @@ gtest_tests = [
 'reserved',
 'root',
 'safe',
+'separator',
 'space',
 'stem',
 'suffix',
