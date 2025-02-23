@@ -60,7 +60,6 @@ endif()
 set(cpp_tests
 drop_slash
 permissions
-set_cwd
 touch
 with_suffix
 )
@@ -102,6 +101,7 @@ reserved
 root
 safe
 separator
+set_cwd
 space
 stem
 suffix

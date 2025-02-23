@@ -46,7 +46,6 @@ endif
 cpp_core = [
 'drop_slash',
 'permissions',
-'set_cwd',
 'touch',
 'with_suffix'
 ]
@@ -96,6 +95,7 @@ gtest_tests = [
 'root',
 'safe',
 'separator',
+'set_cwd',
 'space',
 'stem',
 'suffix',

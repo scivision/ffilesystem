@@ -1,39 +1,28 @@
-#include <iostream>
-#include <cstdlib>
-
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
+#include <string>
 
+#include <gtest/gtest.h>
 
-int main(int argc, char* argv[])
+class TestSetCwd : public testing::Test {
+  protected:
+    std::string dir;
+    void SetUp() override {
+      dir = fs_get_cwd() + "/ffs_test_set_cwd";
+      ASSERT_TRUE(fs_mkdir(dir));
+      ASSERT_TRUE(fs_is_dir(dir));
+    }
+    void TearDown() override {
+      std::remove(dir.c_str());
+    }
+};
+
+TEST_F(TestSetCwd, SetCwd)
 {
 
-std::string_view s1 = (argc > 1) ? argv[1] : argv[0];
+EXPECT_FALSE(fs_set_cwd(""));
 
-std::cout << "file name: " << s1 << "\n";
+EXPECT_TRUE(fs_set_cwd(dir));
 
-std::string s2 = fs_parent(fs_parent(s1));
-std::cout << "parent(parent(' << s1 << ')) = " << s2 << "\n";
+EXPECT_TRUE(fs_equivalent(fs_get_cwd(), dir)) << "cwd " << fs_get_cwd() << " != " << dir << " canonical " << fs_canonical(dir);
 
-std::string old_cwd = fs_get_cwd();
-
-std::cout << "current working directory: " << old_cwd << "\n";
-
-bool ok = fs_set_cwd(s2);
-
-if (!ok)
-  err("chdir failed");
-
-if(fs_set_cwd(""))
-  err("chdir should fail on empty string");
-
-std::string cwd = fs_get_cwd();
-std::cout << "New working directory: " << cwd << "\n";
-
-if (!fs_equivalent(cwd, s2))
-  err("chdir failed: " + s2 + " /= " + cwd);
-
-ok_msg("set_cwd C++");
-
-return EXIT_SUCCESS;
 }
