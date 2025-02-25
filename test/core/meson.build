@@ -43,7 +43,7 @@ test('NoEnv_fortran', tenv, suite: 'fortran', env: env)
 endif
 
 
-cpp_core = ['permissions']
+cpp_core = []
 
 if is_windows
   cpp_core += ['is_appexec_alias']
@@ -84,6 +84,7 @@ gtest_tests = [
 'owner',
 'normal',
 'parent',
+'permissions',
 'realpath',
 'remove',
 'rename',

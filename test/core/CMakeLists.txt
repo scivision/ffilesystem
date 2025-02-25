@@ -57,9 +57,7 @@ set_tests_properties(Fortran_relative Fortran_proximate PROPERTIES DISABLED $<NO
 endif()
 
 
-set(cpp_tests
-permissions
-)
+set(cpp_tests)
 
 if(WIN32)
   list(APPEND cpp_tests is_appexec_alias)
@@ -90,6 +88,7 @@ mkdir
 owner
 normal
 parent
+permissions
 proximate
 realpath
 relative
