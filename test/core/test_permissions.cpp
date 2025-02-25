@@ -16,8 +16,9 @@ class TestPermissions : public testing::Test {
       ASSERT_TRUE(fs_touch(noread));
       ASSERT_TRUE(fs_exists(noread));
       ASSERT_TRUE(fs_is_file(noread));
-      if(!fs_is_file(nowrite))
+      if(!fs_is_file(nowrite)){
         ASSERT_TRUE(fs_touch(nowrite));
+      }
 
       ASSERT_TRUE(fs_exists(nowrite));
       ASSERT_TRUE(fs_is_file(nowrite));
@@ -58,8 +59,9 @@ p = fs_get_permissions(nowrite);
 if (!fs_is_windows()){
   EXPECT_EQ(p[1], '-');
 
-  if(!fs_is_admin())
+  if(!fs_is_admin()){
     EXPECT_FALSE(fs_is_writable(nowrite));
+  }
 }
 
 }
