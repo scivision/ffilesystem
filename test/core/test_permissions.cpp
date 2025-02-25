@@ -47,8 +47,9 @@ std::string p = fs_get_permissions(noread);
 
 std::cout << "Permissions: " << noread << " " << p << std::endl;
 
-if(!(fs_is_windows() || fs_is_cygwin()))
+if(!(fs_is_windows() || fs_is_cygwin())){
   EXPECT_EQ(p[0], '-');
+}
 
 // writable
 EXPECT_TRUE(fs_set_permissions(nowrite, 0, -1, 0));

@@ -15,7 +15,6 @@ jobs:
 
 # valgrind needs some simple non-googletest tests perhaps
   valgrind-memory:
-    if: false
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 10
