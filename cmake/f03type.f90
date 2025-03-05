@@ -1,15 +1,4 @@
-function(fortran_check)
-
-if((CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" AND CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 7)
-  OR CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
-    set(HAVE_F03TYPE true CACHE BOOL "Has Fortran 2003 derived types")
-    return()
-endif()
-
-set(CMAKE_TRY_COMPILE_TARGET_TYPE EXECUTABLE)
-
-check_source_compiles(Fortran
-"module dummy
+module dummy
 type :: path_t
 private
 character(:), allocatable :: path_str
@@ -18,7 +7,7 @@ final :: destructor
 end type
 
 interface path_t
-  module procedure set_path
+module procedure set_path
 end interface
 
 contains
@@ -36,13 +25,10 @@ end function set_path
 
 end module dummy
 
+
 program main
 use dummy
 implicit none
 type(path_t) :: p
 p = path_t('.')
-end program"
-HAVE_F03TYPE
-)
-
-endfunction()
+end program
