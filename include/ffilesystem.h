@@ -215,7 +215,7 @@ std::string fs_to_winpath(std::string_view);
 
 std::wstring fs_to_wide(std::string_view);
 
-std::string fs_trim(std::string r);
+std::string fs_trim(std::string_view r);
 
 std::string fs_user_config_dir();
 

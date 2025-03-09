@@ -101,11 +101,11 @@ fs_drop_slash(std::string_view in)
 
 
 std::string
-fs_trim(std::string r)
+fs_trim(std::string_view s)
 {
   // trim trailing nulls
-  if(const auto i = r.find('\0');
-      i != std::string::npos)
+  std::string r(s);
+  if(auto i = r.find('\0'); i != std::string::npos)
     r.resize(i);
 
   return r;

@@ -31,7 +31,7 @@ fs_is_reserved(std::string_view path)
   if(!fs_is_windows())
     return false;
 
-  const std::string n = fs_file_name(path);
+  std::string const n = fs_file_name(path);
 
   if(n.empty() || n == ".")
     return false;
@@ -132,8 +132,8 @@ fs_is_prefix(std::string_view prefix, std::string_view path)
   if(prefix.empty() || path.empty())
     return false;
 
-  const std::string pr = fs_drop_slash(prefix);
-  const std::string p = fs_drop_slash(path);
+  std::string const pr = fs_drop_slash(prefix);
+  std::string const p = fs_drop_slash(path);
 
   if (pr == p)
     return true;
@@ -159,8 +159,8 @@ fs_is_subdir(std::string_view subdir, std::string_view dir)
   if(subdir.empty() || dir.empty())
     return false;
 
-  const std::string s = fs_drop_slash(subdir);
-  const std::string d = fs_drop_slash(dir);
+  std::string const s = fs_drop_slash(subdir);
+  std::string const d = fs_drop_slash(dir);
 
   if(s == d)
     return false;
