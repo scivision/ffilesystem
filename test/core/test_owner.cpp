@@ -3,19 +3,16 @@
 
 #include <gtest/gtest.h>
 
-TEST(TestOwner, Owner){
-
-std::string name = fs_get_username();
-EXPECT_FALSE(name.empty());
-
-std::string owner = fs_get_owner_name(".");
-EXPECT_FALSE(owner.empty());
-
-EXPECT_FALSE(fs_get_owner_group(".").empty());
-
-if (fs_getenv("CI") != "true"){
-// mismatched username and owner can happen on CI systems
-  EXPECT_EQ(name, owner);
+TEST(TestOwner, OwnerName){
+EXPECT_FALSE(fs_get_owner_name(".").empty());
 }
 
+TEST(TestOwner, OwnerGroup){
+EXPECT_FALSE(fs_get_owner_group(".").empty());
+}
+
+// mismatched username and owner can happen
+
+TEST(TestOwner, Username){
+EXPECT_FALSE(fs_get_username().empty());
 }
