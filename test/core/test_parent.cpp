@@ -1,28 +1,44 @@
-#include <string_view>
-#include <vector>
+#include <string>
 #include <tuple>
 
 #include "ffilesystem.h"
 
 #include <gtest/gtest.h>
 
+class ParentTest : public ::testing::TestWithParam<std::tuple<std::string, std::string>> {};
 
-TEST(TestParent, Parent){
+TEST_P(ParentTest, Parent) {
+  auto [inp, exp] = GetParam();
 
-  std::vector<std::tuple<std::string_view, std::string_view>> test_cases;
-
-test_cases = {
-    {"", "."}, {"/", "/"}, {".", "."}, {"./", "."}, {"..", "."}, {"../", "."},
-    {"a", "."}, {"a/", "."}, {"a/.", "a"}, {"a/..", "a"}, {"a/b", "a"}, {"a/b/", "a"}, {"a/b/c", "a/b"},
-    {"ab/.parent", "ab"}, {"ab/.parent.txt", "ab"}, {"a/b/../.parent.txt", "a/b/.."}
-};
-
-  if(fs_is_windows()){
-    test_cases.emplace_back("c:\\a\\b/../.parent.txt", "c:/a/b/..");
-    test_cases.emplace_back("x:/", "x:/");
-  }
-
-  for (const auto& [input, expected] : test_cases)
-    EXPECT_EQ(fs_parent(input), expected);
-
+  EXPECT_EQ(fs_parent(inp), exp);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+  Parent, ParentTest,
+  ::testing::Values(
+      std::make_tuple("", "."),
+      std::make_tuple("/", "/"),
+      std::make_tuple(".", "."),
+      std::make_tuple("./", "."),
+      std::make_tuple("..", "."),
+      std::make_tuple("../", "."),
+      std::make_tuple("a", "."),
+      std::make_tuple("a/", "."),
+      std::make_tuple("a/.", "a"),
+      std::make_tuple("a/..", "a"),
+      std::make_tuple("a/b", "a"),
+      std::make_tuple("a/b/", "a"),
+      std::make_tuple("a/b/c", "a/b"),
+      std::make_tuple("ab/.parent", "ab"),
+      std::make_tuple("ab/.parent.txt", "ab"),
+      std::make_tuple("a/b/../.parent.txt", "a/b/..")
+#if defined(_WIN32)
+,
+      std::make_tuple("c:\\a\\b/../.parent.txt", "c:/a/b/.."),
+      std::make_tuple("x:/", "x:/")
+#endif
+  )
+);
+
+        // test_cases.emplace_back("c:\\a\\b/../.parent.txt", "c:/a/b/..");
+        // test_cases.emplace_back("x:/", "x:/");
