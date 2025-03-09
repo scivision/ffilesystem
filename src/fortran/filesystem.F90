@@ -12,7 +12,7 @@ public :: get_homedir, get_profile_dir, user_config_dir, get_username, hostname,
  get_cwd, set_cwd, which
 public :: normal, expanduser, as_posix, &
 is_absolute, is_char_device, is_fifo, is_case_sensitive, is_dir, is_file, &
-is_exe, is_executable_binary, &
+is_exe, is_executable_binary, is_other, &
 is_prefix, is_subdir, &
 is_appexec_alias, &
 is_readable, is_writable, is_reserved, &
@@ -388,6 +388,11 @@ character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
 logical(C_BOOL) function fs_is_file(path) bind(C)
+import
+character(kind=C_CHAR), intent(in) :: path(*)
+end function
+
+logical(C_BOOL) function fs_is_other(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
@@ -956,6 +961,12 @@ logical function is_file(path) result(r)
 character(*), intent(in) :: path
 
 r = fs_is_file(trim(path) // C_NULL_CHAR)
+end function
+
+
+logical function is_other(path) result(r)
+character(*), intent(in) :: path
+r = fs_is_other(trim(path) // C_NULL_CHAR)
 end function
 
 

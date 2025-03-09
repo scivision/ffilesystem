@@ -298,6 +298,8 @@ bool fs_exists(const char* path){ return fs_exists(std::string_view(path)); }
 
 bool fs_is_file(const char* path){ return fs_is_file(std::string_view(path)); }
 
+bool fs_is_other(const char* path){ return fs_is_other(std::string_view(path)); }
+
 bool fs_is_readable(const char* path){ return fs_is_readable(std::string_view(path)); }
 
 bool fs_is_removable(const char* path){ return fs_is_removable(std::string_view(path)); }

@@ -244,6 +244,15 @@ bool fs_is_char_device(std::string_view path)
 }
 
 
+bool fs_is_other(std::string_view path)
+{
+  // just as defined by <filesystem>
+  // note that the symlink could point to something not a file or directory
+  // https://en.cppreference.com/w/cpp/filesystem/is_other
+  return fs_exists(path) && !fs_is_file(path) && !fs_is_dir(path) && !fs_is_symlink(path);
+}
+
+
 bool fs_is_readable(std::string_view path)
 {
   // is directory or file readable by the user
