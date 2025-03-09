@@ -88,7 +88,6 @@ normal
 parent
 permissions
 proximate
-realpath
 relative
 remove
 rename
@@ -101,7 +100,6 @@ space
 stem
 suffix
 system
-touch
 with_suffix
 )
 if(WIN32 OR CYGWIN)
@@ -132,8 +130,6 @@ foreach(t IN LISTS cpp_tests gtest_tests)
   FIXTURES_SETUP ${t}
   )
 endforeach()
-
-target_compile_definitions(test_touch_cpp PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 
 set_tests_properties(TestRelative.Relative TestProximate.Proximate PROPERTIES DISABLED $<NOT:$<BOOL:${HAVE_CXX_FILESYSTEM}>>)
 

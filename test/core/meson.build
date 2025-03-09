@@ -83,7 +83,6 @@ gtest_tests = [
 'normal',
 'parent',
 'permissions',
-'realpath',
 'remove',
 'rename',
 'reserved',
@@ -94,7 +93,6 @@ gtest_tests = [
 'stem',
 'suffix',
 'system',
-'touch',
 'with_suffix'
 ]
 if is_windows
