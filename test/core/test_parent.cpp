@@ -32,13 +32,15 @@ INSTANTIATE_TEST_SUITE_P(
       std::make_tuple("ab/.parent", "ab"),
       std::make_tuple("ab/.parent.txt", "ab"),
       std::make_tuple("a/b/../.parent.txt", "a/b/..")
-#if defined(_WIN32)
-,
-      std::make_tuple("c:\\a\\b/../.parent.txt", "c:/a/b/.."),
-      std::make_tuple("x:/", "x:/")
-#endif
   )
 );
 
-        // test_cases.emplace_back("c:\\a\\b/../.parent.txt", "c:/a/b/..");
-        // test_cases.emplace_back("x:/", "x:/");
+#if defined(_WIN32)
+INSTANTIATE_TEST_SUITE_P(
+  ParentWindows, ParentTest,
+  ::testing::Values(
+    std::make_tuple("c:\\a\\b/../.parent.txt", "c:/a/b/.."),
+    std::make_tuple("x:/", "x:/")
+  )
+);
+#endif
