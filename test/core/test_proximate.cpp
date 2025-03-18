@@ -1,5 +1,7 @@
 #include "ffilesystem.h"
 
+#include <iostream>
+
 #include <gtest/gtest.h>
 
 TEST(TestProximate, Proximate){
@@ -20,8 +22,6 @@ EXPECT_EQ(fs_proximate_to("a", "a/b/.."), ".");
 EXPECT_EQ(fs_proximate_to("a/b/c/d", "a/b"), "../..");
 EXPECT_EQ(fs_proximate_to("a/b/c/d", "a/b/"), "../..");
 EXPECT_EQ(fs_proximate_to("./a/b", "./a/c"), "../c");
-
-std::vector<std::tuple<std::string, std::string, std::string>> tos;
 
 if(fs_is_windows()){
 
