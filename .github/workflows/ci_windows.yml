@@ -80,7 +80,6 @@ jobs:
       with:
         update: true
         install: >-
-          mingw-w64-ucrt-x86_64-ninja
           mingw-w64-ucrt-x86_64-${{ matrix.compiler.ccname }}
           mingw-w64-ucrt-x86_64-${{ matrix.compiler.fcname }}
 
