@@ -21,11 +21,11 @@ runs:
 
   - name: Debug workflow
     shell: bash
-    run: cmake --workflow --preset debug
+    run: cmake --workflow debug
 
   - name: Release workflow
     shell: bash
-    run: cmake --workflow --preset release
+    run: cmake --workflow release
 
   - name: install package
     shell: bash

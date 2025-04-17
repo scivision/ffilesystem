@@ -31,4 +31,4 @@ jobs:
 
         prepare: pkg install -y cmake gcc13
 
-        run: cmake --workflow --preset default
+        run: cmake --workflow default

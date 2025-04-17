@@ -98,10 +98,10 @@ jobs:
       run: cat build/CMakeFiles/CMakeConfigureLog.yaml
 
     - name: Debug workflow
-      run: cmake --workflow --preset debug
+      run: cmake --workflow debug
 
     - name: Release workflow
-      run: cmake --workflow --preset release
+      run: cmake --workflow release
 
     - name: install package
       run: cmake --install build
