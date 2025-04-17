@@ -1,6 +1,6 @@
 project('ffilesystem', ['c', 'cpp'],
-version: '6.3.0',
-default_options: ['c_std=c99', 'cpp_std=c++23,c++20,c++17', 'buildtype=release', 'b_ndebug=if-release'],
+version: '6.3.1',
+default_options: ['cpp_std=c++23,c++20,c++17', 'buildtype=release', 'b_ndebug=if-release'],
 meson_version : '>=1.4.0')
 
 backend_filesystem = get_option('cpp')

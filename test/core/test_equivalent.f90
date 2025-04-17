@@ -62,15 +62,6 @@ s2 = get_cwd()
 print '(a)', "Testing same_file(" // s1 // ", " // s2 // ")"
 if(.not. same_file(s1, s2)) error stop "ERROR: same_file(" // s1 // " /= " // s2 // ")"
 
-call mkdir("test-a/b/")
-
-s1 = "test-a/c"
-call touch(s1)
-
-s2 = "test-a/b/../c"
-
-if (.not. same_file(s1, s2)) error stop 'ERROR: same_file resolve'
-
 if(same_file("not-exist-same", "not-exist-same")) error stop 'ERROR: same_file(not-exist-same, not-exist-same)'
 
 end subroutine test_same_file

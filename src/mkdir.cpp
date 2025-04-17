@@ -31,7 +31,10 @@ bool fs_mkdir(std::string_view path)
   std::error_code ec;
 
 #ifdef HAVE_CXX_FILESYSTEM
-  if (std::filesystem::create_directories(path, ec) || (!ec)) FFS_LIKELY
+  // https://en.cppreference.com/w/cpp/filesystem/create_directory
+  std::filesystem::create_directories(path, ec);
+  // we don't use the return value as it indicates if a directory was created or not.
+  if (!ec) FFS_LIKELY
     return true;
 #else
 
