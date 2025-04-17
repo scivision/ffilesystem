@@ -38,7 +38,7 @@ TEST_F(TestOnDisk, IsDir)
 
 
 TEST_F(TestOnDisk, IsFile){
-  EXPECT_TRUE(fs_is_file(file));
+  ASSERT_TRUE(fs_is_file(file));
   EXPECT_TRUE(fs_is_readable(file));
   EXPECT_FALSE(fs_is_exe(file));
   EXPECT_FALSE(fs_is_file("ffs_is_file_not-exist-file"));
@@ -64,12 +64,12 @@ TEST_F(TestOnDisk, Mkdir){
 EXPECT_FALSE(fs_mkdir(""));
 
 // Test mkdir with existing directory
-EXPECT_TRUE(fs_mkdir(dir));
+ASSERT_TRUE(fs_mkdir(dir));
 
 // Test mkdir with relative path
 ASSERT_TRUE(fs_set_cwd(dir));
 
-EXPECT_TRUE(fs_mkdir("test-filesystem-dir/hello"));
+ASSERT_TRUE(fs_mkdir("test-filesystem-dir/hello"));
 EXPECT_TRUE(fs_is_dir(fs_get_cwd() + "/test-filesystem-dir/hello"));
 }
 
