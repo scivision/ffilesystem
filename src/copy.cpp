@@ -15,28 +15,88 @@
 #include <iostream> // IWYU pragma: keep
 #include <system_error>
 
-#include <memory>
 #include <string_view>
 
 #ifdef HAVE_CXX_FILESYSTEM
 #include <filesystem>
 #else
-#include <cstdio>  // fopen, fclose, fread, fwrite
+
 #include <cstdlib>
+#include <memory>  // for std::make_unique
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#elif defined(__APPLE__) && defined(__MACH__) && __has_include(<copyfile.h>)
+#else
+// for non-Windows file loop fallback
+#include <sys/types.h>  // off_t
+#include <sys/stat.h>
+#include <unistd.h> // read write
+#include <fcntl.h>  // open close
+#endif
+
+#if defined(__APPLE__) && defined(__MACH__) && __has_include(<copyfile.h>)
 // macOS 10.12 or later
 #define HAVE_MACOS_COPYFILE
 #include <copyfile.h>
-#else
-#include <sys/types.h>  // off_t
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
 #endif
+
+#endif  // HAVE_CXX_FILESYSTEM
+
+
+#if !defined(HAVE_CXX_FILESYSTEM) && !defined(_WIN32) && !defined(HAVE_MACOS_COPYFILE)
+
+static off_t fs_copy_loop(int const rid, int const wid, off_t const len)
+{
+  // copy a file in chunks
+  off_t r = len;
+
+  if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using plain file buffer read / write\n";
+
+  constexpr int bufferSize = 16384;
+  auto buf = std::make_unique<char[]>(bufferSize);
+
+  ssize_t ret = 0;
+  while (r > 0) {
+    ret = read(rid, buf.get(), r);
+    // value should not be zero because we tell the file size in "len"
+    if (ret <= 0 || write(wid, buf.get(), ret) != ret)
+      break;
+
+    r -= ret;
+  }
+
+  return r;
+}
+
+
+static off_t fs_copy_file_range_or_loop(int const rid, int const wid, off_t const len)
+{
+  // copy a file in chunks
+  off_t r = len;
+  off_t ret = 0;
+
+#if defined(HAVE_COPY_FILE_RANGE)
+    // https://man.freebsd.org/cgi/man.cgi?copy_file_range(2)
+    // https://man7.org/linux/man-pages/man2/copy_file_range.2.html
+    // https://linux.die.net/man/3/open
+  if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using copy_file_range\n";
+
+  while (r > 0) {
+    ret = copy_file_range(rid, nullptr, wid, nullptr, r, 0);
+    if (ret <= 0)
+      break;
+
+    r -= ret;
+  }
+#endif
+
+  // https://github.com/boostorg/filesystem/issues/184
+  if (r != 0 || (ret < 0 && errno == EINVAL))
+   r = fs_copy_loop(rid, wid, len);
+
+  return r;
+}
 #endif
 
 
@@ -106,50 +166,12 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
     return false;
   }
 
-  off_t remaining = len;
-  int rc = 0;
-  int wc = 0;
+  off_t rem = fs_copy_file_range_or_loop(rid, wid, len);
 
-#if defined(HAVE_COPY_FILE_RANGE)
-    // https://man.freebsd.org/cgi/man.cgi?copy_file_range(2)
-    // https://man7.org/linux/man-pages/man2/copy_file_range.2.html
-    // https://linux.die.net/man/3/open
-  if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using copy_file_range\n";
+  int const wc = close(wid);
+  int const rc = close(rid);
 
-  off_t ret = 0;
-  while (remaining > 0) {
-    ret = copy_file_range(rid, nullptr, wid, nullptr, remaining, 0);
-    if (ret <= 0)
-      break;
-
-    remaining -= ret;
-  }
-
-#elif defined(__cpp_lib_make_unique)
-
-  if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using plain file buffer read / write\n";
-
-  constexpr int bufferSize = 16384;
-  auto buf = std::make_unique<char[]>(bufferSize);
-
-  ssize_t ret = 0;
-  while (remaining > 0) {
-    ret = read(rid, buf.get(), remaining);
-    // value should not be zero because we tell the file size in "len"
-    if (ret <= 0 || write(wid, buf.get(), ret) != ret)
-      break;
-
-    remaining -= ret;
-  }
-#else
-  int ret = -1;
-  ec = std::make_error_code(std::errc::function_not_supported);
-#endif
-
-  rc = close(rid);
-  wc = close(wid);
-
-  if(ret >= 0 && rc == 0 && wc == 0 && remaining == 0)  FFS_LIKELY
+  if(wc == 0 && rc == 0 && rem == 0)  FFS_LIKELY
     return true;
 
 #endif
