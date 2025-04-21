@@ -32,7 +32,7 @@ std::string fs_to_narrow(std::wstring_view w)
   std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
   return converter.to_bytes(w.data());
 #else
-  fs_print_error("", "fs_to_narrow: not enabled");
+  fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
   return {};
 #endif
 
@@ -48,7 +48,7 @@ std::wstring fs_to_wide(std::string_view n)
   std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
   return converter.from_bytes(n.data());
 #else
-  fs_print_error("", "fs_to_wide: not enabled");
+  fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
   return {};
 #endif
 }

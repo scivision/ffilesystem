@@ -21,7 +21,7 @@ static std::string fs_convert_path(std::string_view path, FFS_MAYBE_UNUSED int c
   }
 #endif
 
-  fs_print_error(path, "cygwin_convert_path");
+  fs_print_error(path, __func__);
   return {};
 }
 

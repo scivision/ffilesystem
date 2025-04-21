@@ -28,7 +28,7 @@ bool fs_is_admin(){
   if(CloseHandle(h) && ok)  FFS_LIKELY
     return elevation.TokenIsElevated;
 
-  fs_print_error("", "is_admin");
+  fs_print_error("", __func__);
   return false;
 #else
   return geteuid() == 0;
@@ -82,7 +82,7 @@ std::string fs_get_terminal()
     }
   }
 
-  fs_print_error("", "get_terminal");
+  fs_print_error("", __func__);
   return {};
 #else
   return fs_getenv("TERM");

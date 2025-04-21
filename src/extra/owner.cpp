@@ -133,7 +133,7 @@ fs_get_owner_name(std::string_view path)
   }
 #endif
 
-  fs_print_error(path, "get_owner_name");
+  fs_print_error(path, __func__);
   return {};
 }
 
@@ -151,6 +151,6 @@ fs_get_owner_group(std::string_view path)
   }
 #endif
 
-  fs_print_error(path, "get_owner_group");
+  fs_print_error(path, __func__);
   return {};
 }

@@ -31,6 +31,6 @@ std::string fs_hostname()
   if (ret == 0)
     return fs_trim(name);
 
-  fs_print_error(name, "fs_hostname");
+  fs_print_error(name, __func__);
   return {};
 }

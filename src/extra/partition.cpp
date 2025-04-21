@@ -32,7 +32,7 @@ static inline std::string fs_type_linux(std::string_view path)
   struct statfs s;
 
   if(statfs(path.data(), &s)) {
-    fs_print_error(path, "filesystem_type:statfs");
+    fs_print_error(path, __func__);
     return {};
   }
 
@@ -120,6 +120,6 @@ std::string fs_filesystem_type(std::string_view path)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(path, "filesystem_type", ec);
+  fs_print_error(path, __func__, ec);
   return {};
 }

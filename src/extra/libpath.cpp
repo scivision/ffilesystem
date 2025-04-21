@@ -36,6 +36,6 @@ std::string fs_lib_path()
     return info.dli_fname;
 #endif
 
-  fs_print_error("", "lib_path");
+  fs_print_error("", __func__);
   return {};
 }

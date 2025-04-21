@@ -66,6 +66,6 @@ std::string fs_exe_path()
     return path;
   }
 
-  fs_print_error("", "exepath");
+  fs_print_error("", __func__);
   return {};
 }

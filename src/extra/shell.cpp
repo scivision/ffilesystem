@@ -60,6 +60,6 @@ if(fs_trace) std::cout << "TRACE: get_shell: " << name << " PID: " << pid << " P
     return pw->pw_shell;
 #endif
 
-  fs_print_error("", "get_shell", ec);
+  fs_print_error("", __func__, ec);
   return {};
 }

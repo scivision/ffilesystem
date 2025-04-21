@@ -46,7 +46,7 @@ std::string fs_cpu_arch()
        uname(&buf) == 0)
     return buf.machine;
 
-  fs_print_error("", "fs_cpu_arch");
+  fs_print_error("", __func__);
 #elif defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-system_info
     SYSTEM_INFO si;
@@ -86,6 +86,6 @@ std::string fs_os_version()
     return std::to_string(osvi.dwMajorVersion) + '.' + std::to_string(osvi.dwMinorVersion) + '.' + std::to_string(osvi.dwBuildNumber);
 #endif
 
-  fs_print_error("", "fs_os_version");
+  fs_print_error("", __func__);
   return {};
 }
