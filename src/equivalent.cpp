@@ -42,23 +42,34 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
   if(!ec)
     return e;
 
-#elif defined(STATX_BASIC_STATS) && defined(USE_STATX)
-// https://www.man7.org/linux/man-pages/man2/statx.2.html
-  if (fs_trace) std::cout << "TRACE: statx() equivalent " << path1 << " " << path2 << "\n";
-  struct statx s1;
-  struct statx s2;
-
-  if( statx(AT_FDCWD, path1.data(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &s1) == 0 &&
-      statx(AT_FDCWD, path2.data(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &s2) == 0 ) FFS_LIKELY
-    return s1.stx_dev_major == s2.stx_dev_major && s1.stx_dev_minor == s2.stx_dev_minor && s1.stx_ino == s2.stx_ino;
-
 #else
-  struct stat s1;
-  struct stat s2;
 
-  // https://www.boost.org/doc/libs/1_86_0/libs/filesystem/doc/reference.html#equivalent
-  if(!stat(path1.data(), &s1) && !stat(path2.data(), &s2))
-    return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
+  int r1 = 0;
+  int r2 = 0;
+
+#if defined(STATX_BASIC_STATS) && defined(USE_STATX)
+
+  struct statx x1;
+  struct statx x2;
+
+  r1 = statx(AT_FDCWD, path1.data(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &x1);
+  if(r1 == 0){
+    r2 = statx(AT_FDCWD, path2.data(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &x2);
+    if(r2 == 0)
+      return x1.stx_dev_major == x2.stx_dev_major && x1.stx_dev_minor == x2.stx_dev_minor && x1.stx_ino == x2.stx_ino;
+  }
+
+#endif
+
+  if((r1 == 0 && r2 == 0) || errno == ENOSYS){
+    struct stat s1;
+    struct stat s2;
+
+    // https://www.boost.org/doc/libs/1_86_0/libs/filesystem/doc/reference.html#equivalent
+    if(!stat(path1.data(), &s1) && !stat(path2.data(), &s2))
+      return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
+  }
+
 #endif
 
   fs_print_error(path1, path2, __func__, ec);
