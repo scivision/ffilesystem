@@ -29,7 +29,7 @@
 #include <windows.h>
 #else
 // for non-Windows file loop fallback
-#include <sys/types.h>  // off_t
+#include <sys/types.h>  // for off_t, ssize_t
 #include <sys/stat.h>
 #include <unistd.h> // read write
 #include <fcntl.h>  // open close

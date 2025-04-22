@@ -242,6 +242,12 @@ It provides the appropriate imported targets for shared or static builds, includ
 
 GCC 6.x and older aren't supported due to lack of C++17 string_view support.
 
+In C++ code, we generally use the
+[size_type](https://en.cppreference.com/w/cpp/types/size_t)
+of the class as a best practice--for example `std::string::size_type` where appropriate instead of `std::size_t`.
+We use `size_t` at the C interfaces for clarity and also certain internal library calls.
+`ssize_t` is used in certain non-Windows internal-only function calls.
+
 ### Possible future features
 
 Use statx() if available to inquire if a file is encrypted or compressed, etc.

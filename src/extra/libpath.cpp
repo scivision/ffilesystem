@@ -6,7 +6,6 @@
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // GetModuleFileNameA
-#include <cstddef> // for size_t
 #elif defined(HAVE_DLADDR)
 #include <dlfcn.h> // dladdr
 static void dl_dummy_func() {}
