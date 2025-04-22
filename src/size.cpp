@@ -52,15 +52,21 @@ std::uintmax_t fs_file_size(std::string_view path)
   } else {
     ec = std::make_error_code(std::errc::no_such_file_or_directory);
   }
-#elif defined(STATX_SIZE) && defined(USE_STATX)
-// https://www.man7.org/linux/man-pages/man2/statx.2.html
-  if (fs_trace) std::cout << "TRACE: statx() file_size " << path << "\n";
-  struct statx s;
-  if(statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_SIZE, &s) == 0) FFS_LIKELY
-    return s.stx_size;
 #else
-  if (struct stat s; !stat(path.data(), &s))  FFS_LIKELY
-    return s.st_size;
+
+  int r = 0;
+#if defined(STATX_SIZE) && defined(USE_STATX)
+  struct statx sx;
+  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_SIZE, &sx);
+  if (r == 0) FFS_LIKELY
+    return sx.stx_size;
+#endif
+
+  if (r == 0 || errno == ENOSYS){
+    if (struct stat s; !stat(path.data(), &s))
+      return s.st_size;
+  }
+
 #endif
 
   fs_print_error(path, __func__, ec);
