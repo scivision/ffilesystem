@@ -36,6 +36,12 @@ static inline std::string fs_type_linux(std::string_view path)
     return {};
   }
 
+#ifndef BTRFS_SUPER_MAGIC
+#define BTRFS_SUPER_MAGIC 0x9123683E
+#endif
+#ifndef DEBUGFS_MAGIC
+#define DEBUGFS_MAGIC 0x64626720
+#endif
 #ifndef FUSE_SUPER_MAGIC
 #define FUSE_SUPER_MAGIC 0x65735546
 #endif
@@ -44,6 +50,12 @@ static inline std::string fs_type_linux(std::string_view path)
 #endif
 #ifndef F2FS_SUPER_MAGIC
 #define F2FS_SUPER_MAGIC 0xF2F52010
+#endif
+#ifndef PROC_SUPER_MAGIC
+#define PROC_SUPER_MAGIC 0x9FA0
+#endif
+#ifndef SYSFS_MAGIC
+#define SYSFS_MAGIC 0x62656572
 #endif
 #ifndef TRACEFS_MAGIC
 #define TRACEFS_MAGIC 0x74726163
@@ -57,12 +69,15 @@ static inline std::string fs_type_linux(std::string_view path)
 
   switch (s.f_type) {
     case BTRFS_SUPER_MAGIC: return "btrfs";
+    case DEBUGFS_MAGIC: return "debugfs";
     case EXT4_SUPER_MAGIC: return "ext4";
     case EXFAT_SUPER_MAGIC: return "exfat";
     case F2FS_SUPER_MAGIC: return "f2fs";
     case FUSE_SUPER_MAGIC: return "fuse";
     case NFS_SUPER_MAGIC: return "nfs";
+    case PROC_SUPER_MAGIC: return "procfs";
     case SQUASHFS_MAGIC: return "squashfs";
+    case SYSFS_MAGIC: return "sysfs";
     case TMPFS_MAGIC: return "tmpfs";
     case TRACEFS_MAGIC: return "tracefs";
     case UDF_SUPER_MAGIC: return "udf";
