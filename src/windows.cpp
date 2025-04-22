@@ -111,8 +111,7 @@ static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer
 
     if(!CloseHandle(h))
       ec = std::make_error_code(std::errc::io_error);
-
-    if (ok && !ec)
+    else if (ok) FFS_LIKELY
       return true;
   }
 
@@ -241,8 +240,7 @@ std::string fs_win32_final_path(std::string_view path)
 
   if(!CloseHandle(h))
     ec = std::make_error_code(std::errc::io_error);
-
-  if(L && !ec){
+  else if(L) {
     r.resize(L);
 
 #ifdef __cpp_lib_starts_ends_with  // C++20

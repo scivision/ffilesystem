@@ -76,14 +76,12 @@ std::string fs_get_profile_dir()
 
   if(!CloseHandle(h))
     ec = std::make_error_code(std::errc::io_error);
-
-  if (ok && !ec){
-    path.resize(N-1);
+  else if (ok && N > 0) {
+    path.resize(N - 1);
     return fs_drop_slash(path);
   }
 #else
-  const struct passwd *pw = fs_getpwuid();
-  if (pw)
+  if (auto pw = fs_getpwuid())
     return fs_drop_slash(pw->pw_dir);
 #endif
 

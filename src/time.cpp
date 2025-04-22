@@ -100,8 +100,7 @@ bool fs_set_modtime(std::string_view path, const bool quiet)
 
     if(!CloseHandle(h))
       ec = std::make_error_code(std::errc::io_error);
-
-    if (ok && !ec) FFS_LIKELY
+    else if (ok) FFS_LIKELY
       return true;
   }
 #else

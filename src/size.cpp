@@ -44,9 +44,10 @@ std::uintmax_t fs_file_size(std::string_view path)
   {
     LARGE_INTEGER size;
     BOOL ok = GetFileSizeEx(h, &size);
-    CloseHandle(h);
 
-    if (ok)  FFS_LIKELY
+    if (!CloseHandle(h))
+      ec = std::make_error_code(std::errc::io_error);
+    else if (ok)  FFS_LIKELY
       return size.QuadPart;
   } else {
     ec = std::make_error_code(std::errc::no_such_file_or_directory);
