@@ -45,15 +45,21 @@ std::time_t fs_get_modtime(std::string_view path)
     const auto t_sys = std::chrono::clock_cast<std::chrono::system_clock>(t_fs.value());
     return std::chrono::system_clock::to_time_t(t_sys);
   }
-#elif defined(STATX_MTIME) && defined(USE_STATX)
-// https://www.man7.org/linux/man-pages/man2/statx.2.html
-  struct statx s;
-
-  if( statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_MTIME, &s) == 0 ) FFS_LIKELY
-    return s.stx_mtime.tv_sec;
 #else
-  if (struct stat s; !stat(path.data(), &s))
-    return s.st_mtime;
+
+  int r = 0;
+
+#if defined(STATX_MTIME) && defined(USE_STATX)
+// https://www.man7.org/linux/man-pages/man2/statx.2.html
+  struct statx sx;
+  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_MTIME, &sx);
+  if (r == 0) FFS_LIKELY
+    return sx.stx_mtime.tv_sec;
+#endif
+  if (r == 0 || errno == ENOSYS){
+    if (struct stat s; !stat(path.data(), &s))
+      return s.st_mtime;
+  }
 #endif
 
   fs_print_error(path, __func__);
