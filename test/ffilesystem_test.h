@@ -1,5 +1,7 @@
 #include <cstdlib>
 #include <iostream>
+#include <ostream> // for std::endl
+
 #include <string_view>
 
 #if defined(_WIN32) || defined(__CYGWIN__)

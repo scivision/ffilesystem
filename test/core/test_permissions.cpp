@@ -45,7 +45,7 @@ EXPECT_TRUE(fs_set_permissions(noread, -1, 0, 0));
 
 std::string p = fs_get_permissions(noread);
 
-std::cout << "Permissions: " << noread << " " << p << std::endl;
+std::cout << "Permissions: " << noread << " " << p << "\n";
 
 if(!(fs_is_windows() || fs_is_cygwin())){
   EXPECT_EQ(p[0], '-');

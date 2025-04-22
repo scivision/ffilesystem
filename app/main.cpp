@@ -1,4 +1,6 @@
 #include <iostream>
+#include <ostream> // for std::endl
+#include <cstdint>
 #include <cstdlib>
 #include <string>
 #include <string_view>

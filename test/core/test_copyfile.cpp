@@ -1,5 +1,6 @@
 #include <string>
 #include <fstream>
+#include <cstdint>
 #include <cstdio>  // std::remove
 
 #include "ffilesystem.h"

@@ -7,7 +7,7 @@
 
 std::string fs_getenv_s(std::string_view name)
 {
-  std::size_t L;
+  std::string::size_type L;
   getenv_s(&L, nullptr, 0, name.data());
   if (L == 0)
     return {};

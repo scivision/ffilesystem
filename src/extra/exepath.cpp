@@ -33,7 +33,7 @@ std::string fs_exe_path()
   // https://stackoverflow.com/a/1024937
 
   std::string path(fs_get_max_path(), '\0');
-  std::size_t L=0;
+  std::string::size_type L=0;
 
 #if defined(_WIN32) || defined(__CYGWIN__)
  // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamea
@@ -47,7 +47,7 @@ std::string fs_exe_path()
     L = static_cast<std::size_t>(M);
 #elif defined(__APPLE__) && defined(__MACH__)
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dyld.3.html
-  uint32_t mp = 0;
+  std::uint32_t mp = 0;
   // get buffer size first
   if(_NSGetExecutablePath(nullptr, &mp) == -1 &&
      _NSGetExecutablePath(path.data(), &mp) == 0)  FFS_LIKELY

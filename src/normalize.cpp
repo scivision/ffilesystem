@@ -90,11 +90,11 @@ fs_drop_slash(std::string_view in)
   if (fs_is_windows() && !in.empty() && s == fs_root_name(in))
     s.append("/");
 
-  if(fs_trace > 1) std::cout << "TRACE:drop_slash(" << in << "): removed trailing slash: " << s << std::endl;
+  if(fs_trace > 1) std::cout << "TRACE:drop_slash(" << in << "): removed trailing slash: " << s << "\n";
 
   s.erase(std::unique(s.begin(), s.end(), [](char a, char b){ return a == '/' && b == '/'; }), s.end());
 
-  if(fs_trace > 1) std::cout << "TRACE:drop_slash(" << in << "): removed duplicated internal slashes: " << s << std::endl;
+  if(fs_trace > 1) std::cout << "TRACE:drop_slash(" << in << "): removed duplicated internal slashes: " << s << "\n";
 
   return s;
 }

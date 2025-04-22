@@ -1,5 +1,6 @@
 #include <string_view>
 #include <string>
+#include <cstdint>
 
 #include <algorithm> // std::transform
 #include <cctype>    // std::tolower
@@ -62,7 +63,7 @@ bool fs_is_executable_binary(std::string_view path)
     // it's necessary to consider the reversed magic number for each of these as well,
     // done in the "*CIGAM*" constants
 
-  uint32_t um32;
+  std::uint32_t um32;
   std::memcpy(&um32, magic.data(), sizeof(um32));
 
   ok = um32 == MH_MAGIC ||  um32 == MH_MAGIC_64 ||

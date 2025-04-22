@@ -49,7 +49,7 @@ fs_is_reserved(std::string_view path)
 
   std::string s = fs_stem(n);
 
-  if(size_t L = s.length();
+  if(std::string::size_type L = s.length();
       L < 3 || L > 4)
     return false;
 

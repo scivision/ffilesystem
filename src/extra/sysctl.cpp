@@ -11,7 +11,7 @@ fs_is_rosetta()
 #if defined(__APPLE__) && defined(__MACH__)
 // https://developer.apple.com/documentation/apple-silicon/about-the-rosetta-translation-environment
     int ret = 0;
-    size_t size = sizeof(ret);
+    std::size_t size = sizeof(ret);
 
     if (sysctlbyname("sysctl.proc_translated", &ret, &size, nullptr, 0) < 0) {
         if (errno != ENOENT)
