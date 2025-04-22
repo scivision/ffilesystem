@@ -203,7 +203,11 @@ To manually enable / disable `path_t` with CMake set command option `cmake -DHAV
 ---
 
 [statx()](https://www.man7.org/linux/man-pages/man2/statx.2.html)
-is used by default on glibc systems to get file information.
+is used by default on
+[glibc](https://www.gnu.org/software/gnulib/manual/html_node/statx.html)
+version
+[2.28 or newer](https://www.sourceware.org/glibc/wiki/Release/2.28)
+systems to get file information.
 There is a runtime fallback to "stat()" if "statx()" is not available.
 statx() may be disabled by setting build option
 

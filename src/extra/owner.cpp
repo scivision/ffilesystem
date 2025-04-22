@@ -18,7 +18,6 @@
 #endif
 
 #if defined(__linux__) && defined(USE_STATX)
-#include <iostream>
 #include <fcntl.h>   // AT_* constants for statx()
 #endif
 
@@ -78,9 +77,6 @@ static std::optional<uid_t> fs_stat_uid(std::string_view path)
   int r = 0;
 
 #if defined(STATX_UID) && defined(USE_STATX)
-  // https://www.man7.org/linux/man-pages/man2/statx.2.html
-  if (fs_trace) std::cout << "TRACE: statx() owner_name " << path << "\n";
-
   struct statx sx;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_UID, &sx);
   if (r == 0)
@@ -99,8 +95,6 @@ static std::optional<gid_t> fs_stat_gid(std::string_view path)
 {
   int r = 0;
 #if defined(STATX_GID) && defined(USE_STATX)
-  if (fs_trace) std::cout << "TRACE: statx() owner_group " << path << "\n";
-
   struct statx sx;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_GID, &sx);
   if (r == 0)
