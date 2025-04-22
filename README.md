@@ -200,17 +200,19 @@ print *, "path: ", p%path() !< getter
 The CMake and Meson scripts detect if Fortran 2003 `type` is available and enable `path_t` by default.
 To manually enable / disable `path_t` with CMake set command option `cmake -DHAVE_F03TYPE=1` or `cmake -DHAVE_F03TYPE=0` respectively.
 
-By default `stat()` is used on non-Windows systems to get file information.
-On glibc systems,
+---
+
 [statx()](https://www.man7.org/linux/man-pages/man2/statx.2.html)
-may be used if available by setting build option
+is used by default on glibc systems to get file information.
+There is a runtime fallback to "stat()" if "statx()" is not available.
+statx() may be disabled by setting build option
 
 ```sh
-cmake -Dffilesystem_statx=true -Bbuild
+cmake -Dffilesystem_statx=false -Bbuild
 
 # or
 
-meson setup -Dstatx=true build
+meson setup -Dstatx=false build
 ```
 
 ## Self test
