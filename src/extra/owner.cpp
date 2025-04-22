@@ -73,7 +73,7 @@ static std::string fs_win32_owner(std::string_view path, bool group)
 
 #else
 
-static std::optional<gid_t> fs_stat_uid(std::string_view path)
+static std::optional<uid_t> fs_stat_uid(std::string_view path)
 {
   int r = 0;
 
@@ -88,8 +88,7 @@ static std::optional<gid_t> fs_stat_uid(std::string_view path)
 #endif
 
   if(r == 0 || errno == ENOSYS){
-    struct stat s;
-    if(!stat(path.data(), &s))
+    if(struct stat s; !stat(path.data(), &s))
       return s.st_uid;
   }
 
@@ -109,10 +108,9 @@ static std::optional<gid_t> fs_stat_gid(std::string_view path)
 #endif
 
 if(r == 0 || errno == ENOSYS){
-    struct stat s;
-    if(!stat(path.data(), &s))
-      return s.st_gid;
-  }
+  if(struct stat s; !stat(path.data(), &s))
+    return s.st_gid;
+}
 
   return {};
 }

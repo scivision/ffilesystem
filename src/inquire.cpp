@@ -82,20 +82,24 @@ bool fs_has_statx()
 int
 fs_st_mode(std::string_view path)
 {
+  int r = 0;
 #if defined(STATX_MODE) && defined(USE_STATX)
 // Linux Glibc only
 // https://www.gnu.org/software/gnulib/manual/html_node/statx.html
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
 
-  if(struct statx s;
-      statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_MODE, &s) == 0)
-    return s.stx_mode;
-#else
-// https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions
-  if(struct stat s; !stat(path.data(), &s))
-    return s.st_mode;
+  struct statx sx;
+  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_MODE, &sx);
+  if (r == 0) FFS_LIKELY
+    return sx.stx_mode;
 #endif
-  // fs_print_error(path, __func__);
+
+// https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions
+  if(r == 0 || errno == ENOSYS){
+    if (struct stat s; !stat(path.data(), &s))
+      return s.st_mode;
+  }
+
   return 0;
 }
 
@@ -327,19 +331,22 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
   if(auto s = std::filesystem::hard_link_count(path, ec); !ec)  FFS_LIKELY
     return s;
 
-#elif defined(STATX_BASIC_STATS) && defined(USE_STATX)
-// https://www.man7.org/linux/man-pages/man2/statx.2.html
-  if (fs_trace) std::cout << "TRACE: statx() hard_link " << path << "\n";
-  struct statx s;
-
-  if( statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &s) == 0 ) FFS_LIKELY
-    return s.stx_nlink;
-
 #else
-  if (struct stat s;
-        !stat(path.data(), &s))
-    return s.st_nlink;
 
+  int r = 0;
+
+#if defined(STATX_BASIC_STATS) && defined(USE_STATX)
+// https://www.man7.org/linux/man-pages/man2/statx.2.html
+  struct statx sx;
+  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &sx);
+  if (r == 0) FFS_LIKELY
+    return sx.stx_nlink;
+#endif
+
+  if (r == 0 || errno == ENOSYS){
+    if (struct stat s; !stat(path.data(), &s))
+      return s.st_nlink;
+  }
 #endif
 
   fs_print_error(path, __func__, ec);
