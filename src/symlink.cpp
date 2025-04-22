@@ -36,28 +36,40 @@
 
 bool fs_is_symlink(std::string_view path)
 {
+  std::error_code ec;
 
 #if defined(__MINGW32__) || (defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM))
   return fs_win32_is_symlink(path);
 #elif defined(HAVE_CXX_FILESYSTEM)
 // std::filesystem::symlink_status or std::filesystem::is_symlink
 // don't detect symlinks on MinGW
-  std::error_code ec;
-  return std::filesystem::is_symlink(path, ec) && !ec;
-#elif defined(STATX_MODE) && defined(USE_STATX)
+
+  if(bool is_sym = std::filesystem::is_symlink(path, ec); !ec)
+    return is_sym;
+#else
+
+  int r = 0;
+
+#if defined(STATX_MODE) && defined(USE_STATX)
 // Linux Glibc only
 // https://www.gnu.org/software/gnulib/manual/html_node/statx.html
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
-  if (fs_trace) std::cout << "TRACE: statx() is_symlink " << path << "\n";
-  struct statx s;
-  return statx(AT_FDCWD, path.data(),
-               AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW,
-               STATX_MODE, &s) == 0 &&
-         S_ISLNK(s.stx_mode);
-#else
-  struct stat s;
-  return lstat(path.data(), &s) == 0 && S_ISLNK(s.st_mode);
+
+  struct statx sx;
+  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_MODE, &sx);
+  if (r == 0) FFS_LIKELY
+    return S_ISLNK(sx.stx_mode);
 #endif
+
+  if(r == 0 || errno == ENOSYS){
+    if(struct stat s; lstat(path.data(), &s) == 0)
+      return S_ISLNK(s.st_mode);
+  }
+
+#endif
+
+  fs_print_error(path, __func__, ec);
+  return false;
 }
 
 
