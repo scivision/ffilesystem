@@ -24,7 +24,7 @@ copy_file, mkdir, &
 relative_to, proximate_to, &
 hard_link_count, &
 root, root_name, same_file, file_size, &
-space_available, space_capacity, &
+space_available, space_capacity, get_blksize, &
 file_name, parent, stem, suffix, with_suffix, &
 absolute, &
 assert_is_file, assert_is_dir, &
@@ -302,6 +302,11 @@ character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
 integer (C_SIZE_T) function fs_space_capacity(path) bind(C)
+import
+character(kind=C_CHAR), intent(in) :: path(*)
+end function
+
+integer(C_SIZE_T) function fs_get_blksize(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
@@ -870,6 +875,13 @@ integer(int64) function space_capacity(path) result(r)
 character(*), intent(in) :: path
 
 r = fs_space_capacity(trim(path) // C_NULL_CHAR)
+end function
+
+integer(int64) function get_blksize(path) result(r)
+!! returns block size (bytes) on filesystem containing path
+character(*), intent(in) :: path
+
+r = fs_get_blksize(trim(path) // C_NULL_CHAR)
 end function
 
 

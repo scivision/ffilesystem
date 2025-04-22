@@ -252,6 +252,8 @@ std::uintmax_t fs_space_available(const char* path){ return fs_space_available(s
 
 std::uintmax_t fs_space_capacity(const char* path){ return fs_space_capacity(std::string_view(path)); }
 
+std::size_t fs_get_blksize(const char* path){ return fs_get_blksize(std::string_view(path)); }
+
 std::uintmax_t fs_hard_link_count(const char* path){ return fs_hard_link_count(std::string_view(path)); }
 
 bool fs_set_permissions(const char* path, int readable, int writable, int executable){

@@ -366,6 +366,12 @@ Drive capacity available to user on drive (bytes):
 space_capacity("c:/")
 ```
 
+Block size of filesystem (bytes). For example, a typical block size is 4096 bytes.
+
+```fortran
+get_blksize("/")
+```
+
 Hard link count of file or directory:
 
 ```fortran

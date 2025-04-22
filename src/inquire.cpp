@@ -16,6 +16,7 @@
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <winioctl.h> // DeviceIoControl
 #include <io.h> // _access_s
 #endif
 
@@ -56,10 +57,7 @@ bool fs_win32_is_type(std::string_view path, const DWORD type){
 
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
   DWORD t = GetFileType(h);
-  if (!CloseHandle(h))
-    ec = std::make_error_code(std::errc::io_error);
-
-  if (!ec)
+  if (CloseHandle(h) && !ec)
     return t == type;
 
   fs_print_error(path, __func__, ec);
@@ -350,5 +348,51 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 #endif
 
   fs_print_error(path, __func__, ec);
+  return {};
+}
+
+
+std::size_t fs_get_blksize(std::string_view path)
+{
+  // block size in bytes
+#if defined(_WIN32)
+
+  const std::string root = fs_root_name(path);
+  if (root.empty())
+    return {};
+
+  const std::string wp = R"(\\.\)" + root;
+
+  HANDLE h = CreateFileA(wp.data(), 0, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+  if (h != INVALID_HANDLE_VALUE) {
+    DISK_GEOMETRY_EX diskGeometry = {0};
+    DWORD bytesReturned = 0;
+
+    bool const ok = DeviceIoControl(h, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
+                        nullptr, 0, &diskGeometry, sizeof(diskGeometry),
+                        &bytesReturned, nullptr);
+
+    if (CloseHandle(h) && ok)  FFS_LIKELY
+      return diskGeometry.Geometry.BytesPerSector;
+  }
+
+#else
+
+  int r = 0;
+
+#if defined(STATX_BASIC_STATS) && defined(USE_STATX)
+  struct statx sx;
+  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_BASIC_STATS, &sx);
+  if (r == 0) FFS_LIKELY
+    return sx.stx_blksize;
+#endif
+
+  if (r == 0 || errno == ENOSYS){
+    if (struct stat s; !stat(path.data(), &s))
+      return s.st_blksize;
+  }
+#endif
+
+  fs_print_error(path, __func__);
   return {};
 }

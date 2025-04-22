@@ -196,6 +196,7 @@ bool fs_slash_first(std::string_view);
 
 std::uintmax_t fs_space_available(std::string_view);
 std::uintmax_t fs_space_capacity(std::string_view);
+std::size_t fs_get_blksize(std::string_view);
 
 std::vector<std::string> fs_split(std::string_view);
 
@@ -388,6 +389,7 @@ uintmax_t fs_file_size(const char*);
 
 uintmax_t fs_space_available(const char*);
 uintmax_t fs_space_capacity(const char*);
+size_t fs_get_blksize(const char*);
 
 uintmax_t fs_hard_link_count(const char*);
 
