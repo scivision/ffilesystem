@@ -104,9 +104,7 @@ bool fs_set_modtime(std::string_view path, const bool quiet)
     GetSystemTimeAsFileTime(&t);
     BOOL ok = SetFileTime(h, nullptr, nullptr, &t);
 
-    if(!CloseHandle(h))
-      ec = std::make_error_code(std::errc::io_error);
-    else if (ok) FFS_LIKELY
+    if(CloseHandle(h) && ok) FFS_LIKELY
       return true;
   }
 #else

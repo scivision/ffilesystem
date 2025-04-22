@@ -74,9 +74,7 @@ std::string fs_get_profile_dir()
   const bool ok = OpenProcessToken( GetCurrentProcess(), TOKEN_QUERY, &h) != 0 &&
     GetUserProfileDirectoryA(h, path.data(), &N);
 
-  if(!CloseHandle(h))
-    ec = std::make_error_code(std::errc::io_error);
-  else if (ok && N > 0) {
+  if(CloseHandle(h) && ok && N > 0) {
     path.resize(N - 1);
     return fs_drop_slash(path);
   }
