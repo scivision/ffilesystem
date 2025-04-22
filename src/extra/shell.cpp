@@ -55,8 +55,7 @@ if(fs_trace) std::cout << "TRACE: get_shell: " << name << " PID: " << pid << " P
   if (CloseHandle(h) && !ec)
     return name;
 #else
-  const struct passwd *pw = fs_getpwuid();
-  if (pw)
+  if (auto pw = fs_getpwuid())
     return pw->pw_shell;
 #endif
 

@@ -31,7 +31,7 @@ struct passwd* fs_getpwuid()
 #if !defined(_WIN32)
   const uid_t eff_uid = geteuid();
 
-  if(struct passwd *pw = getpwuid(eff_uid); pw) FFS_LIKELY
+  if(auto pw = getpwuid(eff_uid)) FFS_LIKELY
     return pw;
 
   fs_print_error(
@@ -142,7 +142,7 @@ std::string fs_get_username()
 
 #else
 
-  if (struct passwd *pw = fs_getpwuid(); pw)
+  if (auto pw = fs_getpwuid())
     return pw->pw_name;
 
 #endif
