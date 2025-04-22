@@ -124,7 +124,7 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
 #endif
 
   // https://github.com/boostorg/filesystem/issues/184
-  if (r != 0 || (ret < 0 && errno == EINVAL))
+  if (r != 0 || (ret < 0 && (errno == EINVAL || errno == EOPNOTSUPP)))
     r = fs_copy_loop(rid, wid, len);
 
   int const wc = close(wid);
