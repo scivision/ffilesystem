@@ -44,7 +44,7 @@
 #endif  // HAVE_CXX_FILESYSTEM
 
 
-#if !defined(HAVE_CXX_FILESYSTEM) && !defined(_WIN32) && !defined(HAVE_MACOS_COPYFILE)
+#if !defined(HAVE_CXX_FILESYSTEM) && !defined(_WIN32)
 
 static off_t fs_copy_loop(int const rid, int const wid, off_t const len)
 {
@@ -70,32 +70,67 @@ static off_t fs_copy_loop(int const rid, int const wid, off_t const len)
 }
 
 
-static off_t fs_copy_file_range_or_loop(int const rid, int const wid, off_t const len)
+bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, bool overwrite)
 {
   // copy a file in chunks
+
+#if defined(HAVE_COPY_FILE_RANGE)
+  std::string const fst = fs_filesystem_type(source);
+
+  bool useloop = fst == "debugfs" || fst == "procfs" || fst == "sysfs" || fst == "tracefs";
+#endif
+
+  int const rid = open(source.data(), O_RDONLY);
+  if (rid == -1)
+    return false;
+
+  // leave fstat here to avoid source file race condition
+  struct stat stat;
+  if (fstat(rid, &stat) == -1) {
+    close(rid);
+    return false;
+  }
+
+  const off_t len = stat.st_size;
+
+  auto opt = O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC;
+  if(!overwrite)
+    opt |= O_EXCL;
+
+// https://linux.die.net/man/3/open
+  int const wid = open(dest.data(), opt, stat.st_mode);
+  if (wid == -1) {
+    close(rid);
+    return false;
+  }
+
   off_t r = len;
   off_t ret = 0;
 
 #if defined(HAVE_COPY_FILE_RANGE)
     // https://man.freebsd.org/cgi/man.cgi?copy_file_range(2)
     // https://man7.org/linux/man-pages/man2/copy_file_range.2.html
-    // https://linux.die.net/man/3/open
-  if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using copy_file_range\n";
+  if (!useloop) {
+    if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using copy_file_range\n";
 
-  while (r > 0) {
-    ret = copy_file_range(rid, nullptr, wid, nullptr, r, 0);
-    if (ret <= 0)
-      break;
+    while (r > 0) {
+      ret = copy_file_range(rid, nullptr, wid, nullptr, r, 0);
+      if (ret <= 0)
+        break;
 
-    r -= ret;
+      r -= ret;
+    }
   }
 #endif
 
   // https://github.com/boostorg/filesystem/issues/184
   if (r != 0 || (ret < 0 && errno == EINVAL))
-   r = fs_copy_loop(rid, wid, len);
+    r = fs_copy_loop(rid, wid, len);
 
-  return r;
+  int const wc = close(wid);
+  int const rc = close(rid);
+
+  return wc == 0 && rc == 0 && r == 0;
 }
 #endif
 
@@ -139,39 +174,7 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
     return true;
 #else
 
-  int const rid = open(source.data(), O_RDONLY);
-  if (rid == -1) {
-    fs_print_error(source, __func__);
-    return false;
-  }
-
-  // leave fstat here to avoid source file race condition
-  struct stat  stat;
-  if (fstat(rid, &stat) == -1) {
-    fs_print_error(source, __func__);
-    close(rid);
-    return false;
-  }
-
-  const off_t len = stat.st_size;
-
-  auto opt = O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC;
-  if(!overwrite)
-    opt |= O_EXCL;
-
-  int const wid = open(dest.data(), opt, stat.st_mode);
-  if (wid == -1) {
-    fs_print_error(dest, __func__);
-    close(rid);
-    return false;
-  }
-
-  off_t rem = fs_copy_file_range_or_loop(rid, wid, len);
-
-  int const wc = close(wid);
-  int const rc = close(rid);
-
-  if(wc == 0 && rc == 0 && rem == 0)  FFS_LIKELY
+  if(fs_copy_file_range_or_loop(source, dest, overwrite)) FFS_LIKELY
     return true;
 
 #endif
