@@ -4,17 +4,26 @@
 
 #include <gtest/gtest.h>
 
+namespace {
 class TestOnDisk : public testing::Test {
   protected:
     std::string file, dir, cwd;
     void SetUp() override {
+      auto inst = testing::UnitTest::GetInstance();
+      auto info = inst->current_test_info();
+
+      // https://google.github.io/googletest/reference/testing.html#UnitTest::current_test_suite
+      std::string test_name_ = info->name();
+      std::string test_suite_name_ = info->test_suite_name();
+      std::string n = test_suite_name_ + "-" + test_name_;
+
       cwd = fs_get_cwd();
 
-      file = "ffs_is_file_empty.txt";
+      file = "ffs_" + n + ".txt";
       ASSERT_TRUE(fs_touch(file));
       ASSERT_TRUE(fs_exists(file));
 
-      dir = "ffs_mkdir_test_dir";
+      dir = "ffs_" + n + "_dir";
       ASSERT_TRUE(fs_mkdir(dir));
       ASSERT_TRUE(fs_is_dir(dir));
     }
@@ -38,14 +47,19 @@ TEST_F(TestOnDisk, IsDir)
 
 
 TEST_F(TestOnDisk, IsFile){
-  ASSERT_TRUE(fs_is_file(file));
-  EXPECT_TRUE(fs_is_readable(file));
+  EXPECT_TRUE(fs_is_file(file));
   EXPECT_FALSE(fs_is_exe(file));
   EXPECT_FALSE(fs_is_file("ffs_is_file_not-exist-file"));
   EXPECT_FALSE(fs_is_file(""));
   EXPECT_FALSE(fs_is_file("."));
   EXPECT_FALSE(fs_is_file(dir));
   EXPECT_FALSE(fs_is_file(cwd));
+}
+
+
+TEST_F(TestOnDisk, IsReadable){
+  EXPECT_TRUE(fs_is_readable(file));
+  EXPECT_TRUE(fs_is_readable(dir));
 }
 
 
@@ -97,4 +111,5 @@ EXPECT_GE(fs_get_modtime(file), t0);
 
 EXPECT_FALSE(fs_set_modtime("not-exist-file"));
 
+}
 }
