@@ -76,7 +76,7 @@ static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesa
 
 // https://learn.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
-  if (const DWORD attr = GetFileAttributesA(path.data());
+  if (DWORD attr = GetFileAttributesA(path.data());
         attr == INVALID_FILE_ATTRIBUTES)
     // ec = std::make_error_code(std::errc::no_such_file_or_directory);
     // don't emit error for non-existent files
@@ -234,9 +234,8 @@ std::string fs_win32_final_path(std::string_view path)
 
   std::string r(fs_get_max_path(), '\0');
 
-  const DWORD L = GetFinalPathNameByHandleA(h, r.data(), static_cast<DWORD>(r.size()), FILE_NAME_NORMALIZED);
-
-  if(CloseHandle(h) && L) {
+  if(DWORD L = GetFinalPathNameByHandleA(h, r.data(), static_cast<DWORD>(r.size()), FILE_NAME_NORMALIZED);
+      CloseHandle(h) && L) {
     r.resize(L);
 
 #ifdef __cpp_lib_starts_ends_with  // C++20

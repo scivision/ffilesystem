@@ -88,11 +88,11 @@ std::string fs_root(std::string_view path)
 #ifdef HAVE_CXX_FILESYSTEM
   return std::filesystem::path(path).root_path().generic_string();
 #else
-  const std::string r = fs_root_name(path);
-  if (r.empty())
+  if (std::string r = fs_root_name(path);
+       r.empty())
     return fs_slash_first(path) ? "/" : "";
-
-  return (fs_is_windows() && r == path) ? r : r + "/";
+  else
+    return (fs_is_windows() && r == path) ? r : r + "/";
 #endif
 }
 

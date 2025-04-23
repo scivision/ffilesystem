@@ -33,24 +33,23 @@ std::string fs_exe_path()
   // https://stackoverflow.com/a/1024937
 
   std::string path(fs_get_max_path(), '\0');
-  std::string::size_type L=0;
+  std::string::size_type L = 0;
 
 #if defined(_WIN32) || defined(__CYGWIN__)
- // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamea
-  const DWORD M = GetModuleFileNameA(nullptr, path.data(), static_cast<DWORD>(path.size()));
-  if(M > 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) FFS_LIKELY
+  // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamea
+  if (DWORD M = GetModuleFileNameA(nullptr, path.data(), static_cast<DWORD>(path.size()));
+        M > 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) FFS_LIKELY
     L = static_cast<std::size_t>(M);
 #elif defined(__linux__)
   // https://man7.org/linux/man-pages/man2/readlink.2.html
-  const ssize_t M = readlink("/proc/self/exe", path.data(), path.size());
-  if(M > 0)  FFS_LIKELY
+  if(ssize_t M = readlink("/proc/self/exe", path.data(), path.size()); M > 0)  FFS_LIKELY
     L = static_cast<std::size_t>(M);
 #elif defined(__APPLE__) && defined(__MACH__)
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dyld.3.html
-  std::uint32_t mp = 0;
   // get buffer size first
-  if(_NSGetExecutablePath(nullptr, &mp) == -1 &&
-     _NSGetExecutablePath(path.data(), &mp) == 0)  FFS_LIKELY
+  if(std::uint32_t mp;
+      _NSGetExecutablePath(nullptr, &mp) == -1 &&
+      _NSGetExecutablePath(path.data(), &mp) == 0)  FFS_LIKELY
       L = static_cast<std::size_t>(mp-1);
 #elif defined(BSD)
   // https://man.freebsd.org/cgi/man.cgi?sysctl(3)
