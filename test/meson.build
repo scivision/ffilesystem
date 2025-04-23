@@ -1,4 +1,4 @@
-test_dirs = ['core', 'executable']
+test_dirs = ['core']
 if get_option('extra')
   test_dirs += ['extra']
 endif

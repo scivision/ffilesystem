@@ -6,6 +6,7 @@ set(tests is_absolute absolute
 canonical realpath
 env
 equivalent
+exe
 expanduser
 filename
 filesize space
@@ -23,7 +24,10 @@ suffix
 with_suffix
 owner
 permissions
-copyfile mkdir touch
+copyfile
+mkdir
+touch
+which
 )
 
 if(HAVE_F03TYPE)
@@ -71,6 +75,7 @@ drop_slash
 empty
 env
 equivalent
+exe
 expanduser
 filename
 filesize
@@ -101,6 +106,7 @@ stem
 suffix
 system
 utf8
+which
 with_suffix
 )
 if(WIN32 OR CYGWIN)
@@ -110,12 +116,13 @@ endif()
 foreach(t IN LISTS cpp_tests gtest_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
-  target_include_directories(test_${t}_cpp PRIVATE ..)
 
   if(t IN_LIST gtest_tests)
     target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
     gtest_add_tests(TARGET test_${t}_cpp)
     continue()
+  else()
+    target_include_directories(test_${t}_cpp PRIVATE ..)
   endif()
 
   if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)

@@ -7,7 +7,7 @@ protected:
   std::string base, ref;
   std::string cwd;
   void SetUp() override {
-    cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
+    cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
     if (fs_is_windows()) {
       base = "j:/foo";
       ref = "j:/foo/rel";

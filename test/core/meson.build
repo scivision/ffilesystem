@@ -10,6 +10,7 @@ if fortran
 fortran_core = ['is_absolute', 'absolute',
 'canonical', 'realpath',
 'equivalent',
+'exe',
 'expanduser',
 'filesize', 'space',
 'filename', 'is_dir',
@@ -20,6 +21,7 @@ fortran_core = ['is_absolute', 'absolute',
 'set_cwd',
 'suffix', 'with_suffix',
 'resolve',
+'which',
 'path_t'
 ]
 
@@ -67,6 +69,7 @@ gtest_tests = [
 'empty',
 'env',
 'equivalent',
+'exe',
 'expanduser',
 'filename',
 'filesize',
@@ -97,6 +100,7 @@ gtest_tests = [
 'suffix',
 'system',
 'utf8',
+'which',
 'with_suffix'
 ]
 if is_windows

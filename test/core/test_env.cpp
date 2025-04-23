@@ -8,7 +8,7 @@ class TestEnvironment : public testing::Test {
     protected:
       std::string cwd;
       void SetUp() override {
-        cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
+        cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
       }
 };
 

@@ -17,9 +17,9 @@ class TestOnDisk : public testing::Test {
       std::string test_suite_name_ = info->test_suite_name();
       std::string n = test_suite_name_ + "-" + test_name_;
 
-      cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
+      cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
 
-      file = "ffs_" + n + ".txt";
+      file = cwd + "/ffs_" + n + ".txt";
       ASSERT_TRUE(fs_touch(file));
       ASSERT_TRUE(fs_exists(file));
 

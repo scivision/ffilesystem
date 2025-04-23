@@ -8,15 +8,13 @@ class TestUTF8 : public testing::Test {
     const std::string smiley = "😀";
     const std::string wink = "😉";
     const std::string hello = "你好";
-    const std::string e = "";
-
 };
 
 
 TEST_F(TestUTF8, Intl){
 
-EXPECT_NE(fs_canonical(".", true, false), e);
-EXPECT_NE(fs_canonical("./", true, false), e);
+EXPECT_FALSE(fs_canonical(".", true, false).empty());
+EXPECT_FALSE(fs_canonical("./", true, false).empty());
 
 EXPECT_EQ(fs_file_name("./" + smiley), smiley);
 EXPECT_EQ(fs_file_name("./" + wink), wink);

@@ -1,16 +1,21 @@
 #include <string>
-#include <iostream>
 
 #include "ffilesystem.h"
 
 #include <gtest/gtest.h>
 
-TEST(TestSame, Equivalent)
+
+class TestSame : public testing::Test {
+    protected:
+      std::string cwd;
+      void SetUp() override {
+        cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
+      }
+};
+
+TEST_F(TestSame, Equivalent)
 {
-std::string const cwd = fs_get_cwd();
-std::cout << "cwd: " << cwd << "\n";
 std::string s1 = "../" + fs_file_name(cwd);
-std::cout << "cwd relative: " << s1 << "\n";
 std::string s2 = "./" + s1;
 
 ASSERT_TRUE(fs_is_dir(s1));
