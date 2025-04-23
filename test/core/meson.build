@@ -83,16 +83,20 @@ gtest_tests = [
 'normal',
 'parent',
 'permissions',
+'proximate',
+'relative',
 'remove',
 'rename',
 'reserved',
 'root',
 'safe',
 'separator',
+'set_cwd',
 'space',
 'stem',
 'suffix',
 'system',
+'utf8',
 'with_suffix'
 ]
 if is_windows

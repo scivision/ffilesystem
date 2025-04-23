@@ -100,6 +100,7 @@ space
 stem
 suffix
 system
+utf8
 with_suffix
 )
 if(WIN32 OR CYGWIN)
