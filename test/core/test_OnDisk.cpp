@@ -17,13 +17,13 @@ class TestOnDisk : public testing::Test {
       std::string test_suite_name_ = info->test_suite_name();
       std::string n = test_suite_name_ + "-" + test_name_;
 
-      cwd = fs_get_cwd();
+      cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
 
       file = "ffs_" + n + ".txt";
       ASSERT_TRUE(fs_touch(file));
       ASSERT_TRUE(fs_exists(file));
 
-      dir = "ffs_" + n + "_dir";
+      dir = cwd + "/ffs_" + n + "_dir";
       ASSERT_TRUE(fs_mkdir(dir));
       ASSERT_TRUE(fs_is_dir(dir));
     }
@@ -84,7 +84,7 @@ ASSERT_TRUE(fs_mkdir(dir));
 ASSERT_TRUE(fs_set_cwd(dir));
 
 ASSERT_TRUE(fs_mkdir("test-filesystem-dir/hello"));
-EXPECT_TRUE(fs_is_dir(fs_get_cwd() + "/test-filesystem-dir/hello"));
+EXPECT_TRUE(fs_is_dir(dir + "/test-filesystem-dir/hello"));
 }
 
 

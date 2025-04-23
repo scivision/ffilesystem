@@ -1,19 +1,22 @@
 #include <string>
-#include <iostream>
 
 #include "ffilesystem.h"
 
 #include <gtest/gtest.h>
 
-TEST(TestEnvironment, Environment)
+class TestEnvironment : public testing::Test {
+    protected:
+      std::string cwd;
+      void SetUp() override {
+        cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
+      }
+};
+
+TEST_F(TestEnvironment, Environment)
 {
-std::string fpath = fs_get_cwd();
-EXPECT_FALSE(fpath.empty());
-std::cout << "current working dir " << fpath << "\n";
 
-EXPECT_TRUE(fs_exists(fpath));
-
-EXPECT_TRUE(fs_is_dir(fpath));
+EXPECT_TRUE(fs_is_dir(cwd));
+EXPECT_EQ(fs_get_cwd(), cwd);
 
 std::string pdir = fs_get_profile_dir();
 EXPECT_FALSE(pdir.empty());

@@ -5,9 +5,10 @@
 
 class TestSetCwd : public testing::Test {
   protected:
-    std::string dir;
+    std::string dir, cwd;
     void SetUp() override {
-      dir = fs_get_cwd() + "/ffs_test_set_cwd";
+      cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
+      dir = cwd + "/ffs_test_set_cwd";
       ASSERT_TRUE(fs_mkdir(dir));
       ASSERT_TRUE(fs_is_dir(dir));
     }
