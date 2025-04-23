@@ -4,14 +4,11 @@
 
 TEST(TestSpace, Space)
 {
-
 EXPECT_GT(fs_space_available(testing::TempDir()), 0);
 EXPECT_GT(fs_space_capacity(testing::TempDir()), 0);
-
 }
 
 TEST(TestBlksize, BlkSize)
 {
-
 EXPECT_GT(fs_get_blksize(testing::TempDir()), 0);
 }

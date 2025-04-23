@@ -46,8 +46,8 @@ std::string fs_exe_path()
     L = static_cast<std::size_t>(M);
 #elif defined(__APPLE__) && defined(__MACH__)
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dyld.3.html
-  // get buffer size first
-  if(std::uint32_t mp;
+  // get buffer size first. Need mp=0 to avoid intermittent segfault.
+  if(std::uint32_t mp = 0;
       _NSGetExecutablePath(nullptr, &mp) == -1 &&
       _NSGetExecutablePath(path.data(), &mp) == 0)  FFS_LIKELY
       L = static_cast<std::size_t>(mp-1);
