@@ -333,10 +333,10 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 
   int r = 0;
 
-#if defined(STATX_BASIC_STATS) && defined(USE_STATX)
+#if defined(STATX_NLINK) && defined(USE_STATX)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
   struct statx sx;
-  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &sx);
+  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_NLINK, &sx);
   if (r == 0) FFS_LIKELY
     return sx.stx_nlink;
 #endif
