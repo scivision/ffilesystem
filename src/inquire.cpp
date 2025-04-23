@@ -365,7 +365,8 @@ std::size_t fs_get_blksize(std::string_view path)
 
   HANDLE h = CreateFileA(wp.data(), 0, 0, nullptr, OPEN_EXISTING, 0, nullptr);
   if (h != INVALID_HANDLE_VALUE) {
-    DISK_GEOMETRY_EX diskGeometry = {0};
+    DISK_GEOMETRY_EX diskGeometry = {};
+    ZeroMemory(&diskGeometry, sizeof(DISK_GEOMETRY_EX));
     DWORD bytesReturned = 0;
 
     bool const ok = DeviceIoControl(h, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
