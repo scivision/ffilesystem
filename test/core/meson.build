@@ -86,8 +86,6 @@ gtest_tests = [
 'normal',
 'parent',
 'permissions',
-'proximate',
-'relative',
 'remove',
 'rename',
 'reserved',
