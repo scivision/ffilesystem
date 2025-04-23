@@ -63,13 +63,13 @@ bool fs_set_permissions(std::string_view path, int readable, int writable, int e
 
   int m = fs_st_mode(path);
 #ifdef _MSC_VER
-  const int r = _S_IREAD;
-  const int w = _S_IWRITE;
-  const int x = _S_IEXEC;
+  constexpr int r = _S_IREAD;
+  constexpr int w = _S_IWRITE;
+  constexpr int x = _S_IEXEC;
 #else
-  const int r = S_IRUSR;
-  const int w = S_IWUSR;
-  const int x = S_IXUSR;
+  constexpr int r = S_IRUSR;
+  constexpr int w = S_IWUSR;
+  constexpr int x = S_IXUSR;
 #endif
 
   if(readable > 0)

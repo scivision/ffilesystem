@@ -38,9 +38,8 @@ fs_get_shell()
         HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pe.th32ParentProcessID);
 
         if ( EnumProcessModules( hProcess, &hMod, sizeof(hMod), &cbNeeded) ) {
-          const auto L = GetModuleBaseNameA( hProcess, hMod, name.data(), static_cast<DWORD>(name.size()) );
-
-          if(!CloseHandle(hProcess) || L == 0)
+          if(DWORD L = GetModuleBaseNameA( hProcess, hMod, name.data(), static_cast<DWORD>(name.size()) );
+              !CloseHandle(hProcess) || L == 0)
             ec = std::make_error_code(std::errc::io_error);
           else
             name.resize(L);
