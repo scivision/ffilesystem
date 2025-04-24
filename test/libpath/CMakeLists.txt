@@ -1,28 +1,30 @@
-if(BUILD_SHARED_LIBS)
-  if(CYGWIN)
-    set(_p $<PATH:GET_FILENAME,ffilesystem>)
-  else()
-    set(_p $<TARGET_FILE:ffilesystem>)
-  endif()
-  set(_dis)
+if(NOT BUILD_SHARED_LIBS)
+  return()
+endif()
+
+if(CYGWIN)
+  set(_p $<PATH:GET_FILENAME,ffilesystem>)
 else()
-  set(_dis DISABLED true)
+  set(_p $<TARGET_FILE:ffilesystem>)
 endif()
 
-add_executable(test_libpath_cpp test_libpath.cpp)
-target_link_libraries(test_libpath_cpp PRIVATE ffilesystem)
-target_include_directories(test_libpath_cpp PRIVATE ..)
-if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-  target_compile_features(test_libpath_cpp PRIVATE cxx_std_20)
-endif()
+foreach(t IN ITEMS libpath)
+  add_executable(test_${t}_cpp test_${t}.cpp)
+  target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
+  if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+    # enable source_location
+    target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
+  endif()
 
-add_test(NAME Cpp_libpath COMMAND test_libpath_cpp)
+  target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
+  gtest_discover_tests(test_${t}_cpp
+    PROPERTIES
+      LABELS "Cpp"
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      PASS_REGULAR_EXPRESSION "${_p}"
+  )
+endforeach()
 
-set_tests_properties(Cpp_libpath PROPERTIES
-PASS_REGULAR_EXPRESSION "${_p}"
-LABELS "Cpp"
-${_dis}
-)
 
 
 if(HAVE_Fortran_FILESYSTEM)
