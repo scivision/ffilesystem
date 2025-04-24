@@ -50,11 +50,9 @@ struct passwd* fs_getpwuid()
 std::string fs_get_homedir()
 {
   // has no trailing slash
-  if(std::string home = fs_getenv(fs_is_windows() ? "USERPROFILE" : "HOME");
-      !home.empty())  FFS_LIKELY
-    return fs_drop_slash(home);
+  std::string home = fs_getenv(fs_is_windows() ? "USERPROFILE" : "HOME");
 
-  return fs_get_profile_dir();
+  return home.empty() ? fs_get_profile_dir() : fs_drop_slash(home);
 }
 
 

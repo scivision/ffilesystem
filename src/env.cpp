@@ -23,10 +23,9 @@ std::string fs_getenv(std::string_view name)
   // convenience function to get environment variable without needing to check for nullptr
   // don't emit error because sometimes we just check if envvar is defined
 
-  if (auto buf = std::getenv(name.data()); buf)
-    return buf;
+  auto buf = std::getenv(name.data());
 
-  return {};
+  return buf ? std::string(buf) : std::string();
 }
 
 
@@ -63,21 +62,13 @@ std::string fs_user_config_dir()
 
   if (!r.empty())  FFS_LIKELY
     return r;
+#else
+  if(std::string h = fs_getenv("XDG_CONFIG_HOME"); !h.empty())
+    return h;
+  if(std::string h = fs_getenv("HOME"); !h.empty())
+    return h + "/.config";
+#endif
 
   fs_print_error("", __func__);
   return {};
-
-#else
-  std::string home;
-
-  home = fs_getenv("XDG_CONFIG_HOME");
-  if(!home.empty())
-    return home;
-
-  home = fs_get_homedir();
-  if(home.empty())
-    return {};
-
-  return home + "/.config";
-#endif
 }

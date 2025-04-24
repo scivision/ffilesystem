@@ -24,7 +24,7 @@ std::string fs_relative_to(std::string_view base, std::string_view other)
   if(!ec)
     return fs_drop_slash(r);
 #else
-  ec = std::make_error_code(std::errc::function_not_supported);
+   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
   fs_print_error(base, other, __func__, ec);
