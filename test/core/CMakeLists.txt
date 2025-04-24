@@ -61,8 +61,6 @@ set_tests_properties(Fortran_relative Fortran_proximate PROPERTIES DISABLED $<NO
 endif()
 
 
-set(cpp_tests)
-
 set(gtest_tests
 absolute
 canonical
@@ -111,7 +109,7 @@ if(HAVE_CXX_FILESYSTEM)
   list(APPEND gtest_tests proximate relative)
 endif()
 
-foreach(t IN LISTS cpp_tests gtest_tests)
+foreach(t IN LISTS gtest_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
 
@@ -120,24 +118,13 @@ foreach(t IN LISTS cpp_tests gtest_tests)
     target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
   endif()
 
-  if(t IN_LIST gtest_tests)
-    target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
+  target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
 
-    gtest_discover_tests(test_${t}_cpp
-      PROPERTIES
-        LABELS "Cpp"
-        WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
-    )
-  else()
-    target_include_directories(test_${t}_cpp PRIVATE ..)
-
-    add_test(NAME Cpp_${t} COMMAND test_${t}_cpp)
-    set_tests_properties(Cpp_${t} PROPERTIES
+  gtest_discover_tests(test_${t}_cpp
+    PROPERTIES
       LABELS "Cpp"
       WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
-    )
-  endif()
-
+  )
 endforeach()
 
 if(TARGET test_env_fortran)

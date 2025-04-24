@@ -45,18 +45,6 @@ test('NoEnv_fortran', tenv, suite: 'fortran', env: env)
 endif
 
 
-cpp_core = []
-
-foreach t : cpp_core
-
-  t_cpp = executable(t + '_cpp', 'test_' + t + '.cpp', link_with: filesystem,
-    include_directories: [inc, '..'])
-
-  test(t + '_cpp', t_cpp, suite: 'cpp', workdir: meson.current_build_dir())
-
-endforeach
-
-
 gtest_tests = [
 'absolute',
 'canonical',
@@ -119,7 +107,7 @@ endforeach
 tenv = executable('noenv_cpp', 'test_env.cpp',
 link_with: filesystem,
 dependencies: [gtest_dep, gmock_dep],
-include_directories: [inc, '..']
+include_directories: inc
 )
 
 test('NoEnv_cpp', tenv, suite: 'cpp', env: env)
