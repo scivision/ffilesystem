@@ -92,8 +92,6 @@ owner
 normal
 parent
 permissions
-proximate
-relative
 remove
 rename
 reserved
@@ -109,37 +107,42 @@ utf8
 which
 with_suffix
 )
+
 if(WIN32 OR CYGWIN)
   list(APPEND gtest_tests windows)
+endif()
+if(HAVE_CXX_FILESYSTEM)
+  list(APPEND gtest_tests proximate relative)
 endif()
 
 foreach(t IN LISTS cpp_tests gtest_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
 
-  if(t IN_LIST gtest_tests)
-    target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
-    gtest_add_tests(TARGET test_${t}_cpp)
-    continue()
-  else()
-    target_include_directories(test_${t}_cpp PRIVATE ..)
-  endif()
-
   if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
     # enable source_location
     target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
   endif()
 
-  add_test(NAME Cpp_${t} COMMAND test_${t}_cpp)
-  set_tests_properties(Cpp_${t} PROPERTIES
-  LABELS "Cpp"
-  SKIP_RETURN_CODE 77
-  WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
-  FIXTURES_SETUP ${t}
-  )
-endforeach()
+  if(t IN_LIST gtest_tests)
+    target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
 
-set_tests_properties(TestRelative.Relative TestProximate.Proximate PROPERTIES DISABLED $<NOT:$<BOOL:${HAVE_CXX_FILESYSTEM}>>)
+    gtest_discover_tests(test_${t}_cpp
+      PROPERTIES
+        LABELS "Cpp"
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
+    )
+  else()
+    target_include_directories(test_${t}_cpp PRIVATE ..)
+
+    add_test(NAME Cpp_${t} COMMAND test_${t}_cpp)
+    set_tests_properties(Cpp_${t} PROPERTIES
+      LABELS "Cpp"
+      WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
+    )
+  endif()
+
+endforeach()
 
 if(TARGET test_env_fortran)
   add_test(NAME Fortran_NoEnv COMMAND test_env_fortran)
@@ -165,9 +168,7 @@ target_link_libraries(test_${t}_c PRIVATE ffilesystem)
 add_test(NAME C_${t} COMMAND test_${t}_c)
 set_tests_properties(C_${t} PROPERTIES
 LABELS "C"
-SKIP_RETURN_CODE 77
 WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_c>
-FIXTURES_SETUP ${t}
 )
 
 endforeach()
