@@ -10,14 +10,22 @@
 class TestExe : public testing::Test {
   protected:
     std::string cwd;
-    const std::string exe = "test_executable_cpp.exe";
-    const std::string noexe = "test_not_executable_cpp.exe";
+    std::string exe;
+    std::string noexe;
     std::string self;
 
     void SetUp() override {
+      auto inst = testing::UnitTest::GetInstance();
+      auto info = inst->current_test_info();
+      std::string test_name_ = info->name();
+      std::string test_suite_name_ = info->test_suite_name();
+      std::string n = test_suite_name_ + "-" + test_name_;
 
       if(fs_is_wsl() > 0 && fs_filesystem_type(cwd) == "v9fs")
         GTEST_SKIP() << "v9fs to NTFS etc. doesn't work right";
+
+      exe = "test_" + n + ".exe";
+      noexe = "test_" + n + "_noexe.exe";
 
       cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());;
 
