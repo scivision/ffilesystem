@@ -4,7 +4,8 @@
 
 #include <gtest/gtest.h>
 
-TEST(TestProximate, Proximate){
+TEST(TestProximate, Agnostic)
+{
 
 EXPECT_EQ(fs_proximate_to("", ""), ".");
 EXPECT_EQ(fs_proximate_to("Hello", "Hello"), ".");
@@ -22,23 +23,31 @@ EXPECT_EQ(fs_proximate_to("a", "a/b/.."), ".");
 EXPECT_EQ(fs_proximate_to("a/b/c/d", "a/b"), "../..");
 EXPECT_EQ(fs_proximate_to("a/b/c/d", "a/b/"), "../..");
 EXPECT_EQ(fs_proximate_to("./a/b", "./a/c"), "../c");
+}
 
-if(fs_is_windows()){
+TEST(TestProximate, Windows)
+{
+if(!fs_is_windows())
+  GTEST_SKIP() << "Windows only test";
 
-  std::string c = fs_getenv("SYSTEMDRIVE");
+std::string c = fs_getenv("SYSTEMDRIVE");
 
-  if (c.length() == 2){
-    EXPECT_EQ(fs_proximate_to(c+"/", c+"/a/b"), "a/b");
-    EXPECT_EQ(fs_proximate_to(c+"/a/b", c+"/a/b"), ".");
-    EXPECT_EQ(fs_proximate_to(c+"/a/b", c+"/a"), "..");
-      // {c+"/a", "b", "b"}  //  ambiguous with Clang/Flang ARM MinGW <filesystem>
-  } else {
-    std::cerr << "Warning: SYSTEMDRIVE not set, skipping tests\n";
-  }
+if (c.length() != 2)
+  GTEST_SKIP() << "environment variable SYSTEMDRIVE not set";
+
+EXPECT_EQ(fs_proximate_to(c+"/", c+"/a/b"), "a/b");
+EXPECT_EQ(fs_proximate_to(c+"/a/b", c+"/a/b"), ".");
+EXPECT_EQ(fs_proximate_to(c+"/a/b", c+"/a"), "..");
+// {c+"/a", "b", "b"}  //  ambiguous with Clang/Flang ARM MinGW <filesystem>
+
 // NOTE: on Windows, if a path is real, finalPath is used, which makes drive letters upper case.
 // we didn't use a random drive letter because a removable drive at that letter can make the test fail spuriously.
 
-} else {
+}
+
+
+TEST(TestProximate, Posix)
+{
 EXPECT_EQ(fs_proximate_to("", "a"), "a");
 EXPECT_EQ(fs_proximate_to("/", "/"), ".");
 EXPECT_EQ(fs_proximate_to("Hello", "Hello"), ".");
@@ -50,5 +59,3 @@ EXPECT_EQ(fs_proximate_to("a/b", "a/c"), "../c");
 }
 // NOTE: use relative non-existing paths, as on macOS AppleClang, the <filesystem> gives incorrect results on non-existing absolute paths,
 // Which don't make sense anyway.
-
-}

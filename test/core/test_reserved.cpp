@@ -4,10 +4,18 @@
 
 #include <gtest/gtest.h>
 
-TEST(TestReserved, Reserved)
-{
 
-std::string const ref(fs_devnull());
+class TestReserved : public testing::Test {
+  protected:
+    std::string ref;
+
+    void SetUp() override {
+      ref = fs_devnull();
+    }
+};
+
+TEST_F(TestReserved, Agnostic)
+{
 
 EXPECT_FALSE(fs_is_reserved("."));
 
@@ -32,8 +40,20 @@ EXPECT_EQ(fs_file_size(ref), 0);
 // omitted fs_space_available() since some systems don't handle NUL /dev/null well
 // e.g. Windows, macOS GCC, etc.
 
+EXPECT_EQ(fs_expanduser(ref), ref);
 
-if(!fs_is_windows()){
+EXPECT_FALSE(fs_copy_file(ref, ref, false));
+
+// touch is ambiguous on reserved, so omit
+
+EXPECT_FALSE(fs_is_symlink(ref));
+
+}
+
+TEST_F(TestReserved, Posix)
+{
+  if(fs_is_windows())
+    GTEST_SKIP() << "Test only for POSIX";
 
 EXPECT_FALSE(fs_is_exe(ref));
 
@@ -52,15 +72,5 @@ EXPECT_TRUE(fs_exists(ref));
 EXPECT_FALSE(fs_is_file(ref));
 
 EXPECT_FALSE(fs_canonical(ref, false, true).empty());
-
-} // !fs_is_windows()
-
-EXPECT_EQ(fs_expanduser(ref), ref);
-
-EXPECT_FALSE(fs_copy_file(ref, ref, false));
-
-// touch is ambiguous on reserved, so omit
-
-EXPECT_FALSE(fs_is_symlink(ref));
 
 }
