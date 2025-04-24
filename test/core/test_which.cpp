@@ -47,15 +47,15 @@ TEST_F(TestWhich, Which){
   EXPECT_TRUE(fs_which("").empty());
 
   // Build a relative path from the running program
-  EXPECT_TRUE(fs_is_file(rel));
-  EXPECT_FALSE(fs_which(rel).empty());
+  EXPECT_TRUE(fs_is_file(rel)) << rel << " does not exist";
+  EXPECT_FALSE(fs_which(rel).empty()) << rel << " is not found";
 
   EXPECT_TRUE(fs_which("not-exist/" + name).empty());
 }
 
 
 TEST_F(TestWhich, WhichLocalDir){
-  ASSERT_TRUE(fs_is_file(name));
+  ASSERT_TRUE(fs_is_file(name)) << name << " does not exist";
   // for Windows only: local dir is preferred
   if (fs_is_windows())
     EXPECT_FALSE(fs_which(name).empty());
