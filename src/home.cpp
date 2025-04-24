@@ -3,7 +3,7 @@
 
 #include <system_error>
 
-#if __has_include(<format>) && defined(_WIN32)
+#if __has_include(<format>)
 #include <format>  // IWYU pragma: keep
 #endif
 
@@ -35,7 +35,7 @@ struct passwd* fs_getpwuid()
     return pw;
 
   fs_print_error(
-#ifdef __cpp_lib_format  // C++20
+#if defined(__cpp_lib_format)  // C++20
     std::format("uid: {}", eff_uid)
 #else
     ""
