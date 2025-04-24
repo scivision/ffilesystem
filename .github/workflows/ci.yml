@@ -16,7 +16,6 @@ on:
       - "**/CMakeLists.txt"
       - "**.cmake"
       - ".github/workflows/ci.yml"
-      - "!concepts/**"
   workflow_dispatch:
 
 # avoid wasted runs

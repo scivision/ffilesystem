@@ -16,7 +16,6 @@ on:
       - "**/CMakeLists.txt"
       - "**.cmake"
       - ".github/workflows/ci_windows.yml"
-      - "!concepts/**"
       - "!memcheck.cmake"
   workflow_dispatch:
 

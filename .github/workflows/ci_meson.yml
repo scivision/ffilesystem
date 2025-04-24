@@ -5,7 +5,9 @@ on:
     paths:
       - "**/meson.build"
       - ".github/workflows/ci_meson.yml"
-
+      - "**.h"
+      - "**.cpp"
+  workflow_dispatch:
 
 jobs:
 

@@ -23,7 +23,6 @@ on:
       - "**/CMakeLists.txt"
       - ".github/workflows/oneapi-linux.yml"
       - "!memcheck.cmake"
-      - "!concepts/**"
 
 
 jobs:

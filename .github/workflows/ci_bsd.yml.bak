@@ -6,7 +6,6 @@ on:
       - "**.c"
       - "**.cpp"
       - ".github/workflows/ci_bsd.yml"
-      - "!concepts/**"
 
 
 jobs:
