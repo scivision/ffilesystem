@@ -117,7 +117,7 @@ Please see the [API docs](./API.md) for extensive list of functions/subroutines.
 
 Use any one of these methods to build Ffilesystem.
 The self-tests are optional and not built by default.
-Some of the tests use GoogleTest framework.
+The tests use GoogleTest framework.
 
 ### CMake
 
