@@ -24,9 +24,9 @@ class TestPermissions : public testing::Test {
       ASSERT_TRUE(fs_is_file(nowrite));
     }
     void TearDown() override {
-      std::remove(read.c_str());
-      std::remove(noread.c_str());
-      std::remove(nowrite.c_str());
+      fs_remove(read);
+      fs_remove(noread);
+      fs_remove(nowrite);
     }
   };
 

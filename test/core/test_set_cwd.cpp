@@ -14,7 +14,7 @@ class TestSetCwd : public testing::Test {
     }
     void TearDown() override {
       fs_set_cwd(cwd);
-      std::remove(dir.c_str());
+      fs_remove(dir);
     }
 };
 

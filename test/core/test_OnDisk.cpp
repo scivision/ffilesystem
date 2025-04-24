@@ -1,7 +1,5 @@
 #include "ffilesystem.h"
 
-#include <cstdio>  // std::remove
-
 #include <gtest/gtest.h>
 
 namespace {
@@ -29,8 +27,8 @@ class TestOnDisk : public testing::Test {
     }
     void TearDown() override {
       fs_set_cwd(cwd);
-      std::remove(file.c_str());
-      std::remove(dir.c_str());
+      fs_remove(file);
+      fs_remove(dir);
     }
   };
 

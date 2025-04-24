@@ -1,5 +1,4 @@
 #include <string>
-#include <cstdio> // for std::remove
 
 #include "ffilesystem.h"
 
@@ -18,7 +17,7 @@ class TestRename: public testing::Test {
       }
     }
     void TearDown() override {
-      std::remove(f2.c_str());
+      fs_remove(f2);
     }
   };
 

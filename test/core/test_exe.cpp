@@ -32,6 +32,11 @@ class TestExe : public testing::Test {
 
       ASSERT_FALSE(fs_get_permissions(exe).empty());
     }
+
+    void TearDown() override {
+      fs_remove(exe);
+      fs_remove(noexe);
+    }
 };
 
 

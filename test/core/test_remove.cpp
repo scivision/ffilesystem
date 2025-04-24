@@ -1,5 +1,3 @@
-#include <cstdio>  // std::remove
-
 #include "ffilesystem.h"
 
 #include <gtest/gtest.h>
@@ -13,7 +11,7 @@ class TestRemove : public testing::Test {
       ASSERT_TRUE(fs_touch(file));
     }
     void TearDown() override {
-      std::remove(file.c_str());
+      fs_remove(file);
     }
   };
 

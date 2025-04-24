@@ -1,6 +1,5 @@
 #include <string>
 #include <fstream> // std::ofstream
-#include <cstdio>  // std::remove
 
 #include "ffilesystem.h"
 
@@ -16,7 +15,7 @@ class TestFilesize : public testing::Test {
       ofs.close();
     }
     void TearDown() override {
-      std::remove(file.c_str());
+      fs_remove(file);
     }
 };
 

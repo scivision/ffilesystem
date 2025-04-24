@@ -1,6 +1,4 @@
 #include "ffilesystem.h"
-#include <iostream>
-#include <cstdio>  // std::remove
 
 #include <gtest/gtest.h>
 
@@ -12,7 +10,7 @@ class TestEmpty : public testing::Test {
       ASSERT_TRUE(fs_mkdir(dir));
     }
     void TearDown() override {
-      std::remove(dir.c_str());
+      fs_remove(dir);
     }
 };
 

@@ -1,7 +1,6 @@
 #include <string>
 #include <fstream>
 #include <cstdint>
-#include <cstdio>  // std::remove
 
 #include "ffilesystem.h"
 
@@ -32,10 +31,10 @@ class TestCopyFile : public testing::Test {
       ASSERT_TRUE(fs_touch(s3));
     }
     void TearDown() override {
-      std::remove(s1.c_str());
-      std::remove(s2.c_str());
-      std::remove(s3.c_str());
-      std::remove(s4.c_str());
+      fs_remove(s1);
+      fs_remove(s2);
+      fs_remove(s3);
+      fs_remove(s4);
     }
 };
 

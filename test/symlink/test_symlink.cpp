@@ -38,6 +38,7 @@ class TestSymlink : public testing::Test {
     }
 
     void TearDown() override {
+      fs_remove(tgt);
       if (fs_is_symlink(link))
         fs_remove(link);
       if (fs_is_symlink(link_dir))
