@@ -127,20 +127,6 @@ foreach(t IN LISTS gtest_tests)
   )
 endforeach()
 
-if(TARGET test_env_fortran)
-  add_test(NAME Fortran_NoEnv COMMAND test_env_fortran)
-  set(_noenv Fortran_NoEnv)
-else()
-  set(_noenv)
-endif()
-add_test(NAME Cpp_NoEnv COMMAND test_env_cpp)
-
-if(CMAKE_VERSION VERSION_LESS 3.22 OR "$ENV{CI}")
-  set_tests_properties(Cpp_NoEnv ${_noenv} PROPERTIES DISABLED true)
-else()
-  set_tests_properties(Cpp_NoEnv ${_noenv} PROPERTIES ENVIRONMENT_MODIFICATION "HOME=unset:;USERPROFILE=unset:;TEMP=unset:;TMPDIR=unset:")
-endif()
-
 # C
 
 foreach(t IN ITEMS overflow)

@@ -21,13 +21,14 @@ std::string fs_get_tempdir()
   std::error_code ec;
 
 #ifdef HAVE_CXX_FILESYSTEM
-  if(auto p = std::filesystem::temp_directory_path(ec); !ec) FFS_LIKELY
+  auto p = std::filesystem::temp_directory_path(ec);
+  if(!ec && !p.empty()) FFS_LIKELY
     return p.generic_string();
-#else
+#endif
 
-#ifdef _WIN32
-  std::string t(fs_get_max_path(), '\0');
+#if defined(_WIN32)
   // GetTempPath2A is not in MSYS2
+  std::string t(fs_get_max_path(), '\0');
   auto L = GetTempPathA(static_cast<DWORD>(t.size()), t.data());
   if (L > 0)  FFS_LIKELY
     t.resize(L);
@@ -40,8 +41,6 @@ std::string fs_get_tempdir()
 
   if (fs_is_dir("/tmp"))
     return "/tmp";
-
-#endif
 
   fs_print_error("", __func__, ec);
   return {};

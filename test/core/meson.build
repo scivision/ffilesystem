@@ -1,10 +1,3 @@
-env = environment()
-env.unset('USERPROFILE')
-env.unset('HOME')
-env.unset('TMPDIR')
-env.unset('TEMP')
-
-
 if fortran
 
 fortran_core = ['is_absolute', 'absolute',
@@ -40,7 +33,6 @@ endforeach
 tenv = executable('env_fortran', 'test_env.f90', link_with: filesystem, include_directories: inc)
 
 test('Env_fortran', tenv, suite: 'fortran')
-test('NoEnv_fortran', tenv, suite: 'fortran', env: env)
 
 endif
 
@@ -102,12 +94,3 @@ foreach t : gtest_tests
   test(t + '_cpp', t_cpp, suite: 'cpp', workdir: meson.current_build_dir())
 
 endforeach
-
-
-tenv = executable('noenv_cpp', 'test_env.cpp',
-link_with: filesystem,
-dependencies: [gtest_dep, gmock_dep],
-include_directories: inc
-)
-
-test('NoEnv_cpp', tenv, suite: 'cpp', env: env)

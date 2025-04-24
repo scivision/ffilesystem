@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(TestFilename, Filename)
+TEST(TestFilename, Agnostic)
 {
 
 EXPECT_EQ(fs_file_name(""), "");
@@ -23,11 +23,14 @@ EXPECT_EQ(fs_file_name("ab/.parent.txt"), ".parent.txt");
 EXPECT_EQ(fs_file_name("a/b/../.parent.txt"), ".parent.txt");
 EXPECT_EQ(fs_file_name("/.fil"), ".fil");
 EXPECT_EQ(fs_file_name("./日本語"), "日本語");
-
-if(fs_is_windows()){
-  EXPECT_EQ(fs_file_name("C:/"), "");
-  EXPECT_EQ(fs_file_name(R"(C:\ab\asb)"), "asb");
 }
 
+TEST(TestFilename, Windows)
+{
 
+  if(!fs_is_windows())
+    GTEST_SKIP() << "Windows only test";
+
+  EXPECT_EQ(fs_file_name("C:/"), "");
+  EXPECT_EQ(fs_file_name(R"(C:\ab\asb)"), "asb");
 }
