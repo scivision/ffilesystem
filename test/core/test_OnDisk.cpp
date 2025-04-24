@@ -28,6 +28,7 @@ class TestOnDisk : public testing::Test {
       ASSERT_TRUE(fs_is_dir(dir));
     }
     void TearDown() override {
+      fs_set_cwd(cwd);
       std::remove(file.c_str());
       std::remove(dir.c_str());
     }

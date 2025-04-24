@@ -19,6 +19,9 @@ class TestWhich : public testing::Test {
 
       std::vector<std::string> argvs = ::testing::internal::GetArgvs();
       self = fs_which(argvs[0], cwd);
+      ASSERT_FALSE(self.empty());
+      ASSERT_TRUE(fs_is_exe(self));
+
       name = fs_file_name(self);
       rel = std::string("./") + name;
     }
