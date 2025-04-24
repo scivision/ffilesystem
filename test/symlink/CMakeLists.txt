@@ -10,10 +10,7 @@ set(test_symlink_file ${test_symlink_dir2}/${_s_file}.link)
 file(CREATE_LINK ${test_symlink_dir2}/${_s_file} ${test_symlink_file} SYMBOLIC)
 message(VERBOSE "CMake test link file ${test_symlink_file}")
 
-set(gtest_tests is_symlink)
-set(cpp_tests symlink)
-
-foreach(t IN LISTS cpp_tests gtest_tests)
+foreach(t IN ITEMS is_symlink symlink)
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
   if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
@@ -21,22 +18,14 @@ foreach(t IN LISTS cpp_tests gtest_tests)
     target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
   endif()
 
-  if(t IN_LIST gtest_tests)
-    target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
-    gtest_discover_tests(test_${t}_cpp
-      PROPERTIES
-        LABELS "Cpp"
-        WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
-        EXTRA_ARGS ${test_symlink_file} ${test_symlink_dir2}
-    )
-  else()
-    target_include_directories(test_${t}_cpp PRIVATE ..)
-    add_test(NAME Cpp_${t} COMMAND test_${t}_cpp)
-    set_tests_properties(Cpp_${t} PROPERTIES
+  target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
+  gtest_discover_tests(test_${t}_cpp
+    PROPERTIES
       LABELS "Cpp"
-      WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
-    )
-  endif()
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      EXTRA_ARGS ${test_symlink_file} ${test_symlink_dir2}
+  )
+
 endforeach()
 
 

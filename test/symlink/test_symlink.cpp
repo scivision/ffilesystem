@@ -1,138 +1,73 @@
-#include <iostream>
-#include <cstdlib>
-#include <string>
-#include <string_view>
-
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
+
+#include <gtest/gtest.h>
+
+class TestSymlink : public testing::Test {
+  protected:
+    std::string cwd;
+    std::string tgt;
+    std::string link;
+    std::string link_dir;
+
+    void SetUp() override {
+      auto inst = testing::UnitTest::GetInstance();
+      auto info = inst->current_test_info();
+      std::string test_name_ = info->name();
+      std::string test_suite_name_ = info->test_suite_name();
+      std::string n = test_suite_name_ + "-" + test_name_;
+
+      cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
+      tgt = cwd + "/test_" + n + "_cpp.txt";
+
+      ASSERT_TRUE(fs_touch(tgt));
+      ASSERT_TRUE(fs_is_file(tgt)) << "is_file(" << tgt << ") should be true for existing regular file";
+
+      link = cwd + "/test_" + n + "_cpp.link";
+      link_dir = cwd + "/test_" + n + "_cpp.dir.link";
+
+      if (fs_is_symlink(link)){
+        ASSERT_TRUE(fs_remove(link));
+      }
+
+      if (fs_is_symlink(link_dir)){
+        ASSERT_TRUE(fs_remove(link_dir));
+      }
+
+    ASSERT_TRUE(fs_create_symlink(tgt, link));
+    ASSERT_TRUE(fs_create_symlink(cwd, link_dir));
+    }
+
+    void TearDown() override {
+      if (fs_is_symlink(link))
+        fs_remove(link);
+      if (fs_is_symlink(link_dir))
+        fs_remove(link_dir);
+    }
+};
 
 
-int
-main(int argc, char* argv[])
-{
+TEST_F(TestSymlink, CreateSymlink){
 
-  const std::string tgt_dir = (argc > 1) ? argv[1] : fs_parent(argv[0]);
+  EXPECT_FALSE(fs_create_symlink(tgt, "")) << "create_symlink() should fail with empty link";
 
-  const std::string tgt = tgt_dir + "/test_symlink_cpp.txt";
+  ASSERT_FALSE(fs_is_symlink(tgt)) << "is_symlink() should be false for non-symlink file: " + tgt;
 
-  if(!fs_touch(tgt))
-    err("touch(" + tgt + ") failed");
-
-  std::cout << "target file " << tgt << "\n";
-
-  if (!fs_is_file(tgt))
-    err("is_file(" + tgt + ") should be true for existing regular file target");
-
-  const std::string link = tgt_dir + "/test_symlink_cpp.link";
-  const std::string linko = tgt_dir + "/test_oo_cpp.link";
-  const std::string link_dir = tgt_dir + "/my_link_cpp.dir";
-
-  if(fs_create_symlink(tgt, ""))
-    err("create_symlink() should fail with empty link");
-
-  std::cout << "PASSED: create_symlink: empty link\n";
-
-  if (fs_is_symlink(tgt))
-    err("is_symlink() should be false for non-symlink file: " + tgt);
-
-  if(fs_create_symlink("", link))
-    err("create_symlink() should fail with empty target");
-
-  std::cout << "PASSED: create_symlink: empty target\n";
+  EXPECT_FALSE(fs_create_symlink("", link)) << "create_symlink() should fail with empty target";
 
 
-  if (fs_is_symlink(link))
-    fs_remove(link);
-
-  if(!fs_create_symlink(tgt, link))
-    err("create_symlink() failed");
-
-  std::cout << "PASSED: create_symlink " << link << "\n";
-
-
-  std::string rtgt = fs_read_symlink(link);
-  if (rtgt != tgt)
-    err("read_symlink() failed: " + rtgt + " != " + tgt);
-
-  std::cout << "PASSED: read_symlink " << rtgt << " == " << tgt << "\n";
-
-  std::string ctgt = fs_canonical(link, true, false);
-  if(ctgt.empty())
-    err("canonical() is empty");
-
+  EXPECT_TRUE(fs_is_symlink(link)) << "is_symlink() should be true for symlink: " + link;
+  EXPECT_TRUE(fs_is_file(link)) << "is_file(" + link + ") should be true for existing regular file target " + tgt;
+  EXPECT_EQ(fs_read_symlink(link), tgt);
   // Cygwin will have /cygdrive/c and /home/ as roots
-  if (!fs_is_cygwin() && ctgt != tgt)
-    err("canonical() on symlink failed: " + ctgt + " != " + tgt);
-
-  std::cout << "PASSED: canonical() on symlink " << ctgt << " == " << tgt << "\n";
-
-  rtgt = fs_read_symlink(tgt);
-  if(!rtgt.empty())
-    err("read_symlink() should be empty string for non-symlink file: " + rtgt);
-
-  rtgt = fs_read_symlink("not-exist-file");
-  if (!rtgt.empty())
-    err("read_symlink() should be empty string for non-existent file: " + rtgt);
-
-  if (fs_is_symlink(linko))
-    fs_remove(linko);
-
-  if(!fs_create_symlink(tgt, linko))
-    err("create_symlink() failed");
-
-  std::cout << "PASSED: created symlink " << linko << "\n";
-
-  if (fs_is_symlink(tgt_dir))
-    err("is_symlink() should be false for non-symlink dir");
-
-  if (fs_is_symlink(link_dir)) {
-    std::cout << "deleting old symlink " << link_dir << "\n";
-    fs_remove(link_dir);
-  }
-  if(!fs_create_symlink(tgt_dir, link_dir))
-    err("create_symlink() failed");
-
-  if (fs_is_symlink(tgt))
-    err("is_symlink(" + tgt + ") should be false for non-symlink target");
-
-  if (!fs_is_symlink(link))
-    err("is_symlink(" + link + ") should be true");
-
-  if (!fs_is_file(link))
-    err("is_file(" + link + ") should be true for existing regular file target " + tgt);
-
-  if (!fs_is_dir(link_dir))
-    err("is_dir(" + link_dir + ") should be true for existing regular dir");
-
-  if (!fs_is_symlink(link_dir))
-    err("is_symlink() should be true for symlink dir: " + link_dir);
-
-  std::cout << "PASSED: test_symlink: file / directory\n";
-
-  if(fs_is_windows())
-    std::cerr << "SKIP: non-ASCII on Windows create_symlink currently broken with std::filesystem or C backend\n";
-  else {
-    const std::string cwd = fs_get_cwd();
-    const std::string j = cwd + "/日本語_create_symlink.lnk";
-
-    if (fs_is_symlink(j)){
-      std::cout << "deleting old symlink " << j << "\n";
-      fs_remove(j);
-    } else
-      std::cout << "did not detect any existing symlink " << j << "\n";
-
-    if (!fs_create_symlink(tgt, j))
-      err("create_symlink() failed with non-ASCII link");
-
-    std::cout << "created symlink " << j << "\n";
-
-    if(!fs_is_symlink(j))
-      err("is_symlink() should be true for non-ASCII link");
-
-    std::cout << "PASSED: create_symlink() with non-ASCII link " << j << "\n";
+  if (!fs_is_cygwin()){
+    EXPECT_EQ(fs_canonical(link, true, false), tgt);
   }
 
-  ok_msg("create_symlink C++");
+  EXPECT_TRUE(fs_read_symlink(tgt).empty());
+  EXPECT_TRUE(fs_read_symlink("not-exist-file").empty());
+  EXPECT_FALSE(fs_is_symlink(cwd));
 
-  return 0;
+
+  EXPECT_TRUE(fs_is_dir(link_dir)) << "is_dir(" + link_dir + ") should be true for link to existing dir";
+  EXPECT_TRUE(fs_is_symlink(link_dir));
 }
