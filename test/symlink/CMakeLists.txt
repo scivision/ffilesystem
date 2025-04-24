@@ -10,21 +10,18 @@ set(test_symlink_file ${test_symlink_dir2}/${_s_file}.link)
 file(CREATE_LINK ${test_symlink_dir2}/${_s_file} ${test_symlink_file} SYMBOLIC)
 message(VERBOSE "CMake test link file ${test_symlink_file}")
 
-
-add_executable(test_is_symlink_cpp test_is_symlink.cpp)
-target_include_directories(test_is_symlink_cpp PRIVATE ..)
-if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-  target_compile_features(test_is_symlink_cpp PRIVATE cxx_std_20)
-endif()
+foreach(t IN ITEMS is_symlink symlink)
+  add_executable(test_${t}_cpp test_${t}.cpp)
+  target_include_directories(test_${t}_cpp PRIVATE ..)
+  target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
+  if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+    # enable source_location
+    target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
+  endif()
+endforeach()
 
 add_test(NAME Cpp_is_symlink COMMAND test_is_symlink_cpp ${test_symlink_file} ${test_symlink_dir2})
 set_tests_properties(Cpp_is_symlink PROPERTIES FIXTURES_SETUP is_symlink)
-
-add_executable(test_symlink_cpp test_symlink.cpp)
-target_include_directories(test_symlink_cpp PRIVATE ..)
-if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-  target_compile_features(test_symlink_cpp PRIVATE cxx_std_20)
-endif()
 
 add_test(NAME Cpp_symlink COMMAND test_symlink_cpp)
 set_tests_properties(Cpp_symlink PROPERTIES
@@ -33,30 +30,24 @@ FIXTURES_REQUIRED is_symlink
 WORKING_DIRECTORY $<TARGET_FILE_DIR:test_symlink_cpp>
 )
 
-foreach(t IN ITEMS is_symlink_cpp symlink_cpp)
-  target_include_directories(test_${t} PRIVATE ..)
-  target_link_libraries(test_${t} PRIVATE ffilesystem)
-endforeach()
-
 
 if(HAVE_Fortran_FILESYSTEM)
 
-add_executable(test_is_symlink_fortran test_is_symlink.f90)
+foreach(t IN ITEMS is_symlink symlink)
+  add_executable(test_${t}_fortran test_${t}.f90)
+  target_link_libraries(test_${t}_fortran PRIVATE ffilesystem)
+  target_compile_options(test_${t}_fortran PRIVATE ${ffilesystem_fortran_test_flags})
+  set_property(TARGET test_${t}_fortran PROPERTY LINKER_LANGUAGE ${ffilesystem_linker_lang})
+endforeach()
+
 add_test(NAME Fortran_is_symlink COMMAND test_is_symlink_fortran ${test_symlink_file})
 set_tests_properties(Fortran_is_symlink PROPERTIES FIXTURES_SETUP is_symlink)
 
-add_executable(test_symlink_fortran test_symlink.f90)
 add_test(NAME Fortran_symlink COMMAND test_symlink_fortran)
 set_tests_properties(Fortran_symlink PROPERTIES
 FIXTURES_SETUP symlink
 FIXTURES_REQUIRED is_symlink
 SKIP_RETURN_CODE 77
 )
-
-foreach(t IN ITEMS is_symlink_fortran symlink_fortran)
-  target_link_libraries(test_${t} PRIVATE ffilesystem)
-  target_compile_options(test_${t} PRIVATE ${ffilesystem_fortran_test_flags})
-  set_property(TARGET test_${t} PROPERTY LINKER_LANGUAGE ${ffilesystem_linker_lang})
-endforeach()
 
 endif()

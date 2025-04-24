@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20...3.31)
+cmake_minimum_required(VERSION 3.20...4.01)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
   message(FATAL_ERROR "Please use out of source build like:
@@ -7,7 +7,7 @@ endif()
 
 project(ffilesystem
 LANGUAGES C CXX
-VERSION 6.3.1
+VERSION 6.3.2
 )
 
 include(GNUInstallDirs)
