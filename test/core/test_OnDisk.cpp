@@ -111,4 +111,12 @@ EXPECT_GE(fs_get_modtime(file), t0);
 EXPECT_FALSE(fs_set_modtime("not-exist-file"));
 
 }
+
+TEST(TestType, FilesystemType){
+  std::string t = fs_filesystem_type(fs_is_windows() ? fs_getenv("SYSTEMDRIVE") : "/");
+
+  if (t.empty())
+      GTEST_SKIP() << "Unknown filesystem type, see type ID in stderr to update fs_get_type()";
+  }
+
 }

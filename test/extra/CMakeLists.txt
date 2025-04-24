@@ -1,27 +1,38 @@
 set_directory_properties(PROPERTIES LABELS "extra")
 
-set(extra_tests_cpp exepath filesystem_type hostname max_component shell terminal)
+set(extra_tests_cpp)
 
 if(ffilesystem_locale)
   list(APPEND extra_tests_cpp locale)
 endif()
 
-foreach(t IN LISTS extra_tests_cpp)
+set(gtest_tests hostname)
+
+foreach(t IN LISTS extra_tests_cpp gtest_tests)
 
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
-  target_include_directories(test_${t}_cpp PRIVATE ..)
   if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
     target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
   endif()
 
-  add_test(NAME Cpp_${t} COMMAND ${CMAKE_COMMAND} -E env $<TARGET_FILE:test_${t}_cpp>)
-  set_tests_properties(Cpp_${t} PROPERTIES
-  LABELS "Cpp"
-  SKIP_RETURN_CODE 77
-  WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
-  FIXTURES_SETUP ${t}
-  )
+  if(t IN_LIST gtest_tests)
+    target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
+    gtest_discover_tests(test_${t}_cpp
+      PROPERTIES
+        LABELS "Cpp"
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
+    )
+  else()
+    target_include_directories(test_${t}_cpp PRIVATE ..)
+
+    add_test(NAME Cpp_${t} COMMAND ${CMAKE_COMMAND} -E env $<TARGET_FILE:test_${t}_cpp>)
+    set_tests_properties(Cpp_${t} PROPERTIES
+    LABELS "Cpp"
+    SKIP_RETURN_CODE 77
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
+    )
+  endif()
 
 endforeach()
 
@@ -33,10 +44,6 @@ SKIP_REGULAR_EXPRESSION "locale\:\:facet\:\:\_S\_create\_c\_locale name not vali
 )
 
 endif()
-
-# TARGET_FILE_NAME to allow for macOS possible non-canonical result
-# and symlinked / special filesystems like WSL
-set_tests_properties(Cpp_exepath PROPERTIES PASS_REGULAR_EXPRESSION $<TARGET_FILE_NAME:test_exepath_cpp>)
 
 
 # --------- Fortran

@@ -88,6 +88,7 @@ src/normalize.cpp
 src/os.c
 src/extra/owner.cpp
 src/parent.cpp
+src/partition.cpp
 src/permissions.cpp
 src/platform.cpp
 src/pure.cpp
@@ -109,7 +110,6 @@ src/extra/case.cpp
 src/extra/component.cpp
 src/extra/exepath.cpp
 src/extra/libpath.cpp
-src/extra/partition.cpp
 src/extra/random.cpp
 src/extra/shell.cpp
 src/extra/sysctl.cpp

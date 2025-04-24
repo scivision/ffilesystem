@@ -109,7 +109,7 @@ foreach t : gtest_tests
   t_cpp = executable(t + '_cpp', 'test_' + t + '.cpp',
     link_with: filesystem,
     dependencies: [gtest_dep, gmock_dep],
-    include_directories: [inc, '..'])
+    include_directories: inc)
 
   test(t + '_cpp', t_cpp, suite: 'cpp', workdir: meson.current_build_dir())
 
