@@ -1,18 +1,15 @@
-#include <cstdlib>
-#include <iostream>
 #include <string>
 
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
+
+#include <gtest/gtest.h>
 
 
-int main(){
-  const std::string loc = fs_get_locale_name();
-
-  std::cout << "locale: " << loc << "\n";
+TEST(TestLocale, LocaleName){
+  std::string loc = fs_get_locale_name();
   // macOS and MSVC have empty locale. Don't fail
+  if(!fs_is_macos() && !fs_is_msvc()){
+    EXPECT_FALSE(loc.empty());
+  }
 
-  ok_msg("locale C++");
-
-  return EXIT_SUCCESS;
 }
