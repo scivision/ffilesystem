@@ -10,25 +10,34 @@ set(test_symlink_file ${test_symlink_dir2}/${_s_file}.link)
 file(CREATE_LINK ${test_symlink_dir2}/${_s_file} ${test_symlink_file} SYMBOLIC)
 message(VERBOSE "CMake test link file ${test_symlink_file}")
 
-foreach(t IN ITEMS is_symlink symlink)
+set(gtest_tests is_symlink)
+set(cpp_tests symlink)
+
+foreach(t IN LISTS cpp_tests gtest_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)
-  target_include_directories(test_${t}_cpp PRIVATE ..)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
   if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
     # enable source_location
     target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
   endif()
+
+  if(t IN_LIST gtest_tests)
+    target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
+    gtest_discover_tests(test_${t}_cpp
+      PROPERTIES
+        LABELS "Cpp"
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
+        EXTRA_ARGS ${test_symlink_file} ${test_symlink_dir2}
+    )
+  else()
+    target_include_directories(test_${t}_cpp PRIVATE ..)
+    add_test(NAME Cpp_${t} COMMAND test_${t}_cpp)
+    set_tests_properties(Cpp_${t} PROPERTIES
+      LABELS "Cpp"
+      WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
+    )
+  endif()
 endforeach()
-
-add_test(NAME Cpp_is_symlink COMMAND test_is_symlink_cpp ${test_symlink_file} ${test_symlink_dir2})
-set_tests_properties(Cpp_is_symlink PROPERTIES FIXTURES_SETUP is_symlink)
-
-add_test(NAME Cpp_symlink COMMAND test_symlink_cpp)
-set_tests_properties(Cpp_symlink PROPERTIES
-FIXTURES_SETUP symlink
-FIXTURES_REQUIRED is_symlink
-WORKING_DIRECTORY $<TARGET_FILE_DIR:test_symlink_cpp>
-)
 
 
 if(HAVE_Fortran_FILESYSTEM)
