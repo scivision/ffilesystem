@@ -63,10 +63,6 @@ endif()
 
 set(cpp_tests)
 
-if(WIN32)
-  list(APPEND cpp_tests is_appexec_alias)
-endif()
-
 set(gtest_tests
 absolute
 canonical
@@ -109,7 +105,7 @@ with_suffix
 )
 
 if(WIN32 OR CYGWIN)
-  list(APPEND gtest_tests windows)
+  list(APPEND gtest_tests is_appexec_alias windows)
 endif()
 if(HAVE_CXX_FILESYSTEM)
   list(APPEND gtest_tests proximate relative)

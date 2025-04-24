@@ -1,56 +1,42 @@
-// tests for fs_is_appexec_alias()
-
-#include <iostream>
-#include <string>
-#include <string_view>
-#include <cstdlib>
-
 #include "ffilesystem.h"
-#include "ffilesystem_test.h"
 
-int main(int argc, char* argv[])
-{
+#include <gtest/gtest.h>
 
-if (!fs_is_windows())
-  skip("This test is only for Windows");
+class TestAppExec : public testing::Test {
+  protected:
+    std::string cwd;
+    std::string self;
+    std::string confdir;
+    std::string path;
 
-std::string path;
-// not string_view, it garbles on some platforms
+    void SetUp() override {
 
-if (argc > 1)
-  path = argv[1];
-else {
-  const std::string confdir = fs_user_config_dir();
-  if(confdir.empty())
-    err("didn't find a User Config directory to test");
+      if(!fs_is_windows())
+        GTEST_SKIP() << "requires Windows";
 
-  std::string appdir = confdir + "/Microsoft/WindowsApps";
-  if (!fs_is_dir(appdir))
-    err("didn't find an App Execution Alias directory to test");
+      cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
 
-  std::cout << "App Execution Alias directory: " << appdir << "\n";
+      std::vector<std::string> argvs = ::testing::internal::GetArgvs();
+      self = fs_which(argvs[0], cwd);
 
-  for (const auto& exe : {"wt.exe", "winget.exe", "wsl.exe", "bash.exe"}){
-    path = fs_which(exe, appdir);
-    if (!path.empty())
-      break;
-  }
+      confdir = fs_user_config_dir();
+      if(confdir.empty())
+        GTEST_SKIP() << "didn't find a User Config directory to test";
 
-  if(path.empty()){
-    if (fs_getenv("CI") == "true")
-      skip("didn't find an App Execution Alias to test");
-    else
-      err("didn't find an App Execution Alias to test");
-  }
-}
+      std::string appdir = confdir + "/Microsoft/WindowsApps";
+      ASSERT_TRUE(fs_is_dir(appdir));
 
-std::cout << "Testing fs_is_appexec_alias(" << path << ")\n";
+      for (const auto& exe : {"wt.exe", "winget.exe", "wsl.exe", "bash.exe"}){
+        path = fs_which(exe, appdir);
+        if (!path.empty())
+          break;
+      }
+      if(path.empty())
+        GTEST_SKIP() << "didn't find an App Execution Alias to test";
+    }
+};
 
-if (!fs_is_appexec_alias(path))
-  err("fs_is_appexec_alias(" + std::string(path) + ") was not detected as an App Execution Alias");
 
-ok_msg("fs_is_appexec_alias(" + std::string(path) + ")");
-
-return EXIT_SUCCESS;
-
+TEST_F(TestAppExec, AppExecAlias) {
+EXPECT_TRUE(fs_is_appexec_alias(path));
 }
