@@ -21,24 +21,40 @@ class TestCanonical : public testing::Test {
     }
 };
 
-TEST_F(TestCanonical, Tilde)
+TEST_F(TestCanonical, CanonicalTilde)
 {
 EXPECT_EQ(fs_canonical("~", true, true), home);
 EXPECT_EQ(fs_canonical("~", false, true), home);
 EXPECT_THAT(fs_canonical("~", false, false), ::testing::EndsWith("~"));
 }
+TEST_F(TestCanonical, ResolveTilde)
+{
+EXPECT_EQ(fs_resolve("~", true, true), home);
+EXPECT_EQ(fs_resolve("~", false, true), home);
+EXPECT_THAT(fs_resolve("~", false, false), ::testing::EndsWith("~"));
+}
 
 
-TEST_F(TestCanonical, ParentDir)
+TEST_F(TestCanonical, CanonicalParentDir)
 {
 EXPECT_EQ(fs_canonical("~/..", true, true), homep);
 EXPECT_EQ(fs_canonical("~/..", false, true), homep);
 EXPECT_THAT(fs_canonical("~/..", false, false), ::testing::AnyOf(".", cwd));
 }
+TEST_F(TestCanonical, ResolveParentDir)
+{
+EXPECT_EQ(fs_resolve("~/..", true, true), homep);
+EXPECT_EQ(fs_resolve("~/..", false, true), homep);
+EXPECT_THAT(fs_resolve("~/..", false, false), cwd);
+}
 
-TEST_F(TestCanonical, ParentRel)
+TEST_F(TestCanonical, CanonicalParentRel)
 {
 EXPECT_THAT(fs_canonical("../not-exist", false), ::testing::AnyOf("../not-exist", fs_parent(cwd) + "/not-exist"));
+}
+TEST_F(TestCanonical, ResolveParentRel)
+{
+EXPECT_EQ(fs_resolve("../not-exist", false), fs_parent(cwd) + "/not-exist");
 }
 
 
