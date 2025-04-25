@@ -42,3 +42,14 @@ EXPECT_EQ(fs_absolute("日本語", false), cwd + "/日本語");
 EXPECT_EQ(fs_absolute("have space", false), cwd + "/have space");
 
 }
+
+
+TEST_F(TestAbs, Tilde){
+std::string home = fs_get_homedir();
+
+EXPECT_EQ(fs_absolute("~", false), cwd + "/~");
+EXPECT_EQ(fs_absolute("~/", true), home);
+
+EXPECT_EQ(fs_absolute("~/a", false), cwd + "/~/a");
+EXPECT_EQ(fs_absolute("~/a", true), home + "/a");
+}
