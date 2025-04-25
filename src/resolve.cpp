@@ -55,6 +55,11 @@ fs_canonical(
 
   if (!strict)
     return fs_normal(ex);
+  // std::filesystem::weakly_canonical() and boost::filesystem::canonical()
+  // resolve the path to the current working directory for non-existing paths.
+  // https://github.com/boostorg/filesystem/blob/f4bb6d0f3ebe9f8b90243d8a98989191925d49d2/src/operations.cpp#L5023
+  // That has significant complexity we will not implement here, as this is just a fallback method.
+  // We just return the normal path.
 
 #endif
 
