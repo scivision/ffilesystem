@@ -51,10 +51,12 @@ EXPECT_THAT(fs_resolve("~/..", false, false), cwd);
 TEST_F(TestCanonical, CanonicalParentRel)
 {
 EXPECT_THAT(fs_canonical("../not-exist", false), ::testing::AnyOf("../not-exist", fs_parent(cwd) + "/not-exist"));
+EXPECT_THAT(fs_canonical("a/b/../c", false), ::testing::AnyOf("a/c", cwd + "/a/c"));
 }
 TEST_F(TestCanonical, ResolveParentRel)
 {
 EXPECT_EQ(fs_resolve("../not-exist", false), fs_parent(cwd) + "/not-exist");
+EXPECT_EQ(fs_resolve("a/b/../c", false), cwd + "/a/c");
 }
 
 
