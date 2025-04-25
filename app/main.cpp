@@ -127,9 +127,9 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     {"parent", [](std::string_view a1) { return fs_parent(a1); }},
     {"suffix", [](std::string_view a1) { return fs_suffix(a1); }},
     {"canonical", [](std::string_view a1) { return fs_canonical(a1, true); }},
-    {"weakly_canonical", [](std::string_view a1) { return fs_canonical(a1); }},
+    {"weakly_canonical", [](std::string_view a1) { return fs_canonical(a1, false); }},
     {"resolve", [](std::string_view a1) { return fs_resolve(a1, true); }},
-    {"weakly_resolve", [](std::string_view a1) { return fs_resolve(a1); }},
+    {"weakly_resolve", [](std::string_view a1) { return fs_resolve(a1, false); }},
     {"hard", [](std::string_view a1) { return fs_hard_link_count(a1); }},
     {"normal", [](std::string_view a1) { return fs_normal(a1); }},
     {"type", [](std::string_view a1) { return fs_filesystem_type(a1); }},
@@ -174,7 +174,9 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     {"blksize", [](std::string_view a1) { return fs_get_blksize(a1); }},
     {"absolute", [](std::string_view a1) { return fs_absolute(a1, true); }},
     {"is_empty", [](std::string_view a1) { return fs_is_empty(a1); }},
-    {"remove", [](std::string_view a1) { return fs_remove(a1); }}
+    {"remove", [](std::string_view a1) { return fs_remove(a1); }},
+    {"which", [](std::string_view a1) { return fs_which(a1, "", false); }},
+    {"which_all", [](std::string_view a1) { return fs_which(a1, "", true); }},
   };
 
   bool ok = true;
@@ -274,6 +276,7 @@ static bool two_arg(std::string_view fun, std::string_view a1, std::string_view 
   using fs_two_arg_function = std::function<std::variant<std::string, bool>(std::string_view, std::string_view)>;
 
   std::unordered_map<std::string_view, fs_two_arg_function> fs_two_arg_function_map = {
+    {"weakly_canonical", [](std::string_view a1, std::string_view a2) { return fs_canonical(a1, false, std::atoi(a2.data())); }},
     {"which", [](std::string_view a1, std::string_view a2) { return fs_which(a1, a2, false); }},
     {"which_all", [](std::string_view a1, std::string_view a2) { return fs_which(a1, a2, true); }},
     {"same", [](std::string_view a1, std::string_view a2) { return fs_equivalent(a1, a2); }},
@@ -443,21 +446,25 @@ while (true){
 
   const std::vector<std::string>::size_type argc = args.size();
 
-  if(no_arg(args.at(0)))
-    continue;
+  switch (argc){
+    case 1:
+      if(no_arg(args.at(0)))
+        continue;
+      break;
+    case 2:
+      if(one_arg(args.at(0), args.at(1)))
+        continue;
+      break;
+    case 3:
+      if(two_arg(args.at(0), args.at(1), args.at(2)))
+        continue;
+      break;
+    default:
+      std::cerr << "ERROR: too many arguments\n";
+      break;
+  }
 
-  if(argc < 2)
-    args.push_back("");
-  if(one_arg(args.at(0), args.at(1)))
-    continue;
-
-  if(argc < 3)
-    args.push_back("");
-
-  if(two_arg(args.at(0), args.at(1), args.at(2)))
-    continue;
-
-  std::cerr << "Unknown command: " << inp << "\n";
+  std::cerr << "Unknown command or missing arguments for: " << inp << "\n";
 }
 
 return EXIT_SUCCESS;
