@@ -284,12 +284,14 @@ Ffilesystem Fortran code is optional, and is just a thin wrapper around the C++ 
 * [Fortran-stdlib](https://github.com/fortran-lang/stdlib/issues/201)
 * [M_system](https://github.com/urbanjost/M_system) focuses on interfaces to libc
 
----
+### features we won't add
 
 There is no "is_musl()" function due to MUSL designers
 [not providing](https://stackoverflow.com/questions/58177815/how-to-actually-detect-musl-libc)
 a
 [MUSL feature macro](https://wiki.musl-libc.org/faq.html).
+
+Disk / partition formatting is something we won't add. We do have functions to report the partition type and available capacity of the disk partition.
 
 ### Windows
 
