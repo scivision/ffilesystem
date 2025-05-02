@@ -326,8 +326,11 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 
 #if defined(HAVE_CXX_FILESYSTEM)
 
-  if(auto s = std::filesystem::hard_link_count(path, ec); !ec)  FFS_LIKELY
-    return s;
+  auto s = std::filesystem::hard_link_count(path, ec);
+  if(ec)
+    fs_print_error(path, __func__, ec);
+
+  return s;
 
 #else
 
@@ -345,10 +348,10 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
     if (struct stat s; !stat(path.data(), &s))
       return s.st_nlink;
   }
-#endif
 
   fs_print_error(path, __func__, ec);
-  return {};
+  return static_cast<std::uintmax_t>(-1);
+#endif
 }
 
 
