@@ -29,8 +29,11 @@ std::uintmax_t fs_space_available(std::string_view path)
   std::error_code ec;
 
 #ifdef HAVE_CXX_FILESYSTEM
-  if(auto s = std::filesystem::space(path, ec); !ec)  FFS_LIKELY
-    return s.available;
+  auto s = std::filesystem::space(path, ec);
+  if (ec)
+    fs_print_error(path, __func__, ec);
+
+  return s.available;
 #elif defined(_WIN32)
   // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdiskfreespaceexa
   if(ULARGE_INTEGER b;
@@ -47,7 +50,7 @@ std::uintmax_t fs_space_available(std::string_view path)
 #endif
 
   fs_print_error(path, __func__, ec);
-  return {};
+  return static_cast<std::uintmax_t>(-1);
 }
 
 
@@ -61,8 +64,11 @@ std::uintmax_t fs_space_capacity(std::string_view path)
   std::error_code ec;
 
 #ifdef HAVE_CXX_FILESYSTEM
-  if(auto s = std::filesystem::space(path, ec); !ec)  FFS_LIKELY
-    return s.capacity;
+  auto s = std::filesystem::space(path, ec);
+  if (ec)
+    fs_print_error(path, __func__, ec);
+
+  return s.capacity;
 #elif defined(_WIN32)
   if(ULARGE_INTEGER b;
       GetDiskFreeSpaceExA(path.data(), nullptr, &b, nullptr) != 0)  FFS_LIKELY
@@ -76,5 +82,5 @@ std::uintmax_t fs_space_capacity(std::string_view path)
 #endif
 
   fs_print_error(path, __func__, ec);
-  return {};
+  return static_cast<std::uintmax_t>(-1);
 }

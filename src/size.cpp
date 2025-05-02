@@ -35,8 +35,13 @@ std::uintmax_t fs_file_size(std::string_view path)
 {
   std::error_code ec;
 #ifdef HAVE_CXX_FILESYSTEM
-  if(auto s = std::filesystem::file_size(path, ec); !ec)  FFS_LIKELY
-    return s;
+
+  auto s = std::filesystem::file_size(path, ec);
+  if (ec)
+    fs_print_error(path, __func__, ec);
+
+  return s;
+
 #elif defined(_WIN32)
   // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfilesizeex
   if (HANDLE h = CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -68,7 +73,7 @@ std::uintmax_t fs_file_size(std::string_view path)
 #endif
 
   fs_print_error(path, __func__, ec);
-  return {};
+  return static_cast<std::uintmax_t>(-1);
 }
 
 

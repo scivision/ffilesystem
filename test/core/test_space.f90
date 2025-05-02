@@ -30,10 +30,6 @@ end if
 
 print *, "space_capacity (GB): ", real(i64) / 1024**3
 
-! if(space_available("not-exist-file") /= 0) error stop "space_available /= 0 for not existing file"
-! if(space_available("") /= 0) error stop "space_available /= 0 for empty file"
-! that's how windows/mingw defines it.
-
 end block valgrind
 
 end program

@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-class TestFilesize : public testing::Test {
+class TestFileSize : public testing::Test {
   protected:
     std::string file;
     void SetUp() override {
@@ -20,7 +20,9 @@ class TestFilesize : public testing::Test {
 };
 
 
-TEST_F(TestFilesize, Filesize)
+TEST_F(TestFileSize, FileSize)
 {
 EXPECT_EQ(fs_file_size(file), 5);
+
+EXPECT_EQ(fs_file_size("not-exist-file"), static_cast<std::uintmax_t>(-1)) << "backend " << fs_backend();
 }

@@ -1,9 +1,10 @@
 #include <string>
+#include <cstdint>
 
 #include "ffilesystem.h"
 
 #include <gtest/gtest.h>
-
+#include <gmock/gmock.h>
 
 class TestReserved : public testing::Test {
   protected:
@@ -16,6 +17,8 @@ class TestReserved : public testing::Test {
 
 TEST_F(TestReserved, Agnostic)
 {
+
+constexpr std::uintmax_t e = static_cast<std::uintmax_t>(-1);
 
 EXPECT_FALSE(fs_is_reserved("."));
 
@@ -35,7 +38,7 @@ else
 
 EXPECT_FALSE(fs_is_dir(ref));
 
-EXPECT_EQ(fs_file_size(ref), 0);
+EXPECT_THAT(fs_file_size(ref), ::testing::AnyOf(0UL, e));
 
 // omitted fs_space_available() since some systems don't handle NUL /dev/null well
 // e.g. Windows, macOS GCC, etc.
