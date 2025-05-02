@@ -7,7 +7,6 @@ class TestWhich : public testing::Test {
   protected:
     std::string cwd;
     std::string name;
-    std::string self;
     std::string rel;
     std::string testExe;
 
@@ -18,8 +17,7 @@ class TestWhich : public testing::Test {
       cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
 
       std::vector<std::string> argvs = ::testing::internal::GetArgvs();
-      self = fs_which(argvs[0], cwd);
-      ASSERT_FALSE(self.empty());
+      std::string self = argvs[0];
       ASSERT_TRUE(fs_is_exe(self));
 
       name = fs_file_name(self);

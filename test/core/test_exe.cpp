@@ -30,7 +30,7 @@ class TestExe : public testing::Test {
       cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());;
 
       std::vector<std::string> argvs = ::testing::internal::GetArgvs();
-      self = fs_which(argvs[0], cwd);
+      self = argvs[0];
 
       ASSERT_TRUE(fs_touch(exe));
       ASSERT_TRUE(fs_touch(noexe));

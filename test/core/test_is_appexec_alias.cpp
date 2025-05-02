@@ -5,7 +5,6 @@
 class TestAppExec : public testing::Test {
   protected:
     std::string cwd;
-    std::string self;
     std::string confdir;
     std::string path;
 
@@ -15,9 +14,6 @@ class TestAppExec : public testing::Test {
         GTEST_SKIP() << "requires Windows";
 
       cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
-
-      std::vector<std::string> argvs = ::testing::internal::GetArgvs();
-      self = fs_which(argvs[0], cwd);
 
       confdir = fs_user_config_dir();
       if(confdir.empty())

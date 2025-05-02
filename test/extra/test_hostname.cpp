@@ -22,10 +22,9 @@ TEST(TestExe, ExePath){
   std::string cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
 
   std::vector<std::string> argvs = ::testing::internal::GetArgvs();
-  std::string self = fs_which(argvs[0], cwd);
 
   std::string n = fs_file_name(p);
-  EXPECT_TRUE(fs_equivalent(p, self)) << "executable path is not equivalent to the current executable";
+  EXPECT_TRUE(fs_equivalent(p, argvs[0])) << "executable path is not equivalent to the current executable";
 }
 
 
