@@ -61,8 +61,9 @@ else {
     if(fs_trace) std::cout << "TRACE:mkdir " << buf << "\n";
     // create directory
 #ifdef _WIN32
-    // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createdirectorya
-    ok = CreateDirectoryA(buf.data(), nullptr) != 0;
+    // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createdirectoryw
+    std::wstring w = fs_win32_to_wide(buf);
+    ok = CreateDirectoryW(w.data(), nullptr) != 0;
     if(!ok){
       const auto err = GetLastError();
       // ERROR_PATH_NOT_FOUND if relative directory, thus we absolute() before loop.
