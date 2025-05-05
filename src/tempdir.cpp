@@ -27,21 +27,25 @@ std::string fs_get_tempdir()
 #endif
 
 #if defined(_WIN32)
-  // GetTempPath2A is not in MSYS2
-  std::string t(fs_get_max_path(), '\0');
-  auto L = GetTempPathA(static_cast<DWORD>(t.size()), t.data());
-  if (L > 0)  FFS_LIKELY
-    t.resize(L);
+  // GetTempPath2 is not in MSYS2. libuv etc. use GetTempPathW
+  if(DWORD L = GetTempPathW(0, nullptr); L > 0) {
+    std::wstring w;
+    w.resize(L + 1);
+    L = GetTempPathW(L, w.data());
+    if (L > 0) {
+      w.resize(L);
+      return fs_drop_slash(fs_win32_to_narrow(w));
+    }
+  }
 #else
-  std::string t(fs_getenv("TMPDIR"));
-#endif
-
-  if(!t.empty()) FFS_LIKELY
+  if(std::string t = fs_getenv("TMPDIR"); !t.empty()) FFS_LIKELY
     return fs_as_posix(t);
 
   if (fs_is_dir("/tmp"))
     return "/tmp";
+#endif
 
   fs_print_error("", __func__, ec);
   return {};
+
 }
