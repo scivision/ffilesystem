@@ -74,7 +74,6 @@ expanduser
 filename
 filesize
 hard_link
-is_absolute
 is_char
 OnDisk
 is_empty

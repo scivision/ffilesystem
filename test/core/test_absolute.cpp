@@ -53,3 +53,45 @@ EXPECT_EQ(fs_absolute("~/", true), home);
 EXPECT_EQ(fs_absolute("~/a", false), cwd + "/~/a");
 EXPECT_EQ(fs_absolute("~/a", true), home + "/a");
 }
+
+
+TEST(IsAbs, Agnostic)
+{
+EXPECT_FALSE(fs_is_absolute(""));
+
+EXPECT_FALSE(fs_is_absolute("日本語"));
+EXPECT_FALSE(fs_is_absolute("some space here"));
+}
+
+TEST(IsAbs, Windows)
+{
+if(!fs_is_windows())
+  GTEST_SKIP() << "Windows only test";
+
+EXPECT_TRUE(fs_is_absolute("J:/"));
+EXPECT_TRUE(fs_is_absolute("j:/"));
+EXPECT_FALSE(fs_is_absolute("j:"));
+EXPECT_FALSE(fs_is_absolute("/"));
+EXPECT_FALSE(fs_is_absolute("/日本語"));
+
+EXPECT_TRUE(fs_is_absolute(R"(\\?\)"));
+EXPECT_TRUE(fs_is_absolute(R"(\\.\)"));
+
+EXPECT_TRUE(fs_is_absolute(R"(\\?\C:\)"));
+EXPECT_TRUE(fs_is_absolute(R"(\\.\C:\)"));
+EXPECT_TRUE(fs_is_absolute(R"(\\?\UNC\server\share)"));
+EXPECT_TRUE(fs_is_absolute(R"(\\?\UNC\server\share\日本語)"));
+EXPECT_TRUE(fs_is_absolute(R"(\\server\share\some space here)"));
+EXPECT_TRUE(fs_is_absolute(R"(\\?\C:\some space here)"));
+}
+
+TEST(IsAbs, Posix)
+{
+
+if(fs_is_windows())
+  GTEST_SKIP() << "Posix only test";
+
+EXPECT_TRUE(fs_is_absolute("/"));
+EXPECT_TRUE(fs_is_absolute("/日本語"));
+EXPECT_FALSE(fs_is_absolute("j:/"));
+}

@@ -55,13 +55,27 @@ bool fs_is_absolute(std::string_view path)
   if(path.empty())
     return false;
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM) && !defined(__MINGW32__)
+  // MinGW GCC <filesystem> .is_absolute doesn't handle UNC paths at least through GCC 15.1
   return std::filesystem::path(path).is_absolute();
 #else
-  if(fs_is_windows())
-    return path.length() > 2 && !(fs_root_name(path).empty()) && (path[2] == '/' || path[2] == '\\');
-  else
+  if(fs_is_windows()) {
+    if(path.length() < 3)
+      return false;
+
+    // Extended-length or device path
+    if(path.length() >= 4 && (path.substr(0, 4) == R"(\\?\)" || path.substr(0, 4) == R"(\\.\)"))
+        return true;
+
+    // UNC path
+    if (path.substr(0, 2) == R"(\\)")
+      return path.find(R"(\)", 2) != std::string::npos;
+
+    // Windows drive letter
+    return !(fs_root_name(path).empty()) && (path[2] == '/' || path[2] == '\\');
+  } else {
     return path.front() == '/';
+  }
 #endif
 }
 
