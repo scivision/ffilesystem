@@ -227,25 +227,26 @@ std::string fs_win32_final_path(std::string_view path)
   if(fs_trace) std::cout << "TRACE: win32_final_path(" << path << ")\n";
   // dwDesiredAccess=0 to allow getting parameters even without read permission
   // FILE_FLAG_BACKUP_SEMANTICS required to open a directory
-  HANDLE h = CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ, nullptr,
+  std::wstring w = fs_win32_to_wide(path);
+
+  HANDLE h = CreateFileW(w.data(), GENERIC_READ, FILE_SHARE_READ, nullptr,
               OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   if(h == INVALID_HANDLE_VALUE)
     return {};
 
-  std::string r(fs_get_max_path(), '\0');
+  if(DWORD L = GetFinalPathNameByHandleW(h, nullptr, 0, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS); L > 0) {
+    w.resize(L + 1);
 
-  if(DWORD L = GetFinalPathNameByHandleA(h, r.data(), static_cast<DWORD>(r.size()), FILE_NAME_NORMALIZED);
-      CloseHandle(h) && L) {
-    r.resize(L);
+    L = GetFinalPathNameByHandleW(h, w.data(), L, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
+    if(CloseHandle(h) && L > 0) {
+      w.resize(L);
+      std::string r = fs_win32_to_narrow(w);
 
-#ifdef __cpp_lib_starts_ends_with  // C++20
-    if (r.starts_with(R"(\\?\)"))
-#else  // C++98
-    if (r.substr(0, 4) == R"(\\?\)")
-#endif
-      r = r.substr(4);
+      if (r.substr(0, 4) == R"(\\?\)")
+        r = r.substr(4);
 
-    return fs_as_posix(r);
+      return fs_as_posix(r);
+    }
   }
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
