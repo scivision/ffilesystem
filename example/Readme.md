@@ -1,3 +1,3 @@
-# Example of ffilesystem in your own project
+# Example of Ffilesystem in your own project
 
- This example shows how one can use an installed ffilesystem package and falls back to ExternalProject, demonstrating how one would use ffilesystem from their own project.
+ These examples show how one can use an installed ffilesystem package and falls back to ExternalProject, demonstrating how one would use Ffilesystem from their own project.
