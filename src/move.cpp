@@ -36,7 +36,7 @@ fs_remove(std::string_view path)
   // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-deletefilea
   // may need these when deleting a symlink
   // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsymboliclinka#remarks
-  std::wstring w = fs_win32_to_wide(path);
+  std::wstring const w = fs_win32_to_wide(path);
 
   if(fs_is_file(path)){
     if(DeleteFileW(w.data()) != 0)

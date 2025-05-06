@@ -150,7 +150,8 @@ fs_exists(std::string_view path)
         (fs_is_msvc() && fs_is_appexec_alias(path));
 #elif defined(_WIN32)
   WIN32_FILE_ATTRIBUTE_DATA fad;
-  ok = GetFileAttributesExA(path.data(), GetFileExInfoStandard, &fad);
+  std::wstring const w = fs_win32_to_wide(path);
+  ok = GetFileAttributesExW(w.data(), GetFileExInfoStandard, &fad);
 #else
   // unistd.h
   ok = !access(path.data(), F_OK);
@@ -173,7 +174,8 @@ fs_is_dir(std::string_view path)
 #elif defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesexa
   WIN32_FILE_ATTRIBUTE_DATA fad;
-  ok = GetFileAttributesExA(path.data(), GetFileExInfoStandard, &fad) &&
+  std::wstring const w = fs_win32_to_wide(path);
+  ok = GetFileAttributesExW(w.data(), GetFileExInfoStandard, &fad) &&
        (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 #else
   ok = S_ISDIR(fs_st_mode(path));

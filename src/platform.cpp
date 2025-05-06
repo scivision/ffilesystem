@@ -34,7 +34,7 @@ bool fs_set_cwd(std::string_view path)
     return true;
 #elif defined(_WIN32)
   // windows.h https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setcurrentdirectoryw
-  std::wstring w = fs_win32_to_wide(path);
+  std::wstring const w = fs_win32_to_wide(path);
   if(SetCurrentDirectoryW(w.data()))  FFS_LIKELY
     return true;
 #else
