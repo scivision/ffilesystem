@@ -30,16 +30,15 @@ bool fs_set_cwd(std::string_view path)
 
 #ifdef HAVE_CXX_FILESYSTEM
   std::filesystem::current_path(path, ec);
-  if(!ec) FFS_LIKELY
+  if(!ec)
     return true;
 #elif defined(_WIN32)
   // windows.h https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setcurrentdirectoryw
-  std::wstring const w = fs_win32_to_wide(path);
-  if(SetCurrentDirectoryW(w.data()))  FFS_LIKELY
+  if(SetCurrentDirectoryW(fs_win32_to_wide(path).data()))
     return true;
 #else
   // unistd.h https://www.man7.org/linux/man-pages/man2/chdir.2.html
-  if(chdir(path.data()) == 0)  FFS_LIKELY
+  if(chdir(path.data()) == 0)
     return true;
 #endif
 

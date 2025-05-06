@@ -95,17 +95,18 @@ std::string fs_which(std::string_view name, std::string_view path, const bool fi
   if(find_all)
     return fs_which_generic(name, path, true);
 
-  std::wstring wp = fs_win32_to_wide(path);
-  std::wstring wn = fs_win32_to_wide(name);
+  std::wstring const wn = fs_win32_to_wide(name);
   std::wstring wr;
   wr.resize(fs_get_max_path());
   DWORD L;
 
   // https://learn.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-searchpatha
   if (path.empty())
-    L = SearchPathW(nullptr, wn.data(), L".exe", static_cast<DWORD>(wr.length()), wr.data(), nullptr);
+    L = SearchPathW(nullptr, wn.data(),
+                    L".exe", static_cast<DWORD>(wr.length()), wr.data(), nullptr);
   else
-    L = SearchPathW(wp.data(), wn.data(), L".exe", static_cast<DWORD>(wr.length()), wr.data(), nullptr);
+    L = SearchPathW(fs_win32_to_wide(path).data(), wn.data(),
+                    L".exe", static_cast<DWORD>(wr.length()), wr.data(), nullptr);
 
   if(L == 0 && GetLastError() == ERROR_FILE_NOT_FOUND)
     return {};

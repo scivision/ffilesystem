@@ -160,7 +160,10 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
 
   // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfileexa
   // preserves source file attributes
-  if(CopyFileExA(source.data(), dest.data(), nullptr, nullptr, FALSE, opts) != 0)
+
+  if(CopyFileExW(fs_win32_to_wide(source).data(),
+                 fs_win32_to_wide(dest).data(),
+                 nullptr, nullptr, FALSE, opts) != 0)
     return true;
 
 #elif defined(HAVE_MACOS_COPYFILE)

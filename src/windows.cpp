@@ -76,9 +76,7 @@ static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesa
 
 // https://learn.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
-  std::wstring const w = fs_win32_to_wide(path);
-
-  if (DWORD attr = GetFileAttributesW(w.data()); attr == INVALID_FILE_ATTRIBUTES)
+  if (DWORD attr = GetFileAttributesW(fs_win32_to_wide(path).data()); attr == INVALID_FILE_ATTRIBUTES)
     // ec = std::make_error_code(std::errc::no_such_file_or_directory);
     // don't emit error for non-existent files
     return false;
@@ -96,9 +94,9 @@ static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer
   // * a file or directory that has an associated reparse point, or
   // * a file that is a symbolic link.
 
-  HANDLE h = CreateFileW(
-    w.data(), 0, 0, nullptr, OPEN_EXISTING,
-    FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+  HANDLE h = CreateFileW(fs_win32_to_wide(path).data(),
+                         0, 0, nullptr, OPEN_EXISTING,
+                         FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
   if (h == INVALID_HANDLE_VALUE)
     ec = std::make_error_code(std::errc::io_error);
@@ -191,7 +189,8 @@ std::string fs_win32_full_name(std::string_view path)
   std::error_code ec;
 
 #ifdef _WIN32
-  std::wstring w = fs_win32_to_wide(path);
+  std::wstring const w = fs_win32_to_wide(path);
+
   auto const L = GetFullPathNameW(w.data(), 0, nullptr, nullptr);
   // this form includes the null terminator
   // weak detection of race condition (cwd change)
@@ -233,7 +232,7 @@ std::string fs_win32_final_path(std::string_view path)
   std::wstring w = fs_win32_to_wide(path);
 
   HANDLE h = CreateFileW(w.data(), GENERIC_READ, FILE_SHARE_READ, nullptr,
-              OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+                         OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   if(h == INVALID_HANDLE_VALUE)
     return {};
 

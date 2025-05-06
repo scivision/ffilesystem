@@ -36,8 +36,7 @@ std::uintmax_t fs_space_available(std::string_view path)
   return s.available;
 #elif defined(_WIN32)
   // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdiskfreespaceexa
-  if(ULARGE_INTEGER b;
-      GetDiskFreeSpaceExA(path.data(), &b, nullptr, nullptr) != 0)  FFS_LIKELY
+  if(ULARGE_INTEGER b; GetDiskFreeSpaceExW(fs_win32_to_wide(path).data(), &b, nullptr, nullptr) != 0)
     return b.QuadPart;
 #elif defined(HAVE_STATVFS)
   // https://www.man7.org/linux/man-pages/man3/statvfs.3.html
@@ -70,8 +69,7 @@ std::uintmax_t fs_space_capacity(std::string_view path)
 
   return s.capacity;
 #elif defined(_WIN32)
-  if(ULARGE_INTEGER b;
-      GetDiskFreeSpaceExA(path.data(), nullptr, &b, nullptr) != 0)  FFS_LIKELY
+  if(ULARGE_INTEGER b; GetDiskFreeSpaceExW(fs_win32_to_wide(path).data(), nullptr, &b, nullptr) != 0)
     return b.QuadPart;
 #elif defined(HAVE_STATVFS)
   struct statvfs stat;

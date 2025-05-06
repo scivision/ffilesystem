@@ -39,7 +39,7 @@ bool fs_is_executable_binary(std::string_view path)
 #if defined(_WIN32)
   // MinGW, MSVC, oneAPI at least need || is_appexec_alias()
   DWORD t;
-  ok = (GetBinaryTypeA(path.data(), &t) != 0) || fs_is_appexec_alias(path);
+  ok = (GetBinaryTypeW(fs_win32_to_wide(path).data(), &t) != 0) || fs_is_appexec_alias(path);
 #else
   // https://github.com/jart/cosmopolitan/blob/master/ape/specification.md
 

@@ -31,8 +31,7 @@ std::string::size_type fs_max_component(std::string_view path)
 
 #ifdef _WIN32
   DWORD L = 0;
-  std::wstring const w = fs_win32_to_wide(fs_root(path));
-  if(GetVolumeInformationW(w.data(), nullptr, 0, nullptr, &L, nullptr, nullptr, 0) != 0)
+  if(GetVolumeInformationW(fs_win32_to_wide(fs_root(path)).data(), nullptr, 0, nullptr, &L, nullptr, nullptr, 0) != 0)
     return L;
 #elif defined(_PC_NAME_MAX)
   errno = 0;

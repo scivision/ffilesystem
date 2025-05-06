@@ -120,10 +120,7 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
   if(fs_is_dir(target.data()))
     p |= SYMBOLIC_LINK_FLAG_DIRECTORY;
 
-  std::wstring const wl = fs_win32_to_wide(link);
-  std::wstring const wt = fs_win32_to_wide(target);
-
-  if(CreateSymbolicLinkW(wl.data(), wt.data(), p))
+  if(CreateSymbolicLinkW(fs_win32_to_wide(link).data(), fs_win32_to_wide(target).data(), p))
     return true;
 
 #elif defined(HAVE_CXX_FILESYSTEM)

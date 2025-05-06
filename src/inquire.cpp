@@ -40,7 +40,8 @@ bool fs_win32_is_type(std::string_view path, const DWORD type){
   std::error_code ec;
 
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
-  HANDLE h = CreateFileA(path.data(), 0, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+  HANDLE h = CreateFileW(fs_win32_to_wide(path).data(),
+                         0, 0, nullptr, OPEN_EXISTING, 0, nullptr);
 
   if(h == INVALID_HANDLE_VALUE){
     DWORD err = GetLastError();
@@ -109,7 +110,8 @@ fs_is_removable(std::string_view path)
   // not a fixed disk like a hard drive or SSD
 #if defined(_WIN32)
   // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdrivetypea
-  UINT t = GetDriveTypeA(fs_root(path).data());
+
+  UINT t = GetDriveTypeW(fs_win32_to_wide(fs_root(path)).data());
   switch (t)
   {
     case DRIVE_REMOVABLE:
@@ -150,8 +152,8 @@ fs_exists(std::string_view path)
         (fs_is_msvc() && fs_is_appexec_alias(path));
 #elif defined(_WIN32)
   WIN32_FILE_ATTRIBUTE_DATA fad;
-  std::wstring const w = fs_win32_to_wide(path);
-  ok = GetFileAttributesExW(w.data(), GetFileExInfoStandard, &fad);
+
+  ok = GetFileAttributesExW(fs_win32_to_wide(path).data(), GetFileExInfoStandard, &fad);
 #else
   // unistd.h
   ok = !access(path.data(), F_OK);
@@ -174,8 +176,8 @@ fs_is_dir(std::string_view path)
 #elif defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesexa
   WIN32_FILE_ATTRIBUTE_DATA fad;
-  std::wstring const w = fs_win32_to_wide(path);
-  ok = GetFileAttributesExW(w.data(), GetFileExInfoStandard, &fad) &&
+
+  ok = GetFileAttributesExW(fs_win32_to_wide(path).data(), GetFileExInfoStandard, &fad) &&
        (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 #else
   ok = S_ISDIR(fs_st_mode(path));
@@ -366,9 +368,9 @@ std::size_t fs_get_blksize(std::string_view path)
   if (root.empty())
     return {};
 
-  const std::string wp = R"(\\.\)" + root;
+  HANDLE h = CreateFileW(fs_win32_to_wide(R"(\\.\)" + root).data(),
+                         0, 0, nullptr, OPEN_EXISTING, 0, nullptr);
 
-  HANDLE h = CreateFileA(wp.data(), 0, 0, nullptr, OPEN_EXISTING, 0, nullptr);
   if (h != INVALID_HANDLE_VALUE) {
     DISK_GEOMETRY_EX diskGeometry = {};
     ZeroMemory(&diskGeometry, sizeof(DISK_GEOMETRY_EX));

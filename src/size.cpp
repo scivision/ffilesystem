@@ -45,8 +45,8 @@ std::uintmax_t fs_file_size(std::string_view path)
 #elif defined(_WIN32)
   // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfilesizeex
 
-  std::wstring const w = fs_win32_to_wide(path);
-  if (HANDLE h = CreateFileW(w.data(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+  if (HANDLE h = CreateFileW(fs_win32_to_wide(path).data(),
+                             GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
       h != INVALID_HANDLE_VALUE)
   {
     LARGE_INTEGER size;

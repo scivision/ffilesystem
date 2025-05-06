@@ -76,10 +76,8 @@ std::string fs_get_profile_dir()
       ok = GetUserProfileDirectoryW(h, w.data(), &L);
     }
 
-    if(CloseHandle(h) && ok && L > 0) {
-      std::string path = fs_win32_to_narrow(w);
-      return fs_drop_slash(path);
-    }
+    if(CloseHandle(h) && ok && L > 0)
+      return fs_drop_slash(fs_win32_to_narrow(w));
   }
 #else
   if (auto pw = fs_getpwuid())
