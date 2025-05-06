@@ -32,38 +32,44 @@ std::string fs_exe_path()
   // https://stackoverflow.com/a/4031835
   // https://stackoverflow.com/a/1024937
 
-  std::string path(fs_get_max_path(), '\0');
-  std::string::size_type L = 0;
-
 #if defined(_WIN32) || defined(__CYGWIN__)
   // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamea
-  if (DWORD M = GetModuleFileNameA(nullptr, path.data(), static_cast<DWORD>(path.size()));
-        M > 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) FFS_LIKELY
-    L = static_cast<std::size_t>(M);
+  std::wstring w;
+  w.resize(fs_get_max_path());
+
+  if (DWORD L = GetModuleFileNameW(nullptr, w.data(), static_cast<DWORD>(w.size())); L > 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+    w.resize(L);
+    return fs_as_posix(fs_win32_to_narrow(w));
+  }
 #elif defined(__linux__)
   // https://man7.org/linux/man-pages/man2/readlink.2.html
-  if(ssize_t M = readlink("/proc/self/exe", path.data(), path.size()); M > 0)  FFS_LIKELY
-    L = static_cast<std::size_t>(M);
-#elif defined(__APPLE__) && defined(__MACH__)
-  // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dyld.3.html
-  // get buffer size first. Need mp=0 to avoid intermittent segfault.
-  if(std::uint32_t mp = 0;
-      _NSGetExecutablePath(nullptr, &mp) == -1 &&
-      _NSGetExecutablePath(path.data(), &mp) == 0)  FFS_LIKELY
-      L = static_cast<std::size_t>(mp-1);
-#elif defined(BSD)
-  // https://man.freebsd.org/cgi/man.cgi?sysctl(3)
-  std::size_t M = path.size();
-  const int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
-  if(sysctl(mib, 4, path.data(), &M, nullptr, 0) == 0)  FFS_LIKELY
-    L = M;
-#endif
-
-  if(L > 0)  FFS_LIKELY
-  {
+  std::string path(fs_get_max_path(), '\0');
+  if(ssize_t L = readlink("/proc/self/exe", path.data(), path.size()); L > 0) {
     path.resize(L);
     return path;
   }
+#elif defined(__APPLE__) && defined(__MACH__)
+  // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dyld.3.html
+  // get buffer size first. Need L=0 to avoid intermittent segfault.
+  std::uint32_t L = 0;
+
+  if(_NSGetExecutablePath(nullptr, &L) == -1) {
+    std::string path;
+    path.resize(L);
+    if(_NSGetExecutablePath(path.data(), &L) == 0){
+      path.resize(L-1);
+      return path;
+    }
+  }
+#elif defined(BSD)
+  // https://man.freebsd.org/cgi/man.cgi?sysctl(3)
+  std::size_t L = path.size();
+  const int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
+  if(sysctl(mib, 4, path.data(), &L, nullptr, 0) == 0) {
+    path.resize(L);
+    return path;
+  }
+#endif
 
   fs_print_error("", __func__);
   return {};
