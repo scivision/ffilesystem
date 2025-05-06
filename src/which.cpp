@@ -95,25 +95,29 @@ std::string fs_which(std::string_view name, std::string_view path, const bool fi
   if(find_all)
     return fs_which_generic(name, path, true);
 
-  std::string r(fs_get_max_path(), '\0');
+  std::wstring wp = fs_win32_to_wide(path);
+  std::wstring wn = fs_win32_to_wide(name);
+  std::wstring wr;
+  wr.resize(fs_get_max_path());
   DWORD L;
 
   // https://learn.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-searchpatha
   if (path.empty())
-    L = SearchPathA(nullptr, name.data(), ".exe", static_cast<DWORD>(r.length()), r.data(), nullptr);
+    L = SearchPathW(nullptr, wn.data(), L".exe", static_cast<DWORD>(wr.length()), wr.data(), nullptr);
   else
-    L = SearchPathA(path.data(), name.data(), ".exe", static_cast<DWORD>(r.length()), r.data(), nullptr);
+    L = SearchPathW(wp.data(), wn.data(), L".exe", static_cast<DWORD>(wr.length()), wr.data(), nullptr);
 
   if(L == 0 && GetLastError() == ERROR_FILE_NOT_FOUND)
     return {};
 
-  if(L == 0 || L >= r.length()){
+  if(L == 0 || L >= wr.length()){
     fs_print_error(name, __func__);
     return {};
   }
-  r.resize(L);
+  wr.resize(L);
+  std::string r = fs_win32_to_narrow(wr);
 
-  if(fs_trace) std::cout << "TRACE: which: SearchPathA: " << r << "  length " << L << "\n";
+  if(fs_trace) std::cout << "TRACE: which: SearchPath: " << r << "  length " << L << "\n";
   if(!fs_is_exe(r))
     return {};
 

@@ -120,7 +120,10 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
   if(fs_is_dir(target.data()))
     p |= SYMBOLIC_LINK_FLAG_DIRECTORY;
 
-  if(CreateSymbolicLinkA(link.data(), target.data(), p))  FFS_LIKELY
+  std::wstring const wl = fs_win32_to_wide(link);
+  std::wstring const wt = fs_win32_to_wide(target);
+
+  if(CreateSymbolicLinkW(wl.data(), wt.data(), p))
     return true;
 
 #elif defined(HAVE_CXX_FILESYSTEM)
@@ -129,13 +132,13 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
     ? std::filesystem::create_directory_symlink(target, link, ec)
     : std::filesystem::create_symlink(target, link, ec);
 
-  if(!ec) FFS_LIKELY
+  if(!ec)
     return true;
 
 #else
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/symlink.2.html
   // https://linux.die.net/man/3/symlink
-  if(symlink(target.data(), link.data()) == 0)  FFS_LIKELY
+  if(symlink(target.data(), link.data()) == 0)
     return true;
 #endif
   }

@@ -95,7 +95,9 @@ bool fs_set_modtime(std::string_view path, const bool quiet)
 
 #elif defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/SysInfo/changing-a-file-time-to-the-current-time
-  HANDLE h = CreateFileA(path.data(),
+  std::wstring const w = fs_win32_to_wide(path);
+
+  HANDLE h = CreateFileW(w.data(),
                          FILE_WRITE_ATTRIBUTES, FILE_SHARE_WRITE, nullptr,
                          OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   if (h){
