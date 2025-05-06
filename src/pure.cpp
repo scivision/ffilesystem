@@ -52,8 +52,7 @@ std::string::size_type fs_strncpy(const char* path, char* result, const std::str
 
 bool fs_is_absolute(std::string_view path)
 {
-  if(path.empty())
-    return false;
+  // is path absolute?
 
 #if defined(HAVE_CXX_FILESYSTEM) && !defined(__MINGW32__)
   // MinGW GCC <filesystem> .is_absolute doesn't handle UNC paths at least through GCC 15.1
@@ -74,7 +73,7 @@ bool fs_is_absolute(std::string_view path)
     // Windows drive letter
     return !(fs_root_name(path).empty()) && (path[2] == '/' || path[2] == '\\');
   } else {
-    return path.front() == '/';
+    return !path.empty() && path.front() == '/';
   }
 #endif
 }
