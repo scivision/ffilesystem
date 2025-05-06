@@ -31,7 +31,10 @@ std::string fs_get_tempdir()
   if(DWORD L = GetTempPathW(0, nullptr); L > 0) {
     std::wstring w;
     w.resize(L + 1);
-    L = GetTempPathW(L, w.data());
+    if(GetTempPathW(L, w.data()) == L) {
+      w.resize(L);
+      return fs_drop_slash(fs_win32_to_narrow(w));
+    }
     if (L > 0) {
       w.resize(L);
       return fs_drop_slash(fs_win32_to_narrow(w));

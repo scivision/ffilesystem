@@ -316,7 +316,7 @@ std::string fs_win32_to_narrow(FFS_MAYBE_UNUSED std::wstring_view w)
     std::string n;
     n.resize(L);
 
-    if(WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, n.data(), L, nullptr, nullptr) > 0) {
+    if(WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, n.data(), L, nullptr, nullptr) == L) {
       n.resize(L-1);  // discard null terminator
       return n;
     }
@@ -342,7 +342,7 @@ std::wstring fs_win32_to_wide(std::string_view n)
     std::wstring w;
     w.resize(L);
 
-    if(MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, w.data(), L) > 0) {
+    if(MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, w.data(), L) == L) {
       w.resize(L-1);  // discard null terminator
       return w;
     }

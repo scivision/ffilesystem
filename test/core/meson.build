@@ -77,7 +77,7 @@ gtest_tests = [
 'with_suffix'
 ]
 if is_windows
-  gtest_tests += ['is_appexec_alias']
+  gtest_tests += ['is_appexec_alias', 'windows']
 endif
 if backend_filesystem
   gtest_tests += ['proximate','relative']

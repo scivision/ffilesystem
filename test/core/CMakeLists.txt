@@ -102,7 +102,7 @@ with_suffix
 )
 
 if(WIN32 OR CYGWIN)
-  list(APPEND gtest_tests is_appexec_alias)
+  list(APPEND gtest_tests is_appexec_alias windows)
 endif()
 if(HAVE_CXX_FILESYSTEM)
   list(APPEND gtest_tests proximate relative)
