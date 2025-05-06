@@ -313,11 +313,12 @@ std::string fs_win32_to_narrow(FFS_MAYBE_UNUSED std::wstring_view w)
 #if defined(_WIN32)
   if (int L = WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, nullptr, 0, nullptr, nullptr); L > 0)  FFS_LIKELY
   {
-    std::string buf(L, '\0');
-    if(WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, buf.data(), L, nullptr, nullptr) > 0)  FFS_LIKELY
-    {
-      buf.resize(L-1);  // discard null terminator
-      return buf;
+    std::string n;
+    n.resize(L);
+
+    if(WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, n.data(), L, nullptr, nullptr) > 0) {
+      n.resize(L-1);  // discard null terminator
+      return n;
     }
   }
 #else
@@ -338,11 +339,12 @@ std::wstring fs_win32_to_wide(std::string_view n)
 
   if (int L = MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, nullptr, 0); L > 0)  FFS_LIKELY
   {
-    std::wstring buf(L, L'\0');
-    if(MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, buf.data(), L) > 0)  FFS_LIKELY
-    {
-      buf.resize(L-1);  // discard null terminator
-      return buf;
+    std::wstring w;
+    w.resize(L);
+
+    if(MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, w.data(), L) > 0) {
+      w.resize(L-1);  // discard null terminator
+      return w;
     }
   }
 #else
