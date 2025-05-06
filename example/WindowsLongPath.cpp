@@ -52,13 +52,14 @@ bool TouchFile(std::wstring_view path) {
 
 int main() {
     // Construct a path longer than 260 characters.
-    std::wstring baseDir = std::filesystem::temp_directory_path().wstring();
-    std::wstring longName = L"";
-    for (int i = 0; i < 15; ++i) { // Create a deeply nested structure
-        longName += L"a_very_long_name_component_" + std::to_wstring(i) + L"\\";
-    }
-    std::wstring dir = L"\\\\?\\" + baseDir + L"\\" + longName;
-    std::wstring path = dir + L"over260charsTotal.txt";
+    auto const baseDir = std::filesystem::temp_directory_path();
+    std::filesystem::path longName;
+
+    for (int i = 0; i < 15; ++i)
+      longName /= L"a_very_long_name_component_" + std::to_wstring(i);
+
+    auto const dir = (LR"(\\?\)" + baseDir.wstring()) / longName;
+    std::wstring path = dir / L"over260charsTotal.txt";
 
     // create_directories also needs prepended \\?\ or it will fail
     std::filesystem::create_directories(dir);
