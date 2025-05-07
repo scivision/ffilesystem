@@ -11,12 +11,8 @@ endif()
 foreach(t IN ITEMS libpath)
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
-  if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-    # enable source_location
-    target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
-  endif()
-
   target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
+
   gtest_discover_tests(test_${t}_cpp
     PROPERTIES
       LABELS "Cpp"
