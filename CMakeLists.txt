@@ -7,7 +7,7 @@ endif()
 
 project(ffilesystem
 LANGUAGES C CXX
-VERSION 6.3.2
+VERSION 6.3.3
 )
 
 include(GNUInstallDirs)
@@ -138,7 +138,10 @@ target_compile_definitions(ffilesystem PRIVATE
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_extra}>>:ffilesystem_extra>"
 )
 
-target_compile_features(ffilesystem PRIVATE cxx_std_${CMAKE_CXX_STANDARD} c_std_99)
+target_compile_features(ffilesystem PRIVATE
+$<$<BOOL:${CMAKE_CXX_STANDARD}>:cxx_std_${CMAKE_CXX_STANDARD}>
+c_std_99
+)
 
 set_target_properties(ffilesystem PROPERTIES
 PUBLIC_HEADER include/ffilesystem.h

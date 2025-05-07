@@ -13,13 +13,15 @@ if(CMAKE_VERSION VERSION_LESS 3.25 AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(LINUX true)
 endif()
 
-# --- compiler standard setting -- need if(NOT) in case CMAKE_CXX_STANDARD is set but blank.
-if(NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 17)
-  if(WIN32)
-    # we assume Windows has modern compilers by default
-    set(CMAKE_CXX_STANDARD 20)
-  else()
-    set(CMAKE_CXX_STANDARD 17)
+# C++20 enables some nice but optional debugging / UX
+# https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html
+if(ffilesystem_IS_TOP_LEVEL)
+  if(NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 17)
+    if("cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+      set(CMAKE_CXX_STANDARD 20)
+    else()
+      set(CMAKE_CXX_STANDARD 17)
+    endif()
   endif()
 endif()
 
