@@ -12,6 +12,13 @@
 #include <cerrno>
 #endif
 
+#if __has_include(<source_location>)
+#include <source_location>
+#endif
+
+#if __has_include(<format>)
+#include <format>
+#endif
 
 void fs_emit_error()
 {
@@ -27,35 +34,75 @@ void fs_emit_error()
 }
 
 
-void fs_print_error(std::string_view path, std::string_view fname)
-{
+void fs_print_error(std::string_view path, std::string_view fname
+#if defined(__cpp_lib_source_location)
+, const std::source_location& location){
+#if defined(__cpp_lib_format)
+  std::string s = std::format("{}:{}", location.file_name(), location.line());
+#else
+  std::string s = std::string(location.file_name()) + ":" + std::to_string(location.line());
+#endif
+#else
+ ){ std::string s;
+#endif
 
-  std::cerr << "ERROR: Ffilesystem: " << fname << "(" << path << ")\n";
+  std::cerr << "ERROR: Ffilesystem: " << fname << "(" << path << ")\n" << s << "\n";
 
   fs_emit_error();
 }
 
 
-void fs_print_error(std::string_view path, std::string_view fname, const std::error_code& ec)
-{
-  std::cerr << "ERROR: Ffilesystem: " << fname << "(" << path << ")\n";
+void fs_print_error(std::string_view path, std::string_view fname, const std::error_code& ec
+#if defined(__cpp_lib_source_location)
+, const std::source_location& location){
+#if defined(__cpp_lib_format)
+  std::string s = std::format("{}:{}", location.file_name(), location.line());
+#else
+  std::string s = std::string(location.file_name()) + ":" + std::to_string(location.line());
+#endif
+#else
+ ){ std::string s;
+#endif
+
+  std::cerr << "ERROR: Ffilesystem: " << fname << "(" << path << ")\n" << s << "\n";
   if(ec)
-    std::cerr << "C++ exception: " << ec.message() << " " << ec.value() << "\n";
+    std::cerr << ec.message() << " " << ec.value() << "\n";
 
   fs_emit_error();
 }
 
 
-void fs_print_error(std::string_view path1, std::string_view path2, std::string_view fname)
-{
-  std::cerr << "ERROR: Ffilesystem: " << fname << "(" << path1 <<  ", " << path2 << ")\n";
+void fs_print_error(std::string_view path1, std::string_view path2, std::string_view fname
+#if defined(__cpp_lib_source_location)
+, const std::source_location& location){
+#if defined(__cpp_lib_format)
+  std::string s = std::format("{}:{}", location.file_name(), location.line());
+#else
+  std::string s = std::string(location.file_name()) + ":" + std::to_string(location.line());
+#endif
+#else
+ ){ std::string s;
+#endif
+
+  std::cerr << "ERROR: Ffilesystem: " << fname << "(" << path1 <<  ", " << path2 << ")\n" << s << "\n";
 
   fs_emit_error();
 }
 
-void fs_print_error(std::string_view path1, std::string_view path2, std::string_view fname, const std::error_code& ec)
-{
-  std::cerr << "ERROR: Ffilesystem: " << fname << "(" << path1 <<  ", " << path2 << ")\n";
+void fs_print_error(std::string_view path1, std::string_view path2, std::string_view fname, const std::error_code& ec
+#if defined(__cpp_lib_source_location)
+, const std::source_location& location){
+#if defined(__cpp_lib_format)
+  std::string s = std::format("{}:{}", location.file_name(), location.line());
+#else
+  std::string s = std::string(location.file_name()) + ":" + std::to_string(location.line());
+#endif
+#else
+ ){
+ std::string s;
+#endif
+
+  std::cerr << "ERROR: Ffilesystem: " << fname << "(" << path1 <<  ", " << path2 << ")\n" << s << "\n";
 
   if(ec)
     std::cerr << "C++ exception: " << ec.message() <<  " " << ec.value() << "\n";

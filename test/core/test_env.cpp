@@ -40,7 +40,6 @@ EXPECT_FALSE(user.empty());
 std::cout << "Username " << user << "\n";
 }
 
-
 TEST(TestEnvironment, Environment)
 {
 
@@ -66,7 +65,6 @@ EXPECT_FALSE(t.empty());
 std::cout << "Temp directory " << t << "\n";
 EXPECT_TRUE(fs_is_dir(t));
 }
-
 
 TEST_F(TestEnv, GetEnv){
 auto h = fs_getenv(fs_is_windows() ? "USERPROFILE" : "HOME");

@@ -18,7 +18,6 @@ typedef unsigned short mode_t;
 #endif
 
 #endif
-
 #ifdef __cplusplus
 
 #include <cstdint> // for uintmax_t
@@ -54,6 +53,10 @@ constexpr std::uintmax_t fs_unknown_size = static_cast<std::uintmax_t>(-1);
 #include <system_error>
 #include <optional>
 
+#if __has_include(<source_location>)
+#include <source_location>
+#endif
+
 #ifdef HAVE_CXX_FILESYSTEM
 
 #include <filesystem>
@@ -86,7 +89,6 @@ std::string fs_drop_trailing_slash(std::string_view);
 bool fs_equivalent(std::string_view, std::string_view);
 
 bool fs_is_removable(std::string_view);
-
 bool fs_exists(std::string_view);
 bool fs_lexists(std::string_view);
 
@@ -130,7 +132,6 @@ std::optional<std::string> fs_getenv(std::string_view);
 std::uintmax_t fs_hard_link_count(std::string_view);
 
 std::string fs_hostname();
-
 bool fs_has_filename(std::string_view);
 
 bool fs_is_absolute(std::string_view);
@@ -181,10 +182,29 @@ std::string fs_os_version();
 std::string fs_parent(std::string_view);
 
 void fs_emit_error();
-void fs_print_error(std::string_view, std::string_view);
-void fs_print_error(std::string_view, std::string_view, const std::error_code&);
-void fs_print_error(std::string_view, std::string_view, std::string_view);
-void fs_print_error(std::string_view, std::string_view, std::string_view, const std::error_code&);
+void fs_print_error(std::string_view, std::string_view
+#if defined(__cpp_lib_source_location)
+, const std::source_location& = std::source_location::current()
+#endif
+);
+
+void fs_print_error(std::string_view, std::string_view, const std::error_code&
+#if defined(__cpp_lib_source_location)
+, const std::source_location& = std::source_location::current()
+#endif
+);
+
+void fs_print_error(std::string_view, std::string_view, std::string_view
+#if defined(__cpp_lib_source_location)
+, const std::source_location& = std::source_location::current()
+#endif
+);
+
+void fs_print_error(std::string_view, std::string_view, std::string_view, const std::error_code&
+#if defined(__cpp_lib_source_location)
+, const std::source_location& = std::source_location::current()
+#endif
+);
 
 std::string fs_proximate_to(std::string_view, std::string_view);
 
@@ -261,7 +281,6 @@ struct passwd* fs_getpwuid();
 extern "C" {
 
 #else  // C only
-
 #if __STDC_VERSION__ < 202311L
 #include <stdbool.h>
 #endif
@@ -314,7 +333,6 @@ bool fs_is_msvc();
 bool fs_is_appleclang();
 
 bool fs_win32_long_paths_enabled();
-
 bool fs_is_cygwin();
 bool fs_is_rosetta();
 
@@ -355,11 +373,9 @@ bool fs_mkdir(const char*);
 
 bool fs_exists(const char*);
 bool fs_lexists(const char*);
-
 bool fs_is_removable(const char*);
 
 bool fs_has_filename(const char* path);
-
 bool fs_is_absolute(const char*);
 bool fs_is_case_sensitive(const char*);
 

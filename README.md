@@ -17,7 +17,6 @@ For the Fortran interface, native Fortran `character` type is used.
 For the C interface,
 [C-style null-terminated strings](https://en.cppreference.com/w/cpp/string/byte.html)
 are used.
-
 If available,
 [C++ standard library `<filesystem>`](https://en.cppreference.com/w/cpp/filesystem)
 is used.
@@ -73,6 +72,7 @@ RAII std::string buffers are used for all string representations of paths includ
 Ffilesystem
 [std::string buffers](https://learn.microsoft.com/en-us/archive/msdn-magazine/2015/july/c-using-stl-strings-at-win32-api-boundaries)
 are dynamically sized according to the actual path length.
+See [Readme_memory](./Readme_memory.md)
 
 For Windows drive letters without a slash after the colon, the path is treated as
 [a relative path](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file).
@@ -92,7 +92,6 @@ The API is designed to be familiar to users of other languages' filesystem libra
 * [stdlib for Matlab](https://github.com/geospace-code/matlab-stdlib)
 * [C++ STL filesystem](https://en.cppreference.com/w/cpp/filesystem)
 * [C standard library](https://en.cppreference.com/w/c/io)
-
 Important Ffilesystem functions are
 [benchmarked](./benchmark.md)
 to help improve performance.
@@ -149,7 +148,6 @@ Please see the [API docs](./API.md) for extensive list of functions/subroutines.
 Use any one of these methods to build Ffilesystem.
 The self-tests are optional and not built by default.
 The tests use GoogleTest framework.
-
 Cross-compiling generally works (e.g. for MUSL) but the optional GoogleTest self-tests may not build.
 
 ### CMake
