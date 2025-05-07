@@ -38,6 +38,10 @@ constexpr int fs_trace =
 #include <ctime> // for time_t
 #include <system_error>
 
+#if __has_include(<source_location>)
+#include <source_location>
+#endif
+
 #ifdef HAVE_CXX_FILESYSTEM
 
 #include <filesystem>
@@ -160,10 +164,29 @@ std::vector<std::string> fs_normal_vector(std::string_view);
 std::string fs_os_version();
 std::string fs_parent(std::string_view);
 
-void fs_print_error(std::string_view, std::string_view);
-void fs_print_error(std::string_view, std::string_view, const std::error_code&);
-void fs_print_error(std::string_view, std::string_view, std::string_view);
-void fs_print_error(std::string_view, std::string_view, std::string_view, const std::error_code&);
+void fs_print_error(std::string_view, std::string_view
+#if defined(__cpp_lib_source_location)
+, const std::source_location& = std::source_location::current()
+#endif
+);
+
+void fs_print_error(std::string_view, std::string_view, const std::error_code&
+#if defined(__cpp_lib_source_location)
+, const std::source_location& = std::source_location::current()
+#endif
+);
+
+void fs_print_error(std::string_view, std::string_view, std::string_view
+#if defined(__cpp_lib_source_location)
+, const std::source_location& = std::source_location::current()
+#endif
+);
+
+void fs_print_error(std::string_view, std::string_view, std::string_view, const std::error_code&
+#if defined(__cpp_lib_source_location)
+, const std::source_location& = std::source_location::current()
+#endif
+);
 
 std::string fs_proximate_to(std::string_view, std::string_view);
 
@@ -411,8 +434,6 @@ size_t fs_getenv(const char*, char*, const size_t);
 bool fs_setenv(const char*, const char*);
 
 size_t fs_filesystem_type(const char*, char*, const size_t);
-
-void fs_print_error(const char*, const char*);
 
 size_t fs_to_cygpath(const char*, char*, const size_t);
 size_t fs_to_winpath(const char*, char*, const size_t);
