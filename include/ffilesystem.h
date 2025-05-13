@@ -24,12 +24,6 @@ constexpr int fs_trace =
 #  define FFS_LIKELY
 #endif
 
-#if __has_cpp_attribute(maybe_unused)
-#  define FFS_MAYBE_UNUSED [[maybe_unused]]
-#else
-#  define FFS_MAYBE_UNUSED
-#endif
-
 #include <cstdint>
 #include <cstdlib>
 #include <vector>
@@ -180,7 +174,7 @@ bool fs_rename(std::string_view, std::string_view);
 std::string fs_resolve(std::string_view, const bool = false, const bool = true);
 
 std::string fs_root(std::string_view);
-std::string fs_root_name(FFS_MAYBE_UNUSED std::string_view);
+std::string fs_root_name([[maybe_unused]] std::string_view);
 
 bool fs_set_cwd(std::string_view);
 
@@ -226,11 +220,13 @@ std::string fs_which(std::string_view, std::string_view = {}, const bool = false
 
 std::string fs_win32_final_path(std::string_view);
 std::string fs_win32_full_name(std::string_view);
-std::string fs_win32_to_narrow(FFS_MAYBE_UNUSED std::wstring_view);
+std::string fs_win32_to_narrow([[maybe_unused]] std::wstring_view);
 std::wstring fs_win32_to_wide(std::string_view);
 bool fs_win32_is_symlink(std::string_view);
 
 std::string fs_with_suffix(std::string_view, std::string_view);
+
+std::string::size_type fs_symlink_length([[maybe_unused]] std::string_view);
 
 int fs_st_mode(std::string_view);
 struct passwd* fs_getpwuid();

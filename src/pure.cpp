@@ -110,7 +110,7 @@ std::string fs_root(std::string_view path)
 }
 
 
-std::string fs_root_name(FFS_MAYBE_UNUSED std::string_view path)
+std::string fs_root_name([[maybe_unused]] std::string_view path)
 {
 
 #ifdef HAVE_CXX_FILESYSTEM

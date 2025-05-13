@@ -319,7 +319,7 @@ std::string fs_shortname(std::string_view in)
 }
 
 
-std::string fs_win32_to_narrow(FFS_MAYBE_UNUSED std::wstring_view w)
+std::string fs_win32_to_narrow([[maybe_unused]] std::wstring_view w)
 {
   std::error_code ec;
 

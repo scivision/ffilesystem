@@ -41,6 +41,8 @@ std::string fs_parent(std::string_view path)
 
   p = fs_drop_slash(fs_trim(drive) + fs_trim(dir));
 #else
+  // https://linux.die.net/man/3/dirname
+  // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dirname.3.html
   char* d = dirname(p.data());
   return d ? d : "";
 #endif

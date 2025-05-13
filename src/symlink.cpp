@@ -20,18 +20,20 @@
 #ifdef HAVE_CXX_FILESYSTEM
 #include <filesystem>
 #else
-#include <sys/types.h> // ssize_t
-#include <sys/stat.h> // stat(), statx()
 
 #if !defined(_WIN32)
 #include <unistd.h> // readlink(), symlink()
 #endif
 
+#endif
+
+
 #if defined(__linux__) && defined(USE_STATX)
 #include <fcntl.h>   // AT_* constants for statx()
 #endif
 
-#endif
+#include <sys/types.h> // ssize_t
+#include <sys/stat.h> // stat(), statx()
 
 
 bool fs_is_symlink(std::string_view path)
@@ -60,6 +62,7 @@ bool fs_is_symlink(std::string_view path)
   if (r == 0) FFS_LIKELY
     return S_ISLNK(sx.stx_mode);
 #endif
+// https://linux.die.net/man/2/lstat
 
   if(r == 0 || errno == ENOSYS){
     if(struct stat s; lstat(path.data(), &s) == 0)
@@ -86,13 +89,34 @@ std::string fs_read_symlink(std::string_view path)
   if(auto p = std::filesystem::read_symlink(path, ec); !ec) FFS_LIKELY
     return p.generic_string();
 #else
-  // https://www.man7.org/linux/man-pages/man2/readlink.2.html
-  std::string r(fs_get_max_path(), '\0');
 
-  if (ssize_t Lr = readlink(path.data(), r.data(), r.size()); Lr > 0){
+  std::size_t L = 0;
+  int r = 0;
+
+#if defined(STATX_SIZE) && defined(USE_STATX)
+  struct statx sx;
+  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_SIZE, &sx);
+  if (r == 0)
+    L = sx.stx_size;
+#endif
+// https://linux.die.net/man/2/lstat
+
+  if(r == 0 || errno == ENOSYS){
+    if(struct stat s; lstat(path.data(), &s) == 0)
+      L = s.st_size;
+  }
+
+  L = (L > 0) ? L + 1 : fs_get_max_path();
+
+  // https://www.man7.org/linux/man-pages/man2/readlink.2.html
+  std::string p;
+  p.resize(L);
+
+  if (ssize_t Lr = readlink(path.data(), p.data(), p.size());
+      Lr == static_cast<ssize_t>(L-1)){
     // readlink() does not null-terminate the result
-    r.resize(Lr);
-    return r;
+    p.resize(Lr);
+    return p;
   }
 #endif
 

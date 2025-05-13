@@ -18,7 +18,7 @@
 
 #include "ffilesystem.h"
 
-FFS_MAYBE_UNUSED constexpr std::size_t DEFAULT_MAX_PATH = 256;
+[[maybe_unused]] constexpr std::size_t DEFAULT_MAX_PATH = 256;
 
 // This function returns the maximum length of a single component in the given path.
 std::string::size_type fs_max_component(std::string_view path)

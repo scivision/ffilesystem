@@ -11,7 +11,7 @@ constexpr int CCP_POSIX_TO_WIN_A = 0;
 #endif
 
 
-static std::string fs_convert_path(std::string_view path, FFS_MAYBE_UNUSED int const what)
+static std::string fs_convert_path(std::string_view path, [[maybe_unused]] int const what)
 {
 #ifdef __CYGWIN__
   const auto L = cygwin_conv_path(what, path.data(), nullptr, 0);
