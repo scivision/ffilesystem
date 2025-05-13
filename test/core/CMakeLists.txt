@@ -93,7 +93,6 @@ safe
 separator
 set_cwd
 space
-stem
 suffix
 system
 utf8
