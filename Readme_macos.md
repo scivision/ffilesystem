@@ -1,6 +1,7 @@
 # macOS Universal binaries
 
-[macOS universal binaries](https://en.wikipedia.org/wiki/Universal_binary) are supported by Ffilesystem.
+[macOS universal binaries](https://en.wikipedia.org/wiki/Universal_binary)
+are supported by Ffilesystem.
 To build a universal binary with CMake:
 
 ```sh

@@ -60,7 +60,7 @@ On Linux, symbol
 [_DEFAULT_SOURCE](https://man7.org/linux/man-pages/man7/feature_test_macros.7.html)
 is defined if needed to enable C standard library functions.
 RAII
-[std::string buffers](https://learn.microsoft.com/en-us/archive/msdn-magazine/2015/july/c-using-stl-strings-at-win32-api-boundaries)
+[std::string buffers](./Readme_memory.md)
 are used internally including at C interfaces to avoid memory leaks.
 
 Inspired by (and benchmarked against)
