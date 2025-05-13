@@ -4,9 +4,12 @@
 
 #if defined(_WIN32)
 #include <winsock2.h>
-#else
-#include <unistd.h>
+#elif __has_include(<sys/utsname.h>)
+#define HAVE_UTSNAME
+#include <sys/utsname.h>
 #endif
+
+#include <system_error>
 
 #include <string>
 
@@ -15,22 +18,31 @@
 
 std::string fs_hostname()
 {
-  std::string name(fs_get_max_path(), '\0');
-  int ret = -1;
+
+  std::error_code ec;
 
 #if defined(_WIN32)
+  // https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-gethostname
+
   if(WSADATA wsaData; !WSAStartup(MAKEWORD(2, 0), &wsaData)){
-    ret = gethostname(name.data(), static_cast<int>(name.size()));
+    std::string name(256, '\0');
+    int r = gethostname(name.data(), static_cast<int>(name.size()));
     WSACleanup();
+
+    if (r == 0)
+      return fs_trim(name);
   }
 
+#elif defined(HAVE_UTSNAME)
+  // gethostname() doesn't dynamically allocate buffers, so use uname(),
+  // which gives the same result.
+
+  if (struct utsname s; uname(&s) == 0)
+    return s.nodename;
 #else
-  ret = gethostname(name.data(), name.size());
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  if (ret == 0)
-    return fs_trim(name);
-
-  fs_print_error(name, __func__);
+  fs_print_error("", __func__, ec);
   return {};
 }

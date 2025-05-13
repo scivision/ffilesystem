@@ -47,8 +47,8 @@ std::string fs_cpu_arch()
   std::error_code ec;
 
 #ifdef HAVE_UTSNAME
-  if (struct utsname buf; uname(&buf) == 0)
-    return buf.machine;
+  if (struct utsname b; uname(&b) == 0)
+    return b.machine;
 #elif defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-system_info
     SYSTEM_INFO si;
