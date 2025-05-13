@@ -71,7 +71,6 @@ env
 equivalent
 exe
 expanduser
-filename
 filesize
 hard_link
 is_char
@@ -85,6 +84,7 @@ owner
 normal
 parent
 permissions
+pure
 remove
 rename
 reserved
@@ -93,7 +93,6 @@ safe
 separator
 set_cwd
 space
-suffix
 system
 utf8
 which
