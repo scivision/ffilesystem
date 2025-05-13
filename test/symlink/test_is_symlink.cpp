@@ -10,9 +10,8 @@ class TestSymlink : public testing::Test {
 
     void SetUp() override {
       std::vector<std::string> argvs = ::testing::internal::GetArgvs();
-      ASSERT_GE(argvs.size(), 3) << "please give test link file and link dir as arguments";
-
-      int argc = argvs.size();
+      auto argc = argvs.size();
+      ASSERT_GE(argc, 3) << "please give test link file and link dir as arguments";
 
       tfile = argvs[argc-2];
       ASSERT_TRUE(fs_is_file(tfile)) << tfile << " is not a file";
