@@ -67,9 +67,14 @@ std::string fs_get_cwd()
   }
 #else
 // unistd.h https://www.man7.org/linux/man-pages/man3/getcwd.3.html
-  if(std::string buf(fs_get_max_path(), '\0');
-      getcwd(buf.data(), buf.size()))  FFS_LIKELY
-    return fs_drop_slash(fs_trim(buf));
+// https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/getcwd.3.html
+
+  if(char* d = getcwd(nullptr, 0); d){
+    std::string r(d);
+    free(d);
+    return fs_drop_slash(r);
+  }
+
 #endif
 
   fs_print_error("", __func__, ec);
