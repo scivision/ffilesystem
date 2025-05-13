@@ -109,6 +109,8 @@ std::string fs_read_symlink(std::string_view path)
   L = (L > 0) ? L + 1 : fs_get_max_path();
 
   // https://www.man7.org/linux/man-pages/man2/readlink.2.html
+  // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/readlink.2.html
+
   std::string p;
   p.resize(L);
 

@@ -80,17 +80,20 @@ std::string fs_resolve(std::string_view path, const bool strict, const bool expa
 
 std::string fs_realpath(std::string_view path)
 {
-  // resolve real path
-  // not well-defined for non-existing path--may return empty string.
+  // resolve real existing path
+  // not defined for non-existing path--may return empty string.
+  // https://man7.org/linux/man-pages/man3/realpath.3.html
+  // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/realpath.3.html
 
 #ifdef _WIN32
   return fs_win32_final_path(path);
 #else
-  std::string r(fs_get_max_path(), '\0');
-
-  return realpath(path.data(), r.data())
-    ? fs_trim(r)
-    : std::string();
+  if(char* r = realpath(path.data(), nullptr); r) {
+    std::string result(r);
+    free(r);
+    return result;
+  }
+  return {};
 #endif
 
 }
