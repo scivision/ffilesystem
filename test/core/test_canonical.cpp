@@ -81,3 +81,13 @@ h = fs_canonical(r, false, true);
 
 EXPECT_THAT(h, ::testing::EndsWith(r));
 }
+
+
+TEST_F(TestCanonical, Realpath)
+{
+EXPECT_EQ(fs_realpath("."), cwd);
+EXPECT_THAT(fs_realpath("not-exist"), ::testing::AnyOf(
+  ::testing::StrEq(""),
+  ::testing::StrEq(cwd + "/not-exist")
+));
+}
