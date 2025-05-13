@@ -24,6 +24,14 @@ class TestNoEnv : public testing::Test {
 };
 
 
+TEST(TestUsername, Username)
+{
+std::string user = fs_get_username();
+EXPECT_FALSE(user.empty());
+std::cout << "Username " << user << "\n";
+}
+
+
 TEST_F(TestEnvironment, Environment)
 {
 
@@ -37,11 +45,6 @@ std::cout << "Profile directory " << pdir << "\n";
 std::string cdir = fs_user_config_dir();
 EXPECT_FALSE(cdir.empty());
 std::cout << "User config directory " << cdir << "\n";
-
-
-std::string user = fs_get_username();
-EXPECT_FALSE(user.empty());
-std::cout << "Username " << user << "\n";
 
 std::string p = fs_get_homedir();
 EXPECT_FALSE(p.empty());
@@ -83,11 +86,6 @@ else
   EXPECT_TRUE(cdir.empty());
 
 std::cout << "User config directory " << cdir << "\n";
-
-
-std::string user = fs_get_username();
-EXPECT_FALSE(user.empty());
-std::cout << "Username " << user << "\n";
 
 std::string p = fs_get_homedir();
 EXPECT_FALSE(p.empty());

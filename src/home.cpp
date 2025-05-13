@@ -131,12 +131,13 @@ std::string fs_get_username()
 #if defined(_WIN32)
 
 // https://learn.microsoft.com/en-us/windows/win32/api/secext/nf-secext-getusernameexa
-  std::string name(fs_get_max_path(), '\0');
-  ULONG L = static_cast<ULONG>(name.size());
 // https://learn.microsoft.com/en-us/windows/win32/api/secext/ne-secext-extended_name_format
-  if(GetUserNameExA(NameSamCompatible, name.data(), &L) != 0){
-    name.resize(L);
-    return name;
+  ULONG L = 0;
+  if (GetUserNameExW(NameSamCompatible, nullptr, &L) == 0 && L > 0) {
+    std::wstring w;
+    w.resize(L);
+    if (GetUserNameExW(NameSamCompatible, w.data(), &L) != 0)
+      return fs_win32_to_narrow(w);
   }
 
 #else
