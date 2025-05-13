@@ -36,6 +36,34 @@
 #include <sys/stat.h> // stat(), statx()
 
 
+std::string::size_type fs_symlink_length([[maybe_unused]] std::string_view path)
+{
+  // get the string length of a symlink target
+  // falls back to maximum path length
+
+  std::string::size_type L = 0;
+
+#if !defined(_WIN32)
+  int r = 0;
+
+#if defined(STATX_SIZE) && defined(USE_STATX)
+  struct statx sx;
+  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_SIZE, &sx);
+  if (r == 0)
+    L = sx.stx_size;
+#endif
+// https://linux.die.net/man/2/lstat
+
+  if(r == 0 || errno == ENOSYS){
+    if(struct stat s; lstat(path.data(), &s) == 0)
+      L = s.st_size;
+  }
+#endif
+
+  return (L > 0) ? L + 1 : fs_get_max_path();
+}
+
+
 bool fs_is_symlink(std::string_view path)
 {
   std::error_code ec;
@@ -90,27 +118,10 @@ std::string fs_read_symlink(std::string_view path)
     return p.generic_string();
 #else
 
-  std::size_t L = 0;
-  int r = 0;
-
-#if defined(STATX_SIZE) && defined(USE_STATX)
-  struct statx sx;
-  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_SIZE, &sx);
-  if (r == 0)
-    L = sx.stx_size;
-#endif
-// https://linux.die.net/man/2/lstat
-
-  if(r == 0 || errno == ENOSYS){
-    if(struct stat s; lstat(path.data(), &s) == 0)
-      L = s.st_size;
-  }
-
-  L = (L > 0) ? L + 1 : fs_get_max_path();
-
   // https://www.man7.org/linux/man-pages/man2/readlink.2.html
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/readlink.2.html
 
+  std::string::size_type L = fs_symlink_length(path);
   std::string p;
   p.resize(L);
 

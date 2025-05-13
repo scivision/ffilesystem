@@ -43,10 +43,13 @@ std::string fs_exe_path()
   }
 #elif defined(__linux__)
   // https://man7.org/linux/man-pages/man2/readlink.2.html
-  std::string path(fs_get_max_path(), '\0');
-  if(ssize_t L = readlink("/proc/self/exe", path.data(), path.size()); L > 0) {
-    path.resize(L);
-    return path;
+  std::string_view exe = "/proc/self/exe";
+  std::string p;
+  p.resize(fs_symlink_length(exe));
+
+  if(ssize_t L = readlink(exe.data(), p.data(), p.size()); L > 0) {
+    p.resize(L);
+    return p;
   }
 #elif defined(__APPLE__) && defined(__MACH__)
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dyld.3.html
