@@ -1,5 +1,8 @@
 #include <string>
 #include <string_view>
+#include <cstring> // for std::strcmp
+
+#include <system_error>
 
 #include "ffilesystem.h"
 
@@ -18,15 +21,15 @@ int fs_is_wsl()
 {
 
 #ifdef HAVE_UTSNAME
-  struct utsname buf;
-  if (uname(&buf) != 0)
+  struct utsname b;
+  if (uname(&b) != 0)
     return -1;
 
-  std::string_view s(buf.sysname);
-  std::string_view r(buf.release);
-
-  if(s != "Linux")
+  if(std::strcmp(b.sysname, "Linux") != 0)
     return 0;
+
+  std::string_view r(b.release);
+
 #ifdef __cpp_lib_starts_ends_with // C++20
   if (r.ends_with("microsoft-standard-WSL2"))
     return 2;
@@ -40,13 +43,12 @@ int fs_is_wsl()
 
 std::string fs_cpu_arch()
 {
+
+  std::error_code ec;
+
 #ifdef HAVE_UTSNAME
-
-  if (struct utsname buf;
-       uname(&buf) == 0)
+  if (struct utsname buf; uname(&buf) == 0)
     return buf.machine;
-
-  fs_print_error("", __func__);
 #elif defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-system_info
     SYSTEM_INFO si;
@@ -66,8 +68,11 @@ std::string fs_cpu_arch()
     default:
         return "unknown";
     }
+#else
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
+  fs_print_error("", __func__, ec);
   return {};
 }
 
@@ -75,6 +80,9 @@ std::string fs_cpu_arch()
 std::string fs_os_version()
 {
 // get operating system version
+
+  std::error_code ec;
+
 #ifdef HAVE_UTSNAME
   if (struct utsname buf; uname(&buf) == 0)
     return buf.version;
@@ -84,8 +92,10 @@ std::string fs_os_version()
   osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
   if(GetVersionExA(&osvi))
     return std::to_string(osvi.dwMajorVersion) + '.' + std::to_string(osvi.dwMinorVersion) + '.' + std::to_string(osvi.dwBuildNumber);
+#else
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error("", __func__);
+  fs_print_error("", __func__, ec);
   return {};
 }
