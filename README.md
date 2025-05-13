@@ -59,9 +59,11 @@ among others.
 On Linux, symbol
 [_DEFAULT_SOURCE](https://man7.org/linux/man-pages/man7/feature_test_macros.7.html)
 is defined if needed to enable C standard library functions.
-RAII
-[std::string buffers](./Readme_memory.md)
-are used internally including at C interfaces to avoid memory leaks.
+RAII std::string buffers are used for all string representations of paths including for C API and system calls, and are automatically freed.
+Ffilesystem
+[std::string buffers](https://learn.microsoft.com/en-us/archive/msdn-magazine/2015/july/c-using-stl-strings-at-win32-api-boundaries)
+are dynamically sized according to the actual path length.
+
 
 Inspired by (and benchmarked against)
 [Python pathlib](https://docs.python.org/3/library/pathlib.html).
