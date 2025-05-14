@@ -1,10 +1,10 @@
 #include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <string>
 #include <iostream>
 #include <cstdlib>
 
-namespace fs = boost::filesystem;
 
 int main()
 {
@@ -13,15 +13,19 @@ int main()
 std::cerr << "This example is for Windows.\n";
 #endif
 
-fs::path p1(R"(C:\a\ball.text)");
-fs::path p2(R"(\\?\C:\a\ball.text)");
-fs::path p3(R"(\\.\C:\a\ball.text)");
+std::string s1 = R"(C:\a\ball.text)";
+std::string s2 = R"(\\?\C:\a\ball.text)";
+std::string s3 = R"(\\.\C:\a\ball.text)";
 
-for (const auto& p : {p1, p2, p3}) {
-    std::cout << "Path: " << p << "\n";
-    std::cout << "  root_name: " << p.root_name() << "\n";
-    std::cout << "  root_path: " << p.root_path() << "\n";
-    std::cout << "  root_directory: " << p.root_directory() << "\n";
+for (const auto& s : {s1, s2, s3}) {
+    boost::filesystem::path bp(s);
+    std::filesystem::path p(s);
+
+    std::cout << "Boost: " << bp << "    std::filesystem: " << p << "\n";
+
+    std::cout << "  root_name: " << bp.root_name() << "    " << p.root_name() << "\n";
+    std::cout << "  root_path: " << bp.root_path() << "    " << p.root_path() << "\n";
+    std::cout << "  root_directory: " << bp.root_directory() << "    " << p.root_directory() << "\n";
     std::cout << "---------------------" << "\n";
 }
 
