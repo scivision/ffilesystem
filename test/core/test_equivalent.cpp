@@ -10,7 +10,7 @@ class TestSame : public testing::Test {
       std::string cwd;
       std::string self_name;
       void SetUp() override {
-        cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
+        cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
         std::vector<std::string> argvs = ::testing::internal::GetArgvs();
         self_name = fs_file_name(argvs[0]);
       }

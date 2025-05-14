@@ -17,10 +17,6 @@ TEST(TestExe, ExePath){
   std::string p = fs_exe_path();
   EXPECT_FALSE(p.empty());
 
-  // TARGET_FILE_NAME to allow for macOS possible non-canonical result or
-  // symlinked / special filesystems like WSL
-  std::string cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
-
   std::vector<std::string> argvs = ::testing::internal::GetArgvs();
 
   std::string n = fs_file_name(p);

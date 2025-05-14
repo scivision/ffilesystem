@@ -5,7 +5,6 @@
 
 class TestWhich : public testing::Test {
   protected:
-    std::string cwd;
     std::string name;
     std::string rel;
     std::string testExe;
@@ -13,8 +12,6 @@ class TestWhich : public testing::Test {
     void SetUp() override {
 
       testExe = fs_is_windows() ? "cmake.exe" : "ls";
-
-      cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
 
       std::vector<std::string> argvs = ::testing::internal::GetArgvs();
       std::string self = argvs[0];
