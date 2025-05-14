@@ -136,8 +136,9 @@ fs_non_ascii(std::string_view name)
 bool
 fs_is_prefix(std::string_view prefix, std::string_view path)
 {
-  // is prefix a prefix of path. Does not normalize, canonicalize, or walk up the directory tree.
-  // ".." is ambiguous and should be avoided in input
+  // Lexicographically, is prefix a prefix of path.
+  // Does not normalize, canonicalize, or walk up the directory tree.
+  // "." or ".." or mix of absolute and relative paths give ambiguous results
 
   if(prefix.empty() || path.empty())
     return false;
@@ -163,8 +164,9 @@ fs_is_prefix(std::string_view prefix, std::string_view path)
 bool
 fs_is_subdir(std::string_view subdir, std::string_view dir)
 {
-  // is subdir a subdirectory of dir. Does not normalize, canonicalize, or walk up the directory tree.
-  // ".." is ambiguous and should be avoided in input
+  // Lexicographically, is subdir a subdirectory of dir.
+  // Does not normalize, canonicalize, or walk up the directory tree.
+  // "." or ".." give ambiguous results
 
   if(subdir.empty() || dir.empty())
     return false;
