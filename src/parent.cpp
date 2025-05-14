@@ -20,7 +20,7 @@ std::string fs_parent(std::string_view path)
 
   std::string p(path);
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
   p = fs_drop_slash(p);
   // have to drop trailing slash to get expected parent path -- necessary for AppleClang
   p = Filesystem::path(p).parent_path().generic_string();
@@ -35,8 +35,9 @@ std::string fs_parent(std::string_view path)
 
 #elif defined(_WIN32)
   p = fs_drop_slash(p);
-  std::string dir(_MAX_DIR, '\0');
-  std::string drive(_MAX_DRIVE, '\0');
+  std::string dir, drive;
+  dir.resize(_MAX_DIR);
+  drive.resize(_MAX_DRIVE);
   if(_splitpath_s(p.data(), drive.data(), _MAX_DRIVE, dir.data(), _MAX_DIR, nullptr, 0, nullptr, 0) != 0)
     return {};
 
