@@ -23,6 +23,16 @@ std::string fs_as_posix(std::string_view path)
   return s;
 }
 
+std::string fs_as_windows(std::string_view path)
+{
+  std::string s(path);
+
+  if(fs_is_windows())
+    std::replace(s.begin(), s.end(), '/', '\\');
+
+  return s;
+}
+
 
 bool
 fs_is_reserved(std::string_view path)

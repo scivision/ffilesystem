@@ -5,7 +5,7 @@
 namespace {
 class TestOnDisk : public testing::Test {
   protected:
-    std::string file, dir, cwd;
+    std::string file, dir, cwd, sys_drive;
     void SetUp() override {
       auto inst = testing::UnitTest::GetInstance();
       auto info = inst->current_test_info();
@@ -16,6 +16,7 @@ class TestOnDisk : public testing::Test {
       std::string n = test_suite_name_ + "-" + test_name_;
 
       cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
+      sys_drive = fs_is_windows() ? fs_getenv("SYSTEMDRIVE") : "/";
 
       file = cwd + "/ffs_" + n + ".txt";
       ASSERT_TRUE(fs_touch(file));
@@ -39,26 +40,45 @@ TEST_F(TestOnDisk, IsDir)
   EXPECT_TRUE(fs_is_dir("."));
   EXPECT_TRUE(fs_is_dir(cwd));
   EXPECT_TRUE(fs_is_dir(dir));
-  EXPECT_TRUE(fs_is_readable("."));
   EXPECT_FALSE(fs_is_dir(file));
   EXPECT_FALSE(fs_is_dir("ffs_is_dir_not-exist-dir"));
 }
 
 
 TEST_F(TestOnDisk, IsFile){
-  EXPECT_TRUE(fs_is_file(file));
-  EXPECT_FALSE(fs_is_exe(file));
-  EXPECT_FALSE(fs_is_file("ffs_is_file_not-exist-file"));
-  EXPECT_FALSE(fs_is_file(""));
-  EXPECT_FALSE(fs_is_file("."));
-  EXPECT_FALSE(fs_is_file(dir));
-  EXPECT_FALSE(fs_is_file(cwd));
+EXPECT_TRUE(fs_is_file(file));
+EXPECT_FALSE(fs_is_exe(file));
+EXPECT_FALSE(fs_is_file("ffs_is_file_not-exist-file"));
+EXPECT_FALSE(fs_is_file(""));
+EXPECT_FALSE(fs_is_file("."));
+EXPECT_FALSE(fs_is_file(dir));
+EXPECT_FALSE(fs_is_file(cwd));
 }
 
+TEST_F(TestOnDisk, IsReadable)
+{
+EXPECT_TRUE(fs_is_readable("."));
+EXPECT_TRUE(fs_is_readable(file));
+EXPECT_TRUE(fs_is_readable(dir));
 
-TEST_F(TestOnDisk, IsReadable){
-  EXPECT_TRUE(fs_is_readable(file));
-  EXPECT_TRUE(fs_is_readable(dir));
+if(fs_is_windows()){
+  EXPECT_TRUE(fs_is_readable(sys_drive));
+  EXPECT_TRUE(fs_is_readable(R"(\\?\)" + sys_drive + "\\"));
+}
+
+EXPECT_TRUE(fs_is_readable("/"));
+}
+
+TEST_F(TestOnDisk, IsWritable)
+{
+EXPECT_TRUE(fs_is_writable(file));
+EXPECT_TRUE(fs_is_writable(dir));
+
+if(fs_is_windows()){
+  std::string s = fs_as_windows(R"(\\?\)" + fs_canonical(file));
+  EXPECT_TRUE(fs_is_writable(s)) << s;
+}
+
 }
 
 
@@ -112,8 +132,8 @@ EXPECT_FALSE(fs_set_modtime("not-exist-file"));
 
 }
 
-TEST(TestType, FilesystemType){
-  std::string t = fs_filesystem_type(fs_is_windows() ? fs_getenv("SYSTEMDRIVE") : "/");
+TEST_F(TestOnDisk, FilesystemType){
+  std::string t = fs_filesystem_type(sys_drive);
 
   if (t.empty())
       GTEST_SKIP() << "Unknown filesystem type, see type ID in stderr to update fs_get_type()";
