@@ -1,5 +1,6 @@
 #if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #else
 
 #include <cstdio> // for std::remove, std::rename
@@ -23,9 +24,9 @@ fs_remove(std::string_view path)
   // remove a file or empty directory
   std::error_code ec;
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
   // https://en.cppreference.com/w/cpp/filesystem/remove
-  if(std::filesystem::remove(path, ec) && !ec) FFS_LIKELY
+  if(Filesystem::remove(path, ec) && !ec) FFS_LIKELY
     return true;
 #else
   // https://en.cppreference.com/w/cpp/io/c/remove
@@ -63,10 +64,9 @@ fs_rename(std::string_view from, std::string_view to)
 
   std::error_code ec;
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
   // https://en.cppreference.com/w/cpp/filesystem/rename
-  std::filesystem::rename(from, to, ec);
-  if(!ec)
+  if(Filesystem::rename(from, to, ec); !ec)
 #else
   // https://en.cppreference.com/w/cpp/io/c/rename
   if(std::rename(from.data(), to.data()) == 0)

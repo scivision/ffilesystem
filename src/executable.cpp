@@ -13,6 +13,7 @@
 #include <Windows.h>
 #elif defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #else
 #include <unistd.h>  // X_OK, access()
 #endif
@@ -116,16 +117,16 @@ bool fs_is_exe(std::string_view path)
 #elif defined(HAVE_CXX_FILESYSTEM)
 
 #if defined(__cpp_using_enum)  // C++20
-  using enum std::filesystem::perms;
+  using enum Filesystem::perms;
 #else
-  constexpr std::filesystem::perms none = std::filesystem::perms::none;
-  constexpr std::filesystem::perms others_exec = std::filesystem::perms::others_exec;
-  constexpr std::filesystem::perms group_exec = std::filesystem::perms::group_exec;
-  constexpr std::filesystem::perms owner_exec = std::filesystem::perms::owner_exec;
+  constexpr Filesystem::perms none = Filesystem::perms::none;
+  constexpr Filesystem::perms others_exec = Filesystem::perms::others_exec;
+  constexpr Filesystem::perms group_exec = Filesystem::perms::group_exec;
+  constexpr Filesystem::perms owner_exec = Filesystem::perms::owner_exec;
 #endif
 
   std::error_code ec;
-  const auto s = std::filesystem::status(path, ec);
+  const auto s = Filesystem::status(path, ec);
   if(ec){
     fs_print_error(path, __func__, ec);
     return false;

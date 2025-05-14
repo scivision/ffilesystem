@@ -4,8 +4,9 @@
 #include <system_error>
 #include <cstring>
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #elif defined(_WIN32)
 #include <cstdlib> // _splitpath_s, _MAX_DRIVE
 #endif
@@ -56,7 +57,7 @@ bool fs_is_absolute(std::string_view path)
 
 #if defined(HAVE_CXX_FILESYSTEM) && !defined(__MINGW32__)
   // MinGW GCC <filesystem> .is_absolute doesn't handle UNC paths at least through GCC 15.1
-  return std::filesystem::path(path).is_absolute();
+  return Filesystem::path(path).is_absolute();
 #else
   if(fs_is_windows()) {
     if(path.length() < 3)
@@ -82,7 +83,7 @@ bool fs_is_absolute(std::string_view path)
 std::string fs_file_name(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
-  return std::filesystem::path(path).filename().generic_string();
+  return Filesystem::path(path).filename().generic_string();
 #else
 
   const auto i = path.find_last_of(fs_is_windows() ? "/\\" : "/");
@@ -99,7 +100,7 @@ std::string fs_root(std::string_view path)
   // root_path = root_name / root_directory
 
 #ifdef HAVE_CXX_FILESYSTEM
-  return std::filesystem::path(path).root_path().generic_string();
+  return Filesystem::path(path).root_path().generic_string();
 #else
   if (std::string r = fs_root_name(path);
        r.empty())
@@ -114,7 +115,7 @@ std::string fs_root_name([[maybe_unused]] std::string_view path)
 {
 
 #ifdef HAVE_CXX_FILESYSTEM
-  return std::filesystem::path(path).root_name().string();
+  return Filesystem::path(path).root_name().string();
 #elif defined(_WIN32)
   char drive[_MAX_DRIVE];
 // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/splitpath-s-wsplitpath-s
@@ -128,7 +129,7 @@ std::string fs_root_name([[maybe_unused]] std::string_view path)
 std::string fs_stem(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
-  return std::filesystem::path(path).filename().stem().generic_string();
+  return Filesystem::path(path).filename().stem().generic_string();
 #else
   std::string r = fs_file_name(path);
   // handle special case a/..
@@ -148,7 +149,7 @@ std::string fs_stem(std::string_view path)
 std::string fs_suffix(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
-  return std::filesystem::path(path).filename().extension().generic_string();
+  return Filesystem::path(path).filename().extension().generic_string();
 #else
   const std::string p = fs_file_name(path);
   // find last dot
@@ -172,7 +173,7 @@ std::string fs_join(std::string_view path, std::string_view other)
     return std::string(path);
 
 #ifdef HAVE_CXX_FILESYSTEM
-  return (std::filesystem::path(path) / other).generic_string();
+  return (Filesystem::path(path) / other).generic_string();
 #else
   if (other.front() == '/' || (fs_is_windows() && fs_is_absolute(other)))
     return std::string(other);
@@ -195,7 +196,7 @@ std::string fs_with_suffix(std::string_view path, std::string_view new_suffix)
     return fs_join(path, new_suffix);
 
 #ifdef HAVE_CXX_FILESYSTEM
-  return std::filesystem::path(path).replace_extension(new_suffix).generic_string();
+  return Filesystem::path(path).replace_extension(new_suffix).generic_string();
 #else
   std::string const p = fs_parent(path);
 
@@ -218,7 +219,7 @@ std::string fs_with_suffix(std::string_view path, std::string_view new_suffix)
 
 std::string fs_lexically_normal(std::string_view path){
 #ifdef HAVE_CXX_FILESYSTEM
-  return std::filesystem::path(path).lexically_normal().generic_string();
+  return Filesystem::path(path).lexically_normal().generic_string();
 #else
   fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
   return {};
@@ -228,7 +229,7 @@ std::string fs_lexically_normal(std::string_view path){
 
 std::string fs_make_preferred(std::string_view path){
 #ifdef HAVE_CXX_FILESYSTEM
-  return std::filesystem::path(path).make_preferred().generic_string();
+  return Filesystem::path(path).make_preferred().generic_string();
 #else
   fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
   return {};

@@ -22,6 +22,7 @@
 
 #if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #elif !defined(_WIN32)
 #include <unistd.h>
 #endif
@@ -148,7 +149,7 @@ fs_exists(std::string_view path)
   bool ok;
 #if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
-  ok = (std::filesystem::exists(path, ec) && !ec) ||
+  ok = (Filesystem::exists(path, ec) && !ec) ||
         (fs_is_msvc() && fs_is_appexec_alias(path));
 #elif defined(_WIN32)
   WIN32_FILE_ATTRIBUTE_DATA fad;
@@ -172,7 +173,7 @@ fs_is_dir(std::string_view path)
 #if defined(HAVE_CXX_FILESYSTEM)
 // NOTE: Windows top-level drive "C:" needs a trailing slash "C:/"
   std::error_code ec;
-  ok = std::filesystem::is_directory(path, ec) && !ec;
+  ok = Filesystem::is_directory(path, ec) && !ec;
 #elif defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesexa
   WIN32_FILE_ATTRIBUTE_DATA fad;
@@ -199,7 +200,7 @@ fs_is_file(std::string_view path)
   bool ok;
 #if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
-  ok = (std::filesystem::is_regular_file(path, ec) && !ec) ||
+  ok = (Filesystem::is_regular_file(path, ec) && !ec) ||
         (fs_is_msvc() && fs_is_appexec_alias(path));
 #elif defined(_WIN32)
   ok = fs_win32_is_type(path, FILE_TYPE_DISK) || fs_is_appexec_alias(path);
@@ -221,7 +222,7 @@ fs_is_fifo(std::string_view path)
   ok = fs_win32_is_type(path, FILE_TYPE_PIPE);
 #elif defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
-  ok = std::filesystem::is_fifo(path, ec) && !ec;
+  ok = Filesystem::is_fifo(path, ec) && !ec;
 #else
   ok = S_ISFIFO(fs_st_mode(path));
 #endif
@@ -240,7 +241,7 @@ bool fs_is_char_device(std::string_view path)
   ok = fs_win32_is_type(path, FILE_TYPE_CHAR);
 #elif defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
-  ok = std::filesystem::is_character_file(path, ec) && !ec;
+  ok = Filesystem::is_character_file(path, ec) && !ec;
 #else
   // Windows: https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/fstat-fstat32-fstat64-fstati64-fstat32i64-fstat64i32
   ok = S_ISCHR(fs_st_mode(path));
@@ -274,18 +275,18 @@ bool fs_is_readable(std::string_view path)
 #elif defined(HAVE_CXX_FILESYSTEM)
 
   std::error_code ec;
-  const auto s = std::filesystem::status(path, ec);
+  const auto s = Filesystem::status(path, ec);
 
-  if(ec || !std::filesystem::exists(s))
+  if(ec || !Filesystem::exists(s))
     return false;
 
 #if defined(__cpp_using_enum)  // C++20
-  using enum std::filesystem::perms;
+  using enum Filesystem::perms;
 #else
-  constexpr std::filesystem::perms none = std::filesystem::perms::none;
-  constexpr std::filesystem::perms owner_read = std::filesystem::perms::owner_read;
-  constexpr std::filesystem::perms group_read = std::filesystem::perms::group_read;
-  constexpr std::filesystem::perms others_read = std::filesystem::perms::others_read;
+  constexpr Filesystem::perms none = Filesystem::perms::none;
+  constexpr Filesystem::perms owner_read = Filesystem::perms::owner_read;
+  constexpr Filesystem::perms group_read = Filesystem::perms::group_read;
+  constexpr Filesystem::perms others_read = Filesystem::perms::others_read;
 #endif
 
   return (s.permissions() & (owner_read | group_read | others_read)) != none;
@@ -303,18 +304,18 @@ bool fs_is_writable(std::string_view path)
 
 #if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
-  const auto s = std::filesystem::status(path, ec);
+  const auto s = Filesystem::status(path, ec);
 
-  if(ec || !std::filesystem::exists(s))
+  if(ec || !Filesystem::exists(s))
     return false;
 
 #if defined(__cpp_using_enum)  // C++20
-  using enum std::filesystem::perms;
+  using enum Filesystem::perms;
 #else
-  constexpr std::filesystem::perms owner_write = std::filesystem::perms::owner_write;
-  constexpr std::filesystem::perms group_write = std::filesystem::perms::group_write;
-  constexpr std::filesystem::perms others_write = std::filesystem::perms::others_write;
-  constexpr std::filesystem::perms none = std::filesystem::perms::none;
+  constexpr Filesystem::perms owner_write = Filesystem::perms::owner_write;
+  constexpr Filesystem::perms group_write = Filesystem::perms::group_write;
+  constexpr Filesystem::perms others_write = Filesystem::perms::others_write;
+  constexpr Filesystem::perms none = Filesystem::perms::none;
 #endif
 
   return (s.permissions() & (owner_write | group_write | others_write)) != none;
@@ -333,7 +334,7 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 
 #if defined(HAVE_CXX_FILESYSTEM)
 
-  auto s = std::filesystem::hard_link_count(path, ec);
+  auto s = Filesystem::hard_link_count(path, ec);
   if(ec)
     fs_print_error(path, __func__, ec);
 

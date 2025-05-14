@@ -24,8 +24,9 @@
 
 #include <string_view>
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #elif defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -68,11 +69,11 @@ std::time_t fs_get_modtime(std::string_view path)
 
 
 #ifdef HAVE_CXX_FILESYSTEM
-std::optional<std::filesystem::file_time_type> fs_get_modtime_fs(std::string_view path)
+std::optional<Filesystem::file_time_type> fs_get_modtime_fs(std::string_view path)
 {
   std::error_code ec;
 
-  if(std::filesystem::file_time_type t_fs = std::filesystem::last_write_time(path, ec); !ec) FFS_LIKELY
+  if(Filesystem::file_time_type t_fs = Filesystem::last_write_time(path, ec); !ec) FFS_LIKELY
     return t_fs;
 
   fs_print_error(path, __func__, ec);
@@ -88,8 +89,7 @@ bool fs_set_modtime(std::string_view path, const bool quiet)
 
 #ifdef HAVE_CXX_FILESYSTEM
 
-  std::filesystem::last_write_time(path, std::filesystem::file_time_type::clock::now(), ec);
-  if(!ec) FFS_LIKELY
+  if(Filesystem::last_write_time(path, Filesystem::file_time_type::clock::now(), ec); !ec)
     return true;
   // techinically IWYU <chrono> but that can break some compilers, and it works without the include.
 

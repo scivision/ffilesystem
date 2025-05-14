@@ -5,8 +5,9 @@
 
 #include <system_error>
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #else
 #include <sys/types.h>
 #include <sys/stat.h> // chmod, permissions constants
@@ -26,11 +27,11 @@ bool fs_set_permissions(std::string_view path, int readable, int writable, int e
 #ifdef HAVE_CXX_FILESYSTEM
 
 #if defined(__cpp_using_enum)  // C++20
-  using enum std::filesystem::perms;
+  using enum Filesystem::perms;
 #else
-  constexpr std::filesystem::perms owner_read = std::filesystem::perms::owner_read;
-  constexpr std::filesystem::perms owner_write = std::filesystem::perms::owner_write;
-  constexpr std::filesystem::perms owner_exec = std::filesystem::perms::owner_exec;
+  constexpr Filesystem::perms owner_read = Filesystem::perms::owner_read;
+  constexpr Filesystem::perms owner_write = Filesystem::perms::owner_write;
+  constexpr Filesystem::perms owner_exec = Filesystem::perms::owner_exec;
 #endif
 
   std::error_code ec;
@@ -39,18 +40,18 @@ bool fs_set_permissions(std::string_view path, int readable, int writable, int e
     ec = std::make_error_code(std::errc::no_such_file_or_directory);
 
   if (!ec && readable != 0)
-    std::filesystem::permissions(path, owner_read,
-      (readable > 0) ? std::filesystem::perm_options::add : std::filesystem::perm_options::remove,
+    Filesystem::permissions(path, owner_read,
+      (readable > 0) ? Filesystem::perm_options::add : Filesystem::perm_options::remove,
       ec);
 
   if (!ec && writable != 0)
-    std::filesystem::permissions(path, owner_write,
-      (writable > 0) ? std::filesystem::perm_options::add : std::filesystem::perm_options::remove,
+    Filesystem::permissions(path, owner_write,
+      (writable > 0) ? Filesystem::perm_options::add : Filesystem::perm_options::remove,
       ec);
 
   if (!ec && executable != 0)
-    std::filesystem::permissions(path, owner_exec,
-      (executable > 0) ? std::filesystem::perm_options::add : std::filesystem::perm_options::remove,
+    Filesystem::permissions(path, owner_exec,
+      (executable > 0) ? Filesystem::perm_options::add : Filesystem::perm_options::remove,
       ec);
 
   if(!ec) FFS_LIKELY
@@ -104,28 +105,28 @@ std::string fs_get_permissions(std::string_view path)
 
 #ifdef HAVE_CXX_FILESYSTEM
   std::error_code ec;
-  const auto s = std::filesystem::status(path, ec);
+  const auto s = Filesystem::status(path, ec);
   if(ec)  FFS_UNLIKELY
   {
     fs_print_error(path, __func__, ec);
     return {};
   }
 
-  const std::filesystem::perms p = s.permissions();
+  const Filesystem::perms p = s.permissions();
 
 #if defined(__cpp_using_enum)  // C++20
-  using enum std::filesystem::perms;
+  using enum Filesystem::perms;
 #else
-  constexpr std::filesystem::perms none = std::filesystem::perms::none;
-  constexpr std::filesystem::perms owner_read = std::filesystem::perms::owner_read;
-  constexpr std::filesystem::perms owner_write = std::filesystem::perms::owner_write;
-  constexpr std::filesystem::perms owner_exec = std::filesystem::perms::owner_exec;
-  constexpr std::filesystem::perms group_read = std::filesystem::perms::group_read;
-  constexpr std::filesystem::perms group_write = std::filesystem::perms::group_write;
-  constexpr std::filesystem::perms group_exec = std::filesystem::perms::group_exec;
-  constexpr std::filesystem::perms others_read = std::filesystem::perms::others_read;
-  constexpr std::filesystem::perms others_write = std::filesystem::perms::others_write;
-  constexpr std::filesystem::perms others_exec = std::filesystem::perms::others_exec;
+  constexpr Filesystem::perms none = Filesystem::perms::none;
+  constexpr Filesystem::perms owner_read = Filesystem::perms::owner_read;
+  constexpr Filesystem::perms owner_write = Filesystem::perms::owner_write;
+  constexpr Filesystem::perms owner_exec = Filesystem::perms::owner_exec;
+  constexpr Filesystem::perms group_read = Filesystem::perms::group_read;
+  constexpr Filesystem::perms group_write = Filesystem::perms::group_write;
+  constexpr Filesystem::perms group_exec = Filesystem::perms::group_exec;
+  constexpr Filesystem::perms others_read = Filesystem::perms::others_read;
+  constexpr Filesystem::perms others_write = Filesystem::perms::others_write;
+  constexpr Filesystem::perms others_exec = Filesystem::perms::others_exec;
 #endif
 
   if ((p & owner_read) != none)

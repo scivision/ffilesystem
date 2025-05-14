@@ -1,5 +1,6 @@
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #endif
 
 #include <string>
@@ -21,8 +22,7 @@ std::string fs_get_tempdir()
   std::error_code ec;
 
 #ifdef HAVE_CXX_FILESYSTEM
-  auto p = std::filesystem::temp_directory_path(ec);
-  if(!ec && !p.empty()) FFS_LIKELY
+  if(auto p = Filesystem::temp_directory_path(ec); !ec && !p.empty())
     return p.generic_string();
 #endif
 

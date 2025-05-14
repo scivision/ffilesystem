@@ -8,8 +8,9 @@
 #include <system_error>
 #include <iostream>  // IWYU pragma: keep
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #else
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -38,8 +39,7 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
     p2 = fs_canonical(p2, true, false);
   }
 
-  bool e = std::filesystem::equivalent(p1, p2, ec);
-  if(!ec)
+  if(bool e = Filesystem::equivalent(p1, p2, ec); !ec)
     return e;
 
 #else

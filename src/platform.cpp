@@ -4,8 +4,9 @@
 
 #include "ffilesystem.h"
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #endif
 
 #include <string>
@@ -28,9 +29,8 @@ bool fs_set_cwd(std::string_view path)
 
   std::error_code ec;
 
-#ifdef HAVE_CXX_FILESYSTEM
-  std::filesystem::current_path(path, ec);
-  if(!ec)
+#if defined(HAVE_CXX_FILESYSTEM)
+  if(Filesystem::current_path(path, ec); !ec)
     return true;
 #elif defined(_WIN32)
   // windows.h https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setcurrentdirectoryw
@@ -52,8 +52,8 @@ std::string fs_get_cwd()
   // does not have trailing slash
   std::error_code ec;
 
-#ifdef HAVE_CXX_FILESYSTEM
-  if(auto s = std::filesystem::current_path(ec); !ec) FFS_LIKELY
+#if defined(HAVE_CXX_FILESYSTEM)
+  if(auto s = Filesystem::current_path(ec); !ec) FFS_LIKELY
     return s.generic_string();
 #elif defined(_WIN32)
 // windows.h https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcurrentdirectory

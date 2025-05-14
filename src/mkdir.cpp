@@ -7,8 +7,9 @@
 #include <system_error>         // for error_code
 #include <vector>  // IWYU pragma: keep
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #else
 #include <cerrno>
 #include <sys/types.h>
@@ -32,7 +33,7 @@ bool fs_mkdir(std::string_view path)
 
 #ifdef HAVE_CXX_FILESYSTEM
   // https://en.cppreference.com/w/cpp/filesystem/create_directory
-  std::filesystem::create_directories(path, ec);
+  Filesystem::create_directories(path, ec);
   // we don't use the return value as it indicates if a directory was created or not.
   if (!ec) FFS_LIKELY
     return true;

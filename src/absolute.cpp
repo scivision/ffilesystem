@@ -1,9 +1,10 @@
 #include <string>
 #include <string_view>
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
 #include <system_error>
+namespace Filesystem = std::filesystem;
 #endif
 
 #include "ffilesystem.h"
@@ -33,7 +34,7 @@ std::string fs_absolute(std::string_view path, const bool expand_tilde)
 #ifdef HAVE_CXX_FILESYSTEM
   std::error_code ec;
 
-  if(auto a = std::filesystem::absolute(ex, ec); !ec)
+  if(auto a = Filesystem::absolute(ex, ec); !ec)
     return a.generic_string();
 
   fs_print_error(path, __func__, ec);

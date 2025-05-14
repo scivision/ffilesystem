@@ -6,8 +6,9 @@
 #include <string_view>
 
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #else
 #include <string>
 #ifdef _WIN32
@@ -28,8 +29,8 @@ std::uintmax_t fs_space_available(std::string_view path)
 
   std::error_code ec;
 
-#ifdef HAVE_CXX_FILESYSTEM
-  auto s = std::filesystem::space(path, ec);
+#if defined(HAVE_CXX_FILESYSTEM)
+  auto s = Filesystem::space(path, ec);
   if (ec)
     fs_print_error(path, __func__, ec);
 
@@ -62,8 +63,8 @@ std::uintmax_t fs_space_capacity(std::string_view path)
 
   std::error_code ec;
 
-#ifdef HAVE_CXX_FILESYSTEM
-  auto s = std::filesystem::space(path, ec);
+#if defined(HAVE_CXX_FILESYSTEM)
+  auto s = Filesystem::space(path, ec);
   if (ec)
     fs_print_error(path, __func__, ec);
 

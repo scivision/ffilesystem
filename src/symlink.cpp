@@ -17,8 +17,9 @@
 #include <system_error>
 
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #else
 
 #if !defined(_WIN32)
@@ -74,7 +75,7 @@ bool fs_is_symlink(std::string_view path)
 // std::filesystem::symlink_status or std::filesystem::is_symlink
 // don't detect symlinks on MinGW
 
-  if(bool is_sym = std::filesystem::is_symlink(path, ec); !ec)
+  if(bool is_sym = Filesystem::is_symlink(path, ec); !ec)
     return is_sym;
 #else
 
@@ -114,7 +115,7 @@ std::string fs_read_symlink(std::string_view path)
   if(fs_is_symlink(path))
     return fs_win32_final_path(path);
 #elif defined(HAVE_CXX_FILESYSTEM)
-  if(auto p = std::filesystem::read_symlink(path, ec); !ec) FFS_LIKELY
+  if(auto p = Filesystem::read_symlink(path, ec); !ec) FFS_LIKELY
     return p.generic_string();
 #else
 
@@ -162,11 +163,7 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
 
 #elif defined(HAVE_CXX_FILESYSTEM)
 
-  fs_is_dir(target)
-    ? std::filesystem::create_directory_symlink(target, link, ec)
-    : std::filesystem::create_symlink(target, link, ec);
-
-  if(!ec)
+  if(fs_is_dir(target) ? Filesystem::create_directory_symlink(target, link, ec) : Filesystem::create_symlink(target, link, ec); !ec)
     return true;
 
 #else

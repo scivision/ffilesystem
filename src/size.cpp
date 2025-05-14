@@ -9,8 +9,9 @@
 
 #include <cstdint>  // uintmax_t
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #else
 #include <iostream>
 
@@ -34,9 +35,9 @@
 std::uintmax_t fs_file_size(std::string_view path)
 {
   std::error_code ec;
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 
-  auto s = std::filesystem::file_size(path, ec);
+  auto s = Filesystem::file_size(path, ec);
   if (ec)
     fs_print_error(path, __func__, ec);
 
@@ -86,8 +87,8 @@ bool fs_is_empty(std::string_view path)
 
   std::error_code ec;
 
-#ifdef HAVE_CXX_FILESYSTEM
-  if (bool e = std::filesystem::is_empty(path, ec); !ec)  FFS_LIKELY
+#if defined(HAVE_CXX_FILESYSTEM)
+  if (bool e = Filesystem::is_empty(path, ec); !ec)  FFS_LIKELY
     return e;
 #else
 

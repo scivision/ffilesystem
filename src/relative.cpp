@@ -5,8 +5,9 @@
 
 #include <system_error>
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #endif
 
 
@@ -18,7 +19,7 @@ std::string fs_relative_to(std::string_view base, std::string_view other)
   std::error_code ec;
 
 #ifdef HAVE_CXX_FILESYSTEM
-  if(std::string r = std::filesystem::relative(other, base, ec).generic_string(); !ec)
+  if(std::string r = Filesystem::relative(other, base, ec).generic_string(); !ec)
     return r;
   // this implements
   // std::filesystem::weakly_canonical(other, ec).lexically_relative(std::filesystem::weakly_canonical(base, ec)).generic_string();
@@ -39,7 +40,7 @@ std::string fs_proximate_to(std::string_view base, std::string_view other)
   std::error_code ec;
 
 #ifdef HAVE_CXX_FILESYSTEM
-  if(std::string r = std::filesystem::proximate(other, base, ec).generic_string(); !ec)
+  if(std::string r = Filesystem::proximate(other, base, ec).generic_string(); !ec)
     return r;
 #else
    ec = std::make_error_code(std::errc::function_not_supported);

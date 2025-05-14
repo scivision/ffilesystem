@@ -5,8 +5,9 @@
 
 #include <iostream>
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #elif defined(_WIN32)
 #include <cstdlib> // _splitpath_s, _MAX_*
 #else
@@ -22,7 +23,7 @@ std::string fs_parent(std::string_view path)
 #ifdef HAVE_CXX_FILESYSTEM
   p = fs_drop_slash(p);
   // have to drop trailing slash to get expected parent path -- necessary for AppleClang
-  p = std::filesystem::path(p).parent_path().generic_string();
+  p = Filesystem::path(p).parent_path().generic_string();
 
   if(fs_trace) std::cout << "TRACE:parent(" << path << ") => " << p << "\n";
 

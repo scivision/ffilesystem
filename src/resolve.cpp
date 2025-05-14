@@ -8,8 +8,9 @@
 #include <string_view>
 #include <system_error>
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #endif
 
 #if !defined(_WIN32)
@@ -36,16 +37,12 @@ fs_canonical(
 
   std::error_code ec;
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 
   if (fs_is_mingw() && fs_is_symlink(ex))
     return fs_win32_final_path(ex);
 
-  const auto c = strict
-    ? std::filesystem::canonical(ex, ec)
-    : std::filesystem::weakly_canonical(ex, ec);
-
-  if(!ec) FFS_LIKELY
+  if(auto c = strict ? Filesystem::canonical(ex, ec) : Filesystem::weakly_canonical(ex, ec); !ec)
     return c.generic_string();
 
 #else

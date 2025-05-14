@@ -21,8 +21,9 @@
 #include <format> // IWYU pragma: keep
 #endif
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #endif
 
 #ifdef _MSC_VER
@@ -238,20 +239,20 @@ static bool one_arg(std::string_view fun, std::string_view a1)
       std::cerr << "ERROR get_cwd() before chdir\n";
     }
   } else if (fun == "ls") {
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
     std::error_code ec;
     for (auto const& dir_entry :
-         std::filesystem::directory_iterator{a1,
-          std::filesystem::directory_options::skip_permission_denied, ec}){
+         Filesystem::directory_iterator{a1,
+          Filesystem::directory_options::skip_permission_denied, ec}){
 
       if(ec)
         std::cerr << "ERROR: " << ec.message() << " " << ec.value() << "\n";
 
-      std::filesystem::path p = dir_entry.path();
+      Filesystem::path p = dir_entry.path();
       std::cout << p;
 
-      if (std::filesystem::is_regular_file(p, ec)){
-        if (const auto &s = std::filesystem::file_size(p, ec); s && !ec)
+      if (Filesystem::is_regular_file(p, ec)){
+        if (const auto &s = Filesystem::file_size(p, ec); s && !ec)
           std::cout << " " << s;
       }
 

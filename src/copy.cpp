@@ -17,8 +17,9 @@
 
 #include <string_view>
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
+namespace Filesystem = std::filesystem;
 #else
 
 #include <cstdlib>
@@ -142,15 +143,15 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
   std::error_code ec;
 
 #ifdef HAVE_CXX_FILESYSTEM
-  auto opt = std::filesystem::copy_options::none;
+  auto opt = Filesystem::copy_options::none;
   if (overwrite)
-    opt = std::filesystem::copy_options::overwrite_existing;
+    opt = Filesystem::copy_options::overwrite_existing;
 // WORKAROUND: Windows MinGW GCC 11..13, Intel oneAPI Linux: bug with overwrite_existing failing on overwrite
 
   if(overwrite && fs_is_file(dest) && !fs_remove(dest)) FFS_UNLIKELY
     fs_print_error(dest, __func__, std::make_error_code(std::errc::io_error));
 
-  if(std::filesystem::copy_file(source, dest, opt, ec) && !ec) FFS_LIKELY
+  if(Filesystem::copy_file(source, dest, opt, ec) && !ec) FFS_LIKELY
     return true;
 
 #elif defined(_WIN32)
