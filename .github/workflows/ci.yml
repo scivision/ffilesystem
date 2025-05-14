@@ -119,10 +119,6 @@ jobs:
         gcc-version: [8]
         shared: [false]
         cpp: [true, false]
-        include:
-        - gcc-version: 7
-          shared: false
-          cpp: false
 
     env:
       CC: gcc-${{ matrix.gcc-version }}
