@@ -188,7 +188,7 @@ std::string fs_win32_full_name(std::string_view path)
 
   std::error_code ec;
 
-#ifdef _WIN32
+#if defined(_WIN32)
   std::wstring const w = fs_win32_to_wide(path);
 
   auto const L = GetFullPathNameW(w.data(), 0, nullptr, nullptr);

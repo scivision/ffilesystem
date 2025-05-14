@@ -1,10 +1,10 @@
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>  // GetTokenInformation
-#include <io.h> // _isatty
+#if defined(_WIN32)
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>  // GetTokenInformation
+# include <io.h> // _isatty
 #else
-#include <unistd.h>  // geteuid, getpid, isatty
-#include <sys/types.h>  // IWYU pragma: keep
+# include <unistd.h>  // geteuid, getpid, isatty
+# include <sys/types.h>  // IWYU pragma: keep
 // geteuid, pid_t
 #endif
 
@@ -17,7 +17,7 @@
 
 bool fs_is_admin(){
   // running as admin / root / superuser
-#ifdef _WIN32
+#if defined(_WIN32)
 	HANDLE h = nullptr;
 	TOKEN_ELEVATION elevation;
 	DWORD dwSize;
@@ -38,7 +38,7 @@ bool fs_is_admin(){
 
 int fs_getpid()
 {
-#ifdef _WIN32
+#if defined(_WIN32)
   return static_cast<int>(GetCurrentProcessId());
 #else
   return static_cast<int>(getpid());
@@ -50,7 +50,7 @@ bool fs_stdin_tty()
 {
 // detect if stdin is connected to a terminal
   return
-#ifdef _WIN32
+#if defined(_WIN32)
     _isatty(_fileno(stdin));
 #else
     isatty(fileno(stdin));
@@ -60,7 +60,7 @@ bool fs_stdin_tty()
 
 std::string fs_get_terminal()
 {
-#ifdef _WIN32
+#if defined(_WIN32)
   std::string name(fs_get_max_path(), '\0');
   // inspired by https://gitlab.kitware.com/utils/kwsys/-/commit/0d6eac1feb8615fe59e8f972d41d1eaa8bc9baf8
   // Windows Console Host: ConsoleWindowClass

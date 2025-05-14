@@ -32,7 +32,7 @@ fs_remove(std::string_view path)
   if(std::remove(path.data()) == 0)
     return true;
 
-#ifdef _WIN32
+#if defined(_WIN32)
   // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-deletefilea
   // may need these when deleting a symlink
   // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsymboliclinka#remarks

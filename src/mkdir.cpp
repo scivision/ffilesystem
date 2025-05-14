@@ -60,7 +60,7 @@ else {
     buf.append(p).push_back('/');
     if(fs_trace) std::cout << "TRACE:mkdir " << buf << "\n";
     // create directory
-#ifdef _WIN32
+#if defined(_WIN32)
     // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createdirectoryw
     ok = CreateDirectoryW(fs_win32_to_wide(buf).data(), nullptr) != 0;
     if(!ok){

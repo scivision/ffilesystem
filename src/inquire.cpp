@@ -261,7 +261,8 @@ bool fs_is_other(std::string_view path)
 
 bool fs_is_readable(std::string_view path)
 {
-  // is directory or file readable by the user
+  // is path readable by the user
+  // does not guarantee that the path can be opened (for example, it may be locked)
 
 #if defined(_WIN32)
   // MSVC / MinGW ::perms doesn't detect App Execution Aliases readability
@@ -297,7 +298,9 @@ bool fs_is_readable(std::string_view path)
 
 bool fs_is_writable(std::string_view path)
 {
-  // directory or file writable
+  // is path writable by the user
+  // does not guarantee that the path can be opened (for example, it may be locked)
+
 #if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
   const auto s = std::filesystem::status(path, ec);

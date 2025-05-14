@@ -9,7 +9,7 @@
 
 
 // get_profile_dir
-#ifdef _WIN32
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #ifndef SECURITY_WIN32
 #define SECURITY_WIN32

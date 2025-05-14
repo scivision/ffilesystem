@@ -85,7 +85,7 @@ std::string fs_realpath(std::string_view path)
   // https://man7.org/linux/man-pages/man3/realpath.3.html
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/realpath.3.html
 
-#ifdef _WIN32
+#if defined(_WIN32)
   return fs_win32_final_path(path);
 #else
   if(char* r = realpath(path.data(), nullptr); r) {

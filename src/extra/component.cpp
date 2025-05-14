@@ -29,7 +29,7 @@ std::string::size_type fs_max_component(std::string_view path)
 
   std::error_code ec = std::make_error_code(std::errc::invalid_argument);
 
-#ifdef _WIN32
+#if defined(_WIN32)
   DWORD L = 0;
   if(GetVolumeInformationW(fs_win32_to_wide(fs_root(path)).data(), nullptr, 0, nullptr, &L, nullptr, nullptr, 0) != 0)
     return L;
