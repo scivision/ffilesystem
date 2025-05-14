@@ -7,7 +7,7 @@ endif()
 
 project(ffilesystem
 LANGUAGES C CXX
-VERSION 6.3.3
+VERSION 6.4.0
 )
 
 include(GNUInstallDirs)

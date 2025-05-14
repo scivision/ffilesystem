@@ -16,7 +16,7 @@ static std::string fs_which_generic(std::string_view name, std::string_view path
 
   if (fs_parent(name) != "." || name.substr(0, 2) == "./"){
     if (fs_is_exe(name))
-      return fs_as_posix(name);
+      return std::string(name);
 
     return {};
   }
@@ -27,8 +27,6 @@ static std::string fs_which_generic(std::string_view name, std::string_view path
     fs_print_error(paths, __func__, std::make_error_code(std::errc::not_a_directory));
     return {};
   }
-
-  paths = fs_as_posix(paths);
 
   if(fs_trace) std::cout << "TRACE:which: search path: " << paths << "\n";
 
@@ -60,7 +58,7 @@ static std::string fs_which_generic(std::string_view name, std::string_view path
       if(find_all)
         t += r + fs_pathsep();
       else
-        return fs_as_posix(r);
+        return r;
     }
 
     if(end == std::string::npos)
@@ -122,7 +120,7 @@ std::string fs_which(std::string_view name, std::string_view path, const bool fi
   if(!fs_is_exe(r))
     return {};
 
-  return fs_as_posix(r);
+  return r;
 
 #else
   return fs_which_generic(name, path, find_all);

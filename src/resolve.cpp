@@ -46,7 +46,7 @@ fs_canonical(
     : std::filesystem::weakly_canonical(ex, ec);
 
   if(!ec) FFS_LIKELY
-    return fs_drop_slash(c.generic_string());
+    return c.generic_string();
 
 #else
 

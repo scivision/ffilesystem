@@ -55,7 +55,7 @@ std::string fs_user_config_dir()
   PWSTR s = nullptr;
   std::string r;
   if(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &s) == S_OK)  FFS_LIKELY
-    r = fs_as_posix(fs_win32_to_narrow(s));
+    r = fs_win32_to_narrow(s);
 
   CoTaskMemFree(s);
   // https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cotaskmemfree

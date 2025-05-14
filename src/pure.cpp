@@ -167,29 +167,29 @@ std::string fs_join(std::string_view path, std::string_view other)
   if(path.empty() && other.empty())
     return {};
   if(path.empty())
-    return fs_drop_slash(other);
+    return std::string(other);
   if(other.empty())
-    return fs_drop_slash(path);
-
-  std::string p = fs_drop_slash(path);
-  const std::string o = fs_drop_slash(other);
+    return std::string(path);
 
 #ifdef HAVE_CXX_FILESYSTEM
-  return (std::filesystem::path(p) / o).generic_string();
+  return (std::filesystem::path(path) / other).generic_string();
 #else
-  if (o.front() == '/' || (fs_is_windows() && fs_is_absolute(o)))
-    return o;
+  if (other.front() == '/' || (fs_is_windows() && fs_is_absolute(other)))
+    return std::string(other);
 
-  p.push_back('/');
+  std::string p(path);
 
-  return p.append(o);
+  if(p.back() != '/')
+    p.push_back('/');
+
+  return p.append(other);
 #endif
 }
 
 
 std::string fs_with_suffix(std::string_view path, std::string_view new_suffix)
 {
-  const std::string stem = fs_stem(path);
+  std::string const stem = fs_stem(path);
   // handle directory case: stem is empty
   if(stem.empty())
     return fs_join(path, new_suffix);
@@ -197,9 +197,18 @@ std::string fs_with_suffix(std::string_view path, std::string_view new_suffix)
 #ifdef HAVE_CXX_FILESYSTEM
   return std::filesystem::path(path).replace_extension(new_suffix).generic_string();
 #else
-  const std::string p = fs_parent(path);
+  std::string const p = fs_parent(path);
 
-  const std::string r = (p == ".") ? stem : p + "/" + stem;
+  std::string r;
+  if (p == ".")
+    r = stem;
+  else {
+    r = p;
+    if(p.back() != '/'){
+      r.push_back('/');
+    }
+    r += stem;
+  }
 
   return r + std::string(new_suffix);
 

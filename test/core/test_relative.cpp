@@ -14,12 +14,12 @@ EXPECT_EQ(fs_relative_to("a/b", "a///b"), ".");
 EXPECT_EQ(fs_relative_to("a/b", "a/b/"), ".");
 EXPECT_EQ(fs_relative_to("a/b/", "a/b"), ".");
 EXPECT_EQ(fs_relative_to("a/b", "a"), "..");
-EXPECT_EQ(fs_relative_to("a/b", "a/"), "..");
-EXPECT_EQ(fs_relative_to("a", "a/b/"), "b");
-EXPECT_EQ(fs_relative_to("a", "a/b/."), "b");
+EXPECT_EQ(fs_relative_to("a/b", "a/"), "../");
+EXPECT_EQ(fs_relative_to("a", "a/b/"), "b/");
+EXPECT_EQ(fs_relative_to("a", "a/b/."), "b/");
 EXPECT_EQ(fs_relative_to("a", "a/b/.."), ".");
 EXPECT_EQ(fs_relative_to("a/b/c/d", "a/b"), "../..");
-EXPECT_EQ(fs_relative_to("a/b/c/d", "a/b/"), "../..");
+EXPECT_EQ(fs_relative_to("a/b/c/d", "a/b/"), "../../");
 EXPECT_EQ(fs_relative_to("./a/b", "./a/c"), "../c");
 }
 

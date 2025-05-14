@@ -28,7 +28,7 @@ std::string fs_lib_path()
       L > 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER)  FFS_LIKELY
   {
     path.resize(L);
-    return fs_as_posix(path);
+    return path;
   }
 #elif defined(HAVE_DLADDR)
   if(Dl_info info; dladdr(reinterpret_cast<void*>(&dl_dummy_func), &info))  FFS_LIKELY

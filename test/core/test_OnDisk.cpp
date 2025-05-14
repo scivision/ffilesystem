@@ -15,7 +15,7 @@ class TestOnDisk : public testing::Test {
       std::string test_suite_name_ = info->test_suite_name();
       std::string n = test_suite_name_ + "-" + test_name_;
 
-      cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
+      cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
       sys_drive = fs_is_windows() ? fs_getenv("SYSTEMDRIVE") : "/";
 
       file = cwd + "/ffs_" + n + ".txt";

@@ -54,7 +54,7 @@ std::string fs_get_cwd()
 
 #ifdef HAVE_CXX_FILESYSTEM
   if(auto s = std::filesystem::current_path(ec); !ec) FFS_LIKELY
-    return fs_drop_slash(s.generic_string());
+    return s.generic_string();
 #elif defined(_WIN32)
 // windows.h https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcurrentdirectory
   if(DWORD L = GetCurrentDirectoryW(0, nullptr); L > 0) {
@@ -62,7 +62,7 @@ std::string fs_get_cwd()
     w.resize(L);
     if(GetCurrentDirectoryW(L, w.data()) == L-1) {
       w.resize(L-1);
-      return fs_as_posix(fs_win32_to_narrow(w));
+      return fs_win32_to_narrow(w);
     }
   }
 #else
@@ -72,7 +72,7 @@ std::string fs_get_cwd()
   if(char* d = getcwd(nullptr, 0); d){
     std::string r(d);
     free(d);
-    return fs_drop_slash(r);
+    return r;
   }
 
 #endif

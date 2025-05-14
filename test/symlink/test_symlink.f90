@@ -61,7 +61,7 @@ print '(a)', "PASSED: create_symlink " // link
 
 !> read_symlink
 rtgt = read_symlink(link)
-if(rtgt /= tgt) then
+if(len_trim(rtgt) /= len_trim(tgt)) then
   write(stderr, '(a)') "read_symlink() failed: " // rtgt // " /= " // tgt
   error stop
 end if

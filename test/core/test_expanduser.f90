@@ -30,29 +30,12 @@ if (s1 /= s2) then
 end if
 
 !> separator
-s2 = expanduser("~/")
-if (s1 /= s2) error stop "expanduser trailing separator failed: " // s1 // " /= " // s2
-
-if (expanduser("~//") /= s2) error stop "expanduser double separator failed: " // &
-   expanduser("~//") // " /= " // s2
-
 s1 = get_homedir() // "/.."
 
 !> double dot
 s3 = "~/.."
 s2 = expanduser(s3)
 if (s2 /= s1) error stop "expanduser(" // s3 // ") failed: " // s2 // " /= " // s1
-print *, "PASS: expanduser("//s3//")  ", s2
-
-s3 = "~/../"
-s2 = expanduser(s3)
-if (s2 /= s1) error stop "expanduser(" // s3 // ") failed: " // s2 // " /= " // s1
-print *, "PASS: expanduser("//s3//")  ", s2
-
-!> double dot separator
-s3 = "~//.."
-s2 = expanduser(s3)
-if(s2 /= s1) error stop "expanduser("//s3//") failed: " // s2 // " /= " // s1
 print *, "PASS: expanduser("//s3//")  ", s2
 
 

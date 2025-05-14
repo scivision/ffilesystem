@@ -33,16 +33,16 @@ std::string fs_get_tempdir()
     w.resize(L + 1);
     if(GetTempPathW(L, w.data()) == L) {
       w.resize(L);
-      return fs_drop_slash(fs_win32_to_narrow(w));
+      return fs_win32_to_narrow(w);
     }
     if (L > 0) {
       w.resize(L);
-      return fs_drop_slash(fs_win32_to_narrow(w));
+      return fs_win32_to_narrow(w);
     }
   }
 #else
-  if(std::string t = fs_getenv("TMPDIR"); !t.empty()) FFS_LIKELY
-    return fs_as_posix(t);
+  if(std::string t = fs_getenv("TMPDIR"); !t.empty())
+    return t;
 
   if (fs_is_dir("/tmp"))
     return "/tmp";

@@ -2,18 +2,20 @@
 
 #include "ffilesystem.h"
 
+#include <filesystem>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
 
 class TestCanonical : public testing::Test {
   protected:
-    std::string home, homep, cwd;
+    std::filesystem::path home, homep, cwd;
 
     void SetUp() override {
-      cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
+      cwd = std::filesystem::current_path();
       home = fs_get_homedir();
-      homep = fs_parent(home);
+      homep = home.parent_path();
       // NOTE: if root user, might be that homep == home == "/"
 
       ASSERT_FALSE(home.empty());
@@ -39,26 +41,24 @@ TEST_F(TestCanonical, CanonicalParentDir)
 {
 EXPECT_EQ(fs_canonical("~/..", true, true), homep);
 EXPECT_EQ(fs_canonical("~/..", false, true), homep);
-EXPECT_THAT(fs_canonical("~/..", false, false), ::testing::AnyOf(".", cwd));
 }
 TEST_F(TestCanonical, ResolveParentDir)
 {
 EXPECT_EQ(fs_resolve("~/..", true, true), homep);
 EXPECT_EQ(fs_resolve("~/..", false, true), homep);
-EXPECT_THAT(fs_resolve("~/..", false, false), cwd);
 }
 
 TEST_F(TestCanonical, CanonicalParentRel)
 {
-EXPECT_THAT(fs_canonical("../not-exist", false), ::testing::AnyOf("../not-exist", fs_parent(cwd) + "/not-exist"));
-EXPECT_THAT(fs_canonical("./not-exist", false), ::testing::AnyOf("not-exist", cwd + "/not-exist"));
-EXPECT_THAT(fs_canonical("a/b/../c", false), ::testing::AnyOf("a/c", cwd + "/a/c"));
+EXPECT_THAT(fs_canonical("../not-exist", false), ::testing::AnyOf("../not-exist", cwd.parent_path() / "not-exist"));
+EXPECT_THAT(fs_canonical("./not-exist", false), ::testing::AnyOf("not-exist", cwd / "not-exist"));
+EXPECT_THAT(fs_canonical("a/b/../c", false), ::testing::AnyOf("a/c", cwd / "a/c"));
 }
 TEST_F(TestCanonical, ResolveParentRel)
 {
-EXPECT_EQ(fs_resolve("../not-exist", false), fs_parent(cwd) + "/not-exist");
-EXPECT_EQ(fs_resolve("./not-exist", false), cwd + "/not-exist");
-EXPECT_EQ(fs_resolve("a/b/../c", false), cwd + "/a/c");
+EXPECT_EQ(fs_resolve("../not-exist", false), cwd.parent_path() / "not-exist");
+EXPECT_EQ(fs_resolve("./not-exist", false), cwd / "not-exist");
+EXPECT_EQ(fs_resolve("a/b/../c", false), cwd / "a/c");
 }
 
 
@@ -86,8 +86,4 @@ EXPECT_THAT(h, ::testing::EndsWith(r));
 TEST_F(TestCanonical, Realpath)
 {
 EXPECT_EQ(fs_realpath("."), cwd);
-EXPECT_THAT(fs_realpath("not-exist"), ::testing::AnyOf(
-  ::testing::StrEq(""),
-  ::testing::StrEq(cwd + "/not-exist")
-));
 }

@@ -4,12 +4,14 @@
 
 #include "ffilesystem.h"
 
+#include <filesystem>
+
 #include <gtest/gtest.h>
 
 
 class TestExe : public testing::Test {
   protected:
-    std::string cwd;
+    std::filesystem::path cwd;
     std::string exe;
     std::string noexe;
     std::string self;
@@ -20,14 +22,13 @@ class TestExe : public testing::Test {
       std::string test_name_ = info->name();
       std::string test_suite_name_ = info->test_suite_name();
       std::string n = test_suite_name_ + "-" + test_name_;
+      cwd = std::filesystem::current_path();
 
-      if(fs_is_wsl() > 0 && fs_filesystem_type(cwd) == "v9fs")
+      if(fs_is_wsl() > 0 && fs_filesystem_type(cwd.string()) == "v9fs")
         GTEST_SKIP() << "v9fs to NTFS etc. doesn't work right";
 
       exe = "test_" + n + ".exe";
       noexe = "test_" + n + "_noexe.exe";
-
-      cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());;
 
       std::vector<std::string> argvs = ::testing::internal::GetArgvs();
       self = argvs[0];
@@ -124,5 +125,5 @@ TEST_F(TestExe, ChmodNoExe){
 
 
 TEST_F(TestExe, WhichExe){
-  EXPECT_EQ(fs_which(exe, cwd), cwd + "/" + exe);
+  EXPECT_EQ(fs_which(exe, cwd.string()), cwd / exe);
 }

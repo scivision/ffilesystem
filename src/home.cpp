@@ -52,7 +52,7 @@ std::string fs_get_homedir()
   // has no trailing slash
   std::string home = fs_getenv(fs_is_windows() ? "USERPROFILE" : "HOME");
 
-  return home.empty() ? fs_get_profile_dir() : fs_drop_slash(home);
+  return home.empty() ? fs_get_profile_dir() : home;
 }
 
 
@@ -77,11 +77,11 @@ std::string fs_get_profile_dir()
     }
 
     if(CloseHandle(h) && ok && L > 0)
-      return fs_drop_slash(fs_win32_to_narrow(w));
+      return fs_win32_to_narrow(w);
   }
 #else
   if (auto pw = fs_getpwuid())
-    return fs_drop_slash(pw->pw_dir);
+    return pw->pw_dir;
 #endif
 
   fs_print_error("", __func__);
@@ -116,9 +116,6 @@ std::string fs_expanduser(std::string_view path)
     i++;
 
   std::string e = home + "/" + std::string(path).substr(i);
-
-  if (e.back() == '/')
-    e.pop_back();
 
   return e;
 }

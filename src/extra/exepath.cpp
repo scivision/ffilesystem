@@ -39,7 +39,7 @@ std::string fs_exe_path()
 
   if (DWORD L = GetModuleFileNameW(nullptr, w.data(), static_cast<DWORD>(w.size())); L > 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
     w.resize(L);
-    return fs_as_posix(fs_win32_to_narrow(w));
+    return fs_win32_to_narrow(w);
   }
 #elif defined(__linux__)
   // https://man7.org/linux/man-pages/man2/readlink.2.html

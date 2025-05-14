@@ -33,9 +33,7 @@ std::string fs_absolute(std::string_view path, const bool expand_tilde)
 #ifdef HAVE_CXX_FILESYSTEM
   std::error_code ec;
 
-  const auto a = std::filesystem::absolute(ex, ec);
-
-  if(!ec) FFS_LIKELY
+  if(auto a = std::filesystem::absolute(ex, ec); !ec)
     return a.generic_string();
 
   fs_print_error(path, __func__, ec);

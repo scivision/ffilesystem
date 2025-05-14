@@ -200,7 +200,7 @@ std::string fs_win32_full_name(std::string_view path)
     if(GetFullPathNameW(w.data(), L, r.data(), nullptr) == L-1)  FFS_LIKELY
     {
       r.resize(L-1);
-      return fs_as_posix(fs_win32_to_narrow(r));
+      return fs_win32_to_narrow(r);
     }
   }
 #else
@@ -247,7 +247,7 @@ std::string fs_win32_final_path(std::string_view path)
       if (r.substr(0, 4) == R"(\\?\)")
         r = r.substr(4);
 
-      return fs_as_posix(r);
+      return r;
     }
   }
 #else

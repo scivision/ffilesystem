@@ -244,11 +244,7 @@ extern "C" {
 #include <stdint.h>
 #include <time.h>
 
-#ifndef __has_include
-#define __has_include(x) 0
-#endif
-
-// mostly internal use functions only for C
+// internal use function only for C
 size_t fs_strncpy(const char*, char*, const size_t);
 
 #endif  // end C-only

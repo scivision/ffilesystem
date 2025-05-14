@@ -2,15 +2,9 @@
 
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <filesystem>
 
-class TestEnvironment : public testing::Test {
-    protected:
-      std::string cwd;
-      void SetUp() override {
-        cwd = fs_as_posix(::testing::UnitTest::GetInstance()->original_working_dir());
-      }
-};
+#include <gtest/gtest.h>
 
 class TestNoEnv : public testing::Test {
   protected:
@@ -32,11 +26,10 @@ std::cout << "Username " << user << "\n";
 }
 
 
-TEST_F(TestEnvironment, Environment)
+TEST(TestEnvironment, Environment)
 {
 
-EXPECT_TRUE(fs_is_dir(cwd));
-EXPECT_EQ(fs_get_cwd(), cwd);
+EXPECT_EQ(fs_get_cwd(), std::filesystem::current_path());
 
 std::string pdir = fs_get_profile_dir();
 EXPECT_FALSE(pdir.empty());
