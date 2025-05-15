@@ -224,6 +224,7 @@ std::string fs_win32_full_name(std::string_view);
 std::string fs_win32_to_narrow([[maybe_unused]] std::wstring_view);
 std::wstring fs_win32_to_wide(std::string_view);
 bool fs_win32_is_symlink(std::string_view);
+bool fs_win32_is_ext_path(std::string_view);
 
 std::string fs_with_suffix(std::string_view, std::string_view);
 

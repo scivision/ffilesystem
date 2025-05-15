@@ -11,6 +11,11 @@ namespace Filesystem = std::filesystem;
 #include <cstdlib> // _splitpath_s, _MAX_DRIVE
 #endif
 
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <Shlwapi.h>
+#endif
+
 #include "ffilesystem.h"
 
 
@@ -64,14 +69,13 @@ bool fs_is_absolute(std::string_view path)
       return false;
 
     // Extended-length or device path
-    if(path.length() >= 4 && (path.substr(0, 4) == R"(\\?\)" || path.substr(0, 4) == R"(\\.\)"))
+    if(path.length() >= 4 && fs_win32_is_ext_path(path))
         return true;
-
-    // UNC path
-    if (path.substr(0, 2) == R"(\\)")
-      return path.find(R"(\)", 2) != std::string::npos;
-
-    // Windows drive letter
+#if defined(_WIN32)
+    if(PathIsUNCA(path.data()))
+      return true;
+#endif
+    // Windows drive letter with slash (e.g. C: without slash is relative)
     return !(fs_root_name(path).empty()) && (path[2] == '/' || path[2] == '\\');
   } else {
     return !path.empty() && path.front() == '/';

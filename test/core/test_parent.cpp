@@ -11,7 +11,7 @@ TEST_P(ParentTest, Parent) {
   auto [inp, exp] = GetParam();
 
   if(fs_backend() == "<filesystem>"){
-    if (inp.substr(0, 4) == R"(\\?\)" || inp.substr(0, 4) == R"(\\.\)")
+    if (fs_win32_is_ext_path(inp)) {
       GTEST_SKIP() << "<filesystem> doesn't yet support extended-length or device paths";
   }
 }

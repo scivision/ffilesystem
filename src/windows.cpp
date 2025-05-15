@@ -181,6 +181,13 @@ bool fs_win32_is_symlink(std::string_view path)
 }
 
 
+bool
+fs_win32_is_ext_path(std::string_view path)
+{
+  return path.substr(0, 4) == R"(\\?\)" || path.substr(0, 4) == R"(\\.\)";
+}
+
+
 std::string fs_win32_full_name(std::string_view path)
 {
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfullpathnameA
@@ -245,7 +252,7 @@ std::string fs_win32_final_path(std::string_view path)
       w.resize(L);
       std::string r(fs_win32_to_narrow(w));
 
-      if (r.substr(0, 4) == R"(\\?\)" && path.substr(0, 4) != R"(\\?\)")
+      if (fs_win32_is_ext_path(r) && !fs_win32_is_ext_path(path))
         r = r.substr(4);
 
       return r;

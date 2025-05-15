@@ -5,6 +5,11 @@
 namespace Filesystem = std::filesystem;
 #endif
 
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <Shlwapi.h>
+#endif
+
 
 #include <algorithm> // std::unique
 #include <string>
@@ -92,10 +97,12 @@ fs_drop_slash(std::string_view in)
 
   if(fs_is_windows()){
     // Extended-length or device path
-    if(in.length() >= 4 && (in.substr(0, 4) == R"(\\?\)" || in.substr(0, 4) == R"(\\.\)")){
+    if(in.length() >= 4 && fs_win32_is_ext_path(in)){
       i = 4;
-    } else if (in.substr(0, 2) == R"(\\)"){
+#if defined(_WIN32)
+    } else if (PathIsUNCA(in.data())){
       i = in.find(R"(\)", 2);
+#endif
     }
     winPrefix = i != std::string::npos;
   }
