@@ -64,6 +64,9 @@ Ffilesystem
 [std::string buffers](https://learn.microsoft.com/en-us/archive/msdn-magazine/2015/july/c-using-stl-strings-at-win32-api-boundaries)
 are dynamically sized according to the actual path length.
 
+For Windows drive letters without a slash after the colon, the path is treated as
+[a relative path](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file).
+This is how the Windows API, ComSpec, and C++ STL work.
 
 Inspired by (and benchmarked against)
 [Python pathlib](https://docs.python.org/3/library/pathlib.html).
@@ -306,8 +309,9 @@ Ffilesystem is not designed for UNC "long" paths.
 We recommend using a UNC path to a mapped drive letter.
 Windows
 [long paths](https://github.com/microsoft/STL/issues/1921)
-are not implemented due to
-[limitations](https://www.boost.org/doc/libs/1_86_0/libs/filesystem/doc/reference.html#windows-path-prefixes).
+are partially implemented due to
+[limitations](https://www.boost.org/doc/libs/1_88_0/libs/filesystem/doc/reference.html#windows-path-prefixes).
+Boost.Filesystem handles long paths and we may implement Boost.Filesystem as an optional backend in the future.
 
 Enable Windows
 [developer mode](https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging)

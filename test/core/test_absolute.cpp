@@ -3,11 +3,13 @@
 #include <gtest/gtest.h>
 
 #include <filesystem>
+#include <string>
 
 class TestAbs : public testing::Test {
 protected:
 
   std::filesystem::path base, ref, cwd;
+  std::string sys_drive;
 
   void SetUp() override {
     cwd = std::filesystem::current_path();
@@ -15,6 +17,8 @@ protected:
     if (fs_is_windows()) {
       base = "j:/foo";
       ref = "j:/foo/rel";
+      sys_drive = fs_getenv("SystemDrive");
+      ASSERT_FALSE(sys_drive.empty());
     } else {
       base = "/foo";
       ref = "/foo/rel";
@@ -42,9 +46,21 @@ EXPECT_EQ(fs_absolute("rel", "", false), cwd / "rel");
 // empty path, relative base
 EXPECT_EQ(fs_absolute("", "rel", false), cwd / "rel");
 
-EXPECT_EQ(fs_absolute("日本語", false), cwd / "日本語");
-EXPECT_EQ(fs_absolute("have space", false), cwd / "have space");
+EXPECT_EQ(fs_absolute("日本語"), cwd / "日本語");
+EXPECT_EQ(fs_absolute("have space"), cwd / "have space");
 
+}
+
+
+TEST_F(TestAbs, Windows){
+
+if(!fs_is_windows())
+  GTEST_SKIP() << "Windows only test";
+
+EXPECT_EQ(fs_absolute(R"(\\?\X:\anybody)"), R"(\\?\X:\anybody)");
+EXPECT_EQ(fs_absolute(R"(\\?\UNC\server\share)"), R"(\\?\UNC\server\share)");
+
+EXPECT_EQ(fs_absolute(sys_drive + "/"), sys_drive + "/");
 }
 
 
@@ -67,10 +83,12 @@ EXPECT_FALSE(fs_is_absolute("日本語"));
 EXPECT_FALSE(fs_is_absolute("some space here"));
 }
 
-TEST(IsAbs, Windows)
+TEST_F(TestAbs, IsAbsWindows)
 {
 if(!fs_is_windows())
   GTEST_SKIP() << "Windows only test";
+
+EXPECT_TRUE(fs_is_absolute(sys_drive + "/"));
 
 EXPECT_TRUE(fs_is_absolute("J:/"));
 EXPECT_TRUE(fs_is_absolute("j:/"));

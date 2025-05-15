@@ -229,6 +229,7 @@ std::string fs_win32_final_path(std::string_view path)
   if(fs_trace) std::cout << "TRACE: win32_final_path(" << path << ")\n";
   // dwDesiredAccess=0 to allow getting parameters even without read permission
   // FILE_FLAG_BACKUP_SEMANTICS required to open a directory
+
   std::wstring w = fs_win32_to_wide(path);
 
   HANDLE h = CreateFileW(w.data(), GENERIC_READ, FILE_SHARE_READ, nullptr,
@@ -242,9 +243,9 @@ std::string fs_win32_final_path(std::string_view path)
     L = GetFinalPathNameByHandleW(h, w.data(), L, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
     if(CloseHandle(h) && L > 0) {
       w.resize(L);
-      std::string r = fs_win32_to_narrow(w);
+      std::string r(fs_win32_to_narrow(w));
 
-      if (r.substr(0, 4) == R"(\\?\)")
+      if (r.substr(0, 4) == R"(\\?\)" && path.substr(0, 4) != R"(\\?\)")
         r = r.substr(4);
 
       return r;

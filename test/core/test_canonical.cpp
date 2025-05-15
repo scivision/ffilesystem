@@ -48,6 +48,45 @@ EXPECT_EQ(fs_resolve("~/..", true, true), homep);
 EXPECT_EQ(fs_resolve("~/..", false, true), homep);
 }
 
+
+TEST(TestResolve, CanonicalWindows){
+if(!fs_is_windows())
+  GTEST_SKIP() << "Windows specific test";
+
+std::string sys_drive = fs_getenv("SystemDrive");
+
+EXPECT_THAT(fs_canonical(sys_drive + "/", true), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
+EXPECT_THAT(fs_canonical(sys_drive + "/", false), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
+
+EXPECT_THAT(fs_canonical("M:/", false), ::testing::AnyOf("M:\\", "M:/"));
+
+if(fs_backend() != "<filesystem>"){
+
+EXPECT_THAT(fs_canonical(R"(\\?\)" + sys_drive + "\\", true),
+             ::testing::AnyOf(R"(\\?\)" + sys_drive + "\\", R"(\\?\)" + sys_drive + "/"));
+}
+
+}
+
+TEST(TestResolve, ResolveWindows){
+if(!fs_is_windows())
+  GTEST_SKIP() << "Windows specific test";
+
+std::string sys_drive = fs_getenv("SystemDrive");
+ASSERT_FALSE(sys_drive.empty());
+
+EXPECT_THAT(fs_resolve(sys_drive + "/", true), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
+EXPECT_THAT(fs_resolve(sys_drive + "/", false), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
+
+if(fs_backend() != "<filesystem>"){
+
+EXPECT_THAT(fs_resolve(R"(\\?\)" + sys_drive + "\\", true),
+             ::testing::AnyOf(R"(\\?\)" + sys_drive + "\\", R"(\\?\)" + sys_drive + "/"));
+}
+
+}
+
+
 TEST_F(TestCanonical, CanonicalParentRel)
 {
 EXPECT_THAT(fs_canonical("../not-exist", false), ::testing::AnyOf("../not-exist", cwd.parent_path() / "not-exist"));

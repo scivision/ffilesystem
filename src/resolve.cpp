@@ -31,7 +31,7 @@ fs_canonical(
     return {};
     // need this for macOS otherwise it returns the current working directory instead of empty string
 
-  const std::string ex = expand_tilde
+  std::string ex = expand_tilde
     ? fs_expanduser(path)
     : std::string(path);
 
