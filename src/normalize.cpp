@@ -83,17 +83,46 @@ std::string
 fs_drop_slash(std::string_view in)
 {
   // drop all trailing "/" and duplicated internal "/"
-  std::string s = fs_as_posix(in);
 
-  while(s.length() > 1 && s.back() == '/')
+  if(in.empty())
+    return {};
+
+  bool winPrefix = false;
+  std::string::size_type i = std::string::npos;
+
+  if(fs_is_windows()){
+    // Extended-length or device path
+    if(in.length() >= 4 && (in.substr(0, 4) == R"(\\?\)" || in.substr(0, 4) == R"(\\.\)")){
+      i = 4;
+    } else if (in.substr(0, 2) == R"(\\)"){
+      i = in.find(R"(\)", 2);
+    }
+    winPrefix = i != std::string::npos;
+  }
+
+  std::string s(in);
+
+  if (!winPrefix)
+    s = fs_as_posix(s);
+
+  while(s.length() > 1 && (s.back() == '/' || (fs_is_windows() && s.back() == '\\')))
     s.pop_back();
 
-  if (fs_is_windows() && !in.empty() && s == fs_root_name(in))
+  if (fs_is_windows() && s == fs_root_name(in))
     s.push_back('/');
 
   if(fs_trace > 1) std::cout << "TRACE:drop_slash(" << in << "): removed trailing slash: " << s << "\n";
 
   s.erase(std::unique(s.begin(), s.end(), [](char a, char b){ return a == '/' && b == '/'; }), s.end());
+
+  if(winPrefix){
+    std::string t = s.substr(i);
+    if(t == fs_root_name(in.substr(i)))
+      t.push_back('/');
+
+    t.erase(std::unique(t.begin(), t.end(), [](char a, char b){ return a == '\\' && b == '\\'; }), t.end());
+    s = s.substr(0, i) + t;
+  }
 
   if(fs_trace > 1) std::cout << "TRACE:drop_slash(" << in << "): removed duplicated internal slashes: " << s << "\n";
 
