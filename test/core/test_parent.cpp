@@ -10,6 +10,12 @@ class ParentTest : public ::testing::TestWithParam<std::tuple<std::string, std::
 TEST_P(ParentTest, Parent) {
   auto [inp, exp] = GetParam();
 
+  if(fs_backend() == "<filesystem>"){
+    if (inp.substr(0, 4) == R"(\\?\)" || inp.substr(0, 4) == R"(\\.\)")
+      GTEST_SKIP() << "<filesystem> doesn't yet support extended-length or device paths";
+  }
+}
+
   EXPECT_EQ(fs_parent(inp), exp);
 }
 
@@ -40,7 +46,9 @@ INSTANTIATE_TEST_SUITE_P(
   ParentWindows, ParentTest,
   ::testing::Values(
     std::make_tuple("c:\\a\\b/../.parent.txt", "c:/a/b/.."),
-    std::make_tuple("x:/", "x:/")
+    std::make_tuple("x:/", "x:/"),
+    std::make_tuple("x:\\", "x:/"),
+    std::make_tuple(R"(\\?\C:\a\b/../.parent.txt)", R"(\\?\C:\a\b/..)")
   )
 );
 #endif
