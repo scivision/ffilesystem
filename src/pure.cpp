@@ -14,7 +14,10 @@ namespace Filesystem = std::filesystem;
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <Shlwapi.h>
+#include <pathcch.h>
 #endif
+
+#include <iostream>
 
 #include "ffilesystem.h"
 
@@ -105,12 +108,17 @@ std::string fs_root(std::string_view path)
 
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).root_path().generic_string();
+#elif defined(_WIN32)
+  // https://learn.microsoft.com/en-us/windows/win32/api/pathcch/nf-pathcch-pathcchisroot
+  // https://learn.microsoft.com/en-us/windows/win32/api/pathcch/nf-pathcch-pathcchstriptoroot
+  std::wstring w(fs_win32_to_wide(path));
+  if(PathCchIsRoot(w.data()))
+    return std::string(path);
+
+  if(auto ret = PathCchStripToRoot(w.data(), w.length()); ret == S_OK || ret == S_FALSE)
+    return fs_win32_to_narrow(w);
 #else
-  if (std::string r = fs_root_name(path);
-       r.empty())
-    return fs_slash_first(path) ? "/" : "";
-  else
-    return (fs_is_windows() && r == path) ? r : r + "/";
+  return fs_slash_first(path) ? "/" : "";
 #endif
 }
 

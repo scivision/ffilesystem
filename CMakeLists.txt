@@ -163,7 +163,7 @@ $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 target_link_libraries(ffilesystem PUBLIC
 ${GNU_stdfs}
 ${CMAKE_DL_LIBS}
-"$<$<BOOL:${WIN32}>:Secur32;Ole32;Shell32;Shlwapi;uuid;Userenv;Advapi32;ws2_32>"
+"$<$<BOOL:${WIN32}>:Secur32;Ole32;Shell32;Shlwapi;Pathcch;uuid;Userenv;Advapi32;ws2_32>"
 )
 # Secur32: GetUserNameExW
 # both Advapi32 and Userenv must be linked

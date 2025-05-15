@@ -107,12 +107,10 @@ std::string fs_filesystem_type(std::string_view path)
   // Cygwin: assume user input Cygwin path root directly.
   if(!fs_is_cygwin()){
 
-    r = fs_root_name(r);
+    // GetVolumeInformationA requires a trailing backslash
+    r = fs_root(r);
     if(r.empty())
       return {};
-
-    // GetVolumeInformationA requires a trailing backslash
-    r.push_back('\\');
   }
 
   if(fs_trace) std::cout << "TRACE:filesystem_type(" << path << ") root: " << r << "\n";
