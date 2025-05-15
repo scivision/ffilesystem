@@ -168,7 +168,12 @@ libwin = []
 
 if is_windows
 
-libwin = [cc.find_library('Secur32'), cc.find_library('Userenv'), cc.find_library('ws2_32')]
+libwin = [
+cc.find_library('Secur32'),
+cc.find_library('Shlwapi'),
+cc.find_library('Userenv'),
+cc.find_library('ws2_32')
+]
 
 endif
 
