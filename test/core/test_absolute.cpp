@@ -17,8 +17,9 @@ protected:
     if (fs_is_windows()) {
       base = "j:/foo";
       ref = "j:/foo/rel";
-      sys_drive = fs_getenv("SystemDrive");
-      ASSERT_FALSE(sys_drive.empty());
+      auto d = fs_getenv("SystemDrive");
+      ASSERT_TRUE(d.has_value()) << "Failed to get SystemDrive";
+      sys_drive = d.value();
     } else {
       base = "/foo";
       ref = "/foo/rel";

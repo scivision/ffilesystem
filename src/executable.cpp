@@ -99,11 +99,11 @@ bool fs_is_exe(std::string_view path)
   if(!fs_is_readable(path))
     return false;
 
-  std::string pathext = fs_getenv("PATHEXT");
-  if(pathext.empty())
-    pathext = ".com;.exe;.bat;.cmd";
-  else
+  std::string pathext = ".com;.exe;.bat;.cmd";
+  if(auto e = fs_getenv("PATHEXT"); e) {
+    pathext = e.value();
     std::transform(pathext.begin(), pathext.end(), pathext.begin(), ::tolower);
+  }
 
   std::transform(suffix.begin(), suffix.end(), suffix.begin(), ::tolower);
   if(fs_trace) std::cout << "TRACE: is_exe(" << path << "):  suffix: " << suffix << " length " << suffix.length() << " pathext: " << pathext << "\n";

@@ -28,10 +28,9 @@ TEST(TestRelative, Windows)
 if(!fs_is_windows())
   GTEST_SKIP() << "Windows only test";
 
-std::string c = fs_getenv("SYSTEMDRIVE");
-
-if (c.length() != 2)
-  GTEST_SKIP() << "environment variable SYSTEMDRIVE not set";
+auto e = fs_getenv("SYSTEMDRIVE");
+ASSERT_TRUE(e.has_value()) << "Failed to get SYSTEMDRIVE environment variable";
+std::string c = e.value();
 
 EXPECT_EQ(fs_relative_to(c+"/", c+"/a/b"), "a/b");
 EXPECT_EQ(fs_relative_to(c+"/a/b", c+"/"), "../..");

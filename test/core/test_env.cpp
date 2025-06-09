@@ -60,7 +60,9 @@ std::string k = "FORTtest";
 std::string v = "FORTvalue";
 fs_setenv(k, v);
 
-EXPECT_EQ(fs_getenv(k), v);
+auto e = fs_getenv(k);
+EXPECT_TRUE(e.has_value()) << "Environment variable " << k << " not set";
+EXPECT_EQ(e.value(), v);
 
 }
 
@@ -101,6 +103,8 @@ std::string k = "FORTtest";
 std::string v = "FORTvalue";
 fs_setenv(k, v);
 
-EXPECT_EQ(fs_getenv(k), v);
+auto e = fs_getenv(k);
+EXPECT_TRUE(e.has_value()) << "Environment variable " << k << " not set";
+EXPECT_EQ(e.value(), v);
 
 }

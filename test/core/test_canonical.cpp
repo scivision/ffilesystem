@@ -53,7 +53,9 @@ TEST(TestResolve, CanonicalWindows){
 if(!fs_is_windows())
   GTEST_SKIP() << "Windows specific test";
 
-std::string sys_drive = fs_getenv("SystemDrive");
+auto d = fs_getenv("SystemDrive");
+ASSERT_TRUE(d.has_value()) << "Failed to get SystemDrive";
+std::string sys_drive = d.value();
 
 EXPECT_THAT(fs_canonical(sys_drive + "/", true), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
 EXPECT_THAT(fs_canonical(sys_drive + "/", false), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
@@ -72,8 +74,9 @@ TEST(TestResolve, ResolveWindows){
 if(!fs_is_windows())
   GTEST_SKIP() << "Windows specific test";
 
-std::string sys_drive = fs_getenv("SystemDrive");
-ASSERT_FALSE(sys_drive.empty());
+auto d = fs_getenv("SystemDrive");
+ASSERT_TRUE(d.has_value()) << "Failed to get SystemDrive";
+std::string sys_drive = d.value();
 
 EXPECT_THAT(fs_resolve(sys_drive + "/", true), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
 EXPECT_THAT(fs_resolve(sys_drive + "/", false), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));

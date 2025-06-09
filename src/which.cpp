@@ -21,7 +21,13 @@ static std::string fs_which_generic(std::string_view name, std::string_view path
     return {};
   }
 
-  std::string paths = path.empty() ? fs_getenv("PATH") : std::string(path);
+  std::string paths;
+  if(path.empty()){
+    if (auto p = fs_getenv("PATH"); p)
+      paths = p.value();
+  } else {
+    paths = std::string(path);
+  }
 
   if(paths.empty()){
     fs_print_error(paths, __func__, std::make_error_code(std::errc::not_a_directory));

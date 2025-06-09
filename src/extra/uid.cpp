@@ -82,10 +82,11 @@ std::string fs_get_terminal()
     }
   }
 
-  fs_print_error("", __func__);
-  return {};
 #else
-  return fs_getenv("TERM");
+  if (auto t = fs_getenv("TERM"); t)
+    return t.value();
 #endif
 
+  fs_print_error("", __func__);
+  return {};
 }

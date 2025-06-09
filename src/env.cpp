@@ -6,6 +6,7 @@
 
 #include <string>
 #include <string_view>
+#include <optional>
 
 #if defined(_WIN32)
 #include <algorithm> // std::replace
@@ -18,14 +19,17 @@
 #include "ffilesystem.h"
 
 
-std::string fs_getenv(std::string_view name)
+std::optional<std::string> fs_getenv(std::string_view name)
 {
   // convenience function to get environment variable without needing to check for nullptr
   // don't emit error because sometimes we just check if envvar is defined
 
   auto buf = std::getenv(name.data());
 
-  return buf ? std::string(buf) : std::string();
+  if (buf)
+    return std::string(buf);
+
+  return {};
 }
 
 
@@ -60,13 +64,16 @@ std::string fs_user_config_dir()
   CoTaskMemFree(s);
   // https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cotaskmemfree
 
-  if (!r.empty())  FFS_LIKELY
+  if (!r.empty())
     return r;
 #else
-  if(std::string h = fs_getenv("XDG_CONFIG_HOME"); !h.empty())
-    return h;
-  if(std::string h = fs_getenv("HOME"); !h.empty())
-    return h + "/.config";
+
+  if(auto h = fs_getenv("XDG_CONFIG_HOME"); h)
+    return h.value();
+
+  if(auto h = fs_getenv("HOME"); h)
+    return h.value() + "/.config";
+
 #endif
 
   fs_print_error("", __func__);

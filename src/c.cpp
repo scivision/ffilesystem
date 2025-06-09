@@ -131,7 +131,12 @@ size_t fs_get_shell(char* name, const size_t buffer_size)
 
 size_t fs_getenv(const char* name, char* value, const size_t buffer_size)
 {
-  return fs_str2char(fs_getenv(name), value, buffer_size);
+  auto e = fs_getenv(name);
+  if (e) {
+    return fs_str2char(e.value(), value, buffer_size);
+  } else {
+    return fs_str2char("", value, buffer_size);
+  }
 }
 
 bool fs_setenv(const char* name, const char* value)

@@ -16,7 +16,13 @@ class TestOnDisk : public testing::Test {
       std::string n = test_suite_name_ + "-" + test_name_;
 
       cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
-      sys_drive = fs_is_windows() ? fs_getenv("SYSTEMDRIVE") : "/";
+      if (fs_is_windows()) {
+        auto d = fs_getenv("SystemDrive");
+        ASSERT_TRUE(d.has_value()) << "Failed to get SystemDrive";
+        sys_drive = d.value();
+      } else {
+        sys_drive = "/";
+      }
 
       file = cwd + "/ffs_" + n + ".txt";
       ASSERT_TRUE(fs_touch(file));
@@ -146,14 +152,13 @@ TEST(TestWindows, ShortLong)
 {
 
 if(!fs_is_windows())
-    GTEST_SKIP() << "Test only for Windows";
+  GTEST_SKIP() << "Test only for Windows";
 
-std::string long_path = fs_getenv("PROGRAMFILES");
-std::string short_path = fs_shortname(long_path);
-
+auto e = fs_getenv("PROGRAMFILES");
+ASSERT_TRUE(e.has_value()) << "Failed to get PROGRAMFILES environment variable";
+std::string long_path = e.value();
 ASSERT_FALSE(long_path.empty());
-ASSERT_FALSE(short_path.empty());
 
-EXPECT_EQ(fs_longname(short_path), long_path);
+EXPECT_EQ(fs_longname(fs_shortname(long_path)), long_path);
 
 }

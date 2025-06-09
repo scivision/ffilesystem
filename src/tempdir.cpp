@@ -41,8 +41,8 @@ std::string fs_get_tempdir()
     }
   }
 #else
-  if(std::string t = fs_getenv("TMPDIR"); !t.empty())
-    return t;
+  if(auto t = fs_getenv("TMPDIR"); t.has_value() && !t.value().empty())
+    return t.value();
 
   if (fs_is_dir("/tmp"))
     return "/tmp";

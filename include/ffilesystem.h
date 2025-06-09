@@ -31,12 +31,11 @@ constexpr int fs_trace =
 #include <string_view>
 #include <ctime> // for time_t
 #include <system_error>
+#include <optional>
 
 #ifdef HAVE_CXX_FILESYSTEM
 
 #include <filesystem>
-
-#include <optional>
 
 std::optional<std::filesystem::file_time_type> fs_get_modtime_fs(std::string_view);
 
@@ -102,7 +101,7 @@ std::string fs_get_terminal();
 
 std::string fs_get_username();
 
-std::string fs_getenv(std::string_view);
+std::optional<std::string> fs_getenv(std::string_view);
 
 std::uintmax_t fs_hard_link_count(std::string_view);
 
