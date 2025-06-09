@@ -142,7 +142,12 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     {"short", [](std::string_view a1) { return fs_shortname(a1); }},
     {"touch", [](std::string_view a1) { return "touch " + std::string(a1) + " " + std::to_string(fs_touch(a1)); }},
     {"set_modtime", [](std::string_view a1) { return fs_set_modtime(a1); }},
-    {"getenv", [](std::string_view a1) { auto e = fs_getenv(a1); return e ? e.value() : ""; }},
+    {"getenv", [](std::string_view a1) { auto e = fs_getenv(a1);
+      if (e){ return e.value(); };
+      std::cerr << a1 << " environment variable not set\n";
+      return std::string();
+    }},
+    {"setenv", [](std::string_view a1) { std::cout << "unset " << a1 << "\n"; return fs_setenv(a1, ""); }},
     {"realpath", [](std::string_view a1) { return fs_realpath(a1); }},
     {"posix", [](std::string_view a1) { return fs_as_posix(a1); }},
     {"max_component", [](std::string_view a1) { return fs_max_component(a1); }},

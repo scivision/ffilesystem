@@ -17,7 +17,6 @@ which cmake
 is_reserved NUL
 is_safe asdf
 compiler
-getenv HOME
 owner .
 homedir
 username

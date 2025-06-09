@@ -14,6 +14,9 @@ class TestNoEnv : public testing::Test {
       ASSERT_TRUE(fs_setenv("HOME", ""));
       ASSERT_TRUE(fs_setenv("XDG_CONFIG_HOME", ""));
       ASSERT_TRUE(fs_setenv("TMPDIR", ""));
+      if (fs_is_windows()) {
+        ASSERT_TRUE(fs_setenv("USERPROFILE", ""));
+      }
     }
 };
 
@@ -54,8 +57,10 @@ EXPECT_FALSE(t.empty());
 
 std::cout << "Temp directory " << t << "\n";
 EXPECT_TRUE(fs_exists(t));
+}
 
-// --- setenv
+
+TEST(TestEnvironment, SetEnv){
 std::string k = "FORTtest";
 std::string v = "FORTvalue";
 fs_setenv(k, v);
@@ -64,6 +69,9 @@ auto e = fs_getenv(k);
 EXPECT_TRUE(e.has_value()) << "Environment variable " << k << " not set";
 EXPECT_EQ(e.value(), v);
 
+fs_setenv(k, ""); // unset
+e = fs_getenv(k);
+EXPECT_FALSE(e.has_value()) << "Environment variable " << k << " should be unset";
 }
 
 
@@ -82,6 +90,20 @@ else
 
 std::cout << "User config directory " << cdir << "\n";
 
+// --- tempdir
+auto t = fs_get_tempdir();
+EXPECT_FALSE(t.empty());
+
+std::cout << "Temp directory " << t << "\n";
+EXPECT_TRUE(fs_exists(t));
+
+}
+
+
+TEST_F(TestNoEnv, Home){
+auto h = fs_getenv(fs_is_windows() ? "USERPROFILE" : "HOME");
+ASSERT_FALSE(h.has_value()) << "Environment variable HOME or USERPROFILE should not be set in test";
+
 std::string p = fs_get_homedir();
 EXPECT_FALSE(p.empty());
 std::cout << "Home directory " << p << "\n";
@@ -90,21 +112,4 @@ EXPECT_TRUE(fs_is_dir(p));
 // NOTE: profiledir does not always (but may) equal homedir, for example when root user.
 
 EXPECT_EQ(fs_expanduser("~"), p);
-
-// --- tempdir
-auto t = fs_get_tempdir();
-EXPECT_FALSE(t.empty());
-
-std::cout << "Temp directory " << t << "\n";
-EXPECT_TRUE(fs_exists(t));
-
-// --- setenv
-std::string k = "FORTtest";
-std::string v = "FORTvalue";
-fs_setenv(k, v);
-
-auto e = fs_getenv(k);
-EXPECT_TRUE(e.has_value()) << "Environment variable " << k << " not set";
-EXPECT_EQ(e.value(), v);
-
 }
