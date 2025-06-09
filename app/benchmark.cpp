@@ -10,10 +10,6 @@
 #include <variant>
 #include <unordered_map>
 
-#if __has_include(<ranges>)
-#include <ranges>  // IWYU pragma: keep
-#endif
-
 #include "ffilesystem.h"
 
 
@@ -130,18 +126,15 @@ else
 
 for (std::string_view func : funcs)
   {
-  constexpr std::array<std::string_view, 7> tf = {"canonical", "resolve", "normal", "expanduser", "parent", "file_name", "drop_slash"};
+  // in sorted ascending order for binary search
+  constexpr std::array<std::string_view, 7> tf = {
+    "canonical", "drop_slash", "expanduser", "file_name", "normal", "parent", "resolve"
+  };
 
   if (argc > 2)
     path = argv[2];
   else {
-#ifdef __cpp_lib_ranges_contains  // C++23
-  if (std::ranges::contains(tf, func))
-#elif defined(__cpp_lib_ranges) // C++20
-  if (std::ranges::find(tf, func) != tf.end())
-#else // C++98
-  if (std::find(tf.begin(), tf.end(), func) != tf.end())
-#endif
+    if (std::binary_search(tf.begin(), tf.end(), func))
       path = "~/..";
     else if (func == "which")
       path = (fs_is_windows()) ? "cmake.exe" : "sh";
