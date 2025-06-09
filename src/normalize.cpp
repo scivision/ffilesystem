@@ -163,7 +163,7 @@ fs_split(std::string_view path)
   std::string::size_type end;
 
   while (start < path.length()) {
-    end = path.find_first_of(R"(/\)", start);
+    end = path.find_first_of(fs_is_windows() ? R"(/\)" : "/", start);
     if(fs_trace) std::cout << "TRACE:split(" << path << "): " << start << " " << end << " " << path.substr(start, end-start) << "\n";
 
     // last component
