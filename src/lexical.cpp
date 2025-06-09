@@ -66,22 +66,16 @@ fs_is_reserved(std::string_view path)
   // convert to upper case
   std::transform(s.begin(), s.end(), s.begin(), ::toupper);
 
-// check if the stem is a reserved device name
-  constexpr std::array<std::string_view, 30> r = {"CON", "PRN", "AUX", "NUL",
+  // check if the stem is a reserved device name
+  // must be sorted in ascending order for binary search
+  constexpr std::array<std::string_view, 30> r = {"AUX",
     "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM¹", "COM²", "COM³",
+    "CON", "CONIN$", "CONOUT$",
     "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9", "LPT¹", "LPT²", "LPT³",
-    "CONIN$", "CONOUT$"};
+    "NUL", "PRN"
+  };
 
-#ifdef __cpp_lib_ranges_contains  // C++23
-  if (std::ranges::contains(r, s))
-#elif defined(__cpp_lib_ranges) // C++20
-  if (std::ranges::find(r, s) != r.end())
-#else // C++98
-  if (std::find(r.begin(), r.end(), s) != r.end())
-#endif
-    return true;
-
-return false;
+  return std::binary_search(r.begin(), r.end(), s);
 }
 
 

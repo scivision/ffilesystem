@@ -264,7 +264,8 @@ We use `size_t` at the C interfaces for clarity and also certain internal librar
 
 ### Possible future features
 
-Use statx() if available to inquire if a file is encrypted or compressed, etc.
+* inquire if a file is encrypted or compressed, etc.
+* determine if the terminal is in a [VT100 compatible mode](https://gitlab.kitware.com/cmake/cmake/-/merge_requests/10759/diffs)
 
 ### Other C++ filesystem libraries
 
