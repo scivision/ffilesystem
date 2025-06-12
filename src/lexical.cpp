@@ -131,14 +131,12 @@ bool
 fs_is_prefix(std::string_view prefix, std::string_view path)
 {
   // Lexicographically, is prefix a prefix of path.
-  // Does not normalize, canonicalize, or walk up the directory tree.
-  // "." or ".." or mix of absolute and relative paths give ambiguous results
 
   if(prefix.empty() || path.empty())
     return false;
 
-  std::string const pr = fs_drop_slash(prefix);
-  std::string const p = fs_drop_slash(path);
+  std::string const pr = fs_normal(prefix);
+  std::string const p = fs_normal(path);
 
   if (pr == p)
     return true;
@@ -159,14 +157,12 @@ bool
 fs_is_subdir(std::string_view subdir, std::string_view dir)
 {
   // Lexicographically, is subdir a subdirectory of dir.
-  // Does not normalize, canonicalize, or walk up the directory tree.
-  // "." or ".." give ambiguous results
 
   if(subdir.empty() || dir.empty())
     return false;
 
-  std::string const s = fs_drop_slash(subdir);
-  std::string const d = fs_drop_slash(dir);
+  std::string const s = fs_normal(subdir);
+  std::string const d = fs_normal(dir);
 
   if(s == d)
     return false;
