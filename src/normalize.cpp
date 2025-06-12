@@ -118,7 +118,7 @@ fs_drop_slash(std::string_view in)
 
   if(fs_is_windows()){
     // Extended-length or device path
-    if(in.length() >= 4 && fs_win32_is_ext_path(in)){
+    if(fs_win32_is_ext_path(in)){
       i = 4;
 #if defined(_WIN32)
     } else if (PathIsUNCA(in.data())){

@@ -18,10 +18,10 @@ if (!fs_is_windows())
 EXPECT_EQ(fs_root("c:"), "c:");
 EXPECT_EQ(fs_root("c:/a/b"), "c:/");
 EXPECT_EQ(fs_root("/etc"), "/");
-EXPECT_EQ(fs_root("\\etc"), "/");
-EXPECT_EQ(fs_root(R"(c:\)"), "c:/");
+EXPECT_EQ(fs_root("\\etc"), "\\");
+EXPECT_EQ(fs_root("c:\\"), "c:\\");
 EXPECT_EQ(fs_root("c:/"), "c:/");
-EXPECT_EQ(fs_root("\\"), "/");
+EXPECT_EQ(fs_root("\\"), "\\");
 }
 
 TEST(TestRoot, Posix){

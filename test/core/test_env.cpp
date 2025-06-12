@@ -56,7 +56,7 @@ auto t = fs_get_tempdir();
 EXPECT_FALSE(t.empty());
 
 std::cout << "Temp directory " << t << "\n";
-EXPECT_TRUE(fs_exists(t));
+EXPECT_TRUE(fs_is_dir(t));
 }
 
 
@@ -95,7 +95,7 @@ auto t = fs_get_tempdir();
 EXPECT_FALSE(t.empty());
 
 std::cout << "Temp directory " << t << "\n";
-EXPECT_TRUE(fs_exists(t));
+EXPECT_TRUE(fs_is_dir(t));
 
 }
 

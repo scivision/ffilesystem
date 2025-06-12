@@ -69,7 +69,7 @@ bool fs_is_absolute(std::string_view path)
       return false;
 
     // Extended-length or device path
-    if(path.length() >= 4 && fs_win32_is_ext_path(path))
+    if(fs_win32_is_ext_path(path))
         return true;
 #if defined(_WIN32)
     if(PathIsUNCA(path.data()))
@@ -87,7 +87,7 @@ bool fs_is_absolute(std::string_view path)
 std::string fs_file_name(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
-  return Filesystem::path(path).filename().generic_string();
+  return Filesystem::path(path).filename().string();
 #else
 
   const auto i = path.find_last_of(fs_is_windows() ? "/\\" : "/");
@@ -104,13 +104,22 @@ std::string fs_root(std::string_view path)
   // root_path = root_name / root_directory
 
 #ifdef HAVE_CXX_FILESYSTEM
-  return Filesystem::path(path).root_path().generic_string();
+  return Filesystem::path(path).root_path().string();
 #else
-  if (std::string r = fs_root_name(path);
-       r.empty())
-    return fs_slash_first(path) ? "/" : "";
-  else
-    return (fs_is_windows() && r == path) ? r : r + "/";
+  if (std::string r = fs_root_name(path); r.empty()){
+    if (fs_slash_first(path))
+      return std::string(path.substr(0, 1));
+
+    return {};
+  } else if (fs_is_windows()) {
+    if (path.length() >= 3 && (path[2] == '/' || path[2] == '\\')){
+      return r + path[2];
+    }
+
+    return r;
+  } else
+    return "/";
+
 #endif
 }
 
@@ -133,7 +142,7 @@ std::string fs_root_name([[maybe_unused]] std::string_view path)
 std::string fs_stem(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
-  return Filesystem::path(path).filename().stem().generic_string();
+  return Filesystem::path(path).filename().stem().string();
 #else
   std::string r = fs_file_name(path);
   // handle special case a/..
@@ -153,7 +162,7 @@ std::string fs_stem(std::string_view path)
 std::string fs_suffix(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
-  return Filesystem::path(path).filename().extension().generic_string();
+  return Filesystem::path(path).filename().extension().string();
 #else
   const std::string p = fs_file_name(path);
   // find last dot
@@ -200,7 +209,7 @@ std::string fs_with_suffix(std::string_view path, std::string_view new_suffix)
     return fs_join(path, new_suffix);
 
 #ifdef HAVE_CXX_FILESYSTEM
-  return Filesystem::path(path).replace_extension(new_suffix).generic_string();
+  return Filesystem::path(path).replace_extension(new_suffix).string();
 #else
   std::string const p = fs_parent(path);
 
@@ -233,7 +242,7 @@ std::string fs_lexically_normal(std::string_view path){
 
 std::string fs_make_preferred(std::string_view path){
 #ifdef HAVE_CXX_FILESYSTEM
-  return Filesystem::path(path).make_preferred().generic_string();
+  return Filesystem::path(path).make_preferred().string();
 #else
   fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
   return {};

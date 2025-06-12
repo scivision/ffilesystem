@@ -184,7 +184,7 @@ bool fs_win32_is_symlink(std::string_view path)
 bool
 fs_win32_is_ext_path(std::string_view path)
 {
-  return path.substr(0, 4) == R"(\\?\)" || path.substr(0, 4) == R"(\\.\)";
+  return path.length() >= 4 && (path.substr(0, 4) == R"(\\?\)" || path.substr(0, 4) == R"(\\.\)");
 }
 
 

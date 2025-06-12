@@ -116,7 +116,7 @@ std::string fs_read_symlink(std::string_view path)
     return fs_win32_final_path(path);
 #elif defined(HAVE_CXX_FILESYSTEM)
   if(auto p = Filesystem::read_symlink(path, ec); !ec) FFS_LIKELY
-    return p.generic_string();
+    return p.string();
 #else
 
   // https://www.man7.org/linux/man-pages/man2/readlink.2.html

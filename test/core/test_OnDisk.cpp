@@ -26,7 +26,7 @@ class TestOnDisk : public testing::Test {
 
       file = cwd + "/ffs_" + n + ".txt";
       ASSERT_TRUE(fs_touch(file));
-      ASSERT_TRUE(fs_exists(file));
+      ASSERT_TRUE(fs_is_file(file));
 
       dir = cwd + "/ffs_" + n + "_dir";
       ASSERT_TRUE(fs_mkdir(dir));

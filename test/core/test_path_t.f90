@@ -82,7 +82,7 @@ if (L1 == 0) then
   error stop
 end if
 
-if (p1%path() /= get_cwd()) then
+if (.not. same_file(p1%path(), get_cwd())) then
   write(stderr,*) "ERROR: canonical(.) " // p1%path() // " /= get_cwd: " // get_cwd()
   error stop
 end if
@@ -96,7 +96,7 @@ if (L1 == 0) then
   error stop
 end if
 
-if (p1%path() /= get_cwd()) then
+if (.not. same_file(p1%path(), get_cwd())) then
   write(stderr,*) "ERROR: resolve(.) " // p1%path() // " /= get_cwd: " // get_cwd()
   error stop
 end if

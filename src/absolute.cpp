@@ -35,7 +35,7 @@ std::string fs_absolute(std::string_view path, const bool expand_tilde)
   std::error_code ec;
 
   if(auto a = Filesystem::absolute(ex, ec); !ec)
-    return a.generic_string();
+    return a.string();
 
   fs_print_error(path, __func__, ec);
   return {};

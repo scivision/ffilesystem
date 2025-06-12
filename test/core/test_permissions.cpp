@@ -11,10 +11,9 @@ class TestPermissions : public testing::Test {
   std::string nowrite = "nonwritable.txt";
     void SetUp() override {
       ASSERT_TRUE(fs_touch(read));
-      ASSERT_TRUE(fs_exists(read));
       ASSERT_TRUE(fs_is_file(read));
+
       ASSERT_TRUE(fs_touch(noread));
-      ASSERT_TRUE(fs_exists(noread));
       ASSERT_TRUE(fs_is_file(noread));
       if(!fs_is_file(nowrite)){
         ASSERT_TRUE(fs_touch(nowrite));

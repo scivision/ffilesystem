@@ -22,7 +22,7 @@ end if
 
 cwd = get_cwd()
 
-if (p1 /= cwd) then
+if (.not. same_file(p1, cwd)) then
   write(stderr,*) "ERROR: resolve('.') " // p1 // " /= " // cwd
   error stop
 end if
@@ -49,7 +49,7 @@ if (L2 >= L1) error stop "parent home " // p2
 print *, "OK: parent(resolve(~)) = ", p2
 
 !> empty
-if(resolve("") /= cwd) then
+if(.not. same_file(resolve(""), cwd)) then
   write(stderr,*) "resolve('') " // resolve("") // " /= " // cwd
   error stop
 end if

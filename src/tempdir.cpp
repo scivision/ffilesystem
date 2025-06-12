@@ -23,7 +23,7 @@ std::string fs_get_tempdir()
 
 #ifdef HAVE_CXX_FILESYSTEM
   if(auto p = Filesystem::temp_directory_path(ec); !ec && !p.empty())
-    return p.generic_string();
+    return p.string();
 #endif
 
 #if defined(_WIN32)
