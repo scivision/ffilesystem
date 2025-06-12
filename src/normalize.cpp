@@ -85,6 +85,27 @@ fs_normal(std::string_view path)
 
 
 std::string
+fs_drop_trailing_slash(std::string_view path)
+{
+  // drop trailing "/" and "\" from the path
+  // but not if it is the root name
+
+  if (path.empty())
+    return {};
+
+  std::string p(path);
+
+  while(p.length() > 1 && (p.back() == '/' || (fs_is_windows() && p.back() == '\\')))
+    p.pop_back();
+
+  if (fs_is_windows() && p == fs_root_name(path))
+    p.push_back('/');
+
+  return p;
+}
+
+
+std::string
 fs_drop_slash(std::string_view in)
 {
   // drop all trailing "/" and duplicated internal "/"
@@ -112,11 +133,7 @@ fs_drop_slash(std::string_view in)
   if (!winPrefix)
     s = fs_as_posix(s);
 
-  while(s.length() > 1 && (s.back() == '/' || (fs_is_windows() && s.back() == '\\')))
-    s.pop_back();
-
-  if (fs_is_windows() && s == fs_root_name(in))
-    s.push_back('/');
+  s = fs_drop_trailing_slash(s);
 
   if(fs_trace > 1) std::cout << "TRACE:drop_slash(" << in << "): removed trailing slash: " << s << "\n";
 

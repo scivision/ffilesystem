@@ -45,7 +45,7 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
   ParentWindows, ParentTest,
   ::testing::Values(
-    std::make_tuple("c:\\a\\b/../.parent.txt", "c:/a/b/.."),
+    std::make_tuple("c:\\a\\b/../.parent.txt", "c:\\a\\b/.."),
     std::make_tuple("x:/", "x:/"),
     std::make_tuple("x:\\", "x:/"),
     std::make_tuple(R"(\\?\C:\a\b/../.parent.txt)", R"(\\?\C:\a\b/..)")

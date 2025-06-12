@@ -60,6 +60,7 @@ std::string fs_cpu_arch();
 bool fs_create_symlink(std::string_view, std::string_view);
 
 std::string fs_drop_slash(std::string_view);
+std::string fs_drop_trailing_slash(std::string_view);
 
 bool fs_equivalent(std::string_view, std::string_view);
 
