@@ -14,7 +14,7 @@
 
 #include "ffilesystem.h"
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN__)
 // create type PREPARSE_DATA_BUFFER
 // from ntifs.h, which can only be used by drivers
 // typedef is copied from https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
@@ -62,7 +62,7 @@ typedef struct _REPARSE_DATA_BUFFER
 #endif
 
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN__)
 static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer)
 {
 
@@ -132,7 +132,7 @@ bool fs_is_appexec_alias(std::string_view path)
 // https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
 // that has a BSD 3-clause license
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN__)
   std::byte buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
 
   if (!fs_win32_get_reparse_buffer(path, buffer))
@@ -161,7 +161,7 @@ bool fs_win32_is_symlink(std::string_view path)
 // https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
 // that has a BSD 3-clause license
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN__)
   std::byte buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
   // Since FILE_ATTRIBUTE_REPARSE_POINT is set this file must be
   // a symbolic link if it is not a reparse point.
@@ -195,7 +195,7 @@ std::string fs_win32_full_name(std::string_view path)
 
   std::error_code ec;
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN__)
   std::wstring const w = fs_win32_to_wide(path);
 
   auto const L = GetFullPathNameW(w.data(), 0, nullptr, nullptr);
@@ -232,7 +232,7 @@ std::string fs_win32_final_path(std::string_view path)
 
   std::error_code ec;
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN__)
   if(fs_trace) std::cout << "TRACE: win32_final_path(" << path << ")\n";
   // dwDesiredAccess=0 to allow getting parameters even without read permission
   // FILE_FLAG_BACKUP_SEMANTICS required to open a directory
