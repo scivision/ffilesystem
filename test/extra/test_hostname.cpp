@@ -15,7 +15,7 @@ TEST(TestHostname, Hostname){
 
 TEST(TestExe, ExePath){
   std::string p = fs_exe_path();
-  EXPECT_FALSE(p.empty());
+  ASSERT_FALSE(p.empty());
 
   std::vector<std::string> argvs = ::testing::internal::GetArgvs();
 

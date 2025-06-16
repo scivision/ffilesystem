@@ -331,7 +331,7 @@ std::string fs_win32_to_narrow([[maybe_unused]] std::wstring_view w)
 {
   std::error_code ec;
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN__)
   if (int L = WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, nullptr, 0, nullptr, nullptr); L > 0)  FFS_LIKELY
   {
     std::string n;
@@ -355,7 +355,7 @@ std::wstring fs_win32_to_wide(std::string_view n)
 {
   std::error_code ec;
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN__)
   // https://docs.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
 
   if (int L = MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, nullptr, 0); L > 0)  FFS_LIKELY

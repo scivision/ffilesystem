@@ -5,15 +5,16 @@
 #include "ffilesystem.h"
 
 #include <string>
+#include <system_error>
 
 #if defined(__unix__)
 // https://github.com/cpredef/predef/blob/master/OperatingSystems.md#bsd-environment
 #include <sys/param.h> // IWYU pragma: keep
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h> // GetModuleFileNameA
+#include <Windows.h> // GetModuleFileName
 #include <cstddef> // for size_t
 #elif defined(__APPLE__) && defined(__MACH__)
 #include <cstdint> // for uint32_t
@@ -32,7 +33,9 @@ std::string fs_exe_path()
   // https://stackoverflow.com/a/4031835
   // https://stackoverflow.com/a/1024937
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+  std::error_code ec;
+
+#if defined(_WIN32)
   // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamea
   std::wstring w;
   w.resize(fs_get_max_path());
@@ -41,7 +44,7 @@ std::string fs_exe_path()
     w.resize(L);
     return fs_win32_to_narrow(w);
   }
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__CYGWIN__)
   // https://man7.org/linux/man-pages/man2/readlink.2.html
   std::string_view exe = "/proc/self/exe";
   std::string p;
@@ -72,8 +75,10 @@ std::string fs_exe_path()
     path.resize(L);
     return path;
   }
+#else
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error("", __func__);
+  fs_print_error("", __func__, ec);
   return {};
 }
