@@ -31,8 +31,6 @@ if(i /= 0) then
   error stop
 endif
 
-
-
 if(.not. is_file(path)) error stop "exe_path() is not a file: " // path
 
 print '(a)', path

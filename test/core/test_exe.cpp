@@ -32,6 +32,8 @@ class TestExe : public testing::Test {
 
       std::vector<std::string> argvs = ::testing::internal::GetArgvs();
       self = argvs[0];
+      if(fs_is_cygwin())
+        self += ".exe";
 
       ASSERT_TRUE(fs_touch(exe));
       ASSERT_TRUE(fs_touch(noexe));
@@ -62,7 +64,13 @@ EXPECT_TRUE(fs_is_exe(exe));
 
 
 TEST_F(TestExe, IsExeBin){
-EXPECT_TRUE(fs_is_executable_binary(self));
+// Cygwin is fussy about the full path, but it does work
+// Cygwin wants the /cygdrive/ prefix rather than /home/username/ prefix
+
+if (!fs_is_cygwin()){
+  EXPECT_TRUE(fs_is_executable_binary(self)) << self << " is not executable binary";
+}
+
 EXPECT_FALSE(fs_is_executable_binary(exe));
 EXPECT_FALSE(fs_is_executable_binary(noexe));
 }
