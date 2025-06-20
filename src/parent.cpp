@@ -53,7 +53,7 @@ std::string fs_parent(std::string_view path)
     return ".";
 
   // need this for <filesystem> or _splitpath_s to make x: x:/
-  if (fs_is_windows() && !p.empty() && p == fs_root_name(p))
+  if (fs_is_windows() && p == fs_root_name(p))
     p.push_back('/');
 
   return p;

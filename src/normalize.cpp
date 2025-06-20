@@ -90,15 +90,12 @@ fs_drop_trailing_slash(std::string_view path)
   // drop trailing "/" and "\" from the path
   // but not if it is the root name
 
-  if (path.empty())
-    return {};
-
   std::string p(path);
 
   while(p.length() > 1 && (p.back() == '/' || (fs_is_windows() && p.back() == '\\')))
     p.pop_back();
 
-  if (fs_is_windows() && p == fs_root_name(path))
+  if (fs_is_windows() && !p.empty() && p == fs_root_name(path))
     p.push_back('/');
 
   return p;
