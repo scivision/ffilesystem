@@ -60,8 +60,10 @@ jobs:
 
     - name: Setup Intel oneAPI environment
       run: |
-        source /opt/intel/oneapi/${{ matrix.oneapi }}/oneapi-vars.sh
+        source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
+# this is recommended, but file didn't exist
+# source /opt/intel/oneapi/${{ matrix.oneapi }}/oneapi-vars.sh
 
     - name: Configure CMake
       timeout-minutes: 1
