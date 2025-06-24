@@ -64,9 +64,12 @@ jobs:
         cmake --preset default
         -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
 
-    - name: print config log
-      if: ${{ failure() }}
-      run: cat build/CMakeFiles/CMakeConfigureLog.yaml
+    - name: Upload log failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.CXX }}-cpp-${{ matrix.cpp }}-${{ runner.os }}-CMakeConfigureLog.yaml
+        path: build/CMakeFiles/CMakeConfigureLog.yaml
 
     - name: Release workflow
       run: cmake --workflow default

@@ -93,9 +93,12 @@ jobs:
         cmake --preset multi
         -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
 
-    - name: print config log
-      if: ${{ failure() }}
-      run: cat build/CMakeFiles/CMakeConfigureLog.yaml
+    - name: Upload log failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cpp-${{ matrix.cpp-std }}-${{ matrix.cpp }}-shared-${{ matrix.shared }}-${{ runner.os }}-CMakeConfigureLog.yaml
+        path: build/CMakeFiles/CMakeConfigureLog.yaml
 
     - name: Debug workflow
       run: cmake --workflow debug

@@ -14,10 +14,12 @@ runs:
       -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared }}
       -DCMAKE_CXX_STANDARD=${{ matrix.cpp-std }}
 
-  - name: log if fail
-    shell: bash
+  - name: Upload log failure
     if: failure()
-    run: cat build/CMakeFiles/CMakeConfigureLog.yaml
+    uses: actions/upload-artifact@v4
+    with:
+      name: cpp-${{ matrix.cpp-std }}-${{ matrix.cpp }}-shared-${{ matrix.shared }}-${{ runner.os }}-CMakeConfigureLog.yaml
+      path: build/CMakeFiles/CMakeConfigureLog.yaml
 
   - name: Debug workflow
     shell: bash
