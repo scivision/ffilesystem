@@ -47,14 +47,15 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
   int r1 = 0;
   int r2 = 0;
 
-#if defined(STATX_BASIC_STATS) && defined(USE_STATX)
+// https://www.man7.org/linux/man-pages/man7/inode.7.html
+#if defined(STATX_INO) && defined(USE_STATX)
 
   struct statx x1;
   struct statx x2;
 
-  r1 = statx(AT_FDCWD, path1.data(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &x1);
+  r1 = statx(AT_FDCWD, path1.data(), AT_NO_AUTOMOUNT, STATX_INO, &x1);
   if(r1 == 0){
-    r2 = statx(AT_FDCWD, path2.data(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &x2);
+    r2 = statx(AT_FDCWD, path2.data(), AT_NO_AUTOMOUNT, STATX_INO, &x2);
     if(r2 == 0)
       return x1.stx_dev_major == x2.stx_dev_major && x1.stx_dev_minor == x2.stx_dev_minor && x1.stx_ino == x2.stx_ino;
   }

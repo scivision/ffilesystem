@@ -231,6 +231,8 @@ std::string fs_with_suffix(std::string_view, std::string_view);
 std::string::size_type fs_symlink_length([[maybe_unused]] std::string_view);
 
 int fs_st_mode(std::string_view);
+int fs_st_dev(std::string_view);
+int fs_inode(std::string_view);
 struct passwd* fs_getpwuid();
 
 // ---------------------------------------------------------------------------

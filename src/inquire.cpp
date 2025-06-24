@@ -71,7 +71,7 @@ bool fs_win32_is_type(std::string_view path, const DWORD type){
 bool fs_has_statx()
 {
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
-#if defined(STATX_MODE)
+#if defined(STATX_MODE) && defined(USE_STATX)
   return true;
 #else
   return false;
@@ -101,6 +101,56 @@ fs_st_mode(std::string_view path)
   }
 
   return 0;
+}
+
+
+int fs_st_dev(std::string_view path)
+{
+  // device number of the file or directory
+  int r = 0;
+
+#if defined(STATX_INO) && defined(USE_STATX)
+
+  struct statx x;
+
+  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_INO, &x);
+  if(r == 0)
+    return x.stx_dev_major << 8 | x.stx_dev_minor;
+
+#endif
+
+  if((r == 0) || errno == ENOSYS){
+    if(struct stat s; !stat(path.data(), &s))
+      return s.st_dev;
+  }
+
+  fs_print_error(path, __func__);
+  return -1;
+}
+
+
+int fs_inode(std::string_view path)
+{
+  // inode number of the file or directory
+  int r = 0;
+
+#if defined(STATX_INO) && defined(USE_STATX)
+
+  struct statx x;
+
+  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_INO, &x);
+  if(r == 0)
+    return x.stx_ino;
+
+#endif
+
+  if((r == 0) || errno == ENOSYS){
+    if(struct stat s; !stat(path.data(), &s))
+      return s.st_ino;
+  }
+
+  fs_print_error(path, __func__);
+  return -1;
 }
 
 

@@ -117,7 +117,8 @@ static bool one_arg(std::string_view fun, std::string_view a1)
 
   std::error_code ec;
 
-  using fs_one_arg_function = std::function<std::variant<std::string, bool, std::size_t
+  // each possible return type for the function
+  using fs_one_arg_function = std::function<std::variant<std::string, bool, std::size_t, int
   #if uintmax_t != size_t
   , uintmax_t
   #endif
@@ -172,6 +173,9 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     {"is_removable", [](std::string_view a1) { return fs_is_removable(a1); }},
     {"is_readable", [](std::string_view a1) { return fs_is_readable(a1); }},
     {"is_writable", [](std::string_view a1) { return fs_is_writable(a1); }},
+    {"device", [](std::string_view a1) { return fs_st_dev(a1); }},
+    {"mode", [](std::string_view a1) { return fs_st_mode(a1); }},
+    {"inode", [](std::string_view a1) { return fs_inode(a1); }},
     {"perm", [](std::string_view a1) { return fs_get_permissions(a1); }},
     {"read_symlink", [](std::string_view a1) { return fs_read_symlink(a1); }},
     {"stem", [](std::string_view a1) { return fs_stem(a1); }},
@@ -189,6 +193,7 @@ static bool one_arg(std::string_view fun, std::string_view a1)
   bool ok = true;
 
   auto it = fs_one_arg_function_map.find(fun);
+  // if-else each possible return type for the function
   if (it != fs_one_arg_function_map.end()) {
     auto r = it->second(a1);
     if (std::holds_alternative<std::string>(r))
@@ -197,6 +202,8 @@ static bool one_arg(std::string_view fun, std::string_view a1)
       std::cout << std::get<bool>(r);
     else if (std::holds_alternative<std::size_t>(r))
       std::cout << std::get<std::size_t>(r);
+    else if (std::holds_alternative<int>(r))
+      std::cout << std::get<int>(r);
     else if (std::holds_alternative<uintmax_t>(r))
       std::cout << std::get<uintmax_t>(r);
     else
