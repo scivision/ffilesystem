@@ -33,12 +33,6 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
   std::string p1(path1);
   std::string p2(path2);
 
-  if(fs_is_mingw()){
-    // MinGW falsely gives mismatch if not canonicalized
-    p1 = fs_canonical(p1, true, false);
-    p2 = fs_canonical(p2, true, false);
-  }
-
   if(bool e = Filesystem::equivalent(p1, p2, ec); !ec)
     return e;
 
