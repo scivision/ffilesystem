@@ -119,7 +119,7 @@ int fs_st_dev(std::string_view path)
 
 #endif
 
-  if((r == 0) || errno == ENOSYS){
+  if(r == 0 || errno == ENOSYS){
     if(struct stat s; !stat(path.data(), &s))
       return s.st_dev;
   }
@@ -132,6 +132,10 @@ int fs_st_dev(std::string_view path)
 int fs_inode(std::string_view path)
 {
   // inode number of the file or directory
+  //
+  // Windows: .st_ino is always zero.
+  // See source code for fs_equivalent() for how to use BY_HANDLE_FILE_INFORMATION
+  // with GetFileInformationByHandle().
   int r = 0;
 
 #if defined(STATX_INO) && defined(USE_STATX)
