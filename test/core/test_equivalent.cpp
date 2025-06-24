@@ -7,12 +7,15 @@
 
 class TestSame : public testing::Test {
     protected:
-      std::string cwd;
-      std::string self_name;
+      std::string cwd, self, self_name;
       void SetUp() override {
         cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
         std::vector<std::string> argvs = ::testing::internal::GetArgvs();
-        self_name = fs_file_name(argvs[0]);
+
+        self = argvs[0];
+        self_name = fs_file_name(self);
+
+        ASSERT_TRUE(fs_is_file(self)) << "Test executable not found: " << self;
       }
 };
 
@@ -33,4 +36,5 @@ TEST_F(TestSame, Relative)
 EXPECT_TRUE(fs_equivalent("..", fs_parent(cwd)));
 EXPECT_TRUE(fs_equivalent(".", "./"));
 EXPECT_TRUE(fs_equivalent(".", cwd));
+EXPECT_FALSE(fs_equivalent("..", cwd));
 }
