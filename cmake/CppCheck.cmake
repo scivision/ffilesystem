@@ -19,22 +19,17 @@ endif()
 set(CMAKE_TRY_COMPILE_TARGET_TYPE EXECUTABLE)
 
 # some compilers claim to have filesystem, but their libstdc++ doesn't have it.
-check_source_compiles(CXX
-[=[
-#include <filesystem>
-
+set(_src "#include <filesystem>
 int main () {
-std::filesystem::path tgt("a/b");
-
-return !tgt.has_filename();
-}
-]=]
-HAVE_CXX_FILESYSTEM
-)
+std::filesystem::path tgt;
+return tgt.empty() ? 0 : 1;
+}")
+check_source_compiles(CXX "${_src}" HAVE_CXX_FILESYSTEM)
 
 if(NOT HAVE_CXX_FILESYSTEM)
-  message(WARNING "C++ stdlib filesystem is broken in libstdc++ ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}
-${HAVE_CXX_FILESYSTEM}")
+  message(STATUS "${PROJECT_NAME}: CMake ${CMAKE_VERSION} ${CMAKE_GENERATOR} proceeding with C++${CMAKE_CXX_STANDARD} fallback to <filesystem>: libstdc++ ${ffilesystem_stdcpp_version}  compiler ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}  linker: ${CMAKE_CXX_COMPILER_LINKER_ID} ${CMAKE_CXX_COMPILER_LINKER_VERSION}
+${HAVE_CXX_FILESYSTEM}
+  see CMake log file ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeConfigureLog.yaml for details on variable HAVE_CXX_FILESYSTEM.")
   return()
 endif()
 
