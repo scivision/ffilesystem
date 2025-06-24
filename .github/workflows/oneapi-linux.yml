@@ -10,6 +10,8 @@ env:
   # debug triggers asan build errors in general with oneAPI Linux
   CMAKE_INSTALL_PREFIX: ~/libs
   CMAKE_PREFIX_PATH: ~/libs
+  CMAKE_GENERATOR: Ninja
+# don't need Ninja but it prints the command lines by default which is good for debugging
 
 on:
   push:

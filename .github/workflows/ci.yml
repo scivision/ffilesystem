@@ -16,6 +16,7 @@ on:
       - "**/CMakeLists.txt"
       - "**.cmake"
       - ".github/workflows/ci.yml"
+      - ".github/workflows/composite-build/*"
   workflow_dispatch:
 
 # avoid wasted runs
