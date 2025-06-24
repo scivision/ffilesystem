@@ -13,6 +13,7 @@ env:
   CMAKE_GENERATOR: Ninja
 # don't need Ninja but it prints the command lines by default which is good for debugging
 
+
 on:
   push:
     paths:
@@ -37,6 +38,7 @@ jobs:
     strategy:
       matrix:
         cpp: [true, false]
+        oneapi: [2025.1]
 
     steps:
     - uses: actions/checkout@v4
@@ -47,18 +49,18 @@ jobs:
       with:
         path: |
           /opt/intel/oneapi
-        key: install-apt
+        key: oneapi-${{ matrix.oneapi }}-apt
 
     - name: non-cache install oneAPI
       if: steps.cache-install.outputs.cache-hit != 'true'
       timeout-minutes: 5
       run: |
         .github/workflows/oneapi_setup_apt_repo_linux.sh
-        sudo apt install intel-oneapi-compiler-dpcpp-cpp intel-oneapi-compiler-fortran
+        sudo apt install --no-install-recommends intel-oneapi-compiler-dpcpp-cpp-${{ matrix.oneapi }} intel-oneapi-compiler-fortran-${{ matrix.oneapi }}
 
     - name: Setup Intel oneAPI environment
       run: |
-        source /opt/intel/oneapi/setvars.sh
+        source /opt/intel/oneapi/${{ matrix.oneapi }}/oneapi-vars.sh
         printenv >> $GITHUB_ENV
 
     - name: Configure CMake
