@@ -24,6 +24,7 @@ on:
       - "**.cmake"
       - "**/CMakeLists.txt"
       - ".github/workflows/oneapi-linux.yml"
+      - ".github/workflows/oneapi*.sh"
       - "!memcheck.cmake"
 
 
