@@ -36,7 +36,7 @@ if(LINUX AND CMAKE_CXX_COMPILER_ID MATCHES "IntelLLVM|NVHPC")
 endif()
 
 
-if(NOT MSVC AND NOT DEFINED ffilesystem_stdcpp_version)
+if(NOT MSVC AND NOT CMAKE_CROSSCOMPILING AND NOT DEFINED ffilesystem_stdcpp_version)
 
 message(CHECK_START "Checking C++ standard library version")
 # Intel, IntelLLVM and NVHPC on Linux use GNU libstdc++, so we need to extract the libstdc++ version
