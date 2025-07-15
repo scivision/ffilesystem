@@ -127,6 +127,8 @@ Use any one of these methods to build Ffilesystem.
 The self-tests are optional and not built by default.
 The tests use GoogleTest framework.
 
+Cross-compiling generally works (e.g. for MUSL) but the optional GoogleTest self-tests may not build.
+
 ### CMake
 
 ```sh
