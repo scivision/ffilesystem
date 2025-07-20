@@ -73,7 +73,7 @@ std::string fs_exe_path()
   std::size_t L = path.size();
   const int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
   if(sysctl(mib, 4, path.data(), &L, nullptr, 0) == 0) {
-    path.resize(L);
+    path.resize(L-1);
     return path;
   }
 #else
