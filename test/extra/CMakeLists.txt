@@ -1,6 +1,6 @@
 set_directory_properties(PROPERTIES LABELS "extra")
 
-set(gtest_tests hostname)
+set(gtest_tests exepath hostname)
 
 if(ffilesystem_locale)
   list(APPEND gtest_tests locale)
