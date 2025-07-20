@@ -1,6 +1,16 @@
 #ifndef FFILESYSTEM_H
 #define FFILESYSTEM_H
 
+#include <sys/types.h> // for pid_t
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <IntSafe.h>
+// windef.h makes errors with Visual Studio generator
+#ifndef pid_t
+#define pid_t DWORD
+#endif
+#endif
+
 #ifdef __cplusplus
 
 constexpr int fs_trace =
@@ -267,7 +277,7 @@ size_t fs_max_component(const char*);
 
 bool fs_is_optimized();
 
-int fs_getpid();
+pid_t fs_getpid();
 
 char fs_pathsep();
 const char* fs_devnull();

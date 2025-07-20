@@ -378,7 +378,7 @@ std::string::size_type fs_with_suffix(const char* path, const char* new_suffix,
     return {};
   }
 
-  int fs_getpid(){
+  pid_t fs_getpid(){
     fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
     return -1;
   }

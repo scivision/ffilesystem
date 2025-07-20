@@ -16,7 +16,7 @@
 
 
 bool fs_is_admin(){
-  // running as admin / root / superuser
+  // is running as admin / root / superuser
 #if defined(_WIN32)
 	HANDLE h = nullptr;
 	TOKEN_ELEVATION elevation;
@@ -36,12 +36,16 @@ bool fs_is_admin(){
 }
 
 
-int fs_getpid()
+pid_t fs_getpid()
 {
+  // get process ID
 #if defined(_WIN32)
-  return static_cast<int>(GetCurrentProcessId());
+  // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocessid
+  return GetCurrentProcessId();
 #else
-  return static_cast<int>(getpid());
+  // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/getpid.2.html
+  // https://www.man7.org/linux/man-pages/man2/getpid.2.html
+  return getpid();
 #endif
 }
 

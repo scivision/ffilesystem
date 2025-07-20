@@ -112,7 +112,7 @@ integer(C_INT) function is_wsl() bind(C, name="fs_is_wsl")
 import
 end function
 
-integer(C_INT) function fs_getpid() bind(C)
+integer(C_LONG) function fs_getpid() bind(C)
 !! process ID
 import
 end function
