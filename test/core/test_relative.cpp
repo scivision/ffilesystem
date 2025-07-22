@@ -5,7 +5,7 @@
 TEST(TestRelative, Agnostic)
 {
 
-EXPECT_EQ(fs_relative_to("", ""), ".");
+EXPECT_EQ(fs_relative_to("", ""), "");
 EXPECT_EQ(fs_relative_to("Hello", "Hello"), ".");
 EXPECT_EQ(fs_relative_to("Hello", "Hello/"), ".");
 EXPECT_EQ(fs_relative_to("a/b", "a/b"), ".");

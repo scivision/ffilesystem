@@ -7,7 +7,7 @@
 TEST(TestProximate, Agnostic)
 {
 
-EXPECT_EQ(fs_proximate_to("", ""), ".");
+EXPECT_EQ(fs_proximate_to("", ""), "");
 EXPECT_EQ(fs_proximate_to("Hello", "Hello"), ".");
 EXPECT_EQ(fs_proximate_to("Hello", "Hello/"), ".");
 EXPECT_EQ(fs_proximate_to("a/b", "a/b"), ".");
