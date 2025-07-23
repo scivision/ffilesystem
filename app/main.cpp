@@ -52,7 +52,7 @@ static bool no_arg(std::string_view fun){
     {"has_statx", fs_has_statx}
   };
 
-using fs_function = std::function<std::variant<std::string, bool, int, char, long, std::size_t>()>;
+using fs_function = std::function<std::variant<std::string, bool, int, char, long, pid_t, std::size_t>()>;
 
 std::unordered_map<std::string_view, fs_function> fs_function_map = {
   {"backend", []() { return fs_backend(); }},

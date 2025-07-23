@@ -2,13 +2,17 @@
 #define FFILESYSTEM_H
 
 #include <sys/types.h> // for pid_t
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <IntSafe.h>
-// windef.h makes errors with Visual Studio generator
+
+#ifdef _MSC_VER
+
+#ifndef DWORD
+typedef unsigned long DWORD;
+#endif
+
 #ifndef pid_t
 #define pid_t DWORD
 #endif
+
 #endif
 
 #ifdef __cplusplus
