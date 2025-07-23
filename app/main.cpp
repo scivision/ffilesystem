@@ -52,12 +52,11 @@ static bool no_arg(std::string_view fun){
     {"has_statx", fs_has_statx}
   };
 
-using fs_function = std::function<std::variant<std::string, bool, int, char, long, pid_t, std::size_t>()>;
+using fs_function = std::function<std::variant<std::string, bool, int, char, long, std::size_t>()>;
 
 std::unordered_map<std::string_view, fs_function> fs_function_map = {
   {"backend", []() { return fs_backend(); }},
   {"is_wsl", []() { return fs_is_wsl(); }},
-  {"pid", []() { return fs_getpid(); }},
   {"pathsep", []() { return fs_pathsep(); }},
   {"cpp_lang", []() { return fs_cpp_lang(); }},
   {"c_lang", []() { return fs_c_lang(); }},
@@ -102,6 +101,8 @@ std::unordered_map<std::string_view, fs_function> fs_function_map = {
 
   } else if (mbool.find(fun) != mbool.end())
     std::cout << mbool[fun]();
+  else if (fun == "pid")
+    std::cout << fs_getpid();
   else
     ok = false;
 
@@ -118,11 +119,7 @@ static bool one_arg(std::string_view fun, std::string_view a1)
   std::error_code ec;
 
   // each possible return type for the function
-  using fs_one_arg_function = std::function<std::variant<std::string, bool, std::size_t, int
-  #if uintmax_t != size_t
-  , uintmax_t
-  #endif
-  >(std::string_view)>;
+  using fs_one_arg_function = std::function<std::variant<std::string, bool, std::size_t, int>(std::string_view)>;
 
   std::unordered_map<std::string_view, fs_one_arg_function> fs_one_arg_function_map = {
     {"lexically_normal", [](std::string_view a1) { return fs_lexically_normal(a1); }},
@@ -133,7 +130,6 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     {"weakly_canonical", [](std::string_view a1) { return fs_canonical(a1, false); }},
     {"resolve", [](std::string_view a1) { return fs_resolve(a1, true); }},
     {"weakly_resolve", [](std::string_view a1) { return fs_resolve(a1, false); }},
-    {"hard", [](std::string_view a1) { return fs_hard_link_count(a1); }},
     {"normal", [](std::string_view a1) { return fs_normal(a1); }},
     {"type", [](std::string_view a1) { return fs_filesystem_type(a1); }},
     {"is_reserved", [](std::string_view a1) { return fs_is_reserved(a1); }},
@@ -160,7 +156,6 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     {"drop_slash", [](std::string_view a1) { return fs_drop_slash(a1); }},
     {"root_name", [](std::string_view a1) { return fs_root_name(a1); }},
     {"filename", [](std::string_view a1) { return fs_file_name(a1); }},
-    {"file_size", [](std::string_view a1) { return fs_file_size(a1); }},
     {"is_absolute", [](std::string_view a1) { return fs_is_absolute(a1); }},
     {"is_exe", [](std::string_view a1) { return fs_is_exe(a1); }},
     {"is_exe_bin", [](std::string_view a1) { return fs_is_executable_binary(a1); }},
@@ -180,14 +175,20 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     {"read_symlink", [](std::string_view a1) { return fs_read_symlink(a1); }},
     {"stem", [](std::string_view a1) { return fs_stem(a1); }},
     {"exists", [](std::string_view a1) { return fs_exists(a1); }},
-    {"space_available", [](std::string_view a1) { return fs_space_available(a1); }},
-    {"space_capacity", [](std::string_view a1) { return fs_space_capacity(a1); }},
     {"blksize", [](std::string_view a1) { return fs_get_blksize(a1); }},
     {"absolute", [](std::string_view a1) { return fs_absolute(a1, true); }},
     {"is_empty", [](std::string_view a1) { return fs_is_empty(a1); }},
     {"remove", [](std::string_view a1) { return fs_remove(a1); }},
     {"which", [](std::string_view a1) { return fs_which(a1, "", false); }},
     {"which_all", [](std::string_view a1) { return fs_which(a1, "", true); }},
+  };
+
+  std::map<std::string_view, std::function<std::uintmax_t(std::string_view)>> m1uintm =
+  {
+    {"file_size", [](std::string_view a1) { return fs_file_size(a1); }},
+    {"space_available", [](std::string_view a1) { return fs_space_available(a1); }},
+    {"space_capacity", [](std::string_view a1) { return fs_space_capacity(a1); }},
+    {"hard_link_count", [](std::string_view a1) { return fs_hard_link_count(a1); }}
   };
 
   bool ok = true;
@@ -209,6 +210,8 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     else
       ok = false;
 
+  } else if (m1uintm.find(fun) != m1uintm.end()) {
+    std::cout << m1uintm[fun](a1);
   } else if (fun == "modtime"){
 
 #if defined(HAVE_CXX_FILESYSTEM) && defined(__cpp_lib_format) // C++20
