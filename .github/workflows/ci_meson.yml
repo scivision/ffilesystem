@@ -31,7 +31,7 @@ jobs:
       with:
         python-version: '3.x'
 
-    - run: pip install meson ninja
+    - run: pip install meson
 
     - run: meson setup -Dtest=true -Dcpp=${{ matrix.cpp }} build
 

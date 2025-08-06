@@ -16,7 +16,7 @@ on:
       - "**/CMakeLists.txt"
       - "**.cmake"
       - ".github/workflows/ci.yml"
-      - ".github/workflows/composite-build/*"
+
   workflow_dispatch:
 
 # avoid wasted runs
@@ -37,7 +37,7 @@ jobs:
         shared: [true, false]
         cpp: [true, false]
 
-    env:
+    env: &gcc-env
       CC: gcc-${{ matrix.gcc-version }}
       CXX: g++-${{ matrix.gcc-version }}
       FC: gfortran-${{ matrix.gcc-version }}
@@ -95,10 +95,7 @@ jobs:
           shared: true
           cpp: true
 
-    env:
-      CC: gcc-${{ matrix.gcc-version }}
-      CXX: g++-${{ matrix.gcc-version }}
-      FC: gfortran-${{ matrix.gcc-version }}
+    env: *gcc-env
 
     steps:
     - uses: actions/checkout@v4
@@ -121,11 +118,7 @@ jobs:
         shared: [false]
         cpp: [true, false]
 
-    env:
-      CC: gcc-${{ matrix.gcc-version }}
-      CXX: g++-${{ matrix.gcc-version }}
-      FC: gfortran-${{ matrix.gcc-version }}
-
+    env: *gcc-env
 
     steps:
     - name: install compilers
@@ -158,10 +151,7 @@ jobs:
         cpp: [true, false]
         shared: [false]
 
-    env:
-      CC: gcc-${{ matrix.gcc-version }}
-      CXX: g++-${{ matrix.gcc-version }}
-      FC: gfortran-${{ matrix.gcc-version }}
+    env: *gcc-env
 
     steps:
 

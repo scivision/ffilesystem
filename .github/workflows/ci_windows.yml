@@ -16,7 +16,6 @@ on:
       - "**/CMakeLists.txt"
       - "**.cmake"
       - ".github/workflows/ci_windows.yml"
-      - ".github/workflows/composite-build/*"
       - "!memcheck.cmake"
   workflow_dispatch:
 
@@ -98,7 +97,7 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: cpp-${{ matrix.cpp-std }}-${{ matrix.cpp }}-shared-${{ matrix.shared }}-${{ runner.os }}-CMakeConfigureLog.yaml
+        name: cpp-${{ matrix.cpp }}-shared-${{ runner.os }}-CMakeConfigureLog.yaml
         path: build/CMakeFiles/CMakeConfigureLog.yaml
 
     - name: Debug workflow
