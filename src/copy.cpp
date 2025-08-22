@@ -32,8 +32,15 @@ namespace Filesystem = std::filesystem;
 // for non-Windows file loop fallback
 #include <sys/types.h>  // for off_t, ssize_t
 #include <sys/stat.h>
-#include <unistd.h> // read write
-#include <fcntl.h>  // open close
+#include <unistd.h> // for read, write
+#include <fcntl.h>  // for open, close
+
+// O_CLOEXEC is not defined on all systems. We're not spawning processes,
+// so it would only be meaningful possibly if we're invoked multithreaded.
+#if !defined(O_CLOEXEC)
+#define O_CLOEXEC  0
+#endif
+
 #endif
 
 #if defined(__APPLE__) && defined(__MACH__) && __has_include(<copyfile.h>)
@@ -81,14 +88,14 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
   bool useloop = fst == "debugfs" || fst == "procfs" || fst == "sysfs" || fst == "tracefs";
 #endif
 
-  int const rid = open(source.data(), O_RDONLY);
+  int const rid = ::open(source.data(), O_RDONLY | O_CLOEXEC);
   if (rid == -1)
     return false;
 
   // leave fstat here to avoid source file race condition
   struct stat stat;
   if (fstat(rid, &stat) == -1) {
-    close(rid);
+    ::close(rid);
     return false;
   }
 
@@ -99,9 +106,9 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
     opt |= O_EXCL;
 
 // https://linux.die.net/man/3/open
-  int const wid = open(dest.data(), opt, stat.st_mode);
+  int const wid = ::open(dest.data(), opt, stat.st_mode);
   if (wid == -1) {
-    close(rid);
+    ::close(rid);
     return false;
   }
 
