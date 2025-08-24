@@ -161,38 +161,6 @@ jobs:
     - uses: ./.github/workflows/composite-build
 
 
-  mac:
-    runs-on: macos-latest
-    timeout-minutes: 10
-
-    strategy:
-      fail-fast: false
-      matrix:
-        compiler: [ {cpp: clang++, c: clang, fc: flang-new } ]
-        shared: [true, false]
-        cpp: [true, false]
-        include:
-        - compiler: {cpp: g++-14, c: gcc-14, fc: gfortran-14 }
-          shared: true
-          cpp: true
-
-    env:
-      HOMEBREW_NO_INSTALL_CLEANUP: 1
-      CC: ${{ matrix.compiler.c }}
-      CXX: ${{ matrix.compiler.cpp }}
-      FC: ${{ matrix.compiler.fc }}
-      LIBRARY_PATH: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib
-# for flang-new https://github.com/Homebrew/homebrew-core/issues/198106
-
-    steps:
-    - name: install Flang
-      if: ${{ matrix.compiler.fc == 'flang-new' }}
-      run: brew install flang
-
-    - *checkout
-    - uses: ./.github/workflows/composite-build
-
-
   cmake-older:
     timeout-minutes: 30
 

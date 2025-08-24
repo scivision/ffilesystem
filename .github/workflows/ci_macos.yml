@@ -1,0 +1,54 @@
+name: ci_macos
+
+env:
+  CMAKE_INSTALL_PREFIX: ~/libs
+  CMAKE_PREFIX_PATH: ~/libs
+  CTEST_NO_TESTS_ACTION: error
+
+on:
+  push:
+    paths:
+      - "**.c"
+      - "**.h"
+      - "**.cpp"
+      - "**.f90"
+      - "**.F90"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
+      - ".github/workflows/ci_macos.yml"
+
+  workflow_dispatch:
+
+# avoid wasted runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  mac:
+    runs-on: macos-15
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [ {cpp: clang++, c: clang, fc: flang-new },
+                    {cpp: g++-15, c: gcc-15, fc: gfortran-15 } ]
+        shared: [false]
+        cpp: [true, false]
+
+    env:
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
+      CC: ${{ matrix.compiler.c }}
+      CXX: ${{ matrix.compiler.cpp }}
+      FC: ${{ matrix.compiler.fc }}
+
+    steps:
+    - name: install Flang
+      if: ${{ matrix.compiler.fc == 'flang-new' }}
+      run: brew install flang
+
+    - uses: actions/checkout@v5
+
+    - uses: ./.github/workflows/composite-build
