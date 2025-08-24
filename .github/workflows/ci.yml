@@ -44,7 +44,9 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v4
+    - &checkout
+      uses: actions/checkout@v5
+
     - uses: ./.github/workflows/composite-build
 
 
@@ -74,7 +76,7 @@ jobs:
     - name: install Flang
       run: sudo apt install --no-install-recommends clang-${{ matrix.llvm-version }} flang-${{ matrix.llvm-version }}
 
-    - uses: actions/checkout@v4
+    - *checkout
 
     - uses: ./.github/workflows/composite-build
 
@@ -98,7 +100,7 @@ jobs:
     env: *gcc-env
 
     steps:
-    - uses: actions/checkout@v4
+    - *checkout
     - uses: ./.github/workflows/composite-build
 
 
@@ -135,7 +137,7 @@ jobs:
         apt-get install --no-install-recommends -y kitware-archive-keyring
         apt-get install --no-install-recommends -y cmake
 
-    - uses: actions/checkout@v4
+    - *checkout
 
     - uses: ./.github/workflows/composite-build
 
@@ -155,7 +157,7 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v4
+    - *checkout
     - uses: ./.github/workflows/composite-build
 
 
@@ -187,7 +189,7 @@ jobs:
       if: ${{ matrix.compiler.fc == 'flang-new' }}
       run: brew install flang
 
-    - uses: actions/checkout@v4
+    - *checkout
     - uses: ./.github/workflows/composite-build
 
 
@@ -202,7 +204,7 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v4
+    - *checkout
 
     - uses: ./.github/workflows/composite-cmake
 

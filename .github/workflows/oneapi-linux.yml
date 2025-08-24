@@ -47,9 +47,10 @@ jobs:
       matrix:
         cpp: [true, false]
         oneapi: [2025.1]
+# oneapi 2025.1 until googletest is fixed https://github.com/google/googletest/pull/4798
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: cache install oneAPI
       id: cache-install
