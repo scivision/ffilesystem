@@ -63,7 +63,7 @@ include(FetchContent)
 
 set(FETCHCONTENT_QUIET OFF)
 FetchContent_Declare(googletest
-URL https://github.com/google/googletest/archive/refs/tags/v1.16.0.tar.gz
+URL ${googletest_url}
 )
 FetchContent_MakeAvailable(googletest)
 
