@@ -119,6 +119,9 @@ jobs:
         gcc-version: [8]
         shared: [false]
         cpp: [true, false]
+        include:
+        - gcc-version: 7
+          cpp: false
 
     env: *gcc-env
 
