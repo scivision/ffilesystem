@@ -283,6 +283,7 @@ bool fs_is_optimized();
 
 pid_t fs_getpid();
 
+char fs_filesep();
 char fs_pathsep();
 const char* fs_devnull();
 

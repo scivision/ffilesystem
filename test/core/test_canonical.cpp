@@ -11,7 +11,7 @@ class TestCanonical : public testing::Test {
     std::string home, homep, cwd, cwdp;
 
     void SetUp() override {
-      cwd = fs_get_cwd();
+      cwd = fs_as_posix(fs_get_cwd());
       ASSERT_FALSE(cwd.empty());
 
       cwdp = fs_parent(cwd);

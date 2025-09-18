@@ -19,6 +19,15 @@ namespace Filesystem = std::filesystem;
 #include "ffilesystem.h"
 
 
+char fs_filesep(){
+#if defined(HAVE_CXX_FILESYSTEM)
+  return std::filesystem::path::preferred_separator;
+#else
+  return fs_is_windows() ? '\\' : '/';
+#endif
+}
+
+
 char fs_pathsep(){
   return fs_is_windows() ? ';' : ':';
 }

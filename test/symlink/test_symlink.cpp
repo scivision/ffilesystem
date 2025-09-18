@@ -15,13 +15,13 @@ class TestSymlink : public testing::Test {
 
       cwd = fs_get_cwd();
       ASSERT_FALSE(cwd.empty()) << "get_cwd() should not return empty string";
-      tgt = cwd + "/test_" + n + "_cpp.txt";
+      tgt = cwd + fs_filesep() + "test_" + n + "_cpp.txt";
 
       ASSERT_TRUE(fs_touch(tgt));
       ASSERT_TRUE(fs_is_file(tgt)) << "is_file(" << tgt << ") should be true for existing regular file";
 
-      link = cwd + "/test_" + n + "_cpp.link";
-      link_dir = cwd + "/test_" + n + "_cpp.dir.link";
+      link = cwd + fs_filesep() + "test_" + n + "_cpp.link";
+      link_dir = cwd + fs_filesep() + "test_" + n + "_cpp.dir.link";
 
       if (fs_is_symlink(link)){
         ASSERT_TRUE(fs_remove(link));

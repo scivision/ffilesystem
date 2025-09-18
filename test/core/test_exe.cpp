@@ -128,5 +128,5 @@ TEST_F(TestExe, ChmodNoExe){
 
 
 TEST_F(TestExe, WhichExe){
-  EXPECT_EQ(fs_which(exe, cwd), cwd + "/" + exe);
+  EXPECT_EQ(fs_which(exe, cwd), cwd + fs_filesep() + exe);
 }

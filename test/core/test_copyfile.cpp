@@ -24,10 +24,10 @@ class TestCopyFile : public testing::Test {
       std::string test_suite_name_ = info->test_suite_name();
       std::string n = test_suite_name_ + "-" + test_name_;
 
-      s1 = cwd + "/" + n + "_some_text.txt";
-      s2 = cwd + "/" + n + "_some_text.txt.copy";
-      s3 = cwd + "/" + n + "_empty.txt";
-      s4 = cwd + "/" + n + "_empty.txt.copy";
+      s1 = cwd + fs_filesep() + n + "_some_text.txt";
+      s2 = cwd + fs_filesep() + n + "_some_text.txt.copy";
+      s3 = cwd + fs_filesep() + n + "_empty.txt";
+      s4 = cwd + fs_filesep() + n + "_empty.txt.copy";
       if(fs_is_windows()){
         ext1 = R"(\\?\)" + s1;
         ext5 = R"(\\?\)" + s2 + ".long";
