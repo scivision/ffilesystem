@@ -8,10 +8,14 @@ namespace Filesystem = std::filesystem;
 
 #include <system_error> // for std::error_code
 
+#include <iostream> // IWYU pragma: keep
+
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h> // IWYU pragma: keep
 // GetTempPathA
+#elif defined(__APPLE__) && defined(__MACH__)
+#include <unistd.h> // for confstr
 #endif
 
 #include "ffilesystem.h"
@@ -40,7 +44,21 @@ std::string fs_get_tempdir()
       return fs_win32_to_narrow(w);
     }
   }
-#else
+#elif defined(__APPLE__) && defined(__MACH__)
+// https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/confstr.3.html
+  size_t len = ::confstr(_CS_DARWIN_USER_TEMP_DIR, nullptr, 0);
+  if (len > 1) {
+    std::string t;
+    t.resize(len);
+    if(::confstr(_CS_DARWIN_USER_TEMP_DIR, t.data(), len) == len) {
+      t.resize(len - 1); // remove trailing null
+      if(fs_trace) std::cout << "TRACE: used confstr(_CS_DARWIN_USER_TEMP_DIR) = " << t << "\n";
+      return t;
+    }
+  }
+#endif
+
+#if !defined(_WIN32)
   if(auto t = fs_getenv("TMPDIR"); t.has_value() && !t.value().empty())
     return t.value();
 

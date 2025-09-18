@@ -73,8 +73,8 @@ else {
     }
 #else
   // https://www.man7.org/linux/man-pages/man2/mkdir.2.html
-    ok = mkdir(buf.data(), S_IRWXU) == 0 ||
-          errno == EEXIST ||
+    ok = ::mkdir(buf.data(), S_IRWXU) == 0 ||
+           errno == EEXIST ||
           (errno == EACCES && p != parts.back());
 #endif
 

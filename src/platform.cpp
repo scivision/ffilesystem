@@ -69,7 +69,7 @@ std::string fs_get_cwd()
 // unistd.h https://www.man7.org/linux/man-pages/man3/getcwd.3.html
 // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/getcwd.3.html
 
-  if(char* d = getcwd(nullptr, 0); d){
+  if(char* d = ::getcwd(nullptr, 0); d){
     std::string r(d);
     free(d);
     return r;
