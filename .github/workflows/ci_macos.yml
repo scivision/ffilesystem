@@ -49,9 +49,9 @@ jobs:
       if: ${{ matrix.compiler.fc == 'flang-new' }}
       run: brew install flang
 
-    - name: Latest Xcode needed for GCC
-      if: startsWith(matrix.compiler.cpp, 'g++')
-      run: sudo xcode-select --switch /Library/Developer/CommandLineTools
+    # - name: Latest Xcode needed for GCC
+    #   if: startsWith(matrix.compiler.cpp, 'g++')
+    #   run: sudo xcode-select --switch /Library/Developer/CommandLineTools
 # This comes into play when GA is pinned to an old Xcode b/c Homebrew builds against latest
 # Every say year or two this becomes an issue.
 # https://github.com/Homebrew/homebrew-core/issues/228131
