@@ -17,7 +17,7 @@ class TestExe : public testing::Test {
       std::string test_name_ = info->name();
       std::string test_suite_name_ = info->test_suite_name();
       std::string n = test_suite_name_ + "-" + test_name_;
-      cwd = fs_get_cwd();
+      cwd = inst->original_working_dir();
 
       if(fs_is_wsl() > 0 && fs_filesystem_type(cwd) == "v9fs")
         GTEST_SKIP() << "v9fs to NTFS etc. doesn't work right";

@@ -14,10 +14,12 @@ class TestCopyFile : public testing::Test {
     std::uintmax_t iref;
 
     void SetUp() override {
-      auto cwd = fs_get_cwd();
 
       auto inst = testing::UnitTest::GetInstance();
       auto info = inst->current_test_info();
+      std::string cwd = inst->original_working_dir();
+
+      ASSERT_FALSE(cwd.empty());
 
       // https://google.github.io/googletest/reference/testing.html#UnitTest::current_test_suite
       std::string test_name_ = info->name();
@@ -91,8 +93,8 @@ TEST_F(TestCopyFile, Windows){
     GTEST_SKIP() << "Windows specific test";
 
 
-EXPECT_TRUE(fs_copy_file(ext1, ext5, false));
-EXPECT_TRUE(fs_is_file(ext5));
+ASSERT_TRUE(fs_copy_file(ext1, ext5, false));
+ASSERT_TRUE(fs_is_file(ext5));
 EXPECT_EQ(fs_file_size(ext5), iref);
 
 

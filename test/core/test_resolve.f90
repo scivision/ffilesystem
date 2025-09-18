@@ -8,9 +8,9 @@ implicit none
 
 valgrind : block
 
-character(:), allocatable :: p1, p2, cwd
+character(:), allocatable :: p1, cwd
 
-integer :: L1, L2, L3
+integer :: L1, L3
 
 ! -- current directory  -- old MacOS doesn't handle "." or ".." alone
 p1 = resolve(".")
@@ -29,25 +29,6 @@ end if
 
 print *, "OK: current dir = ", p1
 
-! -- home directory
-p2 = get_homedir()
-p1 = resolve("~")
-
-if (p1(1:1) == "~") then
-  write(stderr,'(a)') "%resolve ~ did not expanduser: " // p1
-  error stop
-end if
-if(len_trim(p1) /= len_trim(p2)) then
-  write(stderr,*) "ERROR: resolve('~') " // p1 // " /= get_homedir: " // p2
-  error stop
-end if
-print *, "OK: home dir = ", p1
-
-p2 = parent(p1)
-L2 = len_trim(p2)
-if (L2 >= L1) error stop "parent home " // p2
-print *, "OK: parent(resolve(~)) = ", p2
-
 !> empty
 if(.not. same_file(resolve(""), cwd)) then
   write(stderr,*) "resolve('') " // resolve("") // " /= " // cwd
@@ -55,10 +36,10 @@ if(.not. same_file(resolve(""), cwd)) then
 end if
 
 ! -- relative dir
-p1 = resolve("~/..")
+p1 = resolve("..")
 L3 = len_trim(p1)
-if (L2 /= L3) then
-  write(stderr,*) 'ERROR:resolve:relative: up dir not resolved: ~/.. => ' // p1, L3, L2
+if (L3 == 0) then
+  write(stderr,*) 'ERROR:resolve:relative: up dir not resolved: .. => ' // p1, L3
   error stop
 end if
 print *, 'OK: canon_dir = ', p1

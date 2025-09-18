@@ -8,47 +8,42 @@
 
 class TestCanonical : public testing::Test {
   protected:
-    std::string home, homep, cwd, cwdp;
+    std::string cwd, cwdp;
 
     void SetUp() override {
-      cwd = fs_as_posix(fs_get_cwd());
+      cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
+      cwd = fs_as_posix(cwd);
       ASSERT_FALSE(cwd.empty());
 
       cwdp = fs_parent(cwd);
       ASSERT_FALSE(cwdp.empty());
-
-      home = fs_get_homedir();
-      homep = fs_parent(home);
-      // NOTE: if root user, might be that homep == home == "/"
-
-      ASSERT_FALSE(home.empty());
-      ASSERT_FALSE(homep.empty());
     }
 };
-
-TEST_F(TestCanonical, CanonicalTilde)
-{
-EXPECT_EQ(fs_canonical("~", true, true), home);
-EXPECT_EQ(fs_canonical("~", false, true), home);
-EXPECT_THAT(fs_canonical("~", false, false), ::testing::EndsWith("~"));
-}
-TEST_F(TestCanonical, ResolveTilde)
-{
-EXPECT_EQ(fs_resolve("~", true, true), home);
-EXPECT_EQ(fs_resolve("~", false, true), home);
-EXPECT_THAT(fs_resolve("~", false, false), ::testing::EndsWith("~"));
-}
 
 
 TEST_F(TestCanonical, CanonicalParentDir)
 {
-EXPECT_EQ(fs_canonical("~/..", true, true), homep);
-EXPECT_EQ(fs_canonical("~/..", false, true), homep);
+std::string r = fs_canonical("..", true);
+ASSERT_FALSE(r.empty());
+ASSERT_EQ(r.length(), cwdp.length()) << r << " vs " << cwdp;
+EXPECT_TRUE(fs_equivalent(r, cwdp));
+
+r = fs_canonical("..", false);
+ASSERT_FALSE(r.empty());
+ASSERT_EQ(r.length(), cwdp.length()) << r << " vs " << cwdp;
+EXPECT_TRUE(fs_equivalent(r, cwdp));
 }
 TEST_F(TestCanonical, ResolveParentDir)
 {
-EXPECT_EQ(fs_resolve("~/..", true, true), homep);
-EXPECT_EQ(fs_resolve("~/..", false, true), homep);
+std::string r = fs_resolve("..", true);
+ASSERT_FALSE(r.empty());
+ASSERT_EQ(r.length(), cwdp.length()) << r << " vs " << cwdp;
+EXPECT_TRUE(fs_equivalent(r, cwdp));
+
+r = fs_resolve("..", false);
+ASSERT_FALSE(r.empty());
+ASSERT_EQ(r.length(), cwdp.length()) << r << " vs " << cwdp;
+EXPECT_TRUE(fs_equivalent(r, cwdp));
 }
 
 
@@ -114,7 +109,7 @@ if(fs_is_cygwin())
   GTEST_SKIP() << "Cygwin can't handle non-existing canonical paths";
 
 std::string name = "ffs_not-exist_cpp.txt";
-std::string h = fs_canonical("~/../" + name, false, true);
+std::string h = fs_canonical("../" + name, false);
 EXPECT_FALSE(h.empty());
 
 EXPECT_GT(h.length(), name.length());
@@ -122,7 +117,7 @@ EXPECT_THAT(h, ::testing::EndsWith(name));
 
 std::string r = "日本語";
 
-h = fs_canonical(r, false, true);
+h = fs_canonical(r, false);
 
 EXPECT_THAT(h, ::testing::EndsWith(r));
 }
@@ -130,5 +125,9 @@ EXPECT_THAT(h, ::testing::EndsWith(r));
 
 TEST_F(TestCanonical, Realpath)
 {
-EXPECT_EQ(fs_realpath("."), cwd);
+std::string r = fs_realpath(".");
+ASSERT_FALSE(r.empty());
+ASSERT_EQ(r.length(), cwd.length());
+
+EXPECT_TRUE(fs_equivalent(r, cwd));
 }

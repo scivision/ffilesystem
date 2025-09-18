@@ -176,7 +176,7 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     {"stem", [](std::string_view a1) { return fs_stem(a1); }},
     {"exists", [](std::string_view a1) { return fs_exists(a1); }},
     {"blksize", [](std::string_view a1) { return fs_get_blksize(a1); }},
-    {"absolute", [](std::string_view a1) { return fs_absolute(a1, true); }},
+    {"absolute", [](std::string_view a1) { return fs_absolute(a1); }},
     {"is_empty", [](std::string_view a1) { return fs_is_empty(a1); }},
     {"remove", [](std::string_view a1) { return fs_remove(a1); }},
     {"which", [](std::string_view a1) { return fs_which(a1, "", false); }},
@@ -293,7 +293,6 @@ static bool two_arg(std::string_view fun, std::string_view a1, std::string_view 
   using fs_two_arg_function = std::function<std::variant<std::string, bool>(std::string_view, std::string_view)>;
 
   std::unordered_map<std::string_view, fs_two_arg_function> fs_two_arg_function_map = {
-    {"weakly_canonical", [](std::string_view a1, std::string_view a2) { return fs_canonical(a1, false, std::atoi(a2.data())); }},
     {"which", [](std::string_view a1, std::string_view a2) { return fs_which(a1, a2, false); }},
     {"which_all", [](std::string_view a1, std::string_view a2) { return fs_which(a1, a2, true); }},
     {"same", [](std::string_view a1, std::string_view a2) { return fs_equivalent(a1, a2); }},
@@ -306,7 +305,7 @@ static bool two_arg(std::string_view fun, std::string_view a1, std::string_view 
     {"setenv", [](std::string_view a1, std::string_view a2) { return fs_setenv(a1, a2); }},
     {"copy", [](std::string_view a1, std::string_view a2) { return fs_copy_file(a1, a2, false); }},
     {"create_symlink", [](std::string_view a1, std::string_view a2) { return fs_create_symlink(a1, a2); }},
-    {"absolute", [](std::string_view a1, std::string_view a2) { return fs_absolute(a1, a2, true); }},
+    {"absolute", [](std::string_view a1, std::string_view a2) { return fs_absolute(a1, a2); }},
     {"rename", [](std::string_view a1, std::string_view a2) { return fs_rename(a1, a2); }}
   };
 

@@ -11,12 +11,12 @@ protected:
   std::string sys_drive;
 
   void SetUp() override {
-    cwd = fs_get_cwd();
+    cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
     ASSERT_FALSE(cwd.empty()) << "Failed to get current working directory";
 
     if (fs_is_windows()) {
       base = "j:/foo";
-      ref = "j:/foo/rel";
+      ref = std::string("j:/foo") + fs_filesep() + "rel";
       auto d = fs_getenv("SystemDrive");
       ASSERT_TRUE(d.has_value()) << "Failed to get SystemDrive";
       sys_drive = d.value();
@@ -30,25 +30,25 @@ protected:
 
 TEST_F(TestAbs, Absolute){
 
-EXPECT_EQ(fs_absolute("", false), cwd);
-EXPECT_EQ(fs_absolute("", "", false), cwd);
+EXPECT_EQ(fs_absolute(""), cwd);
+EXPECT_EQ(fs_absolute("", ""), cwd);
 
-EXPECT_EQ(fs_absolute("rel", base, false), ref);
+EXPECT_EQ(fs_absolute("rel", base), ref);
 
-EXPECT_EQ(fs_absolute(cwd + "/rel", false), cwd + "/rel");
+EXPECT_EQ(fs_absolute(cwd + "/rel"), cwd + "/rel");
 
 // absolute("./rel") may be "/fullpath/./rel" (our method, and most <filesystem> except Windows)
 //                     or "/fullpath/rel" (Windows <filesystem>)
 // using for base "." or ".." and similar has similar ambiguity for testing.
 
 // relative path, empty base
-EXPECT_EQ(fs_absolute("rel", "", false), cwd + "/rel");
+EXPECT_EQ(fs_absolute("rel", ""), cwd + fs_filesep() + "rel");
 
 // empty path, relative base
-EXPECT_EQ(fs_absolute("", "rel", false), cwd + "/rel");
+EXPECT_EQ(fs_absolute("", "rel"), cwd + fs_filesep() + "rel");
 
-EXPECT_EQ(fs_absolute("日本語"), cwd + "/日本語");
-EXPECT_EQ(fs_absolute("have space"), cwd + "/have space");
+EXPECT_EQ(fs_absolute("日本語"), cwd + fs_filesep() + "日本語");
+EXPECT_EQ(fs_absolute("have space"), cwd + fs_filesep() + "have space");
 
 }
 
@@ -62,17 +62,6 @@ EXPECT_EQ(fs_absolute(R"(\\?\X:\anybody)"), R"(\\?\X:\anybody)");
 EXPECT_EQ(fs_absolute(R"(\\?\UNC\server\share)"), R"(\\?\UNC\server\share)");
 
 EXPECT_EQ(fs_absolute(sys_drive + "/"), sys_drive + "/");
-}
-
-
-TEST_F(TestAbs, Tilde){
-std::string home(fs_get_homedir());
-
-EXPECT_EQ(fs_absolute("~", false), cwd + "/~");
-EXPECT_EQ(fs_absolute("~/", true), home);
-
-EXPECT_EQ(fs_absolute("~/a", false), cwd + "/~/a");
-EXPECT_EQ(fs_absolute("~/a", true), home + "/a");
 }
 
 

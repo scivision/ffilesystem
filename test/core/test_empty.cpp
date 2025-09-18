@@ -30,7 +30,7 @@ EXPECT_FALSE(fs_is_dir(e));
 EXPECT_FALSE(fs_is_exe(e));
 EXPECT_FALSE(fs_is_file(e));
 EXPECT_FALSE(fs_remove(e));
-EXPECT_TRUE(fs_canonical(e, false, false).empty());
+EXPECT_TRUE(fs_canonical(e, false).empty());
 EXPECT_FALSE(fs_equivalent(e, e));
 EXPECT_TRUE(fs_expanduser(e).empty());
 EXPECT_FALSE(fs_copy_file(e,e, false));

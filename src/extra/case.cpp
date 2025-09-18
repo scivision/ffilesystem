@@ -24,7 +24,7 @@ bool fs_is_case_sensitive(std::string_view path)
   std::string lower;
   std::transform(CamelCase.begin(), CamelCase.end(), std::back_inserter(lower), ::tolower);
 
-  const std::string actual = fs_canonical(lower, true, true);
+  const std::string actual = fs_canonical(lower, true);
 
   if(!rname.empty())
     fs_remove(CamelCase);

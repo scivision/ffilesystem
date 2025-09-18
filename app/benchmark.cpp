@@ -32,13 +32,12 @@ std::chrono::duration<double> bench_cpp(int n, std::string_view path, std::strin
 auto t = std::chrono::duration<double>::max();
 
 constexpr bool strict = false;
-constexpr bool expand_tilde = false;
 
 using fs_function = std::function<std::variant<std::string, bool>(std::string_view)>;
 
 std::unordered_map<std::string_view, fs_function> fs_function_map = {
-  {"canonical", [=](std::string_view p) { return fs_canonical(p, strict, expand_tilde); }},
-  {"resolve", [=](std::string_view p) { return fs_resolve(p, strict, expand_tilde); }},
+  {"canonical", [=](std::string_view p) { return fs_canonical(p, strict); }},
+  {"resolve", [=](std::string_view p) { return fs_resolve(p, strict); }},
   {"drop_slash", [](std::string_view p) { return fs_drop_slash(p); }},
   {"parent", [](std::string_view p) { return fs_parent(p); }},
   {"file_name", [](std::string_view p) { return fs_file_name(p); }},

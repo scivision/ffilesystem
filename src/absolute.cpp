@@ -10,7 +10,7 @@ namespace Filesystem = std::filesystem;
 #include "ffilesystem.h"
 
 
-std::string fs_absolute(std::string_view path, const bool expand_tilde)
+std::string fs_absolute(std::string_view path)
 {
   // wraps std::filesystem::absolute(path).
   // path need not exist
@@ -21,20 +21,16 @@ std::string fs_absolute(std::string_view path, const bool expand_tilde)
   if(path.empty())
     return fs_get_cwd();
 
-  const std::string ex = expand_tilde
-    ? fs_expanduser(path)
-    : std::string(path);
-
-  if (ex.empty()) FFS_UNLIKELY
+  if (path.empty()) FFS_UNLIKELY
     return {};
 
-  if (fs_is_absolute(ex))
-    return ex;
+  if (fs_is_absolute(path))
+    return std::string(path);
 
 #ifdef HAVE_CXX_FILESYSTEM
   std::error_code ec;
 
-  if(auto a = Filesystem::absolute(ex, ec); !ec)
+  if(auto a = Filesystem::absolute(path, ec); !ec)
     return a.string();
 
   fs_print_error(path, __func__, ec);
@@ -44,8 +40,8 @@ std::string fs_absolute(std::string_view path, const bool expand_tilde)
   if(a.empty())
     return {};
 
-  a.push_back('/');
-  a.append(ex);
+  a.push_back(fs_filesep());
+  a.append(path);
 
   // NOT normalized to be consistent with <filesystem>
   return a;
@@ -54,30 +50,26 @@ std::string fs_absolute(std::string_view path, const bool expand_tilde)
 
 
 
-std::string fs_absolute(std::string_view path, std::string_view base, const bool expand_tilde)
+std::string fs_absolute(std::string_view path, std::string_view base)
 {
   // rebase path on base.
 
-  const std::string ex = expand_tilde
-    ? fs_expanduser(path)
-    : std::string(path);
-
-  if (ex.empty() && !path.empty()) FFS_UNLIKELY
+  if (path.empty() && !path.empty()) FFS_UNLIKELY
     return {};
 
-  if(fs_is_absolute(ex))
-    return ex;
+  if(fs_is_absolute(path))
+    return std::string(path);
 
-  std::string b = fs_absolute(base, expand_tilde);
+  std::string b = fs_absolute(base);
   if(b.empty())  FFS_UNLIKELY
     return {};
 
-  if(!ex.empty()){
-    if(b.back() != '/')
-      b.push_back('/');
+  if(!path.empty()){
+    if(b.back() != '/' && b.back() != fs_filesep())
+      b.push_back(fs_filesep());
 
     // don't need join(). Keeps it like Python pathlib.Path.absolute()
-    b.append(ex);
+    b.append(path);
   }
 
   return b;

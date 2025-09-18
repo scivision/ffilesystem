@@ -7,22 +7,16 @@ implicit none
 
 valgrind : block
 
-character(:), allocatable :: in, base, ref, out
+character(:), allocatable :: in, ref, cwd, out
 
 in = "rel"
+cwd = get_cwd()
+ref = cwd // filesep() // in
 
-if (is_windows()) then
-  base = "j:/foo"
-  ref = "j:/foo/rel"
-else
-  base = "/foo"
-  ref = "/foo/rel"
-end if
-
-out = absolute(in, base)
+out = absolute(in, '')
 if(len_trim(out) == 0) error stop "absolute() has empty output"
 if (out /= ref) then
-  write(stderr, '(a)') "Mismatch: absolute(" // in //", " // base // ") " // out // " /= " // ref
+  write(stderr, '(a)') "Mismatch: absolute(" // in //") " // out // " /= " // ref
   error stop
 endif
 

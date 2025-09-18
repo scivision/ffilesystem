@@ -21,8 +21,7 @@ namespace Filesystem = std::filesystem;
 std::string
 fs_canonical(
   std::string_view path,
-  const bool strict,
-  const bool expand_tilde)
+  const bool strict)
 {
   // canonicalize path, i.e. resolve all symbolic links, remove ".", ".." and extra slashes
   // if strict is true, then path must exist
@@ -31,27 +30,23 @@ fs_canonical(
     return {};
     // need this for macOS otherwise it returns the current working directory instead of empty string
 
-  std::string ex = expand_tilde
-    ? fs_expanduser(path)
-    : std::string(path);
-
   std::error_code ec;
 
 #if defined(HAVE_CXX_FILESYSTEM)
 
-  if (fs_is_mingw() && fs_is_symlink(ex))
-    return fs_win32_final_path(ex);
+  if (fs_is_mingw() && fs_is_symlink(path))
+    return fs_win32_final_path(path);
 
-  if(auto c = strict ? Filesystem::canonical(ex, ec) : Filesystem::weakly_canonical(ex, ec); !ec)
+  if(auto c = strict ? Filesystem::canonical(path, ec) : Filesystem::weakly_canonical(path, ec); !ec)
     return c.generic_string();
 
 #else
 
-  if (std::string c = fs_realpath(ex); !c.empty())
+  if (std::string c = fs_realpath(path); !c.empty())
     return c;
 
   if (!strict)
-    return fs_normal(ex);
+    return fs_normal(path);
   // std::filesystem::weakly_canonical() and boost::filesystem::canonical()
   // resolve the path to the current working directory for non-existing paths.
   // https://github.com/boostorg/filesystem/blob/f4bb6d0f3ebe9f8b90243d8a98989191925d49d2/src/operations.cpp#L5023
@@ -65,13 +60,13 @@ fs_canonical(
 }
 
 
-std::string fs_resolve(std::string_view path, const bool strict, const bool expand_tilde)
+std::string fs_resolve(std::string_view path, const bool strict)
 {
   // works like canonical(absolute(path)).
   // Inspired by Python pathlib.Path.resolve()
   // https://docs.python.org/3/library/pathlib.html#pathlib.Path.resolve
 
-  return fs_canonical(fs_absolute(path, expand_tilde), strict, false);
+  return fs_canonical(fs_absolute(path), strict);
 }
 
 

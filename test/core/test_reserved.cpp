@@ -74,6 +74,6 @@ EXPECT_TRUE(fs_exists(ref));
 
 EXPECT_FALSE(fs_is_file(ref));
 
-EXPECT_FALSE(fs_canonical(ref, false, true).empty());
+EXPECT_FALSE(fs_canonical(ref, false).empty());
 
 }

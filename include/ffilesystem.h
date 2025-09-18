@@ -55,15 +55,15 @@ std::optional<std::filesystem::file_time_type> fs_get_modtime_fs(std::string_vie
 
 #endif
 
-std::string fs_absolute(std::string_view, const bool = true);
-std::string fs_absolute(std::string_view, std::string_view, const bool = true);
+std::string fs_absolute(std::string_view);
+std::string fs_absolute(std::string_view, std::string_view);
 
 std::string fs_as_posix(std::string_view);
 std::string fs_as_windows(std::string_view);
 
 std::string fs_backend();
 
-std::string fs_canonical(std::string_view, const bool = false, const bool = true);
+std::string fs_canonical(std::string_view, const bool = false);
 
 std::string fs_compiler();
 
@@ -186,7 +186,7 @@ bool fs_remove(std::string_view);
 
 bool fs_rename(std::string_view, std::string_view);
 
-std::string fs_resolve(std::string_view, const bool = false, const bool = true);
+std::string fs_resolve(std::string_view, const bool = false);
 
 std::string fs_root(std::string_view);
 std::string fs_root_name([[maybe_unused]] std::string_view);
@@ -317,7 +317,7 @@ size_t fs_normal(const char*, char*, const size_t);
 size_t fs_realpath(const char*, char*, const size_t);
 
 size_t fs_join(const char*, const char*, char*, const size_t);
-size_t fs_absolute(const char*, const char*, const bool, char*, const size_t);
+size_t fs_absolute(const char*, const char*, char*, const size_t);
 
 size_t fs_file_name(const char*, char*, const size_t);
 size_t fs_stem(const char*, char*, const size_t);
@@ -368,8 +368,8 @@ size_t fs_get_permissions(const char*, char*, const size_t);
 bool fs_remove(const char*);
 bool fs_rename(const char*, const char*);
 
-size_t fs_canonical(const char*, const bool, const bool, char*, const size_t);
-size_t fs_resolve(const char*, const bool, const bool, char*, const size_t);
+size_t fs_canonical(const char*, const bool, char*, const size_t);
+size_t fs_resolve(const char*, const bool, char*, const size_t);
 
 bool fs_equivalent(const char*, const char*);
 bool fs_copy_file(const char*, const char*, bool);

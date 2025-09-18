@@ -13,8 +13,8 @@ class TestUTF8 : public testing::Test {
 
 TEST_F(TestUTF8, Intl){
 
-EXPECT_FALSE(fs_canonical(".", true, false).empty());
-EXPECT_FALSE(fs_canonical("./", true, false).empty());
+EXPECT_FALSE(fs_canonical(".", true).empty());
+EXPECT_FALSE(fs_canonical("./", true).empty());
 
 EXPECT_EQ(fs_file_name("./" + smiley), smiley);
 EXPECT_EQ(fs_file_name("./" + wink), wink);

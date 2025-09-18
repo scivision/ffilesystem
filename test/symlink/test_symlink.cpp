@@ -13,7 +13,7 @@ class TestSymlink : public testing::Test {
       std::string test_suite_name_ = info->test_suite_name();
       std::string n = test_suite_name_ + "-" + test_name_;
 
-      cwd = fs_get_cwd();
+      cwd = inst->original_working_dir();
       ASSERT_FALSE(cwd.empty()) << "get_cwd() should not return empty string";
       tgt = cwd + fs_filesep() + "test_" + n + "_cpp.txt";
 
@@ -59,7 +59,10 @@ TEST_F(TestSymlink, CreateSymlink){
   EXPECT_EQ(fs_read_symlink(link), tgt);
   // Cygwin will have /cygdrive/c and /home/ as roots
   if (!fs_is_cygwin()){
-    EXPECT_EQ(fs_canonical(link, true, false), tgt);
+    std::string r = fs_canonical(link, true);
+    ASSERT_FALSE(r.empty());
+    ASSERT_EQ(r.length(), tgt.length()) << r << " vs " << tgt;
+    EXPECT_TRUE(fs_equivalent(r, tgt));
   }
 
   EXPECT_TRUE(fs_read_symlink(tgt).empty());

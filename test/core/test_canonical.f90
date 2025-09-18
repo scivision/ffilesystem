@@ -10,21 +10,8 @@ valgrind : block
 
 character(:), allocatable :: p1
 
-integer :: L1, L2
-
 p1 = canonical("")
 if(p1 /= "") error stop "canonical('') not empty: " // p1
-
-p1 = canonical("~")
-L1 = len_trim(p1)
-p1 = canonical("~/..", .false., .true.)
-
-L2 = len_trim(p1)
-if (L2 >= L1) then
-  write(stderr,*) 'ERROR:canonical:relative: up dir not canonicalized: ~/.. => ' // p1
-  error stop
-end if
-print *, 'OK: canon_dir = ', p1
 
 ! -- relative, non-existing file
 

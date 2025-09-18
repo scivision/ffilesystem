@@ -34,7 +34,7 @@ get_tempdir, &
 set_permissions, get_permissions, &
 backend, cpp_lang, c_lang, &
 fs_lang, &
-fs_is_optimized, pathsep, is_safe_name, &
+fs_is_optimized, filesep, pathsep, is_safe_name, &
 is_admin, is_bsd, is_macos, is_rosetta, is_windows, is_cygwin, is_wsl, is_mingw, is_msvc, is_linux, is_unix, &
 max_path, max_component, &
 exe_path, lib_path, compiler, compiler_c, get_shell, get_terminal, &
@@ -159,10 +159,10 @@ import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
-integer(C_SIZE_T) function fs_canonical(path, strict, expand_tilde, result, buffer_size) bind(C)
+integer(C_SIZE_T) function fs_canonical(path, strict, result, buffer_size) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
-logical(C_BOOL), intent(in), value :: strict, expand_tilde
+logical(C_BOOL), intent(in), value :: strict
 character(kind=C_CHAR), intent(out) :: result(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
@@ -174,10 +174,10 @@ character(kind=C_CHAR), intent(out) :: result(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
 
-integer(C_SIZE_T) function fs_resolve(path, strict, expand_tilde, result, buffer_size) bind(C)
+integer(C_SIZE_T) function fs_resolve(path, strict, result, buffer_size) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
-logical(C_BOOL), intent(in), value :: strict, expand_tilde
+logical(C_BOOL), intent(in), value :: strict
 character(kind=C_CHAR), intent(out) :: result(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
@@ -455,10 +455,9 @@ import
 character(kind=C_CHAR), intent(in) :: subdir(*), dir(*)
 end function
 
-integer(C_SIZE_T) function fs_absolute(path, base, expand_tilde, result, buffer_size) bind(C)
+integer(C_SIZE_T) function fs_absolute(path, base, result, buffer_size) bind(C)
 import
 character(kind=c_char), intent(in) :: path(*), base(*)
-logical(C_BOOL), intent(in), value :: expand_tilde
 character(kind=c_char), intent(out) :: result(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
@@ -659,9 +658,9 @@ include "ifc0b.inc"
 end function
 
 
-function canonical(path, strict, expand_tilde) result (r)
+function canonical(path, strict) result (r)
 include "ifc1a.inc"
-N = fs_canonical(trim(path) // C_NULL_CHAR, s, e, cbuf, N)
+N = fs_canonical(trim(path) // C_NULL_CHAR, s, cbuf, N)
 include "ifc0b.inc"
 end function
 
@@ -674,9 +673,9 @@ include "ifc0b.inc"
 end function
 
 
-function resolve(path, strict, expand_tilde) result(r)
+function resolve(path, strict) result(r)
 include "ifc1a.inc"
-N = fs_resolve(trim(path) // C_NULL_CHAR, s, e, cbuf, N)
+N = fs_resolve(trim(path) // C_NULL_CHAR, s, cbuf, N)
 include "ifc0b.inc"
 end function
 
@@ -1382,6 +1381,18 @@ include "ifc0b.inc"
 end function
 
 
+character function filesep()
+!! file separater (not path separator)
+!! we do this discretely in Fortran as there is a long-standing bug
+!! in nvfortran with passing single characters from C to Fortran caller
+if (is_windows()) then
+  filesep = achar(92)  !< backslash
+else
+  filesep = "/"
+end if
+end function
+
+
 character function pathsep()
 !! path separater (not file separator)
 !! we do this discretely in Fortran as there is a long-standing bug
@@ -1501,22 +1512,16 @@ include "ifc0b.inc"
 end function
 
 
-function absolute(path, base, expand_tilde) result(r)
+function absolute(path, base) result(r)
 !! if path is absolute, return expanded path
 !! if path is relative, base / path
 !!
 !! idempotent iff base is absolute
 character(*), intent(in) :: path, base
-logical, intent(in), optional :: expand_tilde
-
-logical(C_BOOL) :: e
 
 include "ifc0a.inc"
 
-e = .true.
-if(present(expand_tilde)) e = expand_tilde
-
-N = fs_absolute(trim(path) // C_NULL_CHAR, trim(base) // C_NULL_CHAR, e, cbuf, N)
+N = fs_absolute(trim(path) // C_NULL_CHAR, trim(base) // C_NULL_CHAR, cbuf, N)
 include "ifc0b.inc"
 end function
 

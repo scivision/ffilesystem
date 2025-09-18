@@ -260,12 +260,11 @@ character(:), allocatable :: realpath(".././mypath")
 Resolve path. This means to absolutize, canonicalize, resolving symbolic links.
 
 * "strict" if true required the path to exist (default false).
-* "expand_tilde" if true expands the tilde "~" (default true).
 
 ```fortran
-function resolve(path, strict, expand_tilde)
+function resolve(path, strict)
 character(*), intent(in) :: path
-logical, intent(in), optional :: strict, expand_tilde
+logical, intent(in), optional :: strict
 
 p = path_t("~/../b")
 p = p%resolve()
@@ -285,12 +284,11 @@ If the path doesn't exist and no absolute path is given, the path is resolved as
 The non-existing path may be absolutized based on the current working directory depending on the system (macOS does this).
 
 * "strict" if true required the path to exist (default false).
-* "expand_tilde" if true expands the tilde "~" (default true).
 
 ```fortran
-function canonical(path, strict, expand_tilde)
+function canonical(path, strict)
 character(*), intent(in) :: path
-logical, intent(in), optional :: strict, expand_tilde
+logical, intent(in), optional :: strict
 
 p = path_t("~/../b")
 p = p%canonical()
@@ -751,14 +749,11 @@ Canonicalize path. This means to normalize, resolve symbolic links, and resolve 
 If the path doesn't exist and no absolute path is given, the path is resolved as far as possible with existing path components, and then ".", ".." are lexicographically resolved.
 
 * "strict" if true required the path to exist (default false).
-* "expand_tilde" if true expands the tilde "~" (default true).
 
 ```fortran
-function canonical(path, strict, expand_tilde)
+function canonical(path, strict)
 character(*), intent(in) :: path
-logical, intent(in), optional :: strict, expand_tilde
-
-canonical("~/../b")
+logical, intent(in), optional :: strict
 
 canonical("../b")
 ```
@@ -770,14 +765,11 @@ First attempts to resolve an existing path.
 If that fails, the path is resolved as far as possible with existing path components, and then ".", ".." are lexicographically resolved.
 
 * "strict" if true required the path to exist (default false).
-* "expand_tilde" if true expands the tilde "~" (default true).
 
 ```fortran
-function resolve(path, strict, expand_tilde)
+function resolve(path, strict)
 character(*), intent(in) :: path
-logical, intent(in), optional :: strict, expand_tilde
-
-resolve("~/../b")
+logical, intent(in), optional :: strict
 
 ! --- relative path resolved to current working directory
 resolve("../b")
@@ -934,7 +926,7 @@ character(:), allocatable :: get_tempdir()
 Make a path absolute if relative:
 
 ```fortran
-function absolute(path, base, expand_tilde)
+function absolute(path, base)
 !! if path is absolute, return path
 !! if path is relative, base path
 !!
@@ -942,7 +934,6 @@ function absolute(path, base, expand_tilde)
 
 character(:), allocatable :: absolute
 character(*), intent(in) :: path, base
-logical, intent(in), optional :: expand_tilde
 ```
 
 Tell characteristics of the computing platform such as operating system:

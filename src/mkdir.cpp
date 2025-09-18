@@ -45,7 +45,7 @@ else {
 
   std::string buf;
 
-  std::string const p = fs_resolve(path, false, false);
+  std::string const p = fs_resolve(path, false);
   // ERROR_PATH_NOT_FOUND if relative directory
 
   const std::vector<std::string> parts = fs_split(p);
