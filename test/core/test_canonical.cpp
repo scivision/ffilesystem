@@ -2,20 +2,23 @@
 
 #include "ffilesystem.h"
 
-#include <filesystem>
-
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
 
 class TestCanonical : public testing::Test {
   protected:
-    std::filesystem::path home, homep, cwd;
+    std::string home, homep, cwd, cwdp;
 
     void SetUp() override {
-      cwd = std::filesystem::current_path();
+      cwd = fs_get_cwd();
+      ASSERT_FALSE(cwd.empty());
+
+      cwdp = fs_parent(cwd);
+      ASSERT_FALSE(cwdp.empty());
+
       home = fs_get_homedir();
-      homep = home.parent_path();
+      homep = fs_parent(home);
       // NOTE: if root user, might be that homep == home == "/"
 
       ASSERT_FALSE(home.empty());
@@ -92,15 +95,15 @@ EXPECT_THAT(fs_resolve(R"(\\?\)" + sys_drive + "\\", true),
 
 TEST_F(TestCanonical, CanonicalParentRel)
 {
-EXPECT_THAT(fs_canonical("../not-exist", false), ::testing::AnyOf("../not-exist", cwd.parent_path() / "not-exist"));
-EXPECT_THAT(fs_canonical("./not-exist", false), ::testing::AnyOf("not-exist", cwd / "not-exist"));
-EXPECT_THAT(fs_canonical("a/b/../c", false), ::testing::AnyOf("a/c", cwd / "a/c"));
+EXPECT_THAT(fs_canonical("../not-exist", false), ::testing::AnyOf("../not-exist", cwdp + "/not-exist"));
+EXPECT_THAT(fs_canonical("./not-exist", false), ::testing::AnyOf("not-exist", cwd + "/not-exist"));
+EXPECT_THAT(fs_canonical("a/b/../c", false), ::testing::AnyOf("a/c", cwd + "/a/c"));
 }
 TEST_F(TestCanonical, ResolveParentRel)
 {
-EXPECT_EQ(fs_resolve("../not-exist", false), cwd.parent_path() / "not-exist");
-EXPECT_EQ(fs_resolve("./not-exist", false), cwd / "not-exist");
-EXPECT_EQ(fs_resolve("a/b/../c", false), cwd / "a/c");
+EXPECT_EQ(fs_resolve("../not-exist", false), cwdp + "/not-exist");
+EXPECT_EQ(fs_resolve("./not-exist", false), cwd + "/not-exist");
+EXPECT_EQ(fs_resolve("a/b/../c", false), cwd + "/a/c");
 }
 
 

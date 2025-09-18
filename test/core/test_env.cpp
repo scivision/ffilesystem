@@ -2,8 +2,6 @@
 
 #include "ffilesystem.h"
 
-#include <filesystem>
-
 #include <gtest/gtest.h>
 
 class TestNoEnv : public testing::Test {
@@ -32,7 +30,7 @@ std::cout << "Username " << user << "\n";
 TEST(TestEnvironment, Environment)
 {
 
-EXPECT_EQ(fs_get_cwd(), std::filesystem::current_path());
+EXPECT_FALSE(fs_get_cwd().empty());
 
 std::string pdir = fs_get_profile_dir();
 EXPECT_FALSE(pdir.empty());

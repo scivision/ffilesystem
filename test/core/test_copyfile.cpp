@@ -1,7 +1,6 @@
 #include <string>
 #include <fstream>
 #include <cstdint>
-#include <filesystem>
 
 #include "ffilesystem.h"
 
@@ -15,7 +14,7 @@ class TestCopyFile : public testing::Test {
     std::uintmax_t iref;
 
     void SetUp() override {
-      auto cwd = std::filesystem::current_path();
+      auto cwd = fs_get_cwd();
 
       auto inst = testing::UnitTest::GetInstance();
       auto info = inst->current_test_info();
@@ -25,10 +24,10 @@ class TestCopyFile : public testing::Test {
       std::string test_suite_name_ = info->test_suite_name();
       std::string n = test_suite_name_ + "-" + test_name_;
 
-      s1 = (cwd / (n + "_some_text.txt")).string();
-      s2 = (cwd / (n + "_some_text.txt.copy")).string();
-      s3 = (cwd / (n + "_empty.txt")).string();
-      s4 = (cwd / (n + "_empty.txt.copy")).string();
+      s1 = cwd + "/" + n + "_some_text.txt";
+      s2 = cwd + "/" + n + "_some_text.txt.copy";
+      s3 = cwd + "/" + n + "_empty.txt";
+      s4 = cwd + "/" + n + "_empty.txt.copy";
       if(fs_is_windows()){
         ext1 = R"(\\?\)" + s1;
         ext5 = R"(\\?\)" + s2 + ".long";
@@ -42,7 +41,7 @@ class TestCopyFile : public testing::Test {
       ofs << t1;
       ofs.close();
 
-      iref = std::filesystem::file_size(s1);
+      iref = fs_file_size(s1);
       ASSERT_NE(iref, 0);
 
       std::cout << "TestCopyFile::SetUp: " << s1 << " bytes " << iref << "\n";
@@ -51,12 +50,12 @@ class TestCopyFile : public testing::Test {
     }
 
     void TearDown() override {
-      std::filesystem::remove(s1);
-      std::filesystem::remove(s2);
-      std::filesystem::remove(s3);
-      std::filesystem::remove(s4);
+      fs_remove(s1);
+      fs_remove(s2);
+      fs_remove(s3);
+      fs_remove(s4);
       if(fs_is_windows()){
-        std::filesystem::remove(ext5);
+        fs_remove(ext5);
       }
     }
 };
@@ -67,10 +66,10 @@ std::string t2;
 
 // Copy the file
 EXPECT_TRUE(fs_copy_file(s1, s2, false));
-EXPECT_TRUE(std::filesystem::is_regular_file(s2));
+EXPECT_TRUE(fs_is_file(s2));
 EXPECT_FALSE(fs_copy_file(s1, s2, false)); // Should fail since s2 already exists
 
-EXPECT_EQ(std::filesystem::file_size(s2), iref);
+EXPECT_EQ(fs_file_size(s2), iref);
 
 // Read from the copied file
 std::ifstream ifs(s2);
@@ -80,9 +79,9 @@ ifs.close();
 EXPECT_EQ(t1, t2);
 
 EXPECT_TRUE(fs_copy_file(s3, s4, true));
-EXPECT_TRUE(std::filesystem::is_regular_file(s4));
+EXPECT_TRUE(fs_is_file(s4));
 
-EXPECT_EQ(std::filesystem::file_size(s4), 0);
+EXPECT_EQ(fs_file_size(s4), 0);
 
 }
 
@@ -93,8 +92,8 @@ TEST_F(TestCopyFile, Windows){
 
 
 EXPECT_TRUE(fs_copy_file(ext1, ext5, false));
-EXPECT_TRUE(std::filesystem::is_regular_file(ext5));
-EXPECT_EQ(std::filesystem::file_size(ext5), iref);
+EXPECT_TRUE(fs_is_file(ext5));
+EXPECT_EQ(fs_file_size(ext5), iref);
 
 
 }

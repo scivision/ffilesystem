@@ -4,17 +4,12 @@
 
 #include "ffilesystem.h"
 
-#include <filesystem>
-
 #include <gtest/gtest.h>
 
 
 class TestExe : public testing::Test {
   protected:
-    std::filesystem::path cwd;
-    std::string exe;
-    std::string noexe;
-    std::string self;
+    std::string cwd, exe, noexe, self;
 
     void SetUp() override {
       auto inst = testing::UnitTest::GetInstance();
@@ -22,9 +17,9 @@ class TestExe : public testing::Test {
       std::string test_name_ = info->name();
       std::string test_suite_name_ = info->test_suite_name();
       std::string n = test_suite_name_ + "-" + test_name_;
-      cwd = std::filesystem::current_path();
+      cwd = fs_get_cwd();
 
-      if(fs_is_wsl() > 0 && fs_filesystem_type(cwd.string()) == "v9fs")
+      if(fs_is_wsl() > 0 && fs_filesystem_type(cwd) == "v9fs")
         GTEST_SKIP() << "v9fs to NTFS etc. doesn't work right";
 
       exe = "test_" + n + ".exe";
@@ -133,5 +128,5 @@ TEST_F(TestExe, ChmodNoExe){
 
 
 TEST_F(TestExe, WhichExe){
-  EXPECT_EQ(fs_which(exe, cwd.string()), cwd / exe);
+  EXPECT_EQ(fs_which(exe, cwd), cwd + "/" + exe);
 }
