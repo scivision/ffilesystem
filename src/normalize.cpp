@@ -114,7 +114,7 @@ fs_drop_slash(std::string_view in)
     return {};
 
   bool winPrefix = false;
-  std::string::size_type i = std::string::npos;
+  std::string::size_type i = std::string_view::npos;
 
   if(fs_is_windows()){
     // Extended-length or device path
@@ -125,7 +125,7 @@ fs_drop_slash(std::string_view in)
       i = in.find(R"(\)", 2);
 #endif
     }
-    winPrefix = i != std::string::npos;
+    winPrefix = i != std::string_view::npos;
   }
 
   std::string s(in);
@@ -158,7 +158,7 @@ fs_drop_slash(std::string_view in)
 std::string
 fs_trim(std::string_view s)
 {
-  // trim trailing nulls
+  // remove all content after the first null character
   std::string r(s);
   if(auto i = r.find('\0'); i != std::string::npos)
     r.resize(i);
@@ -177,15 +177,15 @@ fs_split(std::string_view path)
   std::vector<std::string> parts;
 
   // split path, including last component
-  std::string::size_type start = 0;
-  std::string::size_type end;
+  std::string_view::size_type start = 0;
+  std::string_view::size_type end;
 
   while (start < path.length()) {
     end = path.find_first_of(fs_is_windows() ? R"(/\)" : "/", start);
     if(fs_trace) std::cout << "TRACE:split(" << path << "): " << start << " " << end << " " << path.substr(start, end-start) << "\n";
 
     // last component
-    if (end == std::string::npos){
+    if (end == std::string_view::npos){
       parts.push_back(std::string(path.substr(start)));
       break;
     }

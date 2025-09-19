@@ -340,17 +340,17 @@ static bool two_arg(std::string_view fun, std::string_view a1, std::string_view 
     if(a2.contains("-x"))
       x = -1;
 #else
-    if(a2.find("+r") != std::string::npos)
+    if(a2.find("+r") != std::string_view::npos)
       r = 1;
-    if(a2.find("+w") != std::string::npos)
+    if(a2.find("+w") != std::string_view::npos)
       w = 1;
-    if(a2.find("+x") != std::string::npos)
+    if(a2.find("+x") != std::string_view::npos)
       x = 1;
-    if(a2.find("-r") != std::string::npos)
+    if(a2.find("-r") != std::string_view::npos)
       r = -1;
-    if(a2.find("-w") != std::string::npos)
+    if(a2.find("-w") != std::string_view::npos)
       w = -1;
-    if(a2.find("-x") != std::string::npos)
+    if(a2.find("-x") != std::string_view::npos)
       x = -1;
 #endif
 
