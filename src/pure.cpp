@@ -157,9 +157,10 @@ std::string fs_stem(std::string_view path)
   // find last dot
   std::string::size_type i = r.find_last_of('.');
 
-  return (i != std::string::npos && i != 0)
-    ? r.substr(0, i)
-    : r;
+  if (i != std::string::npos && i != 0)
+    r.resize(i);
+
+  return r;
 #endif
 }
 
