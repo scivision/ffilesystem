@@ -173,6 +173,11 @@ ${CMAKE_DL_LIBS}
 # Shell32: SHGetKnownFolderPath
 # uuid: KnownFolderID
 
+if(CMAKE_CXX_LINK_LIBRARY_USING_FRAMEWORK_SUPPORTED)
+  target_compile_definitions(ffilesystem PRIVATE $<$<COMPILE_LANGUAGE:CXX>:HAVE_MACOS_DISKARBITRATION>)
+  target_link_libraries(ffilesystem PRIVATE "$<LINK_LIBRARY:FRAMEWORK,DiskArbitration,CoreFoundation>")
+endif()
+
 get_property(_ffs_defs TARGET ffilesystem PROPERTY COMPILE_DEFINITIONS)
 message(VERBOSE "Ffilesystem COMPILE_DEFINITIONS: ${_ffs_defs}")
 get_property(_ffs_flags TARGET ffilesystem PROPERTY COMPILE_OPTIONS)

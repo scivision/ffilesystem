@@ -163,18 +163,23 @@ endif
 
 endif
 
-# Windows-specific
-libwin = []
+# System-specific libraries
+system_libs = []
+system_link_args = []
+macos_diskarbitration = []
 
 if is_windows
 
-libwin = [
+system_libs = [
 cc.find_library('Secur32'),
 cc.find_library('Shlwapi'),
 cc.find_library('Userenv'),
 cc.find_library('ws2_32')
 ]
 
+elif host_machine.system() == 'darwin'
+  system_libs = dependency('appleframeworks', modules: ['CoreFoundation', 'DiskArbitration'])
+  macos_diskarbitration = '-DHAVE_MACOS_DISKARBITRATION'
 endif
 
 def_statx = get_option('statx') ? '-DUSE_STATX' : []
@@ -186,9 +191,10 @@ sources: [fsrcs, comm_src],
 include_directories: [inc],
 install: true,
 c_args: [],
-cpp_args: [have_filesystem, chrono_def, dladdr_def,
+cpp_args: [have_filesystem, chrono_def, dladdr_def, macos_diskarbitration,
 def_copy_file, def_statx, extra_def, locale_def, trace_def],
-dependencies: [libwin, fs_lib, dl],
+link_args: system_link_args,
+dependencies: [system_libs, fs_lib, dl],
 )
 
 if not meson.is_subproject()
