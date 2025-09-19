@@ -1,5 +1,5 @@
 #include <string>
-#include <fstream> // std::ofstream
+#include <fstream>
 
 #include "ffilesystem.h"
 
@@ -12,7 +12,6 @@ class TestFileSize : public testing::Test {
       file = "ffs_filesize_5bytes.txt";
       std::ofstream ofs(file);
       ofs << "hello";
-      ofs.close();
     }
     void TearDown() override {
       fs_remove(file);

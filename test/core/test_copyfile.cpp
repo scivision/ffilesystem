@@ -41,7 +41,7 @@ class TestCopyFile : public testing::Test {
       std::ofstream ofs(s1);
       ASSERT_TRUE(ofs);
       ofs << t1;
-      ofs.close();
+      ofs.close(); // ensure flush
 
       iref = fs_file_size(s1);
       ASSERT_NE(iref, 0);
@@ -76,7 +76,6 @@ EXPECT_EQ(fs_file_size(s2), iref);
 // Read from the copied file
 std::ifstream ifs(s2);
 std::getline(ifs, t2);
-ifs.close();
 
 EXPECT_EQ(t1, t2);
 

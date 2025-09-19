@@ -30,9 +30,13 @@ namespace Filesystem = std::filesystem;
 #include <sys/types.h>  // IWYU pragma: keep
 #include <sys/stat.h>   // IWYU pragma: keep
 
-#if defined(__linux__) && defined(USE_STATX)
+#if defined(__linux__)
+#include <sys/sysmacros.h> // for makedev(), minor(), major()
+#include <fstream>
+
+#if defined(USE_STATX)
 #include <fcntl.h>   // AT_* constants for statx()
-#include <sys/sysmacros.h> // for makedev()
+#endif
 #endif
 
 
@@ -181,8 +185,26 @@ fs_is_removable(std::string_view path)
     default:
       return false;
   }
-#else
+#elif defined(__linux__)
   // Linux: find the device and check /sys/block/*/removable == 1
+
+  std::string dev;
+  if (struct stat s; stat(path.data(), &s) == 0) {
+    dev = "/sys/dev/block/" + std::to_string(major(s.st_dev)) + ":" + std::to_string(minor(s.st_dev)) + "/removable";
+  } else {
+    fs_print_error(path, __func__);
+    return false;
+  }
+
+  if (std::ifstream ifs(dev); ifs) {
+    if (char c; ifs.get(c))
+      return c == '1';
+  }
+
+  fs_print_error(dev, __func__);
+  return false;
+
+#else
   // macOS: check /Volumes/*/ for a removable device
   fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
   return false;
