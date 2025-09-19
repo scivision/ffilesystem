@@ -173,6 +173,7 @@ std::vector<std::string> fs_normal_vector(std::string_view);
 std::string fs_os_version();
 std::string fs_parent(std::string_view);
 
+void fs_emit_error();
 void fs_print_error(std::string_view, std::string_view);
 void fs_print_error(std::string_view, std::string_view, const std::error_code&);
 void fs_print_error(std::string_view, std::string_view, std::string_view);

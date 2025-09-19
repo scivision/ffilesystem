@@ -14,7 +14,7 @@
 #endif
 
 
-static void fs_emit_error()
+void fs_emit_error()
 {
 #if defined(_WIN32) || defined(__CYGWIN__)
   if (DWORD error = GetLastError(); error)

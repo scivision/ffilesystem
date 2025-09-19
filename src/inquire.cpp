@@ -255,7 +255,7 @@ fs_is_removable(std::string_view path)
 bool
 fs_exists(std::string_view path)
 {
-  // fs_exists() is true even if path is non-readable
+  // fs_exists() is true even if path is non-readable, as long as UID has permission to see it.
   // this is like Python pathlib.Path.exists()
   // unlike kwSys:SystemTools:FileExists which uses R_OK instead of F_OK like this project.
 
@@ -264,13 +264,22 @@ fs_exists(std::string_view path)
   std::error_code ec;
   ok = (Filesystem::exists(path, ec) && !ec) ||
         (fs_is_msvc() && fs_is_appexec_alias(path));
+  if (ec && ec != std::errc::no_such_file_or_directory)
+    fs_print_error(path, __func__, ec);
 #elif defined(_WIN32)
   WIN32_FILE_ATTRIBUTE_DATA fad;
 
   ok = GetFileAttributesExW(fs_win32_to_wide(path).data(), GetFileExInfoStandard, &fad);
+  if (!ok){
+    DWORD err = GetLastError();
+    if (err != ERROR_FILE_NOT_FOUND && err != ERROR_PATH_NOT_FOUND)
+      fs_print_error(path, __func__);
+  }
 #else
-  // unistd.h
-  ok = !access(path.data(), F_OK);
+  // https://www.man7.org/linux/man-pages/man2/access.2.html
+  ok = access(path.data(), F_OK) == 0;
+  if (!ok && errno != ENOENT && errno != ENOTDIR)
+    fs_print_error(path, __func__);
 #endif
 
   return ok;
@@ -405,7 +414,7 @@ bool fs_is_readable(std::string_view path)
   return (s.permissions() & (owner_read | group_read | others_read)) != none;
 
 #else
-  return !access(path.data(), R_OK);
+  return access(path.data(), R_OK) == 0;
 #endif
 }
 
@@ -434,9 +443,9 @@ bool fs_is_writable(std::string_view path)
   return (s.permissions() & (owner_write | group_write | others_write)) != none;
 #elif defined(_WIN32)
   // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
-  return !_access_s(path.data(), 2);
+  return _access_s(path.data(), 2) == 0;
 #else
-  return !access(path.data(), W_OK);
+  return access(path.data(), W_OK) == 0;
 #endif
 }
 
