@@ -62,15 +62,15 @@ bool fs_set_permissions(std::string_view path, int readable, int writable, int e
 
 #else
 
-  int m = fs_st_mode(path);
+  mode_t m = fs_st_mode(path);
 #ifdef _MSC_VER
-  constexpr int r = _S_IREAD;
-  constexpr int w = _S_IWRITE;
-  constexpr int x = _S_IEXEC;
+  constexpr mode_t r = _S_IREAD;
+  constexpr mode_t w = _S_IWRITE;
+  constexpr mode_t x = _S_IEXEC;
 #else
-  constexpr int r = S_IRUSR;
-  constexpr int w = S_IWUSR;
-  constexpr int x = S_IXUSR;
+  constexpr mode_t r = S_IRUSR;
+  constexpr mode_t w = S_IWUSR;
+  constexpr mode_t x = S_IXUSR;
 #endif
 
   if(readable > 0)
@@ -89,7 +89,7 @@ bool fs_set_permissions(std::string_view path, int readable, int writable, int e
     m &= ~x;
 // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/chmod-wchmod
 #ifdef _MSC_VER
-  return _chmod(path.data(), m) == 0;
+  return _chmod(path.data(), static_cast<int>(m)) == 0;
 #else
   return chmod(path.data(), m) == 0;
 #endif
@@ -155,7 +155,7 @@ std::string fs_get_permissions(std::string_view path)
 
 #else
 
-  const int m = fs_st_mode(path);
+  const mode_t m = fs_st_mode(path);
   if(m == 0) FFS_UNLIKELY
   {
     fs_print_error(path, __func__);

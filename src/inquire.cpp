@@ -79,26 +79,22 @@ bool fs_has_statx()
 }
 
 
-int
+mode_t
 fs_st_mode(std::string_view path)
 {
-  int r = 0;
 #if defined(STATX_MODE) && defined(USE_STATX)
 // Linux Glibc only
 // https://www.gnu.org/software/gnulib/manual/html_node/statx.html
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
 
   struct statx sx;
-  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_MODE, &sx);
-  if (r == 0) FFS_LIKELY
+  if (statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_MODE, &sx) == 0)
     return sx.stx_mode;
 #endif
 
 // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions
-  if(r == 0 || errno == ENOSYS){
-    if (struct stat s; !stat(path.data(), &s))
+  if (struct stat s; stat(path.data(), &s) == 0)
       return s.st_mode;
-  }
 
   return 0;
 }

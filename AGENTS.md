@@ -1,0 +1,17 @@
+# Ffilesystem fast filesystem library
+
+## Project overview
+
+This is a lightweight C++17 or newer library for filesystem path manipulation and querying.
+It is designed to work with NUL-terminated strings--for brevity and speed we always assume any string input is valid and NUL-terminated.
+We assume the compiler is at least C++17 capable.
+We use std::string_view heavily for speed and to avoid unnecessary allocations and copies.
+We do a CMake (or Meson) configure-time check to ensure C++17 `<filesystem>` is available and linkable on the platform, falling back to our own implementations if not. The macro `HAVE_CXX_FILESYSTEM` is defined if `<filesystem>` is available and working.
+Generally, the paths are passed in as `std::string_view` and returned as `std::string` or `std::optional<std::string>` if the operation can fail.
+
+Target platforms are Linux, Windows, macOS, and BSD.
+We aim to support a range of Linux C and C++ standard libraries--for example, the libc and libstdc++ available with currently supported Ubuntu LTS and RHEL versions.
+We aim to support relative recent BSD flavors (FreeBSD, OpenBSD, NetBSD).
+We aim to support Windows 10 and newer -- whatever is currently supported by Microsoft. We support MinGW and MSVC toolchains.
+We aim to support versions of macOS currently supported by Apple.
+We aim to support all freely available, currently maintained compiler versions, including GCC/GFortran, Clang/Flang, Intel oneAPI, and NVIDIA HPC SDK.

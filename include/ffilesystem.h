@@ -13,6 +13,10 @@ typedef unsigned long DWORD;
 #define pid_t DWORD
 #endif
 
+#ifndef mode_t
+typedef unsigned short mode_t;
+#endif
+
 #endif
 
 #ifdef __cplusplus
@@ -244,7 +248,8 @@ std::string fs_with_suffix(std::string_view, std::string_view);
 
 std::string::size_type fs_symlink_length([[maybe_unused]] std::string_view);
 
-int fs_st_mode(std::string_view);
+mode_t fs_st_mode(std::string_view);
+
 int fs_st_dev(std::string_view);
 int fs_inode(std::string_view);
 struct passwd* fs_getpwuid();

@@ -119,7 +119,7 @@ static bool one_arg(std::string_view fun, std::string_view a1)
   std::error_code ec;
 
   // each possible return type for the function
-  using fs_one_arg_function = std::function<std::variant<std::string, bool, std::size_t, int>(std::string_view)>;
+  using fs_one_arg_function = std::function<std::variant<std::string, bool, std::size_t, int, mode_t>(std::string_view)>;
 
   std::unordered_map<std::string_view, fs_one_arg_function> fs_one_arg_function_map = {
     {"lexically_normal", [](std::string_view a1) { return fs_lexically_normal(a1); }},
