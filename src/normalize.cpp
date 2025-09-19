@@ -95,7 +95,7 @@ fs_drop_trailing_slash(std::string_view path)
 
   std::string p(path);
 
-  while(p.length() > 1 && (p.back() == '/' || (fs_is_windows() && p.back() == '\\')))
+  while(p.length() > 1 && (p.back() == '/' || p.back() == fs_filesep()))
     p.pop_back();
 
   if (fs_is_windows() && !p.empty() && p == fs_root_name(path))
@@ -144,7 +144,8 @@ fs_drop_slash(std::string_view in)
     if(t == fs_root_name(in.substr(i)))
       t.push_back('/');
 
-    t.erase(std::unique(t.begin(), t.end(), [](char a, char b){ return a == '\\' && b == '\\'; }), t.end());
+    // don't do this in s.erase() to preserve \\?\ prefix
+    t.erase(std::unique(t.begin(), t.end(), [](char a, char b){ return a == fs_filesep() && b == fs_filesep(); }), t.end());
     s = s.substr(0, i) + t;
   }
 

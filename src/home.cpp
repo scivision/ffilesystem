@@ -99,7 +99,7 @@ std::string fs_expanduser(std::string_view path)
 
   // second character is not a file separator
   // std::set is much slower than a simple if
-  if(path.length() > 1 && !(path[1] == '/' || (fs_is_windows() && path[1] == '\\')))
+  if(path.length() > 1 && !(path[1] == '/' || path[1] == fs_filesep()))
     return std::string(path);
 
   std::string home = fs_get_homedir();
@@ -112,7 +112,7 @@ std::string fs_expanduser(std::string_view path)
 // handle initial duplicated file separators. NOT .lexical_normal to handle "~/.."
 // std::set is much slower than a simple if
   std::string::size_type i = 2;
-  while(i < path.length() && (path[i] == '/' || (fs_is_windows() && path[i] == '\\')))
+  while(i < path.length() && (path[i] == '/' || path[i] == fs_filesep()))
     i++;
 
   std::string e = home + "/" + std::string(path).substr(i);

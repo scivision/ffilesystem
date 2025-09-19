@@ -20,11 +20,7 @@ namespace Filesystem = std::filesystem;
 
 
 char fs_filesep(){
-#if defined(HAVE_CXX_FILESYSTEM)
-  return std::filesystem::path::preferred_separator;
-#else
   return fs_is_windows() ? '\\' : '/';
-#endif
 }
 
 
@@ -41,7 +37,7 @@ const char* fs_devnull(){
 bool
 fs_slash_first(std::string_view path)
 {
-  return !path.empty() && (path.front() == '/' || (fs_is_windows() && path.front() == '\\'));
+  return !path.empty() && (path.front() == '/' || path.front() == fs_filesep());
 }
 
 
@@ -85,7 +81,7 @@ bool fs_is_absolute(std::string_view path)
       return true;
 #endif
     // Windows drive letter with slash (e.g. C: without slash is relative)
-    return !(fs_root_name(path).empty()) && (path[2] == '/' || path[2] == '\\');
+    return !(fs_root_name(path).empty()) && (path[2] == '/' || path[2] == fs_filesep());
   } else {
     return !path.empty() && path.front() == '/';
   }
@@ -101,7 +97,7 @@ std::string fs_file_name(std::string_view path)
 
   const auto i = path.find_last_of(fs_is_windows() ? "/\\" : "/");
 
-  return (i != std::string::npos)
+  return (i != std::string_view::npos)
     ? std::string(path.substr(i + 1))
     : std::string(path);
 #endif
