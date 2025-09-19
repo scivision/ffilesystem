@@ -250,8 +250,8 @@ std::string::size_type fs_symlink_length([[maybe_unused]] std::string_view);
 
 mode_t fs_st_mode(std::string_view);
 
-int fs_st_dev(std::string_view);
-int fs_inode(std::string_view);
+dev_t fs_st_dev(std::string_view);
+ino_t fs_inode(std::string_view);
 struct passwd* fs_getpwuid();
 
 // ---------------------------------------------------------------------------

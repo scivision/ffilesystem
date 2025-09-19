@@ -147,6 +147,10 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU|^Intel")
   )
 endif()
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+  set(ffilesystem_cxxflags "$<$<COMPILE_LANGUAGE:CXX>:-Wno-unused-label>")
+endif()
+
 if(MSVC)
   # if, not elseif, because IntelLLVM uses MSVC flags
   # /wd4996 quiets warning: 'GetVersionExA' is deprecated

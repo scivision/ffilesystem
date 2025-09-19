@@ -32,6 +32,7 @@ namespace Filesystem = std::filesystem;
 
 #if defined(__linux__) && defined(USE_STATX)
 #include <fcntl.h>   // AT_* constants for statx()
+#include <sys/sysmacros.h> // for makedev()
 #endif
 
 
@@ -87,70 +88,71 @@ fs_st_mode(std::string_view path)
 // https://www.gnu.org/software/gnulib/manual/html_node/statx.html
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
 
-  struct statx sx;
-  if (statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_MODE, &sx) == 0)
-    return sx.stx_mode;
+  struct statx x;
+  if (statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_MODE, &x) == 0) {
+    return x.stx_mode;
+  } else if (errno != ENOSYS) {
+    return 0;
+  }
 #endif
 
 // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions
   if (struct stat s; stat(path.data(), &s) == 0)
-      return s.st_mode;
+    return s.st_mode;
 
   return 0;
 }
 
 
-int fs_st_dev(std::string_view path)
+dev_t fs_st_dev(std::string_view path)
 {
   // device number of the file or directory
-  int r = 0;
 
 #if defined(STATX_INO) && defined(USE_STATX)
 
   struct statx x;
-
-  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_INO, &x);
-  if(r == 0)
-    return x.stx_dev_major << 8 | x.stx_dev_minor;
+  if (statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_INO, &x) == 0) {
+    return makedev(x.stx_dev_major, x.stx_dev_minor);
+  } else if (errno != ENOSYS) {
+    goto err;
+  }
 
 #endif
 
-  if(r == 0 || errno == ENOSYS){
-    if(struct stat s; !stat(path.data(), &s))
-      return s.st_dev;
-  }
+  if(struct stat s; stat(path.data(), &s) == 0)
+    return s.st_dev;
 
+err:
   fs_print_error(path, __func__);
   return -1;
 }
 
 
-int fs_inode(std::string_view path)
+ino_t fs_inode(std::string_view path)
 {
   // inode number of the file or directory
   //
   // Windows: .st_ino is always zero.
   // See source code for fs_equivalent() for how to use BY_HANDLE_FILE_INFORMATION
   // with GetFileInformationByHandle().
-  int r = 0;
 
 #if defined(STATX_INO) && defined(USE_STATX)
 
   struct statx x;
-
-  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_INO, &x);
-  if(r == 0)
+  if (statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_INO, &x) == 0) {
     return x.stx_ino;
+  } else if (errno != ENOSYS) {
+    goto err;
+  }
 
 #endif
 
-  if((r == 0) || errno == ENOSYS){
-    if(struct stat s; !stat(path.data(), &s))
-      return s.st_ino;
-  }
+  if(struct stat s; stat(path.data(), &s) == 0)
+    return s.st_ino;
 
+err:
   fs_print_error(path, __func__);
-  return -1;
+  return 0;
 }
 
 
