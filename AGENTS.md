@@ -12,6 +12,14 @@ Generally, the paths are passed in as `std::string_view` and returned as `std::s
 Target platforms are Linux, Windows, macOS, and BSD.
 We aim to support a range of Linux C and C++ standard libraries--for example, the libc and libstdc++ available with currently supported Ubuntu LTS and RHEL versions.
 We aim to support relative recent BSD flavors (FreeBSD, OpenBSD, NetBSD).
-We aim to support Windows 10 and newer -- whatever is currently supported by Microsoft. We support MinGW and MSVC toolchains.
 We aim to support versions of macOS currently supported by Apple.
 We aim to support all freely available, currently maintained compiler versions, including GCC/GFortran, Clang/Flang, Intel oneAPI, and NVIDIA HPC SDK.
+
+## Windows support
+
+We support Windows 10 and newer -- whatever is currently supported by Microsoft.
+
+Compiler: support MinGW (GCC, Clang), MSVC, and Intel oneAPI.
+
+UNC paths are generally not supported--with MSVC and GCC, `std::filesystem` itself does not support UNC paths.
+Only Boost::Filesystem supports UNC paths, but we haven't yet implemented Boost::Filesystem .

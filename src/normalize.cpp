@@ -146,7 +146,8 @@ fs_drop_slash(std::string_view in)
 
     // don't do this in s.erase() to preserve \\?\ prefix
     t.erase(std::unique(t.begin(), t.end(), [](char a, char b){ return a == fs_filesep() && b == fs_filesep(); }), t.end());
-    s = s.substr(0, i) + t;
+    s.resize(i);
+    s += t;
   }
 
   if(fs_trace > 1) std::cout << "TRACE:drop_slash(" << in << "): removed duplicated internal slashes: " << s << "\n";
