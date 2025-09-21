@@ -184,7 +184,23 @@ bool fs_win32_is_symlink(std::string_view path)
 bool
 fs_win32_is_ext_path(std::string_view path)
 {
-  return path.length() >= 4 && (path.substr(0, 4) == R"(\\?\)" || path.substr(0, 4) == R"(\\.\)");
+  // Windows extended path prefix enables paths longer than MAX_PATH (260 characters)
+  // and disables path parsing, so that special characters are allowed
+
+  //   \\?\ - enables extended-length paths and disables path parsing
+constexpr std::string_view ext = R"(\\?\)";
+  //   \\.\ - used for device paths (e.g., physical drives, COM ports)
+constexpr std::string_view dev = R"(\\.\)";
+
+  #ifdef __cpp_lib_starts_ends_with  // C++20
+    return path.starts_with(ext) || path.starts_with(dev);
+  #else
+    if (path.length() < 4)
+      return false;
+
+    std::string_view p = path.substr(0, 4);
+    return p == ext || p == dev;
+  #endif
 }
 
 

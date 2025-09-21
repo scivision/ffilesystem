@@ -127,3 +127,11 @@ EXPECT_EQ(fs_suffix(R"(\\?\UNC\server\share\日本語.txt)"), ".txt");
 EXPECT_EQ(fs_suffix(R"(\\server\share\some space here.txt)"), ".txt");
 EXPECT_EQ(fs_suffix(R"(\\?\C:\some space here.txt)"), ".txt");
 }
+
+
+TEST(TestWindowsUNC, UNC)
+{
+EXPECT_TRUE(fs_win32_is_ext_path(R"(\\.\C:\)"));
+EXPECT_TRUE(fs_win32_is_ext_path(R"(\\?\C:\)"));
+
+}
