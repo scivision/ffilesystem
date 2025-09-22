@@ -295,9 +295,12 @@ fs_is_dir(std::string_view path)
 #if defined(HAVE_CXX_FILESYSTEM)
 // NOTE: Windows top-level drive "C:" needs a trailing slash "C:/"
   std::error_code ec;
-  ok = Filesystem::is_directory(path, ec) && !ec;
+  ok = Filesystem::is_directory(path, ec);
+  if (ec && ec != std::errc::no_such_file_or_directory)
+    fs_print_error(path, __func__, ec);
 #elif defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesexa
+// this also works for Symlinks to directories
   WIN32_FILE_ATTRIBUTE_DATA fad;
 
   ok = GetFileAttributesExW(fs_win32_to_wide(path).data(), GetFileExInfoStandard, &fad) &&
