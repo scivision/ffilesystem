@@ -58,16 +58,16 @@ if(ffilesystem_extra)
   list(APPEND test_dirs extra libpath)
 endif()
 
+set(test_dirs core)
+
 # Do not use find_package(GTest), in general it finds some other library's GTest that may have an incompatible ABI.
 include(FetchContent)
 
-set(FETCHCONTENT_QUIET OFF)
-FetchContent_Declare(googletest
-URL ${googletest_url}
+# set(FETCHCONTENT_QUIET OFF)
+FetchContent_Declare(boost_ut
+URL ${boost_ut_url}
 )
-FetchContent_MakeAvailable(googletest)
-
-include(GoogleTest)
+FetchContent_MakeAvailable(boost_ut)
 
 
 foreach(t IN LISTS test_dirs)

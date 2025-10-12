@@ -15,8 +15,9 @@ option(ffilesystem_tidy "Run clang-tidy on the code")
 option(ffilesystem_cppcheck "Run cppcheck on the code")
 option(ffilesystem_iwyu "Run include-what-you-use on the code")
 
-option(ffilesystem_BUILD_TESTING "Build tests")
+option(ffilesystem_BUILD_TESTING "Build tests" ${ffilesystem_IS_TOP_LEVEL})
 
-set(googletest_url "https://github.com/google/googletest/archive/refs/tags/v1.17.0.tar.gz")
+set(boost_ut_url "https://github.com/boost-ext/ut/archive/refs/tags/v2.3.1.tar.gz")
+set(boost_ut_url "/Users/micha/code_other/ut")
 
 file(GENERATE OUTPUT .gitignore CONTENT "*")

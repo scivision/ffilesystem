@@ -106,15 +106,16 @@ if(HAVE_CXX_FILESYSTEM)
   list(APPEND gtest_tests proximate relative)
 endif()
 
-foreach(t IN LISTS gtest_tests)
-  add_executable(test_${t}_cpp test_${t}.cpp)
-  target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
-  target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
+set(ut_tests absolute)
 
-  gtest_discover_tests(test_${t}_cpp
-    PROPERTIES
-      LABELS "Cpp"
-      WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
+foreach(t IN LISTS ut_tests)
+  add_executable(test_${t}_cpp test_${t}.cpp)
+  target_link_libraries(test_${t}_cpp PRIVATE ffilesystem Boost::ut)
+
+  add_test(NAME test_${t}_cpp COMMAND test_${t}_cpp)
+  set_tests_properties(test_${t}_cpp PROPERTIES
+    LABELS "Cpp"
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
   )
 endforeach()
 
