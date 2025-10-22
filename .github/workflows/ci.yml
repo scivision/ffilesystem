@@ -101,6 +101,13 @@ jobs:
 
     steps:
     - *checkout
+
+    - name: GCC APT
+      if: matrix.gcc-version < 11
+      run: |
+        sudo apt update -y
+        sudo apt install -y --no-install-recommends gcc-${{ matrix.gcc-version }} g++-${{ matrix.gcc-version }} gfortran-${{ matrix.gcc-version }}
+
     - uses: ./.github/workflows/composite-build
 
 
