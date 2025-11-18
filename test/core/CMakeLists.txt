@@ -62,7 +62,6 @@ endif()
 
 
 set(gtest_tests
-absolute
 canonical
 copyfile
 drop_slash
@@ -99,6 +98,8 @@ which
 with_suffix
 )
 
+set(ut_tests absolute)
+
 if(WIN32 OR CYGWIN)
   list(APPEND gtest_tests is_appexec_alias windows)
 endif()
@@ -106,13 +107,12 @@ if(HAVE_CXX_FILESYSTEM)
   list(APPEND gtest_tests proximate relative)
 endif()
 
-foreach(t IN LISTS gtest_tests)
+foreach(t IN LISTS ut_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)
-  target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
-  target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
+  target_link_libraries(test_${t}_cpp PRIVATE ffilesystem Boost::ut)
 
-  gtest_discover_tests(test_${t}_cpp
-    PROPERTIES
+  add_test(NAME Cpp_${t} COMMAND test_${t}_cpp)
+  set_tests_properties(Cpp_${t} PROPERTIES
       LABELS "Cpp"
       WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
   )

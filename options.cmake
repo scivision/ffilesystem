@@ -17,6 +17,6 @@ option(ffilesystem_iwyu "Run include-what-you-use on the code")
 
 option(ffilesystem_BUILD_TESTING "Build tests")
 
-set(googletest_url "https://github.com/google/googletest/archive/refs/tags/v1.17.0.tar.gz")
+set(boost_ut_url "https://github.com/boost-ext/ut/archive/refs/tags/v2.3.1.tar.gz")
 
 file(GENERATE OUTPUT .gitignore CONTENT "*")
