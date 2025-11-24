@@ -32,7 +32,14 @@ jobs:
 
     # github actions generally broken for shared lib, even when exe in cwd
 
+    env:
+      CMAKE_GENERATOR: "Visual Studio 18 2026"
+
     steps:
+    - name: Install CMake 4.2
+      run: winget install -e --id Kitware.CMake --disable-interactivity --accept-source-agreements --accept-package-agreements
+    # FIXME: until GitHub Actions have at least CMake 4.2, necessary for VS 2026
+
     - &checkout
       uses: actions/checkout@v5
 
@@ -96,7 +103,7 @@ jobs:
 
     - name: Upload log failure
       if: failure()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: cpp-${{ matrix.cpp }}-shared-${{ runner.os }}-CMakeConfigureLog.yaml
         path: build/CMakeFiles/CMakeConfigureLog.yaml
