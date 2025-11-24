@@ -82,7 +82,7 @@ jobs:
 
     - name: Upload log failure
       if: failure()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: ${{ env.CXX }}-cpp-${{ matrix.cpp }}-${{ runner.os }}-CMakeConfigureLog.yaml
         path: build/CMakeFiles/CMakeConfigureLog.yaml

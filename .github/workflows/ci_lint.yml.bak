@@ -29,13 +29,13 @@ jobs:
         sudo apt update
         sudo apt install --no-install-recommends valgrind
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - run: ctest -Dopts="-Dffilesystem_cpp:BOOL=${{ matrix.cpp }} -Dffilesystem_BUILD_TESTING:BOOL=on" -S memcheck.cmake -E "overflow|reserved|CLI" -V
 
     - name: upload Valgrind log
       if: ${{ failure() }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: valgrind-log-${{ matrix.cpp }}
         path: build-Valgrind/Testing/Temporary/MemoryChecker.*.log
