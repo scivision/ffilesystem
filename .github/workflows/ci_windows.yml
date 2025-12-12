@@ -35,7 +35,7 @@ jobs:
 
     steps:
     - &checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Configure
       run: >-
@@ -103,7 +103,7 @@ jobs:
 
     - name: Upload log failure
       if: failure()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: cpp-${{ matrix.cpp }}-shared-${{ runner.os }}-CMakeConfigureLog.yaml
         path: build/CMakeFiles/CMakeConfigureLog.yaml

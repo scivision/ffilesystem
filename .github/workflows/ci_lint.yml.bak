@@ -35,7 +35,7 @@ jobs:
 
     - name: upload Valgrind log
       if: ${{ failure() }}
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: valgrind-log-${{ matrix.cpp }}
         path: build-Valgrind/Testing/Temporary/MemoryChecker.*.log
@@ -83,7 +83,7 @@ jobs:
   #   - name: Code coverage
   #     run: cmake --build --preset run-coverage
 
-  #   - uses: actions/upload-artifact@v4
+  #   - uses: actions/upload-artifact@v6
   #     with:
   #       name: coverage-report-html
   #       path: build-coverage/coverage/

@@ -56,6 +56,6 @@ jobs:
 # Every say year or two this becomes an issue.
 # https://github.com/Homebrew/homebrew-core/issues/228131
 
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - uses: ./.github/workflows/composite-build
