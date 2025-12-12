@@ -62,9 +62,7 @@ endif()
 include(FetchContent)
 
 set(FETCHCONTENT_QUIET OFF)
-FetchContent_Declare(googletest
-URL ${googletest_url}
-)
+FetchContent_Declare(googletest URL "${ffilesystem_googletest_url}")
 FetchContent_MakeAvailable(googletest)
 
 include(GoogleTest)

@@ -17,6 +17,8 @@ option(ffilesystem_iwyu "Run include-what-you-use on the code")
 
 option(ffilesystem_BUILD_TESTING "Build tests")
 
-set(googletest_url "https://github.com/google/googletest/archive/refs/tags/v1.17.0.tar.gz")
+if(NOT DEFINED ffilesystem_googletest_url)
+  set(ffilesystem_googletest_url "https://github.com/google/googletest/archive/refs/tags/v1.17.0.tar.gz")
+endif()
 
 file(GENERATE OUTPUT .gitignore CONTENT "*")
