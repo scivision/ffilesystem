@@ -49,7 +49,7 @@ if(ffilesystem_trace)
 
 endif()
 
-elseif(UNIX AND NOT APPLE)
+elseif(LINUX)
 
   set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
   check_symbol_exists(copy_file_range "unistd.h" ffilesystem_HAVE_COPY_FILE_RANGE)
@@ -60,13 +60,6 @@ if(ffilesystem_cpp AND NOT ffilesystem_fallback AND NOT HAVE_CXX_FILESYSTEM)
   message(FATAL_ERROR "C++ filesystem not available. To fallback to plain C++:
   cmake -Dffilesystem_fallback=on -B build"
   )
-endif()
-
-# fixes errors about needing -fPIE
-if(LINUX)
-  include(CheckPIESupported)
-  check_pie_supported()
-  set(CMAKE_POSITION_INDEPENDENT_CODE true)
 endif()
 
 # --- END COMPILER CHECKS
