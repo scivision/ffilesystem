@@ -56,7 +56,7 @@ jobs:
 
     strategy:
       matrix:
-        llvm-version: [21]
+        llvm-version: [20]
         cpp: [true, false]
         shared: [false]
 
