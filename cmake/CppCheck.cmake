@@ -1,6 +1,7 @@
 # Check compiler C++ capabilities
 include(CheckSourceCompiles)
 
+include_guard()
 
 function(cpp_check)
 

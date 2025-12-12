@@ -24,7 +24,26 @@ else()
     set(HAVE_Fortran_FILESYSTEM OFF)
 endif()
 
-include(cmake/compilers.cmake)
+if(HAVE_Fortran_FILESYSTEM AND NOT DEFINED HAVE_F03TYPE)
+  if(ffilesystem_trace)
+    file(READ ${CMAKE_CURRENT_LIST_DIR}/f03type.f90 _src)
+    check_source_compiles(Fortran "${_src}" HAVE_F03TYPE)
+  else()
+    set(HAVE_F03TYPE true)
+  endif()
+endif()
+
+# C++20 enables nice but optional debugging / UX
+# https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html
+# must at least set C++17 or build can fail from parent projects
+# as some compilers default to less than C++17.
+if(NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 17)
+  if("cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+    set(CMAKE_CXX_STANDARD 20)
+  else()
+    set(CMAKE_CXX_STANDARD 17)
+  endif()
+endif()
 
 message(STATUS "${PROJECT_NAME} ${PROJECT_VERSION} C++${CMAKE_CXX_STANDARD} CMake ${CMAKE_VERSION} ${CMAKE_SYSTEM_NAME} Toolchain ${CMAKE_TOOLCHAIN_FILE}")
 message(VERBOSE
@@ -38,6 +57,9 @@ CMAKE_CXX_COMPILER_LINKER_ID: ${CMAKE_CXX_COMPILER_LINKER_ID}
 CMAKE_CXX_COMPILER_LINKER_ID: ${CMAKE_CXX_COMPILER_LINKER_ID}
 CMAKE_Fortran_COMPILER_LINKER_ID: ${CMAKE_Fortran_COMPILER_LINKER_ID}"
 )
+
+include(cmake/stdcpp.cmake)
+
 if(ffilesystem_stdcpp_version)
   message(STATUS "C++ standard library: ${ffilesystem_stdcpp_version}")
 endif()
@@ -51,20 +73,6 @@ if(ffilesystem_cppcheck)
 endif()
 
 # --- filesystem library
-
-# use separate object for Fortran to work with Visual Studio generator
-if(HAVE_Fortran_FILESYSTEM)
-
-  add_library(ffilesystem_Fortran OBJECT src/fortran/filesystem.F90)
-
-  target_compile_definitions(ffilesystem_Fortran PRIVATE
-  $<$<NOT:$<BOOL:${HAVE_F03TYPE}>>:NO_F03TYPE>
-  )
-  set_property(TARGET ffilesystem_Fortran PROPERTY
-  Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include
-  )
-
-endif()
 
 set(_src
 src/c.cpp
@@ -119,11 +127,26 @@ src/extra/winsock.cpp
   )
 endif()
 
-if(TARGET ffilesystem_Fortran)
-  list(APPEND _src $<TARGET_OBJECTS:ffilesystem_Fortran>)
-endif()
 
 add_library(ffilesystem ${_src})
+
+include(cmake/compilers.cmake)
+
+# use separate object for Fortran to work with Visual Studio generator
+if(HAVE_Fortran_FILESYSTEM)
+
+  add_library(ffilesystem_Fortran OBJECT src/fortran/filesystem.F90)
+
+  target_compile_definitions(ffilesystem_Fortran PRIVATE
+  $<$<NOT:$<BOOL:${HAVE_F03TYPE}>>:NO_F03TYPE>
+  )
+  set_property(TARGET ffilesystem_Fortran PROPERTY
+  Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include
+  )
+
+  target_sources(ffilesystem PRIVATE $<TARGET_OBJECTS:ffilesystem_Fortran>)
+
+endif()
 
 target_include_directories(ffilesystem PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
@@ -246,6 +269,6 @@ include(FeatureSummary)
 add_feature_info(Fortran HAVE_Fortran_FILESYSTEM "Fortran bindings")
 add_feature_info(Cpp HAVE_CXX_FILESYSTEM "C++ stdlib filesystem")
 add_feature_info(shared BUILD_SHARED_LIBS "Build shared library: enables lib_path()")
-add_feature_info(path_t HAVE_F03TYPE "Fortran 2003 path_t object-oriented interface")
+add_feature_info(path_t HAVE_F03TYPE "Fortran path_t object-oriented interface")
 
 feature_summary(WHAT ENABLED_FEATURES DESCRIPTION "${PROJECT_NAME} enabled features:")
