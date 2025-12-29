@@ -35,10 +35,7 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
 
 #ifdef HAVE_CXX_FILESYSTEM
 
-  std::string p1(path1);
-  std::string p2(path2);
-
-  if(bool e = Filesystem::equivalent(p1, p2, ec); !ec)
+  if(bool e = Filesystem::equivalent(path1, path2, ec); !ec)
     return e;
 
 #else
