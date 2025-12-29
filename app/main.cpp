@@ -119,7 +119,7 @@ static bool one_arg(std::string_view fun, std::string_view a1)
   std::error_code ec;
 
   // each possible return type for the function
-  using fs_one_arg_function = std::function<std::variant<std::string, bool, std::size_t, int, mode_t>(std::string_view)>;
+  using fs_one_arg_function = std::function<std::variant<std::string, bool, int, std::uintmax_t>(std::string_view)>;
 
   std::unordered_map<std::string_view, fs_one_arg_function> fs_one_arg_function_map = {
     {"lexically_normal", [](std::string_view a1) { return fs_lexically_normal(a1); }},
@@ -147,7 +147,7 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     {"setenv", [](std::string_view a1) { std::cout << "unset " << a1 << "\n"; return fs_setenv(a1, ""); }},
     {"realpath", [](std::string_view a1) { return fs_realpath(a1); }},
     {"posix", [](std::string_view a1) { return fs_as_posix(a1); }},
-    {"max_component", [](std::string_view a1) { return fs_max_component(a1); }},
+    {"max_component", [](std::string_view a1) { return static_cast<std::uintmax_t>(fs_max_component(a1)); }},
     {"mkdir", [](std::string_view a1) { return fs_mkdir(a1); }},
     {"owner", [](std::string_view a1) { return fs_get_owner_name(a1) + "\n" + fs_get_owner_group(a1); }},
     {"expanduser", [](std::string_view a1) { return fs_expanduser(a1); }},
@@ -168,14 +168,14 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     {"is_removable", [](std::string_view a1) { return fs_is_removable(a1); }},
     {"is_readable", [](std::string_view a1) { return fs_is_readable(a1); }},
     {"is_writable", [](std::string_view a1) { return fs_is_writable(a1); }},
-    {"device", [](std::string_view a1) { return fs_st_dev(a1); }},
-    {"mode", [](std::string_view a1) { return fs_st_mode(a1); }},
-    {"inode", [](std::string_view a1) { return fs_inode(a1); }},
+    {"device", [](std::string_view a1) { return static_cast<std::uintmax_t>(fs_st_dev(a1)); }},
+    {"mode", [](std::string_view a1) { return static_cast<std::uintmax_t>(fs_st_mode(a1)); }},
+    {"inode", [](std::string_view a1) { return static_cast<std::uintmax_t>(fs_inode(a1)); }},
     {"perm", [](std::string_view a1) { return fs_get_permissions(a1); }},
     {"read_symlink", [](std::string_view a1) { return fs_read_symlink(a1); }},
     {"stem", [](std::string_view a1) { return fs_stem(a1); }},
     {"exists", [](std::string_view a1) { return fs_exists(a1); }},
-    {"blksize", [](std::string_view a1) { return fs_get_blksize(a1); }},
+    {"blksize", [](std::string_view a1) { return static_cast<std::uintmax_t>(fs_get_blksize(a1)); }},
     {"absolute", [](std::string_view a1) { return fs_absolute(a1); }},
     {"is_empty", [](std::string_view a1) { return fs_is_empty(a1); }},
     {"remove", [](std::string_view a1) { return fs_remove(a1); }},
@@ -201,12 +201,10 @@ static bool one_arg(std::string_view fun, std::string_view a1)
       std::cout << std::get<std::string>(r);
     else if (std::holds_alternative<bool>(r))
       std::cout << std::get<bool>(r);
-    else if (std::holds_alternative<std::size_t>(r))
-      std::cout << std::get<std::size_t>(r);
     else if (std::holds_alternative<int>(r))
       std::cout << std::get<int>(r);
-    else if (std::holds_alternative<uintmax_t>(r))
-      std::cout << std::get<uintmax_t>(r);
+    else if (std::holds_alternative<std::uintmax_t>(r))
+      std::cout << std::get<std::uintmax_t>(r);
     else
       ok = false;
 
