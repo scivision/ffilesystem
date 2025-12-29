@@ -47,8 +47,6 @@ namespace Filesystem = std::filesystem;
 #if defined(_WIN32)
 bool fs_win32_is_type(std::string_view path, const DWORD type){
 
-  std::error_code ec;
-
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
   HANDLE h = CreateFileW(fs_win32_to_wide(path).data(),
                          0,
@@ -61,20 +59,18 @@ bool fs_win32_is_type(std::string_view path, const DWORD type){
       case ERROR_CANT_ACCESS_FILE: case ERROR_FILE_NOT_FOUND: case ERROR_PATH_NOT_FOUND: case ERROR_SUCCESS:
         return false;
       default:
-        ec = std::make_error_code(std::errc::io_error);
+        fs_print_error(path, __func__);
+        return false;
     }
-
-    fs_print_error(path, __func__);
-    return false;
   }
 
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
   DWORD t = GetFileType(h);
   CloseHandle(h);
-  if (!ec && t != FILE_TYPE_UNKNOWN)
+  if (t != FILE_TYPE_UNKNOWN)
     return t == type;
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, __func__);
   return false;
 }
 #endif
