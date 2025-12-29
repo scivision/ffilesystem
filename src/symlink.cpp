@@ -29,7 +29,7 @@ namespace Filesystem = std::filesystem;
 #endif
 
 
-#if defined(__linux__) && defined(USE_STATX)
+#if __has_include(<fcntl.h>)
 #include <fcntl.h>   // AT_* constants for statx()
 #endif
 
@@ -47,7 +47,7 @@ std::string::size_type fs_symlink_length([[maybe_unused]] std::string_view path)
 #if !defined(_WIN32)
   int r = 0;
 
-#if defined(STATX_SIZE) && defined(USE_STATX)
+#if defined(HAVE_STATX)
   struct statx sx;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_SIZE, &sx);
   if (r == 0)
@@ -81,7 +81,7 @@ bool fs_is_symlink(std::string_view path)
 
   int r = 0;
 
-#if defined(STATX_MODE) && defined(USE_STATX)
+#if defined(HAVE_STATX)
 // Linux Glibc only
 // https://www.gnu.org/software/gnulib/manual/html_node/statx.html
 // https://www.man7.org/linux/man-pages/man2/statx.2.html

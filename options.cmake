@@ -7,8 +7,6 @@ option(ffilesystem_locale "enable locale-based functions")
 option(ffilesystem_extra "enable extra functions not strictly filesystem-based" on)
 option(ffilesystem_unicode "Windows Unicode support" on)
 
-option(ffilesystem_statx "use statx() if available" on)
-
 option(BUILD_SHARED_LIBS "Build shared libraries")
 option(ffilesystem_coverage "Code coverage tests")
 option(ffilesystem_tidy "Run clang-tidy on the code")

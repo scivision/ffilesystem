@@ -159,7 +159,7 @@ else
 
 # -- copy_file_range()
 
-if not is_windows
+if not backend_filesystem and not is_windows
   if cpp.has_function('copy_file_range', args: '-D_GNU_SOURCE', prefix: '#include <unistd.h>')
     def_copy_file = '-DHAVE_COPY_FILE_RANGE'
   endif
@@ -170,7 +170,6 @@ endif
 # System-specific libraries
 system_libs = []
 system_link_args = []
-macos_diskarbitration = []
 
 if is_windows
 
@@ -185,7 +184,10 @@ elif host_machine.system() == 'darwin' and extra
   system_libs = dependency('appleframeworks', modules: ['CoreFoundation', 'DiskArbitration'])
 endif
 
-def_statx = get_option('statx') ? '-DUSE_STATX' : []
+def_statx = []
+if (host_machine.system() == 'linux' or host_machine.system() == 'android') and cpp.has_function('statx', args: '-D_GNU_SOURCE', prefix: '#include <sys/stat.h>')
+  def_statx = '-DHAVE_STATX'
+endif
 
 # -- main library
 

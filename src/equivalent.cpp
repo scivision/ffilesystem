@@ -15,7 +15,7 @@ namespace Filesystem = std::filesystem;
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if defined(__linux__) && defined(USE_STATX)
+#if __has_include(<fcntl.h>)
 #include <fcntl.h>   // AT_* constants for statx()
 #endif
 
@@ -109,7 +109,7 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
   int r2 = 0;
 
 // https://www.man7.org/linux/man-pages/man7/inode.7.html
-#if defined(STATX_INO) && defined(USE_STATX)
+#if defined(HAVE_STATX)
 
   struct statx x1;
   struct statx x2;

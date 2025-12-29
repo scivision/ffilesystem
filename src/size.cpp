@@ -25,7 +25,7 @@ namespace Filesystem = std::filesystem;
 #include <dirent.h>  // opendir, readdir, closedir
 #endif
 
-#if defined(__linux__) && defined(USE_STATX)
+#if __has_include(<fcntl.h>)
 #include <fcntl.h>   // AT_* constants for statx()
 #endif
 
@@ -61,7 +61,7 @@ std::uintmax_t fs_file_size(std::string_view path)
 #else
 
   int r = 0;
-#if defined(STATX_SIZE) && defined(USE_STATX)
+#if defined(HAVE_STATX)
   struct statx sx;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_SIZE, &sx);
   if (r == 0)

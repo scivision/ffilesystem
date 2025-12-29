@@ -218,16 +218,10 @@ is used by default on
 version
 [2.28 or newer](https://www.sourceware.org/glibc/wiki/Release/2.28)
 systems to get file information.
-There is a runtime fallback to "stat()" if "statx()" is not available.
-statx() may be disabled by setting build option
-
-```sh
-cmake -Dffilesystem_statx=false -Bbuild
-
-# or
-
-meson setup -Dstatx=false build
-```
+Like
+[Python](https://github.com/python/cpython/pulls?q=is%3Apr+statx+)
+[os.statx()](https://docs.python.org/3.15/library/os.html#os.statx),
+we check for `statx()` availability at compile time on Linux and Android.
 
 ## Self test
 

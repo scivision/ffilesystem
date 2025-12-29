@@ -17,7 +17,7 @@
 #include <optional>
 #endif
 
-#if defined(__linux__) && defined(USE_STATX)
+#if __has_include(<fcntl.h>)
 #include <fcntl.h>   // AT_* constants for statx()
 #endif
 
@@ -76,7 +76,7 @@ static std::optional<uid_t> fs_stat_uid(std::string_view path)
 {
   int r = 0;
 
-#if defined(STATX_UID) && defined(USE_STATX)
+#if defined(HAVE_STATX)
   struct statx sx;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_UID, &sx);
   if (r == 0)
@@ -94,7 +94,7 @@ static std::optional<uid_t> fs_stat_uid(std::string_view path)
 static std::optional<gid_t> fs_stat_gid(std::string_view path)
 {
   int r = 0;
-#if defined(STATX_GID) && defined(USE_STATX)
+#if defined(HAVE_STATX)
   struct statx sx;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_GID, &sx);
   if (r == 0)

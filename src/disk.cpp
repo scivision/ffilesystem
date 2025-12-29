@@ -1,3 +1,7 @@
+#if defined(__linux__) && !defined(_DEFAULT_SOURCE)
+#define _DEFAULT_SOURCE
+#endif
+
 #include <string>
 #include <system_error>
 
@@ -13,10 +17,10 @@
 
 #if defined(__linux__)
 #include <sys/sysmacros.h> // for makedev()
-
-#if defined(USE_STATX)
-#include <fcntl.h>   // AT_* constants for statx()
 #endif
+
+#if __has_include(<fcntl.h>)
+#include <fcntl.h>   // AT_* constants for statx()
 #endif
 
 #include "ffilesystem.h"
@@ -54,7 +58,7 @@ std::size_t fs_get_blksize(std::string_view path)
 
   int r = 0;
 
-#if defined(STATX_BASIC_STATS) && defined(USE_STATX)
+#if defined(HAVE_STATX)
   struct statx sx;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_BASIC_STATS, &sx);
   if (r == 0)
@@ -78,7 +82,7 @@ dev_t fs_st_dev(std::string_view path)
 
   int r = 0;
 
-#if defined(STATX_INO) && defined(USE_STATX)
+#if defined(HAVE_STATX)
 
   struct statx x;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_INO, &x);
@@ -125,7 +129,7 @@ ino_t fs_inode(std::string_view path)
 
   int r = 0;
 
-#if defined(STATX_INO) && defined(USE_STATX)
+#if defined(HAVE_STATX)
 
   struct statx x;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_INO, &x);

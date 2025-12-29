@@ -49,16 +49,22 @@ if(ffilesystem_trace)
 
 endif()
 
-elseif(LINUX)
+elseif(LINUX OR ANDROID)
 
   set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
+
   check_symbol_exists(copy_file_range "unistd.h" ffilesystem_HAVE_COPY_FILE_RANGE)
+
+  check_symbol_exists(statx "sys/stat.h;fcntl.h" ffilesystem_HAVE_STATX)
 
 endif()
 
 
 if(WIN32)
   check_cxx_symbol_exists(GetFileInformationByName "Windows.h" ffilesystem_HAVE_GetFileInformationByName)
+elseif(LINUX OR ANDROID)
+  set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
+  check_cxx_symbol_exists(statx "sys/stat.h;fcntl.h" ffilesystem_HAVE_STATX)
 endif()
 
 

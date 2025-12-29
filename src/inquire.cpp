@@ -29,7 +29,7 @@ namespace Filesystem = std::filesystem;
 #include <sys/types.h>  // IWYU pragma: keep
 #include <sys/stat.h>   // IWYU pragma: keep
 
-#if defined(__linux__) && defined(USE_STATX)
+#if __has_include(<fcntl.h>)
 #include <fcntl.h>   // AT_* constants for statx()
 #endif
 
@@ -70,7 +70,7 @@ static bool fs_win32_is_type(std::string_view path, const DWORD type){
 bool fs_has_statx()
 {
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
-#if defined(STATX_MODE) && defined(USE_STATX)
+#if defined(HAVE_STATX)
   return true;
 #else
   return false;
@@ -81,7 +81,7 @@ bool fs_has_statx()
 mode_t
 fs_st_mode(std::string_view path)
 {
-#if defined(STATX_MODE) && defined(USE_STATX)
+#if defined(HAVE_STATX)
 // Linux Glibc only
 // https://www.gnu.org/software/gnulib/manual/html_node/statx.html
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
@@ -319,7 +319,7 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 
   int r = 0;
 
-#if defined(STATX_NLINK) && defined(USE_STATX)
+#if defined(HAVE_STATX)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
   struct statx sx;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_NLINK, &sx);

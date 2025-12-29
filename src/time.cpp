@@ -33,7 +33,7 @@ namespace Filesystem = std::filesystem;
 #endif
 
 // standalone #if
-#if !defined(_WIN32)
+#if __has_include(<fcntl.h>)
 #include <fcntl.h> // utimensat, AT_* constants
 #endif
 
@@ -50,7 +50,7 @@ std::time_t fs_get_modtime(std::string_view path)
 
   int r = 0;
 
-#if defined(STATX_MTIME) && defined(USE_STATX)
+#if defined(HAVE_STATX)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
   struct statx sx;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_MTIME, &sx);
@@ -111,7 +111,7 @@ bool fs_set_modtime(std::string_view path, const bool quiet)
       return true;
   }
 #else
-  // utimensat available in macOS since 10.13
+  // utimensat available in macOS >= 10.13
   // https://github.com/python/cpython/issues/75782
   // https://gitlab.kitware.com/cmake/cmake/-/issues/17101
   if (::utimensat(AT_FDCWD, path.data(), nullptr, 0) == 0)
