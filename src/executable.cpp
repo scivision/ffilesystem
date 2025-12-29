@@ -24,12 +24,13 @@ namespace Filesystem = std::filesystem;
 #endif
 
 #if defined(__APPLE__)
-#include <cstring>   // std::memcpy
 #include <mach-o/loader.h>
 #include <mach-o/fat.h>
 
 #if __has_include(<bit>)
 #include <bit>
+#else
+#include <cstring>   // std::memcpy
 #endif
 
 #endif
@@ -81,7 +82,7 @@ bool fs_is_executable_binary(std::string_view path)
 
 #else
   // Linux / BSD: executable binary check via ELF file magic number
-  // not to_array to keep compatibility with C++17
+  // not using to_array to keep compatibility with C++17
   constexpr std::array<std::uint8_t, 4> ELF_MAGIC{0x7f, 'E', 'L', 'F'};
 
   ok = magic == ELF_MAGIC;

@@ -82,31 +82,25 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
 {
   // copy a file in chunks
 
-#if defined(HAVE_COPY_FILE_RANGE)
-  std::string const fst = fs_filesystem_type(source);
-
-  bool useloop = fst == "debugfs" || fst == "procfs" || fst == "sysfs" || fst == "tracefs";
-#endif
-
   int const rid = ::open(source.data(), O_RDONLY | O_CLOEXEC);
   if (rid == -1)
     return false;
 
   // leave fstat here to avoid source file race condition
-  struct stat stat;
-  if (fstat(rid, &stat) == -1) {
+  struct stat s;
+  if (fstat(rid, &s) == -1) {
     ::close(rid);
     return false;
   }
 
-  const off_t len = stat.st_size;
+  const off_t len = s.st_size;
 
   auto opt = O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC;
   if(!overwrite)
     opt |= O_EXCL;
 
 // https://linux.die.net/man/3/open
-  int const wid = ::open(dest.data(), opt, stat.st_mode);
+  int const wid = ::open(dest.data(), opt, s.st_mode);
   if (wid == -1) {
     ::close(rid);
     return false;
@@ -118,6 +112,14 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
 #if defined(HAVE_COPY_FILE_RANGE)
     // https://man.freebsd.org/cgi/man.cgi?copy_file_range(2)
     // https://man7.org/linux/man-pages/man2/copy_file_range.2.html
+
+  std::string const fst = fs_filesystem_type(source);
+
+  bool useloop = fst == "debugfs" ||
+                 fst == "procfs" ||
+                 fst == "sysfs" ||
+                 fst == "tracefs";
+
   if (!useloop) {
     if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using copy_file_range\n";
 
