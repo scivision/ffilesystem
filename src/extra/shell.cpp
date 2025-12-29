@@ -22,6 +22,11 @@ fs_get_shell()
 
 #if defined(_WIN32)
   const HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  if (h == INVALID_HANDLE_VALUE) {
+    fs_print_error("", __func__);
+    return {};
+  }
+
   // 0: current process
   PROCESSENTRY32 pe;
   ZeroMemory(&pe, sizeof(PROCESSENTRY32));
@@ -36,22 +41,31 @@ fs_get_shell()
     do {
       if (pe.th32ProcessID == pid) {
         HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pe.th32ParentProcessID);
+        if (!hProcess) {
+          if (fs_trace) std::cout << "TRACE: OpenProcess failed for PPID " << pe.th32ParentProcessID << "\n";
+          continue;
+        }
 
         if ( EnumProcessModules( hProcess, &hMod, sizeof(hMod), &cbNeeded) ) {
-          if(DWORD L = GetModuleBaseNameA( hProcess, hMod, name.data(), static_cast<DWORD>(name.size()) );
-              !CloseHandle(hProcess) || L == 0)
+          if(DWORD L = GetModuleBaseNameA( hProcess, hMod, name.data(), static_cast<DWORD>(name.size()) ); L == 0)
             ec = std::make_error_code(std::errc::io_error);
           else
             name.resize(L);
 
+          CloseHandle(hProcess);
           break;
         }
-if(fs_trace) std::cout << "TRACE: get_shell: " << name << " PID: " << pid << " PPID: " << pe.th32ParentProcessID << "\n";
+
+        CloseHandle(hProcess);
+
+        if(fs_trace) std::cout << "TRACE: get_shell: " << name << " PID: " << pid << " PPID: " << pe.th32ParentProcessID << "\n";
       }
     } while( Process32Next(h, &pe));
   }
 
-  if (CloseHandle(h) && !ec)
+  CloseHandle(h);
+
+  if (!ec)
     return name;
 #else
   if (auto pw = fs_getpwuid())
