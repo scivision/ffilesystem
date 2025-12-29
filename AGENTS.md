@@ -30,3 +30,5 @@ Only Boost::Filesystem supports UNC paths, but we haven't yet implemented Boost:
 
 Generally, the paths are passed in as `std::string_view` and returned as `std::string` or `std::optional<std::string>` if the operation can fail.
 We return `std::string` instead of `std::string_view` because the C API is important and generally the users are not interested in managing the lifetime of the string_view.
+
+* fs_print_error() is polymorphic and grabs GetLastError() on Windows or errno on POSIX systems. Assume all arguments to fs_print_error() are of the correct type.

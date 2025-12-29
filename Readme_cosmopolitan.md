@@ -1,7 +1,7 @@
 # Cosmopolitan universal binary
 
 [Cosmopolitan](https://github.com/jart/cosmopolitan)
-provides a univerisal binary that can run on many computing platforms (CPU archs and operating systems).
+provides a universial binary that can run on many computing platforms (CPU archs and operating systems).
 
 To build with Cosmo, assuming the Cosmo binaries are under $HOME/cosmo/, make a source file $HOME/cosmo.sh like:
 
