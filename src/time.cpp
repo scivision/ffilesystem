@@ -54,7 +54,7 @@ std::time_t fs_get_modtime(std::string_view path)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
   struct statx sx;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_MTIME, &sx);
-  if (r == 0) FFS_LIKELY
+  if (r == 0)
     return sx.stx_mtime.tv_sec;
 #endif
   if (r == 0 || errno == ENOSYS){
@@ -73,7 +73,7 @@ std::optional<Filesystem::file_time_type> fs_get_modtime_fs(std::string_view pat
 {
   std::error_code ec;
 
-  if(Filesystem::file_time_type t_fs = Filesystem::last_write_time(path, ec); !ec) FFS_LIKELY
+  if(Filesystem::file_time_type t_fs = Filesystem::last_write_time(path, ec); !ec)
     return t_fs;
 
   fs_print_error(path, __func__, ec);
@@ -96,22 +96,25 @@ bool fs_set_modtime(std::string_view path, const bool quiet)
 #elif defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/SysInfo/changing-a-file-time-to-the-current-time
   HANDLE h = CreateFileW(fs_win32_to_wide(path).data(),
-                         FILE_WRITE_ATTRIBUTES, FILE_SHARE_WRITE, nullptr,
+                         FILE_WRITE_ATTRIBUTES,
+                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                         nullptr,
                          OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
-  if (h){
+  if (h != INVALID_HANDLE_VALUE){
     FILETIME t;
     // https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemtimeasfiletime
     GetSystemTimeAsFileTime(&t);
     BOOL ok = SetFileTime(h, nullptr, nullptr, &t);
 
-    if(CloseHandle(h) && ok) FFS_LIKELY
+    CloseHandle(h);
+    if(ok)
       return true;
   }
 #else
   // utimensat available in macOS since 10.13
   // https://github.com/python/cpython/issues/75782
   // https://gitlab.kitware.com/cmake/cmake/-/issues/17101
-  if (utimensat(AT_FDCWD, path.data(), nullptr, 0) == 0)  FFS_LIKELY
+  if (::utimensat(AT_FDCWD, path.data(), nullptr, 0) == 0)
     return true;
 #endif
 
