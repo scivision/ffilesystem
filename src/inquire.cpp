@@ -45,7 +45,7 @@ namespace Filesystem = std::filesystem;
 #endif
 
 #if defined(_WIN32)
-bool fs_win32_is_type(std::string_view path, const DWORD type){
+static bool fs_win32_is_type(std::string_view path, const DWORD type){
 
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
   HANDLE h = CreateFileW(fs_win32_to_wide(path).data(),

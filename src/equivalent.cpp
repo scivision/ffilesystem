@@ -27,25 +27,28 @@ namespace Filesystem = std::filesystem;
 #endif
 
 
-bool fs_equivalent(std::string_view path1, std::string_view path2)
+#if !defined(HAVE_CXX_FILESYSTEM) && defined(_WIN32)
+static bool fs_win32_equiv(std::string_view path1, std::string_view path2, std::error_code& ec)
 {
-  // non-existent paths are not equivalent
+// GetFileInformationByName in Windows >= 24H2
+// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getfileinformationbyname
+// https://github.com/rust-lang/rust/issues/130169
 
-  std::error_code ec;
+#if defined(HAVE_GETFILEINFORMATIONBYNAME)
+  // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-file_stat_basic_information
+  FILE_STAT_BASIC_INFORMATION f1{}, f2{};
+  const auto w1 = fs_win32_to_wide(path1);
+  const auto w2 = fs_win32_to_wide(path2);
 
-#ifdef HAVE_CXX_FILESYSTEM
-
-  if(bool e = Filesystem::equivalent(path1, path2, ec); !ec)
-    return e;
+ if ( GetFileInformationByName(w1.data(), FileStatBasicByNameInfo, &f1, sizeof(f1)) &&
+      GetFileInformationByName(w2.data(), FileStatBasicByNameInfo, &f2, sizeof(f2))) {
+        return f1.VolumeSerialNumber.QuadPart == f2.VolumeSerialNumber.QuadPart &&
+               f1.FileId.QuadPart == f2.FileId.QuadPart;
+  }
+  // .FileID and .VolumeSerialNumber are LARGE_INTEGER
 
 #else
 
-#if defined(_WIN32)
-// FUTURE: GetFileInformationByName Windows ~24H2
-// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getfileinformationbyname
-// https://github.com/rust-lang/rust/issues/130169
-//
-// for now use GetFileInformationByHandle
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileinformationbyhandle#remarks
 // FILE_FLAG_BACKUP_SEMANTICS to allow opening directories
 
@@ -76,6 +79,31 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
            f1.nFileIndexLow == f2.nFileIndexLow;
   }
 
+#endif
+
+  fs_print_error(path1, path2, __func__, ec);
+  return false;
+}
+#endif
+
+
+bool fs_equivalent(std::string_view path1, std::string_view path2)
+{
+  // non-existent paths are not equivalent
+
+  std::error_code ec;
+
+#ifdef HAVE_CXX_FILESYSTEM
+
+  if(bool e = Filesystem::equivalent(path1, path2, ec); !ec)
+    return e;
+
+#else
+
+#if defined(_WIN32)
+
+  return fs_win32_equiv(path1, path2, ec);
+
 #else
   int r1 = 0;
   int r2 = 0;
@@ -105,7 +133,8 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
   }
 
 #endif
-#endif
+
+#endif // HAVE_CXX_FILESYSTEM
 
   fs_print_error(path1, path2, __func__, ec);
   return false;

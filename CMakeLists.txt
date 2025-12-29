@@ -159,6 +159,7 @@ target_compile_definitions(ffilesystem PRIVATE
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_statx}>>:USE_STATX>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_locale}>>:ffilesystem_locale>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_extra}>>:ffilesystem_extra>"
+"$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_GetFileInformationByName}>>:HAVE_GETFILEINFORMATIONBYNAME>"
 )
 
 target_compile_options(ffilesystem PRIVATE ${ffilesystem_cxxflags})
