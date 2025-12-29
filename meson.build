@@ -21,6 +21,8 @@ message('C++ standard: ' + cpp_std)
 cc = meson.get_compiler('c')
 cpp = meson.get_compiler('cpp')
 
+extra = get_option('extra')
+
 if ['gcc', 'clang', 'intel-llvm'].contains(cc.get_id())
   add_project_arguments('-Werror=implicit-function-declaration', language: 'c')
 endif
@@ -65,13 +67,14 @@ comm_src = files(
 'src/windows.cpp'
 )
 
-if get_option('extra')
+if extra
   comm_src += files(
 'src/extra/case.cpp',
 'src/extra/component.cpp',
 'src/extra/exepath.cpp',
 'src/extra/libpath.cpp',
 'src/extra/random.cpp',
+'src/extra/removable.cpp',
 'src/extra/shell.cpp',
 'src/extra/sysctl.cpp',
 'src/extra/uid.cpp',
@@ -80,7 +83,7 @@ if get_option('extra')
 )
 endif
 
-extra_def = get_option('extra') ? '-Dffilesystem_extra' : []
+extra_def = extra ? '-Dffilesystem_extra' : []
 locale_def = get_option('locale') ? '-Dffilesystem_locale' : []
 
 inc = include_directories('include')
@@ -177,9 +180,8 @@ cc.find_library('Userenv'),
 cc.find_library('ws2_32')
 ]
 
-elif host_machine.system() == 'darwin'
+elif host_machine.system() == 'darwin' and extra
   system_libs = dependency('appleframeworks', modules: ['CoreFoundation', 'DiskArbitration'])
-  macos_diskarbitration = '-DHAVE_MACOS_DISKARBITRATION'
 endif
 
 def_statx = get_option('statx') ? '-DUSE_STATX' : []
@@ -191,7 +193,7 @@ sources: [fsrcs, comm_src],
 include_directories: [inc],
 install: true,
 c_args: [],
-cpp_args: [have_filesystem, chrono_def, dladdr_def, macos_diskarbitration,
+cpp_args: [have_filesystem, chrono_def, dladdr_def,
 def_copy_file, def_statx, extra_def, locale_def, trace_def],
 link_args: system_link_args,
 dependencies: [system_libs, fs_lib, dl],

@@ -119,6 +119,7 @@ src/extra/component.cpp
 src/extra/exepath.cpp
 src/extra/libpath.cpp
 src/extra/random.cpp
+src/extra/removable.cpp
 src/extra/shell.cpp
 src/extra/sysctl.cpp
 src/extra/uid.cpp
@@ -197,8 +198,7 @@ ${CMAKE_DL_LIBS}
 # Shell32: SHGetKnownFolderPath
 # uuid: KnownFolderID
 
-if(CMAKE_CXX_LINK_LIBRARY_USING_FRAMEWORK_SUPPORTED)
-  target_compile_definitions(ffilesystem PRIVATE $<$<COMPILE_LANGUAGE:CXX>:HAVE_MACOS_DISKARBITRATION>)
+if(ffilesystem_extra AND APPLE)
   target_link_libraries(ffilesystem PRIVATE "$<LINK_LIBRARY:FRAMEWORK,DiskArbitration,CoreFoundation>")
 endif()
 

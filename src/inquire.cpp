@@ -31,18 +31,14 @@ namespace Filesystem = std::filesystem;
 #include <sys/stat.h>   // IWYU pragma: keep
 
 #if defined(__linux__)
-#include <sys/sysmacros.h> // for makedev(), minor(), major()
-#include <fstream>
+#include <sys/sysmacros.h> // for makedev()
 
 #if defined(USE_STATX)
 #include <fcntl.h>   // AT_* constants for statx()
 #endif
 #endif
 
-#if defined(HAVE_MACOS_DISKARBITRATION)
-#include <CoreFoundation/CoreFoundation.h>
-#include <DiskArbitration/DiskArbitration.h>
-#endif
+
 
 #if defined(_WIN32)
 static bool fs_win32_is_type(std::string_view path, const DWORD type){
@@ -181,94 +177,6 @@ ino_t fs_inode(std::string_view path)
 
   fs_print_error(path, __func__, ec);
   return 0;
-
-}
-
-
-bool
-fs_is_removable(std::string_view path)
-{
-  // is path a removable device like a USB stick or SD card or CD-ROM, DVD, Blu-ray
-  // not a fixed disk like a hard drive or SSD
-#if defined(_WIN32)
-  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdrivetypea
-
-  UINT t = GetDriveTypeW(fs_win32_to_wide(fs_root(path)).data());
-  switch (t)
-  {
-    case DRIVE_REMOVABLE:
-    case DRIVE_CDROM:
-      return true;
-    case DRIVE_FIXED:
-    case DRIVE_REMOTE:
-    case DRIVE_RAMDISK:
-      return false;
-    case DRIVE_UNKNOWN:
-    case DRIVE_NO_ROOT_DIR:
-      fs_print_error(path, __func__, std::make_error_code(std::errc::no_such_device));
-      return false;
-    default:
-      return false;
-  }
-#elif defined(__linux__)
-  // Linux: find the device and check /sys/block/*/removable == 1
-  // this is for local devices only, not network mounts
-  // for more general/robust solution, consider libudev.
-
-  std::string dev;
-  if (struct stat s; stat(path.data(), &s) == 0) {
-    dev = "/sys/dev/block/" + std::to_string(major(s.st_dev)) + ":" + std::to_string(minor(s.st_dev)) + "/removable";
-  } else {
-    fs_print_error(path, __func__);
-    return false;
-  }
-
-  if (std::ifstream ifs(dev); ifs) {
-    if (char c; ifs.get(c))
-      return c == '1';
-  }
-
-  fs_print_error(dev, __func__);
-  return false;
-
-#elif defined(HAVE_MACOS_DISKARBITRATION)
-  // macOS DiskArbitration framework
-  // requires linking with -framework DiskArbitration -framework CoreFoundation
-
-  struct stat s;
-  if (stat(path.data(), &s) != 0) {
-    fs_print_error(path, __func__);
-    return false;
-  }
-
-   // Construct BSD device name (e.g., "disk0s1")
-  std::string bsdName = "disk" + std::to_string(major(s.st_dev)) + "s" + std::to_string(minor(s.st_dev));
-
-  DASessionRef session = DASessionCreate(kCFAllocatorDefault);
-  if (!session) {
-    fs_print_error(path, __func__);
-    return false;
-  }
-
-  bool ok = false;
-  if (DADiskRef disk = DADiskCreateFromBSDName(kCFAllocatorDefault, session, bsdName.c_str()); disk) {
-    if (CFDictionaryRef desc = DADiskCopyDescription(disk); desc) {
-      if (CFBooleanRef r = static_cast<CFBooleanRef>(CFDictionaryGetValue(desc, kDADiskDescriptionMediaRemovableKey)); r) {
-        ok = CFBooleanGetValue(r);
-      }
-      CFRelease(desc);
-    }
-    CFRelease(disk);
-  }
-
-  CFRelease(session);
-
-  return ok;
-
-#else
-  fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
-  return false;
-#endif
 
 }
 

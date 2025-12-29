@@ -23,7 +23,7 @@ namespace Filesystem = std::filesystem;
 #include <array>
 #endif
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) && defined(__MACH__)
 #include <mach-o/loader.h>
 #include <mach-o/fat.h>
 
