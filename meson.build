@@ -35,6 +35,7 @@ comm_src = files(
 'src/extra/compiler.cpp',
 'src/copy.cpp',
 'src/extra/cygwin.cpp',
+'src/disk.cpp',
 'src/equivalent.cpp',
 'src/env.cpp',
 'src/executable.cpp',
