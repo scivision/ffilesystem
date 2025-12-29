@@ -51,7 +51,9 @@ bool fs_win32_is_type(std::string_view path, const DWORD type){
 
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
   HANDLE h = CreateFileW(fs_win32_to_wide(path).data(),
-                         0, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+                         0,
+                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                         nullptr, OPEN_EXISTING, 0, nullptr);
 
   if(h == INVALID_HANDLE_VALUE){
     DWORD err = GetLastError();
@@ -68,7 +70,8 @@ bool fs_win32_is_type(std::string_view path, const DWORD type){
 
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
   DWORD t = GetFileType(h);
-  if (CloseHandle(h) && !ec)
+  CloseHandle(h);
+  if (!ec && t != FILE_TYPE_UNKNOWN)
     return t == type;
 
   fs_print_error(path, __func__, ec);
@@ -473,7 +476,7 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
   struct statx sx;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_NLINK, &sx);
-  if (r == 0) FFS_LIKELY
+  if (r == 0)
     return sx.stx_nlink;
 #endif
 
@@ -498,7 +501,9 @@ std::size_t fs_get_blksize(std::string_view path)
     return {};
 
   HANDLE h = CreateFileW(fs_win32_to_wide(R"(\\.\)" + root).data(),
-                         0, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+                         0,
+                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                         nullptr, OPEN_EXISTING, 0, nullptr);
 
   if (h != INVALID_HANDLE_VALUE) {
     DISK_GEOMETRY_EX diskGeometry = {};
@@ -509,7 +514,8 @@ std::size_t fs_get_blksize(std::string_view path)
                         nullptr, 0, &diskGeometry, sizeof(diskGeometry),
                         &bytesReturned, nullptr);
 
-    if (CloseHandle(h) && ok)  FFS_LIKELY
+    CloseHandle(h);
+    if (ok)
       return diskGeometry.Geometry.BytesPerSector;
   }
 
@@ -520,7 +526,7 @@ std::size_t fs_get_blksize(std::string_view path)
 #if defined(STATX_BASIC_STATS) && defined(USE_STATX)
   struct statx sx;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_BASIC_STATS, &sx);
-  if (r == 0) FFS_LIKELY
+  if (r == 0)
     return sx.stx_blksize;
 #endif
 
