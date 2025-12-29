@@ -25,9 +25,14 @@ EXPECT_EQ(fs_st_dev("not-exist-file"), static_cast<dev_t>(-1)) << "backend " << 
 
 TEST(TestDevice, Inode)
 {
-if(!fs_is_windows()){
+
+if (fs_is_windows()){
+#ifdef HAVE_GETFILEINFORMATIONBYNAME
   EXPECT_GT(fs_inode("."), 0);
-}
+#else
+} else
+  EXPECT_GT(fs_inode("."), 0);
+#endif
 
 EXPECT_EQ(fs_inode("not-exist-file"), static_cast<ino_t>(0)) << "backend " << fs_backend();
 }

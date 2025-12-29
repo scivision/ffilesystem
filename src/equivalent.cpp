@@ -36,7 +36,7 @@ static bool fs_win32_equiv(std::string_view path1, std::string_view path2, std::
 
 #if defined(HAVE_GETFILEINFORMATIONBYNAME)
   // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-file_stat_basic_information
-  FILE_STAT_BASIC_INFORMATION f1{}, f2{};
+  FILE_STAT_BASIC_INFORMATION f1, f2;
   const auto w1 = fs_win32_to_wide(path1);
   const auto w2 = fs_win32_to_wide(path2);
 
