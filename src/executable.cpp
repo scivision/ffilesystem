@@ -27,6 +27,11 @@ namespace Filesystem = std::filesystem;
 #include <cstring>   // std::memcpy
 #include <mach-o/loader.h>
 #include <mach-o/fat.h>
+
+#if __has_include(<bit>)
+#include <bit>
+#endif
+
 #endif
 
 #include "ffilesystem.h"
@@ -43,11 +48,10 @@ bool fs_is_executable_binary(std::string_view path)
   ok = (GetBinaryTypeW(fs_win32_to_wide(path).data(), &t) != 0) || fs_is_appexec_alias(path);
 #else
   // https://github.com/jart/cosmopolitan/blob/master/ape/specification.md
-
-  std::array<char, 4> magic;
+  std::array<std::uint8_t, 4> magic;
 
   if(std::ifstream f{path.data(), std::ios::binary}){
-    if(f.read(magic.data(), 4).gcount() != 4)
+    if( !f.read(reinterpret_cast<char*>(magic.data()), magic.size()) )
       return false;
   } else
     return false;
@@ -63,9 +67,12 @@ bool fs_is_executable_binary(std::string_view path)
     // FAT_MAGIC_64: 0xCAFEBABF (64-bit)
     // it's necessary to consider the reversed magic number for each of these as well,
     // done in the "*CIGAM*" constants
-
+#if defined(__cpp_lib_bit_cast) // C++20
+  auto um32 = std::bit_cast<std::uint32_t>(magic);
+#else
   std::uint32_t um32;
   std::memcpy(&um32, magic.data(), sizeof(um32));
+#endif
 
   ok = um32 == MH_MAGIC ||  um32 == MH_MAGIC_64 ||
        um32 == MH_CIGAM ||  um32 == MH_CIGAM_64 ||
@@ -74,7 +81,10 @@ bool fs_is_executable_binary(std::string_view path)
 
 #else
   // Linux / BSD: executable binary check via ELF file magic number
-    ok = magic[0] == 0x7f && magic[1] == 'E' && magic[2] == 'L' && magic[3] == 'F';
+  // not to_array to keep compatibility with C++17
+  constexpr std::array<std::uint8_t, 4> ELF_MAGIC{0x7f, 'E', 'L', 'F'};
+
+  ok = magic == ELF_MAGIC;
   // does not consider PE or COFF formats.
 #endif
 #endif
