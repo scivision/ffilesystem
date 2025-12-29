@@ -46,25 +46,25 @@ std::uintmax_t fs_file_size(std::string_view path)
 #elif defined(_WIN32)
   // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfilesizeex
 
-  if (HANDLE h = CreateFileW(fs_win32_to_wide(path).data(),
+  HANDLE h = CreateFileW(fs_win32_to_wide(path).data(),
                              GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-      h != INVALID_HANDLE_VALUE)
-  {
+
+  if (h != INVALID_HANDLE_VALUE) {
     LARGE_INTEGER size;
     BOOL ok = GetFileSizeEx(h, &size);
-
-    if (CloseHandle(h) && ok)  FFS_LIKELY
+    CloseHandle(h);
+    if (ok)
       return size.QuadPart;
-  } else {
-    ec = std::make_error_code(std::errc::no_such_file_or_directory);
   }
+
+  ec = std::make_error_code(std::errc::no_such_file_or_directory);
 #else
 
   int r = 0;
 #if defined(STATX_SIZE) && defined(USE_STATX)
   struct statx sx;
   r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_SIZE, &sx);
-  if (r == 0) FFS_LIKELY
+  if (r == 0)
     return sx.stx_size;
 #endif
 
@@ -88,7 +88,7 @@ bool fs_is_empty(std::string_view path)
   std::error_code ec;
 
 #if defined(HAVE_CXX_FILESYSTEM)
-  if (bool e = Filesystem::is_empty(path, ec); !ec)  FFS_LIKELY
+  if (bool e = Filesystem::is_empty(path, ec); !ec)
     return e;
 #else
 
@@ -105,6 +105,12 @@ bool fs_is_empty(std::string_view path)
     return false;
   }
 
+  // RAII for FindClose
+  struct FindHandleCloser {
+    HANDLE h;
+    ~FindHandleCloser() { if (h != INVALID_HANDLE_VALUE) FindClose(h); }
+  } _closer{hFind};
+
   do
   {
       if(fs_trace) std::cout << "TRACE: is_empty: do " << ffd.cFileName << "\n";
@@ -115,16 +121,13 @@ bool fs_is_empty(std::string_view path)
           continue;
 
       // directory that is not . or ..
-        FindClose(hFind);
         return false;
       }
       // any non-directory
-      FindClose(hFind);
       return false;
   } while (FindNextFileA(hFind, &ffd));
 
   // empty directory
-  FindClose(hFind);
   return true;
 #else
 // https://www.man7.org/linux/man-pages/man3/opendir.3.html
@@ -134,6 +137,8 @@ bool fs_is_empty(std::string_view path)
 
   if (DIR *d = opendir(path.data()); d)
   {
+    // RAII for closedir
+    struct DirCloser { DIR* d; ~DirCloser(){ if(d) closedir(d); } } _dc{d};
     struct dirent *entry;
   while ((entry = readdir(d)))
   {
@@ -147,15 +152,12 @@ bool fs_is_empty(std::string_view path)
       if (std::string_view n(entry->d_name); n == "." || n == "..")
         continue;
       // directory that is not . or ..
-      closedir(d);
       return false;
     }
     // any non-directory
-    closedir(d);
     return false;
   }
     // empty directory
-    closedir(d);
     return true;
   }
 
