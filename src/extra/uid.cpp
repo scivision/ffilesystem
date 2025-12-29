@@ -25,13 +25,16 @@ bool fs_is_admin(){
   const bool ok = (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &h) &&
      GetTokenInformation(h, TokenElevation, &elevation, sizeof(elevation), &dwSize));
 
-  if(CloseHandle(h) && ok)  FFS_LIKELY
+  if (h)
+    CloseHandle(h);
+
+  if(ok)
     return elevation.TokenIsElevated;
 
   fs_print_error("", __func__);
   return false;
 #else
-  return geteuid() == 0;
+  return ::geteuid() == 0;
 #endif
 }
 
@@ -45,7 +48,7 @@ pid_t fs_getpid()
 #else
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/getpid.2.html
   // https://www.man7.org/linux/man-pages/man2/getpid.2.html
-  return getpid();
+  return ::getpid();
 #endif
 }
 
@@ -55,9 +58,9 @@ bool fs_stdin_tty()
 // detect if stdin is connected to a terminal
   return
 #if defined(_WIN32)
-    _isatty(_fileno(stdin));
+    ::_isatty(::_fileno(stdin));
 #else
-    isatty(fileno(stdin));
+    ::isatty(::fileno(stdin));
 #endif
 }
 
@@ -78,6 +81,7 @@ std::string fs_get_terminal()
   // disrupt the console window's operation.
 
   if (HWND h = GetConsoleWindow(); h) {
+    // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getclassnamea
     int L = GetClassNameA(h, name.data(), static_cast<int>(name.size()));
 
     if (L > 0){
