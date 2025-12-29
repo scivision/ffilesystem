@@ -29,9 +29,9 @@
 struct passwd* fs_getpwuid()
 {
 #if !defined(_WIN32)
-  const uid_t eff_uid = geteuid();
+  const uid_t eff_uid = ::geteuid();
 
-  if(auto pw = getpwuid(eff_uid)) FFS_LIKELY
+  if(auto pw = ::getpwuid(eff_uid))
     return pw;
 
   fs_print_error(
@@ -76,7 +76,9 @@ std::string fs_get_profile_dir()
       ok = GetUserProfileDirectoryW(h, w.data(), &L);
     }
 
-    if(CloseHandle(h) && ok && L > 0)
+    CloseHandle(h);
+
+    if(ok && L > 0)
       return fs_win32_to_narrow(w);
   }
 #else
@@ -91,7 +93,7 @@ std::string fs_get_profile_dir()
 
 std::string fs_expanduser(std::string_view path)
 {
-  if(path.empty()) FFS_UNLIKELY
+  if(path.empty())
     return {};
 
   if(path.front() != '~')
@@ -103,7 +105,7 @@ std::string fs_expanduser(std::string_view path)
     return std::string(path);
 
   std::string home = fs_get_homedir();
-  if(home.empty()) FFS_UNLIKELY
+  if(home.empty())
     return {};
 
   if (path.length() < 3)
