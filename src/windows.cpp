@@ -108,7 +108,8 @@ static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer
                           MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &bytesReturned,
                           nullptr);
 
-    if(CloseHandle(h) && ok) FFS_LIKELY
+    CloseHandle(h);
+    if(ok)
       return true;
   }
 
@@ -264,7 +265,10 @@ std::string fs_win32_final_path(std::string_view path)
     w.resize(L + 1);
 
     L = GetFinalPathNameByHandleW(h, w.data(), L, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
-    if(CloseHandle(h) && L > 0) {
+
+    CloseHandle(h);
+
+    if(L > 0) {
       w.resize(L);
       std::string r(fs_win32_to_narrow(w));
 
