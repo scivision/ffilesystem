@@ -1,7 +1,6 @@
 #include <system_error>
 
 #include <iostream>
-#include <ostream> // for std::endl
 
 #include <string>
 #include <string_view>
