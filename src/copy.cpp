@@ -16,6 +16,7 @@
 #include <system_error>
 
 #include <string_view>
+#include <algorithm>
 
 #if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
@@ -23,7 +24,8 @@ namespace Filesystem = std::filesystem;
 #else
 
 #include <cstdlib>
-#include <memory>  // for std::make_unique
+#include <memory>  // for std::make_unique, std::unique_ptr
+#include <cerrno>  // for errno
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
@@ -54,6 +56,44 @@ namespace Filesystem = std::filesystem;
 
 #if !defined(HAVE_CXX_FILESYSTEM) && !defined(_WIN32)
 
+// for RAII file descriptor management
+struct fd_handle {
+  int fd{-1};
+  explicit fd_handle(int v = -1) : fd(v) {}
+  ~fd_handle() { reset(); }
+
+  fd_handle(const fd_handle&) = delete;
+  fd_handle& operator=(const fd_handle&) = delete;
+  fd_handle(fd_handle&& o) noexcept : fd(o.fd) { o.fd = -1; }
+  fd_handle& operator=(fd_handle&& o) noexcept {
+    if (this != &o) { reset(); fd = o.fd; o.fd = -1; }
+    return *this;
+  }
+
+  int close() {
+    int rv = 0;
+    if (fd != -1) {
+      rv = ::close(fd);
+      fd = -1;
+    }
+    return rv;
+  }
+
+  int get() const { return fd; }
+  explicit operator bool() const { return fd != -1; }
+
+  int release() {
+    int tmp = fd; fd = -1;
+    return tmp;
+  }
+
+  void reset(int v = -1) {
+    if (fd != -1) ::close(fd);
+    fd = v;
+  }
+};
+
+
 static off_t fs_copy_loop(int const rid, int const wid, off_t const len)
 {
   // copy a file in chunks
@@ -61,17 +101,38 @@ static off_t fs_copy_loop(int const rid, int const wid, off_t const len)
 
   if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using plain file buffer read / write\n";
 
-  constexpr int bufferSize = 16384;
+  constexpr size_t bufferSize = 16384;
   auto buf = std::make_unique<char[]>(bufferSize);
 
-  ssize_t ret = 0;
   while (r > 0) {
-    ret = read(rid, buf.get(), r);
-    // value should not be zero because we tell the file size in "len"
-    if (ret <= 0 || write(wid, buf.get(), ret) != ret)
+    const size_t to_read = static_cast<size_t>(std::min<off_t>(r, static_cast<off_t>(bufferSize)));
+
+    ssize_t ret;
+    do {
+      ret = ::read(rid, buf.get(), to_read);
+    } while (ret < 0 && errno == EINTR);
+
+    if (ret <= 0)
       break;
 
-    r -= ret;
+    ssize_t written = 0;
+    while (written < ret) {
+      ssize_t w;
+      do {
+        w = ::write(wid, buf.get() + written, static_cast<size_t>(ret - written));
+      } while (w < 0 && errno == EINTR);
+
+      if (w <= 0) {
+        ret = -1;
+        break;
+      }
+      written += w;
+    }
+
+    if (ret < 0)
+      break;
+
+    r -= written;
   }
 
   return r;
@@ -82,16 +143,14 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
 {
   // copy a file in chunks
 
-  int const rid = ::open(source.data(), O_RDONLY | O_CLOEXEC);
-  if (rid == -1)
+  fd_handle rid(::open(source.data(), O_RDONLY | O_CLOEXEC));
+  if (!rid)
     return false;
 
   // leave fstat here to avoid source file race condition
   struct stat s;
-  if (fstat(rid, &s) == -1) {
-    ::close(rid);
+  if (fstat(rid.get(), &s) == -1)
     return false;
-  }
 
   const off_t len = s.st_size;
 
@@ -100,14 +159,13 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
     opt |= O_EXCL;
 
 // https://linux.die.net/man/3/open
-  int const wid = ::open(dest.data(), opt, s.st_mode);
-  if (wid == -1) {
-    ::close(rid);
+  fd_handle wid(::open(dest.data(), opt, s.st_mode));
+  if (!wid)
     return false;
-  }
 
   off_t r = len;
   off_t ret = 0;
+  int cfr_errno = 0;
 
 #if defined(HAVE_COPY_FILE_RANGE)
     // https://man.freebsd.org/cgi/man.cgi?copy_file_range(2)
@@ -124,23 +182,31 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
     if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using copy_file_range\n";
 
     while (r > 0) {
-      ret = copy_file_range(rid, nullptr, wid, nullptr, r, 0);
-      if (ret <= 0)
-        break;
+      ssize_t cfr;
+      do {
+        cfr = ::copy_file_range(rid.get(), nullptr, wid.get(), nullptr, r, 0);
+      } while (cfr < 0 && errno == EINTR);
 
-      r -= ret;
+      ret = cfr;
+      if (cfr <= 0) {
+        if (cfr < 0) cfr_errno = errno;
+        break;
+      }
+
+      r -= cfr;
     }
   }
 #endif
 
   // https://github.com/boostorg/filesystem/issues/184
-  if (r != 0 || (ret < 0 && (errno == EINVAL || errno == EOPNOTSUPP)))
-    r = fs_copy_loop(rid, wid, len);
+  if (r != 0 || (ret < 0 && (cfr_errno == EINVAL || cfr_errno == EOPNOTSUPP))) {
+    if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: falling back to fs_copy_loop (r=" << r << ", errno=" << (cfr_errno ? cfr_errno : errno) << ")\n";
+    r = fs_copy_loop(rid.get(), wid.get(), r);
+  }
 
-  int const wc = close(wid);
-  int const rc = close(rid);
-
-  return wc == 0 && rc == 0 && r == 0;
+  int wc = wid.close();
+  int rc = rid.close();
+  return r == 0 && wc == 0 && rc == 0;
 }
 #endif
 
@@ -157,10 +223,10 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
     opt = Filesystem::copy_options::overwrite_existing;
 // WORKAROUND: Windows MinGW GCC 11..13, Intel oneAPI Linux: bug with overwrite_existing failing on overwrite
 
-  if(overwrite && fs_is_file(dest) && !fs_remove(dest)) FFS_UNLIKELY
+  if(overwrite && fs_is_file(dest) && !fs_remove(dest))
     fs_print_error(dest, __func__, std::make_error_code(std::errc::io_error));
 
-  if(Filesystem::copy_file(source, dest, opt, ec) && !ec) FFS_LIKELY
+  if(Filesystem::copy_file(source, dest, opt, ec) && !ec)
     return true;
 
 #elif defined(_WIN32)
@@ -183,11 +249,11 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
   if (!overwrite)
     opt |= COPYFILE_EXCL;
 
-  if(copyfile(source.data(), dest.data(), nullptr, opt) == 0)
+  if(::copyfile(source.data(), dest.data(), nullptr, opt) == 0)
     return true;
 #else
 
-  if(fs_copy_file_range_or_loop(source, dest, overwrite)) FFS_LIKELY
+  if(fs_copy_file_range_or_loop(source, dest, overwrite))
     return true;
 
 #endif
