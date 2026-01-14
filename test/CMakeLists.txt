@@ -62,8 +62,23 @@ endif()
 include(FetchContent)
 
 set(FETCHCONTENT_QUIET OFF)
+
 FetchContent_Declare(googletest URL "${ffilesystem_googletest_url}")
 FetchContent_MakeAvailable(googletest)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+  foreach(t IN ITEMS gtest gtest_main gmock gmock_main)
+    if(WIN32)
+      # necessary since GoogleTest injects /WX blindly and that fails builds with modern IntelLLVM.
+      # https://learn.microsoft.com/en-us/cpp/build/reference/compiler-option-warning-level
+      target_compile_options(${t} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/WX->)
+    else()
+      # necessary to avoid
+      # error: unknown warning option '-Wno-implicit-float-size-conversion' [-Werror,-Wunknown-warning-option]
+      target_compile_options(${t} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:-Wno-error=unknown-warning-option;-Wno-error=character-conversion>")
+    endif()
+  endforeach()
+endif()
 
 include(GoogleTest)
 

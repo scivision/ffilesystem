@@ -5,7 +5,7 @@ env:
   CXX: icpx
   FC: ifx
 # https://github.com/oneapi-src/oneapi-ci/blob/master/.github/workflows/build_all.yml
-  CMAKE_BUILD_PARALLEL_LEVEL: 4
+  CTEST_PARALLEL_LEVEL: 0
   CMAKE_BUILD_TYPE: Release
   # debug triggers asan build errors in general with oneAPI Linux
   CMAKE_INSTALL_PREFIX: ~/libs
@@ -46,8 +46,6 @@ jobs:
     strategy:
       matrix:
         cpp: [true, false]
-        oneapi: [2025.1]
-# oneapi 2025.1 until googletest is fixed https://github.com/google/googletest/pull/4798
 
     steps:
     - uses: actions/checkout@v6
@@ -58,21 +56,19 @@ jobs:
       with:
         path: |
           /opt/intel/oneapi
-        key: oneapi-${{ matrix.oneapi }}-apt
+        key: oneapi-apt
 
     - name: non-cache install oneAPI
       if: steps.cache-install.outputs.cache-hit != 'true'
       timeout-minutes: 5
       run: |
         .github/workflows/oneapi_setup_apt_repo_linux.sh
-        sudo apt install --no-install-recommends intel-oneapi-compiler-dpcpp-cpp-${{ matrix.oneapi }} intel-oneapi-compiler-fortran-${{ matrix.oneapi }}
+        sudo apt install --no-install-recommends intel-oneapi-compiler-dpcpp-cpp intel-oneapi-compiler-fortran
 
     - name: Setup Intel oneAPI environment
       run: |
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
-# this is recommended, but file didn't exist
-# source /opt/intel/oneapi/${{ matrix.oneapi }}/oneapi-vars.sh
 
     - name: Configure CMake
       timeout-minutes: 1
