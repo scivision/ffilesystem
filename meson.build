@@ -46,6 +46,7 @@ comm_src = files(
 'src/limits.cpp',
 'src/extra/locale.cpp',
 'src/log.cpp',
+'src/memory.cpp',
 'src/mkdir.cpp',
 'src/move.cpp',
 'src/normalize.cpp',

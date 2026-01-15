@@ -52,7 +52,7 @@ static bool no_arg(std::string_view fun){
     {"has_statx", fs_has_statx}
   };
 
-using fs_function = std::function<std::variant<std::string, bool, int, char, long, std::size_t>()>;
+using fs_function = std::function<std::variant<std::string, bool, int, char, long, unsigned long long>()>;
 
 std::unordered_map<std::string_view, fs_function> fs_function_map = {
   {"backend", []() { return fs_backend(); }},
@@ -75,8 +75,10 @@ std::unordered_map<std::string_view, fs_function> fs_function_map = {
   {"homedir", []() { return fs_get_homedir(); }},
   {"terminal", []() { return fs_get_terminal(); }},
   {"tempdir", []() { return fs_get_tempdir(); }},
-  {"max_path", []() { return fs_get_max_path(); }},
-  {"cwd", []() { return fs_get_cwd(); }}
+  {"max_path", []() { return static_cast<unsigned long long>(fs_get_max_path()); }},
+  {"cwd", []() { return fs_get_cwd(); }},
+  {"free_ram", []() { return fs_get_free_memory(); }},
+  {"total_ram", []() { return fs_total_sys_memory(); }}
 };
 
   bool ok = true;
@@ -94,8 +96,8 @@ std::unordered_map<std::string_view, fs_function> fs_function_map = {
       std::cout << std::get<char>(result);
     else if (std::holds_alternative<long>(result))
       std::cout << std::get<long>(result);
-    else if (std::holds_alternative<std::size_t>(result))
-      std::cout << std::get<std::size_t>(result);
+    else if (std::holds_alternative<unsigned long long>(result))
+      std::cout << std::get<unsigned long long>(result);
     else
       ok = false;
 

@@ -289,6 +289,9 @@ bool fs_is_optimized();
 
 pid_t fs_getpid();
 
+unsigned long long fs_total_sys_memory();
+unsigned long long fs_get_free_memory();
+
 char fs_filesep();
 char fs_pathsep();
 const char* fs_devnull();
