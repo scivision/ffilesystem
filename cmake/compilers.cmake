@@ -80,8 +80,7 @@ endif()
 # --- C / C++ compile flags
 if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU|^Intel")
   target_compile_options(ffilesystem PRIVATE
-  "$<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<CONFIG:Debug>>:-Wextra>"
-  "$<$<COMPILE_LANGUAGE:C,CXX>:-Wall>"
+  "$<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<CONFIG:Debug,RelWithDebInfo>>:-Wall;-Wextra>"
   "$<$<COMPILE_LANGUAGE:C>:-Werror=implicit-function-declaration>"
   )
 endif()
@@ -126,8 +125,8 @@ endif()
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
 
 target_compile_options(ffilesystem PRIVATE
-"$<$<COMPILE_LANGUAGE:Fortran>:-warn>"
-"$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-traceback;-check;-debug>"
+"$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-warn>"
+"$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-traceback;-check;-debug>"
 )
 
 # this flag needs to be applied EVERYWHERE incl. submodule projects with add_compile_options()
@@ -142,10 +141,10 @@ endif()
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
 
 target_compile_options(ffilesystem PRIVATE
-"$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-Wextra>"
-"$<$<COMPILE_LANGUAGE:Fortran>:-Wall;-fimplicit-none>"
-"$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-fcheck=all;-Werror=array-bounds>"
-"$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<NOT:$<CONFIG:Debug>>>:-fno-backtrace>"
+"$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-Wall;-Wextra>"
+"$<$<COMPILE_LANGUAGE:Fortran>:-fimplicit-none>"
+"$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-fcheck=all;-Werror=array-bounds>"
+"$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Release>>:-fno-backtrace>"
 )
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
