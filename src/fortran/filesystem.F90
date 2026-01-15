@@ -1,6 +1,6 @@
 module filesystem
 
-use, intrinsic:: iso_c_binding, only: C_BOOL, C_CHAR, C_INT, C_LONG, C_LONG_LONG, C_SIZE_T, C_NULL_CHAR, C_DOUBLE
+use, intrinsic:: iso_c_binding
 use, intrinsic:: iso_fortran_env, only: int64, compiler_version, stderr=>error_unit
 
 implicit none
@@ -24,6 +24,7 @@ copy_file, mkdir, &
 relative_to, proximate_to, &
 hard_link_count, &
 root, root_name, same_file, file_size, &
+free_memory, total_sys_memory, &
 space_available, space_capacity, get_blksize, &
 file_name, parent, stem, suffix, with_suffix, &
 absolute, &
@@ -286,22 +287,30 @@ import
 character(kind=C_CHAR), intent(in) :: filename(*)
 end function
 
-integer(C_SIZE_T) function fs_file_size(path) bind(C)
+integer(C_INTMAX_T) function fs_file_size(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
-integer(C_SIZE_T) function fs_hard_link_count(path) bind(C)
+integer(C_INTMAX_T) function fs_hard_link_count(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
-integer(C_SIZE_T) function fs_space_available(path) bind(C)
+integer(C_LONG_LONG) function fs_get_free_memory() bind(C)
+import
+end function
+
+integer(C_LONG_LONG) function fs_total_sys_memory() bind(C)
+import
+end function
+
+integer(C_INTMAX_T) function fs_space_available(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
-integer (C_SIZE_T) function fs_space_capacity(path) bind(C)
+integer (C_INTMAX_T) function fs_space_capacity(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
@@ -858,6 +867,17 @@ integer(int64) function hard_link_count(path) result(r)
 character(*), intent(in) :: path
 
 r = fs_hard_link_count(trim(path) // C_NULL_CHAR)
+end function
+
+
+integer(int64) function free_memory() result(r)
+!! returns free memory (bytes)
+r = fs_get_free_memory()
+end function
+
+integer(int64) function total_sys_memory() result(r)
+!! returns total system memory (bytes)
+r = fs_total_sys_memory()
 end function
 
 
