@@ -29,9 +29,9 @@ namespace Filesystem = std::filesystem;
 
 #if __has_include(<bit>)
 #include <bit>
-#else
-#include <cstring>   // std::memcpy
 #endif
+
+#include <cstring>   // for std::memcpy. always include this for macOS to simplify logic and avoid build failures
 
 #endif
 
