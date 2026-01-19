@@ -37,11 +37,9 @@ static bool fs_win32_equiv(std::string_view path1, std::string_view path2, std::
 #if defined(HAVE_GETFILEINFORMATIONBYNAME)
   // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-file_stat_basic_information
   FILE_STAT_BASIC_INFORMATION f1, f2;
-  const auto w1 = fs_win32_to_wide(path1);
-  const auto w2 = fs_win32_to_wide(path2);
 
- if ( GetFileInformationByName(w1.data(), FileStatBasicByNameInfo, &f1, sizeof(f1)) &&
-      GetFileInformationByName(w2.data(), FileStatBasicByNameInfo, &f2, sizeof(f2))) {
+ if ( GetFileInformationByName(fs_win32_to_wide(path1).data(), FileStatBasicByNameInfo, &f1, sizeof(f1)) &&
+      GetFileInformationByName(fs_win32_to_wide(path2).data(), FileStatBasicByNameInfo, &f2, sizeof(f2))) {
         return f1.VolumeSerialNumber.QuadPart == f2.VolumeSerialNumber.QuadPart &&
                f1.FileId.QuadPart == f2.FileId.QuadPart;
   }
