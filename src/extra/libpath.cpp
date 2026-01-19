@@ -22,7 +22,8 @@ std::string fs_lib_path()
 #if (defined(_WIN32) || defined(__CYGWIN__)) && defined(FS_DLL_NAME)
  // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamea
 
-  std::string path(fs_get_max_path(), '\0');
+  std::string path;
+  path.resize(fs_get_max_path());
 
   if(DWORD L = GetModuleFileNameA(GetModuleHandleA(FS_DLL_NAME), path.data(), static_cast<DWORD>(path.size()));
       L > 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER)  FFS_LIKELY

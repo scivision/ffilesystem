@@ -200,7 +200,10 @@ ${CMAKE_DL_LIBS}
 "$<$<BOOL:${WIN32}>:Secur32;Shlwapi;Userenv;Advapi32;ws2_32>"
 )
 # Secur32: GetUserNameExW
-# both Advapi32 and Userenv must be linked
+# Shlwapi: PathIsUNC
+# Userenv: GetUserProfileDirectoryW
+# Advapi32: OpenProcessToken, GetTokenInformation, LookupAccountSidA
+# ws2_32: gethostname
 
 if(ffilesystem_extra AND APPLE)
   target_link_libraries(ffilesystem PRIVATE "$<LINK_LIBRARY:FRAMEWORK,DiskArbitration,CoreFoundation>")

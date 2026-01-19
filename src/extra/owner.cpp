@@ -38,7 +38,9 @@ static std::string fs_win32_get_owner(PSID pSid)
   if(!LookupAccountSidA(nullptr, pSid, nullptr, &L1, nullptr, &L2, &eUse) && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
     return {};
 
-  std::string s(L1, '\0');
+  std::string s;
+  s.resize(L1);
+
   if (!LookupAccountSidA(nullptr, pSid, s.data(), &L1, nullptr, &L2, &eUse))
     return {};
 

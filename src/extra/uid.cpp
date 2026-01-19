@@ -22,6 +22,9 @@ bool fs_is_admin(){
 	TOKEN_ELEVATION elevation;
 	DWORD dwSize;
 
+  // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocesstoken
+  // https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-gettokeninformation
+
   const bool ok = (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &h) &&
      GetTokenInformation(h, TokenElevation, &elevation, sizeof(elevation), &dwSize));
 
@@ -68,7 +71,6 @@ bool fs_stdin_tty()
 std::string fs_get_terminal()
 {
 #if defined(_WIN32)
-  std::string name(fs_get_max_path(), '\0');
   // inspired by https://gitlab.kitware.com/utils/kwsys/-/commit/0d6eac1feb8615fe59e8f972d41d1eaa8bc9baf8
   // Windows Console Host: ConsoleWindowClass
   // Windows Terminal / ConPTY: PseudoConsoleWindow (undocumented)
@@ -76,9 +78,12 @@ std::string fs_get_terminal()
   // https://learn.microsoft.com/en-us/windows/console/getconsolewindow
   // encourages Virtual Terminal Sequences
 
-  //  The `GetConsoleWindow()` API returns a window handle (HWND), but it should not be closed by the application.
+  // The `GetConsoleWindow()` API returns a window handle (HWND), but it should not be closed by the application.
   // This handle is owned and managed by the system, so calling CloseWindow() on it could
   // disrupt the console window's operation.
+
+  std::string name;
+  name.resize(fs_get_max_path());
 
   if (HWND h = GetConsoleWindow(); h) {
     // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getclassnamea

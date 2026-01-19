@@ -118,9 +118,12 @@ std::string fs_filesystem_type(std::string_view path)
   if(fs_trace) std::cout << "TRACE:filesystem_type(" << path << ") root: " << r << "\n";
 
   // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getvolumeinformationa
-  if(std::string name(MAX_PATH+1, '\0');
-      GetVolumeInformationA(r.data(), nullptr, 0, nullptr, nullptr, nullptr, name.data(), static_cast<DWORD>(name.size())))
+  std::string name;
+  name.resize(MAX_PATH+1);
+
+  if(GetVolumeInformationA(r.data(), nullptr, 0, nullptr, nullptr, nullptr, name.data(), static_cast<DWORD>(name.size())))
     return fs_trim(name);
+
 #elif defined(__linux__)
 # ifdef HAVE_LINUX_MAGIC_H
   return fs_type_linux(path);

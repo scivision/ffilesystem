@@ -69,9 +69,12 @@ std::string fs_exe_path()
   }
 #elif defined(BSD)
   // https://man.freebsd.org/cgi/man.cgi?sysctl(3)
-  std::string path(fs_get_max_path(), '\0');
-  std::size_t L = path.size();
+  std::size_t L = fs_get_max_path();
+  std::string path;
+  path.resize(L);
+
   const int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
+
   if(sysctl(mib, 4, path.data(), &L, nullptr, 0) == 0) {
     path.resize(L-1);
     return path;

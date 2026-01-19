@@ -19,10 +19,11 @@
 
 int fs_is_wsl()
 {
+  // return 0 if not WSL, 1 if WSL1, 2 if WSL2, -1 on error
 
 #ifdef HAVE_UTSNAME
   struct utsname b;
-  if (uname(&b) != 0)
+  if (::uname(&b) != 0)
     return -1;
 
   if(std::strcmp(b.sysname, "Linux") != 0)
@@ -47,7 +48,7 @@ std::string fs_cpu_arch()
   std::error_code ec;
 
 #ifdef HAVE_UTSNAME
-  if (struct utsname b; uname(&b) == 0)
+  if (struct utsname b; ::uname(&b) == 0)
     return b.machine;
 #elif defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-system_info
@@ -84,7 +85,7 @@ std::string fs_os_version()
   std::error_code ec;
 
 #ifdef HAVE_UTSNAME
-  if (struct utsname buf; uname(&buf) == 0)
+  if (struct utsname buf; ::uname(&buf) == 0)
     return buf.version;
 #elif defined(_WIN32)
   OSVERSIONINFOA osvi;

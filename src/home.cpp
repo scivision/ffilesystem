@@ -14,8 +14,8 @@
 #ifndef SECURITY_WIN32
 #define SECURITY_WIN32
 #endif
-#include <UserEnv.h> // GetUserProfileDirectoryA
-#include <Security.h> // GetUserNameExA
+#include <UserEnv.h> // GetUserProfileDirectory
+#include <Security.h> // GetUserNameEx
 #include <Windows.h>
 #else
 #include <sys/types.h>  // IWYU pragma: keep

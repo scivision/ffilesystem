@@ -35,10 +35,15 @@ std::string fs_generate_random_alphanumeric_string(const std::string::size_type 
       "0123456789"
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
       "abcdefghijklmnopqrstuvwxyz";
+
   thread_local auto rng = fs_random_generator<>();
   auto dist = std::uniform_int_distribution<std::string::size_type>(0, chars.length() - 1);
-  auto result = std::string(len, '\0');
+
+  std::string result;
+  result.resize(len);
+
   std::generate_n(std::begin(result), len, [&]() { return chars[dist(rng)]; });
+
   return result;
 #else
   fs_print_error("" , __func__, std::make_error_code(std::errc::function_not_supported));

@@ -8,7 +8,7 @@
 #include <tlhelp32.h> // for CreateToolhelp32Snapshot, Process32First
 #include <psapi.h>  // for EnumProcessModules
 #else
-#include <pwd.h>     // forpasswd
+#include <pwd.h>     // for passwd
 #endif
 
 #include "ffilesystem.h"
@@ -34,7 +34,8 @@ fs_get_shell()
   HMODULE hMod;
   DWORD cbNeeded;
 
-  std::string name(fs_get_max_path(), '\0');
+  std::string name;
+  name.resize(fs_get_max_path());
 
   if( Process32First(h, &pe)) {
     const DWORD pid = GetCurrentProcessId();

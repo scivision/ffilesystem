@@ -220,7 +220,8 @@ static bool one_arg(std::string_view fun, std::string_view a1)
 #else
     const std::time_t t = fs_get_modtime(a1);
     #if defined(_MSC_VER)
-      std::string buf(26, '\0');
+      std::string buf;
+      buf.resize(26);
       ctime_s(buf.data(), buf.size(), &t);
       std::cout << buf;
     #else

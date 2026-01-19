@@ -25,8 +25,11 @@ std::string fs_hostname()
   // https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-gethostname
 
   if(WSADATA wsaData; !WSAStartup(MAKEWORD(2, 0), &wsaData)){
-    std::string name(256, '\0');
+    std::string name;
+    name.resize(256);
+
     int r = gethostname(name.data(), static_cast<int>(name.size()));
+
     WSACleanup();
 
     if (r == 0)
@@ -34,10 +37,10 @@ std::string fs_hostname()
   }
 
 #elif defined(HAVE_UTSNAME)
-  // gethostname() doesn't dynamically allocate buffers, so use uname(),
+  // gethostname() doesn't dynamically allocate buffers, so use uname,
   // which gives the same result.
 
-  if (struct utsname s; uname(&s) == 0)
+  if (struct utsname s; ::uname(&s) == 0)
     return s.nodename;
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
