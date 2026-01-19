@@ -59,10 +59,12 @@ fs_is_removable(std::string_view path)
   // https://man7.org/linux/man-pages/man2/stat.2.html
 
   if (struct stat s; ::stat(path.data(), &s) == 0) {
+
+  // don't call as ::major or ::minor because some platforms e.g. Android have them as a macro
 #if defined(__cpp_lib_format)  // C++20
-    dev = std::format("/sys/dev/block/{}:{}/removable", ::major(s.st_dev), ::minor(s.st_dev));
+    dev = std::format("/sys/dev/block/{}:{}/removable", major(s.st_dev), minor(s.st_dev));
 #else
-    dev = "/sys/dev/block/" + std::to_string(::major(s.st_dev)) + ":" + std::to_string(::minor(s.st_dev)) + "/removable";
+    dev = "/sys/dev/block/" + std::to_string(major(s.st_dev)) + ":" + std::to_string(minor(s.st_dev)) + "/removable";
 #endif
   } else {
     fs_print_error(path, __func__);
@@ -92,10 +94,12 @@ fs_is_removable(std::string_view path)
    // Construct BSD device name (e.g., "disk0s1")
   std::string bsdName;
 
+  // don't call as ::major or ::minor because some platforms e.g. Android have them as a macro
+
 #if defined(__cpp_lib_format)  // C++20
-  bsdName = std::format("disk{}s{}", ::major(s.st_dev), ::minor(s.st_dev));
+  bsdName = std::format("disk{}s{}", major(s.st_dev), minor(s.st_dev));
 #else
-  bsdName = "disk" + std::to_string(::major(s.st_dev)) + "s" + std::to_string(::minor(s.st_dev));
+  bsdName = "disk" + std::to_string(major(s.st_dev)) + "s" + std::to_string(minor(s.st_dev));
 #endif
 
   DASessionRef session = DASessionCreate(kCFAllocatorDefault);

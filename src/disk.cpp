@@ -15,7 +15,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if defined(__linux__)
+#if defined(HAVE_STATX)
 #include <sys/sysmacros.h> // for makedev
 #endif
 
@@ -86,8 +86,10 @@ dev_t fs_st_dev(std::string_view path)
 
   struct statx x;
   r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_INO, &x);
+
   if (r == 0)
-    return ::makedev(x.stx_dev_major, x.stx_dev_minor);
+    return makedev(x.stx_dev_major, x.stx_dev_minor);
+  // don't call as ::makedev because some platforms e.g. Android have makedev as a macro
 
 #endif
 
