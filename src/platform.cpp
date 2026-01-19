@@ -7,10 +7,15 @@
 #if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
 namespace Filesystem = std::filesystem;
+#else
+#include <cstdlib> // for std::free
+#include <memory> // for std::unique_ptr
 #endif
 
 #include <string>
 #include <string_view>
+
+
 
 #include <system_error> // for std::error_code
 
@@ -69,11 +74,13 @@ std::string fs_get_cwd()
 // unistd.h https://www.man7.org/linux/man-pages/man3/getcwd.3.html
 // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/getcwd.3.html
 
-  if(char* d = ::getcwd(nullptr, 0); d){
-    std::string r(d);
-    free(d);
-    return r;
-  }
+  std::unique_ptr<char, decltype(&std::free)> raw(
+      ::getcwd(nullptr, 0),
+      &std::free
+  );
+
+  if(raw) FFS_LIKELY
+    return std::string(raw.get());
 
 #endif
 

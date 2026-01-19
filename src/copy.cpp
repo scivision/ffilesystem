@@ -24,7 +24,7 @@ namespace Filesystem = std::filesystem;
 #else
 
 #include <cstdlib>
-#include <memory>  // for std::make_unique, std::unique_ptr
+#include <memory>  // for std::make_unique
 #include <cerrno>  // for errno
 
 #if defined(_WIN32)
