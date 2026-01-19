@@ -16,7 +16,7 @@ namespace Filesystem = std::filesystem;
 #include <sys/stat.h>
 
 #if __has_include(<fcntl.h>)
-#include <fcntl.h>   // AT_* constants for statx()
+#include <fcntl.h>   // AT_* constants for statx
 #endif
 
 #if defined(_WIN32)
@@ -114,9 +114,9 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
   struct statx x1;
   struct statx x2;
 
-  r1 = statx(AT_FDCWD, path1.data(), AT_NO_AUTOMOUNT, STATX_INO, &x1);
+  r1 = ::statx(AT_FDCWD, path1.data(), AT_NO_AUTOMOUNT, STATX_INO, &x1);
   if(r1 == 0){
-    r2 = statx(AT_FDCWD, path2.data(), AT_NO_AUTOMOUNT, STATX_INO, &x2);
+    r2 = ::statx(AT_FDCWD, path2.data(), AT_NO_AUTOMOUNT, STATX_INO, &x2);
     if(r2 == 0)
       return x1.stx_dev_major == x2.stx_dev_major && x1.stx_dev_minor == x2.stx_dev_minor && x1.stx_ino == x2.stx_ino;
   }
@@ -128,7 +128,7 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
     struct stat s2;
 
     // https://www.boost.org/doc/libs/1_86_0/libs/filesystem/doc/reference.html#equivalent
-    if(!stat(path1.data(), &s1) && !stat(path2.data(), &s2))
+    if(!::stat(path1.data(), &s1) && !::stat(path2.data(), &s2))
       return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
   }
 

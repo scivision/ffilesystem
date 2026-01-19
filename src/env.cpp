@@ -46,9 +46,9 @@ bool fs_setenv(std::string_view name, std::string_view value)
 #else
   // https://www.man7.org/linux/man-pages/man3/setenv.3.html
   if(value.empty()) {
-    if(unsetenv(name.data()) == 0)
+    if(::unsetenv(name.data()) == 0)
       return true;
-  } else if(setenv(name.data(), value.data(), 1) == 0)
+  } else if(::setenv(name.data(), value.data(), 1) == 0)
     return true;
 #endif
 

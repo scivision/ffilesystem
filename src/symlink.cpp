@@ -30,11 +30,11 @@ namespace Filesystem = std::filesystem;
 
 
 #if __has_include(<fcntl.h>)
-#include <fcntl.h>   // AT_* constants for statx()
+#include <fcntl.h>   // AT_* constants for statx
 #endif
 
 #include <sys/types.h> // ssize_t
-#include <sys/stat.h> // stat(), statx()
+#include <sys/stat.h> // for stat, statx
 
 
 std::string::size_type fs_symlink_length([[maybe_unused]] std::string_view path)
@@ -49,14 +49,14 @@ std::string::size_type fs_symlink_length([[maybe_unused]] std::string_view path)
 
 #if defined(HAVE_STATX)
   struct statx sx;
-  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_SIZE, &sx);
+  r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_SIZE, &sx);
   if (r == 0)
     L = sx.stx_size;
 #endif
 // https://linux.die.net/man/2/lstat
 
   if(r == 0 || errno == ENOSYS){
-    if(struct stat s; lstat(path.data(), &s) == 0)
+    if(struct stat s; ::lstat(path.data(), &s) == 0)
       L = s.st_size;
   }
 #endif
@@ -87,14 +87,14 @@ bool fs_is_symlink(std::string_view path)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
 
   struct statx sx;
-  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_MODE, &sx);
+  r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_MODE, &sx);
   if (r == 0) FFS_LIKELY
     return S_ISLNK(sx.stx_mode);
 #endif
 // https://linux.die.net/man/2/lstat
 
   if(r == 0 || errno == ENOSYS){
-    if(struct stat s; lstat(path.data(), &s) == 0)
+    if(struct stat s; ::lstat(path.data(), &s) == 0)
       return S_ISLNK(s.st_mode);
   }
 
@@ -126,7 +126,7 @@ std::string fs_read_symlink(std::string_view path)
   std::string p;
   p.resize(L);
 
-  if (ssize_t Lr = readlink(path.data(), p.data(), p.size());
+  if (ssize_t Lr = ::readlink(path.data(), p.data(), p.size());
       Lr == static_cast<ssize_t>(L-1)){
     // readlink() does not null-terminate the result
     p.resize(Lr);
@@ -169,7 +169,7 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
 #else
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/symlink.2.html
   // https://linux.die.net/man/3/symlink
-  if(symlink(target.data(), link.data()) == 0)
+  if(::symlink(target.data(), link.data()) == 0)
     return true;
 #endif
   }

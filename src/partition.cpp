@@ -129,7 +129,7 @@ std::string fs_filesystem_type(std::string_view path)
 # endif
 #elif defined(__APPLE__) || defined(BSD)
   struct statfs s;
-  if(!statfs(path.data(), &s))
+  if(!::statfs(path.data(), &s))
     return s.f_fstypename;
 #else
   ec = std::make_error_code(std::errc::function_not_supported);

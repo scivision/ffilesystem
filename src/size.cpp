@@ -26,7 +26,7 @@ namespace Filesystem = std::filesystem;
 #endif
 
 #if __has_include(<fcntl.h>)
-#include <fcntl.h>   // AT_* constants for statx()
+#include <fcntl.h>   // AT_* constants for statx
 #endif
 
 #endif
@@ -63,13 +63,13 @@ std::uintmax_t fs_file_size(std::string_view path)
   int r = 0;
 #if defined(HAVE_STATX)
   struct statx sx;
-  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_SIZE, &sx);
+  r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_SIZE, &sx);
   if (r == 0)
     return sx.stx_size;
 #endif
 
   if (r == 0 || errno == ENOSYS){
-    if (struct stat s; !stat(path.data(), &s))
+    if (struct stat s; !::stat(path.data(), &s))
       return s.st_size;
   }
 
@@ -135,12 +135,12 @@ bool fs_is_empty(std::string_view path)
 // https://www.man7.org/linux/man-pages/man3/closedir.3.html
 // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/readdir.3.html
 
-  if (DIR *d = opendir(path.data()); d)
+  if (DIR *d = ::opendir(path.data()); d)
   {
     // RAII for closedir
-    struct DirCloser { DIR* d; ~DirCloser(){ if(d) closedir(d); } } _dc{d};
+    struct DirCloser { DIR* d; ~DirCloser(){ if(d) ::closedir(d); } } _dc{d};
     struct dirent *entry;
-  while ((entry = readdir(d)))
+  while ((entry = ::readdir(d)))
   {
 #ifdef _DIRENT_HAVE_D_TYPE
     if (entry->d_type == DT_DIR)

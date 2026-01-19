@@ -16,11 +16,11 @@
 #include <sys/stat.h>
 
 #if defined(__linux__)
-#include <sys/sysmacros.h> // for makedev()
+#include <sys/sysmacros.h> // for makedev
 #endif
 
 #if __has_include(<fcntl.h>)
-#include <fcntl.h>   // AT_* constants for statx()
+#include <fcntl.h>   // AT_* constants for statx
 #endif
 
 #include "ffilesystem.h"
@@ -60,13 +60,13 @@ std::size_t fs_get_blksize(std::string_view path)
 
 #if defined(HAVE_STATX)
   struct statx sx;
-  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_BASIC_STATS, &sx);
+  r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_BASIC_STATS, &sx);
   if (r == 0)
     return sx.stx_blksize;
 #endif
 
   if (r == 0 || errno == ENOSYS){
-    if (struct stat s; !stat(path.data(), &s))
+    if (struct stat s; !::stat(path.data(), &s))
       return s.st_blksize;
   }
 #endif
@@ -85,14 +85,14 @@ dev_t fs_st_dev(std::string_view path)
 #if defined(HAVE_STATX)
 
   struct statx x;
-  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_INO, &x);
+  r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_INO, &x);
   if (r == 0)
-    return makedev(x.stx_dev_major, x.stx_dev_minor);
+    return ::makedev(x.stx_dev_major, x.stx_dev_minor);
 
 #endif
 
   if (r == 0 || errno == ENOSYS){
-    if(struct stat s; stat(path.data(), &s) == 0)
+    if(struct stat s; ::stat(path.data(), &s) == 0)
       return s.st_dev;
   }
 
@@ -132,14 +132,14 @@ ino_t fs_inode(std::string_view path)
 #if defined(HAVE_STATX)
 
   struct statx x;
-  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_INO, &x);
+  r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_INO, &x);
   if (r == 0)
     return x.stx_ino;
 
 #endif
 
   if (r == 0 || errno == ENOSYS) {
-    if(struct stat s; stat(path.data(), &s) == 0)
+    if(struct stat s; ::stat(path.data(), &s) == 0)
       return s.st_ino;
   }
 

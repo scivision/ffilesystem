@@ -30,7 +30,7 @@ namespace Filesystem = std::filesystem;
 #include <sys/stat.h>   // IWYU pragma: keep
 
 #if __has_include(<fcntl.h>)
-#include <fcntl.h>   // AT_* constants for statx()
+#include <fcntl.h>   // AT_* constants for statx
 #endif
 
 
@@ -87,7 +87,7 @@ fs_st_mode(std::string_view path)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
 
   struct statx x;
-  if (statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_MODE, &x) == 0) {
+  if (::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_MODE, &x) == 0) {
     return x.stx_mode;
   } else if (errno != ENOSYS) {
     return 0;
@@ -95,7 +95,7 @@ fs_st_mode(std::string_view path)
 #endif
 
 // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions
-  if (struct stat s; stat(path.data(), &s) == 0)
+  if (struct stat s; ::stat(path.data(), &s) == 0)
     return s.st_mode;
 
   return 0;
@@ -322,13 +322,13 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 #if defined(HAVE_STATX)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
   struct statx sx;
-  r = statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_NLINK, &sx);
+  r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_NLINK, &sx);
   if (r == 0)
     return sx.stx_nlink;
 #endif
 
   if (r == 0 || errno == ENOSYS){
-    if (struct stat s; !stat(path.data(), &s))
+    if (struct stat s; !::stat(path.data(), &s))
       return s.st_nlink;
   }
 

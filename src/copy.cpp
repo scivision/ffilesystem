@@ -149,7 +149,7 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
 
   // leave fstat here to avoid source file race condition
   struct stat s;
-  if (fstat(rid.get(), &s) == -1)
+  if (::fstat(rid.get(), &s) == -1)
     return false;
 
   const off_t len = s.st_size;
