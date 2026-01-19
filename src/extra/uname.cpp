@@ -9,6 +9,11 @@
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
+#if __has_include(<format>)
+#include <format> // IWYU pragma: keep
+#endif
+
 #endif
 
 #if __has_include(<sys/utsname.h>)
@@ -88,11 +93,18 @@ std::string fs_os_version()
   if (struct utsname buf; ::uname(&buf) == 0)
     return buf.version;
 #elif defined(_WIN32)
+
   OSVERSIONINFOA osvi;
   ZeroMemory(&osvi, sizeof(OSVERSIONINFOA));
   osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
+
   if(GetVersionExA(&osvi))
+#if defined(__cpp_lib_format)  // C++20
+    return std::format("{}.{}.{}", osvi.dwMajorVersion, osvi.dwMinorVersion, osvi.dwBuildNumber);
+#else
     return std::to_string(osvi.dwMajorVersion) + '.' + std::to_string(osvi.dwMinorVersion) + '.' + std::to_string(osvi.dwBuildNumber);
+#endif
+
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif

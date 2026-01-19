@@ -4,7 +4,12 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #else
+
 #include <sys/stat.h>
+#if __has_include(<format>)
+#include <format> // IWYU pragma: keep
+#endif
+
 #endif
 
 #if defined(__linux__)
@@ -54,7 +59,11 @@ fs_is_removable(std::string_view path)
   // https://man7.org/linux/man-pages/man2/stat.2.html
 
   if (struct stat s; ::stat(path.data(), &s) == 0) {
+#if defined(__cpp_lib_format)  // C++20
+    dev = std::format("/sys/dev/block/{}:{}/removable", ::major(s.st_dev), ::minor(s.st_dev));
+#else
     dev = "/sys/dev/block/" + std::to_string(::major(s.st_dev)) + ":" + std::to_string(::minor(s.st_dev)) + "/removable";
+#endif
   } else {
     fs_print_error(path, __func__);
     return false;
@@ -81,7 +90,13 @@ fs_is_removable(std::string_view path)
   }
 
    // Construct BSD device name (e.g., "disk0s1")
-  std::string bsdName = "disk" + std::to_string(::major(s.st_dev)) + "s" + std::to_string(::minor(s.st_dev));
+  std::string bsdName;
+
+#if defined(__cpp_lib_format)  // C++20
+  bsdName = std::format("disk{}s{}", ::major(s.st_dev), ::minor(s.st_dev));
+#else
+  bsdName = "disk" + std::to_string(::major(s.st_dev)) + "s" + std::to_string(::minor(s.st_dev));
+#endif
 
   DASessionRef session = DASessionCreate(kCFAllocatorDefault);
   if (!session) {
