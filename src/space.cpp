@@ -10,17 +10,21 @@
 #include <filesystem>
 namespace Filesystem = std::filesystem;
 #else
-#include <string>
+
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // GetDiskFreeSpaceEx
 #else
+
 #include <unistd.h>
+
 #if __has_include(<sys/statvfs.h>)
 #define HAVE_STATVFS
 #include <sys/statvfs.h>
 #endif
+
 #endif
+
 #endif
 
 std::uintmax_t fs_space_available(std::string_view path)
@@ -42,8 +46,7 @@ std::uintmax_t fs_space_available(std::string_view path)
 #elif defined(HAVE_STATVFS)
   // https://www.man7.org/linux/man-pages/man3/statvfs.3.html
   // https://unix.stackexchange.com/a/703650
-  struct statvfs stat;
-  if (!statvfs(path.data(), &stat))  FFS_LIKELY
+  if (struct statvfs stat; !statvfs(path.data(), &stat))
     return (stat.f_frsize ? stat.f_frsize : stat.f_bsize) * stat.f_bavail;
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
@@ -58,7 +61,7 @@ std::uintmax_t fs_space_capacity(std::string_view path)
 {
   // filesystem space capacity for device holding path
   // total size of the filesystem, in bytes
-  // This is the quantity available to the non-priviliged user,
+  // This is the quantity available to the non-privileged user,
   // not the total physical disk size.
 
   std::error_code ec;
@@ -73,8 +76,7 @@ std::uintmax_t fs_space_capacity(std::string_view path)
   if(ULARGE_INTEGER b; GetDiskFreeSpaceExW(fs_win32_to_wide(path).data(), nullptr, &b, nullptr) != 0)
     return b.QuadPart;
 #elif defined(HAVE_STATVFS)
-  struct statvfs stat;
-  if (!statvfs(path.data(), &stat))  FFS_LIKELY
+  if (struct statvfs stat; !statvfs(path.data(), &stat))
     return (stat.f_frsize ? stat.f_frsize : stat.f_bsize) * stat.f_blocks;
 #else
   ec = std::make_error_code(std::errc::function_not_supported);

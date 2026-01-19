@@ -67,7 +67,7 @@ EXPECT_FALSE(fs_is_exe(ref));
 // create_symlink()
 // set_permissionss()
 //
-// since if testing with "root" privilidges,
+// since if testing with "root" privileges,
 // it can make the system unusable until reboot!
 
 EXPECT_TRUE(fs_exists(ref));
