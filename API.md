@@ -832,17 +832,6 @@ Get profile/pw directory. `get_homedir()` is normally preferred.
 character(:), allocatable :: get_profile_dir()
 ```
 
-Get user configuration directory.
-[Reference](https://github.com/dirs-dev/directories-rs?tab=readme-ov-file#basedirs)
-
-* Linux: `$XDG_CONFIG_HOME` or $HOME/.config
-* Windows: `%LOCALAPPDATA%`
-* macOS: `$HOME/.config`
-
-```fortran
-character(:), allocatable :: user_config_dir()
-```
-
 Get hostname of computer
 
 ```fortran

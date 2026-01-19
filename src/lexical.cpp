@@ -6,8 +6,8 @@
 #include <ranges>  // IWYU pragma: keep
 #endif
 
-#include <algorithm> // std::transform, std::ranges::contains, std::find, std::replace
-#include <cctype> // std::isalnum, toupper
+#include <algorithm> // for std::transform, std::ranges::contains, std::find, std::replace
+#include <cctype> // for std::isalnum, toupper
 #include <array>
 
 #include "ffilesystem.h"

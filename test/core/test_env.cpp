@@ -36,10 +36,6 @@ std::string pdir = fs_get_profile_dir();
 EXPECT_FALSE(pdir.empty());
 std::cout << "Profile directory " << pdir << "\n";
 
-std::string cdir = fs_user_config_dir();
-EXPECT_FALSE(cdir.empty());
-std::cout << "User config directory " << cdir << "\n";
-
 std::string p = fs_get_homedir();
 EXPECT_FALSE(p.empty());
 std::cout << "Home directory " << p << "\n";
@@ -79,14 +75,6 @@ TEST_F(TestNoEnv, NoEnvironment)
 std::string pdir = fs_get_profile_dir();
 EXPECT_FALSE(pdir.empty());
 std::cout << "Profile directory " << pdir << "\n";
-
-std::string cdir = fs_user_config_dir();
-if(fs_is_windows())
-  EXPECT_FALSE(cdir.empty());
-else
-  EXPECT_TRUE(cdir.empty());
-
-std::cout << "User config directory " << cdir << "\n";
 
 // --- tempdir
 auto t = fs_get_tempdir();

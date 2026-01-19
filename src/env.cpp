@@ -8,14 +8,6 @@
 #include <string_view>
 #include <optional>
 
-#if defined(_WIN32)
-#include <algorithm> // std::replace
-#include <objbase.h> // IWYU pragma: keep
-// CoTaskMemFree
-#include <KnownFolders.h> // FOLDERID_LocalAppData
-#include <shlobj.h> // SHGetKnownFolderPath
-#endif
-
 #include "ffilesystem.h"
 
 
@@ -54,32 +46,4 @@ bool fs_setenv(std::string_view name, std::string_view value)
 
   fs_print_error(name, __func__);
   return false;
-}
-
-
-std::string fs_user_config_dir()
-{
-#if defined(_WIN32)
-  PWSTR s = nullptr;
-  std::string r;
-  if(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &s) == S_OK)  FFS_LIKELY
-    r = fs_win32_to_narrow(s);
-
-  CoTaskMemFree(s);
-  // https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cotaskmemfree
-
-  if (!r.empty())
-    return r;
-#else
-
-  if(auto h = fs_getenv("XDG_CONFIG_HOME"); h)
-    return h.value();
-
-  if(auto h = fs_getenv("HOME"); h)
-    return h.value() + "/.config";
-
-#endif
-
-  fs_print_error("", __func__);
-  return {};
 }

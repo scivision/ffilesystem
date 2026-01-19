@@ -4,7 +4,6 @@
 
 class TestAppExec : public testing::Test {
   protected:
-    std::string confdir;
     std::string path;
 
     void SetUp() override {
@@ -12,11 +11,7 @@ class TestAppExec : public testing::Test {
       if(!fs_is_windows())
         GTEST_SKIP() << "requires Windows";
 
-      confdir = fs_user_config_dir();
-      if(confdir.empty())
-        GTEST_SKIP() << "didn't find a User Config directory to test";
-
-      std::string appdir = confdir + "/Microsoft/WindowsApps";
+      std::string appdir = fs_getenv("LOCALAPPDATA").value_or("") + "/Microsoft/WindowsApps";
       ASSERT_TRUE(fs_is_dir(appdir));
 
       for (const auto& exe : {"wt.exe", "winget.exe", "wsl.exe", "bash.exe"}){

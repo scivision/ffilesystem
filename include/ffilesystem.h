@@ -234,8 +234,6 @@ std::wstring fs_to_wide(std::string_view);
 
 std::string fs_trim(std::string_view r);
 
-std::string fs_user_config_dir();
-
 std::string fs_which(std::string_view, std::string_view = {}, const bool = false);
 
 std::string fs_win32_final_path(std::string_view);
@@ -396,7 +394,6 @@ bool fs_set_cwd(const char*);
 
 size_t fs_get_homedir(char*, const size_t);
 size_t fs_get_profile_dir(char*, const size_t);
-size_t fs_user_config_dir(char*, const size_t);
 size_t fs_get_username(char*, const size_t);
 
 size_t fs_get_owner_name(const char*, char*, const size_t);

@@ -154,11 +154,6 @@ size_t fs_get_profile_dir(char* path, const size_t buffer_size)
   return fs_str2char(fs_get_profile_dir(), path, buffer_size);
 }
 
-size_t fs_user_config_dir(char* path, const size_t buffer_size)
-{
-  return fs_str2char(fs_user_config_dir(), path, buffer_size);
-}
-
 size_t fs_get_username(char* name, const size_t buffer_size)
 {
   return fs_str2char(fs_get_username(), name, buffer_size);

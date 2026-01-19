@@ -6,7 +6,7 @@ use, intrinsic:: iso_fortran_env, only: int64, compiler_version, stderr=>error_u
 implicit none
 private
 !! utility procedures
-public :: get_homedir, get_profile_dir, user_config_dir, get_username, hostname, &
+public :: get_homedir, get_profile_dir, get_username, hostname, &
  get_owner_name, get_owner_group, &
  canonical, resolve, realpath, fs_getpid, &
  get_cwd, set_cwd, which
@@ -354,12 +354,6 @@ integer (C_SIZE_T) function fs_get_owner_group(path, name, buffer_size) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 character(kind=C_CHAR), intent(out) :: name(*)
-integer(C_SIZE_T), intent(in), value :: buffer_size
-end function
-
-integer (C_SIZE_T) function fs_user_config_dir(path, buffer_size) bind(C)
-import
-character(kind=C_CHAR), intent(out) :: path(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
 
@@ -1453,14 +1447,6 @@ logical function set_cwd(path)
 character(*), intent(in) :: path
 
 set_cwd = fs_set_cwd(trim(path) // C_NULL_CHAR)
-end function
-
-
-function user_config_dir() result (r)
-!! get user configuration directory
-include "ifc0a.inc"
-N = fs_user_config_dir(cbuf, N)
-include "ifc0b.inc"
 end function
 
 

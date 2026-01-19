@@ -67,7 +67,6 @@ std::unordered_map<std::string_view, fs_function> fs_function_map = {
   {"stdin_tty", []() { return fs_stdin_tty(); }},
   {"arch", []() { return fs_cpu_arch(); }},
   {"profile", []() { return fs_get_profile_dir(); }},
-  {"config", []() { return fs_user_config_dir(); }},
   {"os_version", []() { return fs_os_version(); }},
   {"libpath", []() { return fs_lib_path(); }},
   {"exepath", []() { return fs_exe_path(); }},
