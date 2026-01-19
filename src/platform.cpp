@@ -74,13 +74,9 @@ std::string fs_get_cwd()
 // unistd.h https://www.man7.org/linux/man-pages/man3/getcwd.3.html
 // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/getcwd.3.html
 
-  std::unique_ptr<char, decltype(&std::free)> raw(
-      ::getcwd(nullptr, 0),
-      &std::free
-  );
-
-  if(raw) FFS_LIKELY
-    return std::string(raw.get());
+  std::unique_ptr<char, decltype(&std::free)> r(::getcwd(nullptr, 0), &std::free);
+  if(r)
+    return std::string(r.get());
 
 #endif
 

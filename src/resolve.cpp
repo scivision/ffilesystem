@@ -14,7 +14,8 @@ namespace Filesystem = std::filesystem;
 #endif
 
 #if !defined(_WIN32)
-#include <cstdlib> // for realpath
+#include <cstdlib> // for realpath, free
+#include <memory>  // for std::unique_ptr
 #endif
 
 
@@ -80,11 +81,10 @@ std::string fs_realpath(std::string_view path)
 #if defined(_WIN32)
   return fs_win32_final_path(path);
 #else
-  if(char* r = realpath(path.data(), nullptr); r) {
-    std::string result(r);
-    free(r);
-    return result;
-  }
+  std::unique_ptr<char, decltype(&std::free)> r(::realpath(path.data(), nullptr), std::free);
+  if (r)
+    return std::string(r.get());
+
   return {};
 #endif
 
