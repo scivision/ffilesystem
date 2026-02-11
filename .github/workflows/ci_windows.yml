@@ -124,3 +124,42 @@ jobs:
     - run: cmake --build example/build
 
     - run: ctest --test-dir example/build -V
+
+
+  wsl:
+    runs-on: windows-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        shell: wsl-bash {0}
+
+    steps:
+
+    - uses: Vampire/setup-wsl@v6
+      with:
+        distribution: Ubuntu-24.04
+        additional-packages:
+          cmake ninja-build gcc g++ gfortran
+        use-cache: true
+        wsl-shell-user: tester
+
+    - name: tell OS release
+      run: cat /etc/os-release
+
+    - name: tell WSL version
+      run: wsl.exe -l -v
+      shell: pwsh
+
+    - *checkout
+
+    - run: >-
+        cmake -B /tmp/build -G Ninja
+        -Dffilesystem_BUILD_TESTING=on
+        -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
+        -Dffilesystem_fortran:BOOL=no
+        --log-level=VERBOSE
+
+    - run: cmake --build /tmp/build
+
+    - run: ctest --test-dir /tmp/build -V
