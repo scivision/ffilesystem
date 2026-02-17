@@ -65,8 +65,8 @@ bool fs_is_absolute(std::string_view path)
 {
   // is path absolute?
 
-#if defined(HAVE_CXX_FILESYSTEM) && !defined(__MINGW32__)
-  // MinGW GCC <filesystem> .is_absolute doesn't handle UNC paths at least through GCC 15.1
+#if defined(HAVE_CXX_FILESYSTEM) && !(defined(__MINGW32__) && !defined(__clang__) && defined(__GNUC__))
+  // MinGW GCC <filesystem> .is_absolute doesn't handle UNC paths at least through GCC 15.2.0
   return Filesystem::path(path).is_absolute();
 #else
   if(fs_is_windows()) {

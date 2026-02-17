@@ -69,12 +69,10 @@ bool fs_is_symlink(std::string_view path)
 {
   std::error_code ec;
 
-#if defined(__MINGW32__) || (defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM))
+#if (defined(__MINGW32__) && !defined(__clang__) && defined(__GNUC__)) || (defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM))
+// MinGW GCC <filesystem> ::is_symlink(), ::symlink_status() doesn't work at least through GCC 15.2.0
   return fs_win32_is_symlink(path);
 #elif defined(HAVE_CXX_FILESYSTEM)
-// std::filesystem::symlink_status or std::filesystem::is_symlink
-// don't detect symlinks on MinGW
-
   if(bool is_sym = Filesystem::is_symlink(path, ec); !ec)
     return is_sym;
 #else
@@ -105,13 +103,28 @@ bool fs_is_symlink(std::string_view path)
 }
 
 
+bool fs_lexists(std::string_view path)
+{
+  // fs_lexists() is true for broken symlinks, unlike fs_exists()
+#if defined(HAVE_CXX_FILESYSTEM) && !(defined(__MINGW32__) && !defined(__clang__) && defined(__GCC__))
+  std::error_code ec;
+  const auto s = Filesystem::symlink_status(path, ec);
+  return !ec && (Filesystem::exists(s) || Filesystem::is_symlink(s));
+#else
+  // For broken symlinks, fs_exists() returns false but fs_is_symlink() returns true
+  return fs_exists(path) || fs_is_symlink(path);
+#endif
+}
+
+
 std::string fs_read_symlink(std::string_view path)
 {
   // read the target of a symlink
 
   std::error_code ec = std::make_error_code(std::errc::invalid_argument);
 
-#if defined(__MINGW32__) || (defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM))
+#if (defined(__MINGW32__) && !defined(__clang__) && defined(__GNUC__)) || (defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM))
+// MinGW GCC <filesystem> ::read_symlink() doesn't work at least through GCC 15.2.0
   if(fs_is_symlink(path))
     return fs_win32_final_path(path);
 #elif defined(HAVE_CXX_FILESYSTEM)
@@ -151,7 +164,8 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
   if(target.empty() || link.empty()) FFS_UNLIKELY
     ec = std::make_error_code(std::errc::invalid_argument);
   else {
-#if defined(__MINGW32__) || (defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM))
+#if (defined(__MINGW32__) && !defined(__clang__) && defined(__GNUC__)) || (defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM))
+// MinGW GCC <filesystem> ::create_*symlink() doesn't work at least through GCC 15.2.0
 
   DWORD p = SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
 
