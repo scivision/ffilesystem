@@ -49,6 +49,7 @@ gtest_tests = [
 'equivalent',
 'exe',
 'expanduser',
+'filename',
 'filesize',
 'hard_link',
 'is_char',

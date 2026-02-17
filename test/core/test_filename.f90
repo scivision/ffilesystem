@@ -16,6 +16,11 @@ if(p /= "c") error stop "FAILED filename('a/b/c') " // p
 
 end block valgrind
 
+if (has_filename("")) error stop "FAILED has_filename('')"
+if (has_filename("/")) error stop "FAILED has_filename('/')"
+if (.not. has_filename(".")) error stop "FAILED has_filename('.')"
+if (has_filename("./")) error stop "FAILED has_filename('./')"
+
 print '(a)', "OK: Fortran filename()"
 
 end program
