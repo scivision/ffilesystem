@@ -11,6 +11,7 @@ public :: get_homedir, get_profile_dir, get_username, hostname, &
  canonical, resolve, realpath, fs_getpid, &
  get_cwd, set_cwd, which
 public :: normal, expanduser, as_posix, &
+has_filename, &
 is_absolute, is_char_device, is_fifo, is_case_sensitive, is_dir, is_file, &
 is_exe, is_executable_binary, is_other, &
 is_prefix, is_subdir, &
@@ -373,6 +374,11 @@ integer(C_SIZE_T) function fs_get_tempdir(path, buffer_size) bind(C)
 import
 character(kind=c_char), intent(out) :: path(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
+end function
+
+logical(c_bool) function fs_has_filename(path) bind(C)
+import
+character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
 logical(c_bool) function fs_is_absolute(path) bind(C)
@@ -898,9 +904,16 @@ r = fs_get_blksize(trim(path) // C_NULL_CHAR)
 end function
 
 
+logical function has_filename(path) result(r)
+!! does path have a filename component
+character(*), intent(in) :: path
+
+r = fs_has_filename(trim(path) // C_NULL_CHAR)
+end function
+
+
 logical function is_absolute(path) result(r)
 !! is path absolute
-!! do NOT expanduser() to be consistent with Python etc. filesystem
 character(*), intent(in) :: path
 
 r = fs_is_absolute(trim(path) // C_NULL_CHAR)

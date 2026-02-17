@@ -89,13 +89,33 @@ bool fs_is_absolute(std::string_view path)
 }
 
 
+bool fs_has_filename(std::string_view path)
+{
+  // does path have a filename component?
+#if defined(HAVE_CXX_FILESYSTEM)
+  return Filesystem::path(path).has_filename();
+#else
+  if (path.empty())
+    return false;
+
+  const auto i = fs_is_windows()
+    ? path.find_last_of("/\\")
+    : path.rfind('/');
+
+  return (i == std::string_view::npos) || (i < path.length() - 1);
+#endif
+}
+
+
 std::string fs_file_name(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).filename().string();
 #else
 
-  const auto i = path.find_last_of(fs_is_windows() ? "/\\" : "/");
+  const auto i = fs_is_windows()
+    ? path.find_last_of("/\\")
+    : path.rfind('/');
 
   return (i != std::string_view::npos)
     ? std::string(path.substr(i + 1))

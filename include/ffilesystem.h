@@ -126,6 +126,8 @@ std::uintmax_t fs_hard_link_count(std::string_view);
 
 std::string fs_hostname();
 
+bool fs_has_filename(std::string_view);
+
 bool fs_is_absolute(std::string_view);
 bool fs_is_appexec_alias(std::string_view);
 bool fs_is_case_sensitive(std::string_view);
@@ -259,8 +261,11 @@ extern "C" {
 
 #else  // C only
 
-#include <stdlib.h>
+#if __STDC_VERSION__ < 202311L
 #include <stdbool.h>
+#endif
+
+#include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <time.h>
@@ -346,6 +351,8 @@ bool fs_mkdir(const char*);
 
 bool fs_exists(const char*);
 bool fs_is_removable(const char*);
+
+bool fs_has_filename(const char* path);
 
 bool fs_is_absolute(const char*);
 bool fs_is_case_sensitive(const char*);

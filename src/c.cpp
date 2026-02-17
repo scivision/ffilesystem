@@ -244,6 +244,11 @@ std::string::size_type fs_get_tempdir(char* path, const std::string::size_type b
   return fs_str2char(fs_get_tempdir(), path, buffer_size);
 }
 
+bool fs_has_filename(const char* path)
+{
+  return fs_has_filename(std::string_view(path));
+}
+
 bool fs_is_absolute(const char* path)
 {
   return fs_is_absolute(std::string_view(path));

@@ -155,6 +155,8 @@ main : do
     print '(A)', suffix(arg1)
   case ("filename")
     print '(A)', file_name(arg1)
+  case ("has_filename")
+    print '(L1)', has_filename(arg1)
   case ("is_absolute")
     print '(L1)', is_absolute(arg1)
   case ("is_appexec")
