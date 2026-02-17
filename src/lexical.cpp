@@ -59,8 +59,7 @@ fs_is_reserved(std::string_view path)
 
   std::string s = fs_stem(n);
 
-  if(std::string::size_type L = s.length();
-      L < 3 || L > 4)
+  if(auto L = s.length(); L < 3 || L > 4)
     return false;
 
   // convert to upper case

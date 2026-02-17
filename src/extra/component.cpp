@@ -21,7 +21,7 @@
 [[maybe_unused]] constexpr std::size_t DEFAULT_MAX_PATH = 256;
 
 // This function returns the maximum length of a single component in the given path.
-std::string::size_type fs_max_component(std::string_view path)
+std::string_view::size_type fs_max_component(std::string_view path)
 {
   // maximum length of each component of a path. That is, while the maximum
   // total length of a path may be thousands of character, each segment of the

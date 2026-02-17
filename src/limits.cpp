@@ -21,7 +21,7 @@ std::size_t
 fs_get_max_path()
 {
 // Returns the maximum path length supported by the file system.
-  std::size_t m = DEFAULT_MAX_PATH;
+  auto m = DEFAULT_MAX_PATH;
 #if defined(PATH_MAX)
   // POSIX
   m = PATH_MAX;

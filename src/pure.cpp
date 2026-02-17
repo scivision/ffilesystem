@@ -44,7 +44,7 @@ fs_slash_first(std::string_view path)
 std::string::size_type fs_strncpy(const char* path, char* result, const std::string::size_type buffer_size)
 {
 // check size before copy
-  std::string::size_type L = std::strlen(path);
+  const auto L = std::strlen(path);
   if(L >= buffer_size){
     fs_print_error(path, __func__, std::make_error_code(std::errc::result_out_of_range));
     return 0;
@@ -99,7 +99,7 @@ bool fs_has_filename(std::string_view path)
     return false;
 
   const auto i = fs_is_windows()
-    ? path.find_last_of("/\\")
+    ? path.find_last_of(R"(/\)")
     : path.rfind('/');
 
   return (i == std::string_view::npos) || (i < path.length() - 1);
@@ -114,7 +114,7 @@ std::string fs_file_name(std::string_view path)
 #else
 
   const auto i = fs_is_windows()
-    ? path.find_last_of("/\\")
+    ? path.find_last_of(R"(/\)")
     : path.rfind('/');
 
   return (i != std::string_view::npos)
@@ -175,7 +175,7 @@ std::string fs_stem(std::string_view path)
     return r;
 
   // find last dot
-  std::string::size_type i = r.find_last_of('.');
+  const auto i = r.rfind('.');
 
   if (i != std::string::npos && i != 0)
     r.resize(i);
@@ -192,7 +192,7 @@ std::string fs_suffix(std::string_view path)
 #else
   const std::string p = fs_file_name(path);
   // find last dot
-  std::string::size_type i = p.find_last_of('.');
+  const auto i = p.rfind('.');
 
   return (i != std::string::npos && i != 0)
     ? p.substr(i)

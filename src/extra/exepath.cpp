@@ -69,7 +69,7 @@ std::string fs_exe_path()
   }
 #elif defined(BSD)
   // https://man.freebsd.org/cgi/man.cgi?sysctl(3)
-  std::size_t L = fs_get_max_path();
+  auto L = fs_get_max_path();
   std::string path;
   path.resize(L);
 

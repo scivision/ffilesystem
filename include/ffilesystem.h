@@ -247,7 +247,7 @@ bool fs_win32_is_ext_path(std::string_view);
 
 std::string fs_with_suffix(std::string_view, std::string_view);
 
-std::string::size_type fs_symlink_length([[maybe_unused]] std::string_view);
+std::string_view::size_type fs_symlink_length([[maybe_unused]] std::string_view);
 
 mode_t fs_st_mode(std::string_view);
 

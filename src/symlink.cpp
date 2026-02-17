@@ -37,12 +37,12 @@ namespace Filesystem = std::filesystem;
 #include <sys/stat.h> // for stat, statx
 
 
-std::string::size_type fs_symlink_length([[maybe_unused]] std::string_view path)
+std::string_view::size_type fs_symlink_length([[maybe_unused]] std::string_view path)
 {
   // get the string length of a symlink target
   // falls back to maximum path length
 
-  std::string::size_type L = 0;
+  std::string_view::size_type L = 0;
 
 #if !defined(_WIN32)
   int r = 0;
