@@ -69,8 +69,21 @@ For Windows drive letters without a slash after the colon, the path is treated a
 [a relative path](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file).
 This is how the Windows API, ComSpec, and C++ STL work.
 
-Inspired by (and benchmarked against)
-[Python pathlib](https://docs.python.org/3/library/pathlib.html).
+Inspired by other languages' filesystem libraries, Ffilesystem provides a comprehensive set of functions for path manipulation and filesystem operations.
+The API is designed to be familiar to users of other languages' filesystem libraries, such as:
+
+* [Python pathlib](https://docs.python.org/3/library/pathlib.html)
+* [Julia filesystem](https://docs.julialang.org/en/v1/base/file/)
+* [Go io/fs](https://pkg.go.dev/io/fs)
+* [Rust std::fs](https://doc.rust-lang.org/std/fs/index.html)
+* [C# / .NET System.IO](https://learn.microsoft.com/en-us/dotnet/api/system.io)
+* [Ruby File](https://ruby-doc.org/3.4.1/File.html)
+* [Node.js fs](https://nodejs.org/api/fs.html)
+* [Java NIO Files](https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/nio/file/package-summary.html)
+* [stdlib for Matlab](https://github.com/geospace-code/matlab-stdlib)
+* [C++ STL filesystem](https://en.cppreference.com/w/cpp/filesystem)
+* [C standard library](https://en.cppreference.com/w/c/io)
+
 Important Ffilesystem functions are
 [benchmarked](./benchmark.md)
 to help improve performance.
