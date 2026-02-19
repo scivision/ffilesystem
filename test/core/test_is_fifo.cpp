@@ -55,7 +55,13 @@ class TestFifo : public testing::Test {
 
     void TearDown() override {
 #if defined(_WIN32)
-      CloseHandle(hPipe);
+      if (hPipe != INVALID_HANDLE_VALUE) {
+        CloseHandle(hPipe);
+      }
+      // Delete the named pipe
+      DeleteFileA(name.c_str());
+#else
+      unlink(name.c_str());
 #endif
     }
 };
@@ -64,4 +70,23 @@ class TestFifo : public testing::Test {
 TEST_F(TestFifo, IsFIFO)
 {
   EXPECT_TRUE(fs_is_fifo(name));
+}
+
+
+TEST_F(TestFifo, IsFile)
+{
+
+  if(fs_is_msvc() && fs_backend() == "<filesystem>")
+    GTEST_SKIP() << "MSVC std::filesystem incorrectly identifies FIFOs as regular files.";
+
+  EXPECT_FALSE(fs_is_file(name));
+}
+
+
+TEST_F(TestFifo, Exists)
+{
+  if (fs_is_mingw() && fs_backend() == "<filesystem>")
+    GTEST_SKIP() << "MinGW std::filesystem incorrectly identifies FIFOs as non-existent.";
+
+  EXPECT_TRUE(fs_exists(name));
 }
