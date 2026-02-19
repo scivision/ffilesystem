@@ -44,6 +44,7 @@ class TestSymlink : public testing::Test {
     ASSERT_TRUE(fs_touch(not_exist_tgt));
     ASSERT_TRUE(fs_create_symlink(not_exist_tgt, broken_link));
     ASSERT_TRUE(fs_remove(not_exist_tgt));
+    ASSERT_FALSE(fs_exists(not_exist_tgt)) << "exists() should be false for non-existent target: " << not_exist_tgt;
     std::cout << "Created broken symlink: " << broken_link << " -> " << not_exist_tgt << "\n";
     }
 
@@ -92,6 +93,7 @@ TEST_F(TestSymlink, Exists){
   EXPECT_TRUE(fs_exists(tgt)) << "exists() should be true for existing file: " << tgt;
   EXPECT_TRUE(fs_exists(link_file)) << "exists() should be true for existing symlink: " << link_file;
   EXPECT_TRUE(fs_exists(link_dir)) << "exists() should be true for existing symlink: " << link_dir;
+
   EXPECT_FALSE(fs_exists(broken_link)) << "exists() should be false for broken symlink: " << broken_link;
 }
 

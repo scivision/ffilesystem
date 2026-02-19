@@ -1,5 +1,7 @@
 #include "ffilesystem.h"
 
+#include <string>
+
 #include <gtest/gtest.h>
 
 namespace {

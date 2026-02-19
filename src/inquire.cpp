@@ -117,14 +117,20 @@ fs_exists(std::string_view path)
   if (ec && ec != std::errc::no_such_file_or_directory)
     fs_print_error(path, __func__, ec);
 #elif defined(_WIN32)
-  WIN32_FILE_ATTRIBUTE_DATA fad;
+// https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
+  ok = _access_s(path.data(), 0) == 0;
 
-  ok = GetFileAttributesExW(fs_win32_to_wide(path).data(), GetFileExInfoStandard, &fad);
-  if (!ok){
-    DWORD err = GetLastError();
-    if (err != ERROR_FILE_NOT_FOUND && err != ERROR_PATH_NOT_FOUND)
-      fs_print_error(path, __func__);
-  }
+  // to use the approach below, need more advanced techniques like
+  // https://gitlab.kitware.com/cmake/cmake/-/blob/master/Source/kwsys/SystemTools.cxx#L1408
+
+  // WIN32_FILE_ATTRIBUTE_DATA fad;
+
+  // ok = GetFileAttributesExW(fs_win32_to_wide(path).data(), GetFileExInfoStandard, &fad);
+  // if (!ok){
+  //   DWORD err = GetLastError();
+  //   if (err != ERROR_FILE_NOT_FOUND && err != ERROR_PATH_NOT_FOUND)
+  //     fs_print_error(path, __func__);
+  // }
 #else
   // https://www.man7.org/linux/man-pages/man2/access.2.html
   ok = access(path.data(), F_OK) == 0;

@@ -90,5 +90,4 @@ TEST(TestWindowsUNC, UNC)
 {
 EXPECT_TRUE(fs_win32_is_ext_path(R"(\\.\C:\)"));
 EXPECT_TRUE(fs_win32_is_ext_path(R"(\\?\C:\)"));
-
 }
