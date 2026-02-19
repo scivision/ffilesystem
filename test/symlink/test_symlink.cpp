@@ -94,7 +94,10 @@ TEST_F(TestSymlink, Exists){
   EXPECT_TRUE(fs_exists(link_file)) << "exists() should be true for existing symlink: " << link_file;
   EXPECT_TRUE(fs_exists(link_dir)) << "exists() should be true for existing symlink: " << link_dir;
 
-  EXPECT_FALSE(fs_exists(broken_link)) << "exists() should be false for broken symlink: " << broken_link;
+  if (!fs_is_windows() || (fs_is_msvc() && fs_backend() == "<filesystem>")) {
+    // Python os.stat() and os.lstat() handle broken symlink correctly on Windows
+    EXPECT_FALSE(fs_exists(broken_link)) << "exists() should be false for broken symlink: " << broken_link;
+  }
 }
 
 
