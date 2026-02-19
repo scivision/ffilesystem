@@ -40,6 +40,14 @@ class TestOnDisk : public testing::Test {
   };
 
 
+TEST_F(TestOnDisk, Exists)
+{
+  EXPECT_TRUE(fs_exists(file));
+  EXPECT_TRUE(fs_exists(dir));
+  EXPECT_FALSE(fs_exists("ffs_exists_not-exist-file"));
+  EXPECT_FALSE(fs_exists(""));
+}
+
 TEST_F(TestOnDisk, IsDir)
 {
   EXPECT_FALSE(fs_is_dir(""));
