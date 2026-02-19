@@ -3,23 +3,34 @@
 
 #include <gtest/gtest.h>
 
-class TestChar : public testing::Test {
-    protected:
-      std::string_view p;
-
-      void SetUp() override {
-        p = fs_is_windows() ? "NUL" : "/dev/null";
-      }
-    };
-
 // /dev/stdin may not be available on CI systems
 
-TEST_F(TestChar, IsChar)
+TEST(TestChar, IsChar)
 {
-EXPECT_TRUE(fs_is_char_device(p));
+  if (fs_is_windows()){
+    EXPECT_TRUE(fs_is_char_device("NUL"));
+    EXPECT_TRUE(fs_is_char_device("CONIN$"));
+  } else {
+    EXPECT_TRUE(fs_is_char_device("/dev/null"));
+  }
 }
 
-TEST_F(TestChar, IsFile)
+TEST(TestChar, IsFile)
 {
-EXPECT_FALSE(fs_is_file(p));
+  if (fs_is_windows()){
+    EXPECT_FALSE(fs_is_file("NUL"));
+    EXPECT_FALSE(fs_is_file("CONIN$"));
+  } else {
+    EXPECT_FALSE(fs_is_file("/dev/null"));
+  }
+}
+
+TEST(TestChar, Exists)
+{
+  if (fs_is_windows()){
+    EXPECT_TRUE(fs_exists("NUL"));
+    EXPECT_TRUE(fs_exists("CONIN$"));
+  } else {
+    EXPECT_TRUE(fs_exists("/dev/null"));
+  }
 }

@@ -113,12 +113,12 @@ fs_exists(std::string_view path)
 #if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
   ok = (Filesystem::exists(path, ec) && !ec) ||
-        (fs_is_msvc() && fs_is_appexec_alias(path));
+        (fs_is_msvc() && (fs_is_appexec_alias(path) || fs_is_char_device(path)));
   if (ec && ec != std::errc::no_such_file_or_directory)
     fs_print_error(path, __func__, ec);
 #elif defined(_WIN32)
 // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
-  ok = _access_s(path.data(), 0) == 0;
+  ok = _access_s(path.data(), 0) == 0 || fs_is_char_device(path);
 
   // to use the approach below, need more advanced techniques like
   // https://gitlab.kitware.com/cmake/cmake/-/blob/master/Source/kwsys/SystemTools.cxx#L1408
