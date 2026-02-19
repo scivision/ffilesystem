@@ -106,7 +106,7 @@ bool fs_is_symlink(std::string_view path)
 bool fs_lexists(std::string_view path)
 {
   // fs_lexists() is true for broken symlinks, unlike fs_exists()
-#if defined(HAVE_CXX_FILESYSTEM) && !(defined(__MINGW32__) && !defined(__clang__) && defined(__GCC__))
+#if defined(HAVE_CXX_FILESYSTEM) && !(defined(__MINGW32__) && !defined(__clang__) && defined(__GNUC__))
   std::error_code ec;
   const auto s = Filesystem::symlink_status(path, ec);
   return !ec && (Filesystem::exists(s) || Filesystem::is_symlink(s));

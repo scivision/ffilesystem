@@ -395,6 +395,14 @@ p%is_dir()
 is_dir("my/dir")
 ```
 
+Does the path have a filename (lexical operation, not checking if path exists):
+
+```fortran
+has_filename("a/b/c")  !< true
+has_filename("a/b/")   !< false
+```
+
+
 Is the drive removable (USB drive, CD/DVD drive):
 
 ```fortran
@@ -444,6 +452,14 @@ In C/C++ `access()` or `stat()` the same behavior is observed Windows vs Unix.
 p%exists()
 ! or
 exists("my/file.txt")
+```
+
+---
+
+Does path exist, or is it a symbolic link that is broken (pointing to a non-existent target)?
+
+```fortran
+lexists("my/file.txt")
 ```
 
 ---

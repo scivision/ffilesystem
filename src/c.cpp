@@ -308,6 +308,8 @@ bool fs_is_executable_binary(const char* path){ return fs_is_executable_binary(s
 
 bool fs_exists(const char* path){ return fs_exists(std::string_view(path)); }
 
+bool fs_lexists(const char* path){ return fs_lexists(std::string_view(path)); }
+
 bool fs_is_file(const char* path){ return fs_is_file(std::string_view(path)); }
 
 bool fs_is_other(const char* path){ return fs_is_other(std::string_view(path)); }

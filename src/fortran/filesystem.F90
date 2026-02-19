@@ -19,7 +19,7 @@ is_appexec_alias, &
 is_readable, is_writable, is_reserved, &
 is_empty, &
 is_symlink, read_symlink, create_symlink, &
-is_removable, exists, &
+is_removable, exists, lexists, &
 join, &
 copy_file, mkdir, &
 relative_to, proximate_to, &
@@ -260,6 +260,11 @@ character(kind=C_CHAR), intent(in) :: oldpath(*), newpath(*)
 end function
 
 logical(C_BOOL) function fs_exists(path) bind(C)
+import
+character(kind=C_CHAR), intent(in) :: path(*)
+end function
+
+logical(C_BOOL) function fs_lexists(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
@@ -808,6 +813,12 @@ logical function exists(path) result(r)
 !! a file or directory exists
 character(*), intent(in) :: path
 r = fs_exists(trim(path) // C_NULL_CHAR)
+end function
+
+logical function lexists(path) result(r)
+!! a file or directory exists, including broken symlinks
+character(*), intent(in) :: path
+r = fs_lexists(trim(path) // C_NULL_CHAR)
 end function
 
 

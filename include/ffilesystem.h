@@ -83,7 +83,9 @@ std::string fs_drop_trailing_slash(std::string_view);
 bool fs_equivalent(std::string_view, std::string_view);
 
 bool fs_is_removable(std::string_view);
+
 bool fs_exists(std::string_view);
+bool fs_lexists(std::string_view);
 
 std::string fs_exe_path();
 
@@ -350,6 +352,8 @@ size_t fs_read_symlink(const char*, char*, const size_t);
 bool fs_mkdir(const char*);
 
 bool fs_exists(const char*);
+bool fs_lexists(const char*);
+
 bool fs_is_removable(const char*);
 
 bool fs_has_filename(const char* path);
