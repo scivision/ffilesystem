@@ -222,15 +222,7 @@ endif()
 
 install(TARGETS ffilesystem EXPORT ${PROJECT_NAME}-targets)
 
-# GLOBAL for use from FetchContent
-add_library(ffilesystem::filesystem INTERFACE IMPORTED GLOBAL)
-
-target_link_libraries(ffilesystem::filesystem INTERFACE ffilesystem)
-set_property(TARGET ffilesystem::filesystem PROPERTY IMPORTED_LINK_INTERFACE_LANGUAGE CXX)
-# https://cmake.org/cmake/help/latest/prop_tgt/IMPORTED_LINK_INTERFACE_LANGUAGES.html
-# imported targets use above instead of LINKER_LANGUAGE
-# target_link_libraries(ffilesystem::filesystem INTERFACE stdc++)  # did not help
-
+add_library(ffilesystem::filesystem ALIAS ffilesystem)
 
 # --- CLI
 
