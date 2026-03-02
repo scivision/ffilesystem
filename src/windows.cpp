@@ -5,7 +5,7 @@
 #endif
 
 #include <cstddef>  // for std::byte
-#include <iostream>  // IWYU pragma: keep
+#include <iostream>
 
 #include <string>
 #include <string_view>
@@ -150,6 +150,44 @@ bool fs_is_appexec_alias(std::string_view path)
   return false;
 #endif
 
+}
+
+
+bool fs_win32_long_paths_enabled() {
+  // from https://github.com/microsoft/STL/pull/5783/
+  // microsoft/STL has Apache 2.0 license
+  // https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell
+  // https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-reggetvaluew
+
+#if defined(_WIN32)
+  DWORD registry_value = 0;
+  DWORD buffer_size    = sizeof(registry_value);
+  const LSTATUS status = RegGetValueW(HKEY_LOCAL_MACHINE, LR"(SYSTEM\CurrentControlSet\Control\FileSystem)",
+      L"LongPathsEnabled", RRF_RT_REG_DWORD, nullptr, &registry_value, &buffer_size);
+
+  switch (status) {
+  case ERROR_SUCCESS:
+      if(buffer_size == sizeof(registry_value))
+        return registry_value != 0;
+      break;
+  case ERROR_FILE_NOT_FOUND:
+      return false; // The registry value doesn't exist, so long paths aren't enabled.
+  case ERROR_MORE_DATA:
+      std::cerr << "fs_win32_long_paths_enabled: RegGetValueW() returned ERROR_MORE_DATA; this should not be possible.\n";
+      break;
+  case ERROR_UNSUPPORTED_TYPE:
+      std::cerr << "fs_win32_long_paths_enabled: RegGetValueW() returned ERROR_UNSUPPORTED_TYPE; the value exists but has a weird type.\n";
+      break;
+  default:
+      std::cerr << "fs_win32_long_paths_enabled: RegGetValueW() returned " << status << ".\n";
+      break;
+  }
+
+#else
+  fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
+#endif
+
+  return false;
 }
 
 

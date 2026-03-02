@@ -791,7 +791,7 @@ logical, intent(in), optional :: strict
 resolve("../b")
 ```
 
----
+## Windows-specific functions
 
 Windows: long to short path
 
@@ -804,6 +804,14 @@ Windows: short to long path
 ```fortran
 longname("C:/PROGRA~1")  !< "C:/Program Files"
 ```
+
+Are Windows long paths enabled (longer than 260 characters)?
+
+```fortran
+long_paths_enabled()  !< logical
+```
+
+## relative / proximate paths
 
 Get path relative to other path, treating each path as "weakly_canonical".
 This requires the `<filesystem>` backend.

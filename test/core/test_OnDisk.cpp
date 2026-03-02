@@ -79,6 +79,9 @@ EXPECT_TRUE(fs_is_readable(dir));
 
 if(fs_is_windows()){
   EXPECT_TRUE(fs_is_readable(sys_drive));
+}
+
+if(fs_win32_long_paths_enabled()){
   EXPECT_TRUE(fs_is_readable(R"(\\?\)" + sys_drive + "\\"));
 }
 
@@ -90,7 +93,7 @@ TEST_F(TestOnDisk, IsWritable)
 EXPECT_TRUE(fs_is_writable(file));
 EXPECT_TRUE(fs_is_writable(dir));
 
-if(fs_is_windows()){
+if(fs_win32_long_paths_enabled()){
   std::string s = fs_as_windows(R"(\\?\)" + fs_canonical(file));
   EXPECT_TRUE(fs_is_writable(s)) << s;
 }

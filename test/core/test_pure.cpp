@@ -32,6 +32,12 @@ if(!fs_is_windows())
   GTEST_SKIP() << "Windows only test";
 
 EXPECT_EQ(fs_stem(R"(C:\a\ball.text)"), "ball");
+}
+
+TEST(TestStem, WindowsLongPaths)
+{
+if(!fs_win32_long_paths_enabled())
+  GTEST_SKIP() << "Windows long paths specific test";
 
 EXPECT_EQ(fs_stem(R"(\\?\)"), "");
 EXPECT_EQ(fs_stem(R"(\\.\)"), "");
@@ -72,6 +78,12 @@ if(!fs_is_windows())
   GTEST_SKIP() << "Windows only test";
 
 EXPECT_EQ(fs_suffix(R"(C:\a\ball.text)"), ".text");
+}
+
+TEST(TestSuffix, WindowsLongPaths)
+{
+if(!fs_win32_long_paths_enabled())
+  GTEST_SKIP() << "Windows long paths specific test";
 
 EXPECT_EQ(fs_suffix(R"(\\?\)"), "");
 EXPECT_EQ(fs_suffix(R"(\\.\)"), "");
@@ -88,6 +100,9 @@ EXPECT_EQ(fs_suffix(R"(\\?\C:\some space here.txt)"), ".txt");
 
 TEST(TestWindowsUNC, UNC)
 {
+if(!fs_win32_long_paths_enabled())
+  GTEST_SKIP() << "Windows only test";
+
 EXPECT_TRUE(fs_win32_is_ext_path(R"(\\.\C:\)"));
 EXPECT_TRUE(fs_win32_is_ext_path(R"(\\?\C:\)"));
 }

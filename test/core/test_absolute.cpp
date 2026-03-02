@@ -58,10 +58,16 @@ TEST_F(TestAbs, Windows){
 if(!fs_is_windows())
   GTEST_SKIP() << "Windows only test";
 
+EXPECT_EQ(fs_absolute(sys_drive + "/"), sys_drive + "/");
+}
+
+TEST_F(TestAbs, WindowsLongPaths)
+{
+if(!fs_win32_long_paths_enabled())
+  GTEST_SKIP() << "needs Windows long paths enabled";
+
 EXPECT_EQ(fs_absolute(R"(\\?\X:\anybody)"), R"(\\?\X:\anybody)");
 EXPECT_EQ(fs_absolute(R"(\\?\UNC\server\share)"), R"(\\?\UNC\server\share)");
-
-EXPECT_EQ(fs_absolute(sys_drive + "/"), sys_drive + "/");
 }
 
 
@@ -85,6 +91,12 @@ EXPECT_TRUE(fs_is_absolute("j:/"));
 EXPECT_FALSE(fs_is_absolute("j:"));
 EXPECT_FALSE(fs_is_absolute("/"));
 EXPECT_FALSE(fs_is_absolute("/日本語"));
+}
+
+TEST_F(TestAbs, IsAbsWindowsLongPaths)
+{
+if(!fs_win32_long_paths_enabled())
+  GTEST_SKIP() << "needs Windows long paths enabled";
 
 EXPECT_TRUE(fs_is_absolute(R"(\\?\)"));
 EXPECT_TRUE(fs_is_absolute(R"(\\.\)"));

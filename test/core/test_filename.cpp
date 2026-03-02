@@ -33,15 +33,20 @@ if(!fs_is_windows())
 
 EXPECT_FALSE(fs_has_filename("C:/"));
 EXPECT_TRUE(fs_has_filename(R"(C:\ab\asb)"));
+EXPECT_TRUE(fs_has_filename(R"(\\server\share\some space here.txt)"));
+}
 
-EXPECT_FALSE(fs_has_filename(R"(\\?\)"));
+TEST(TestHasFilename, WindowsLongPaths)
+{
+if(!fs_win32_long_paths_enabled())
+  GTEST_SKIP() << "Windows long paths specific test";
+
 EXPECT_FALSE(fs_has_filename(R"(\\.\)"));
 
 EXPECT_FALSE(fs_has_filename(R"(\\?\C:\)"));
 EXPECT_FALSE(fs_has_filename(R"(\\.\C:\)"));
 EXPECT_TRUE(fs_has_filename(R"(\\?\UNC\server\share)"));
 EXPECT_TRUE(fs_has_filename(R"(\\?\UNC\server\share\日本語)"));
-EXPECT_TRUE(fs_has_filename(R"(\\server\share\some space here.txt)"));
 EXPECT_TRUE(fs_has_filename(R"(\\?\C:\some space here.txt)"));
 }
 
@@ -77,6 +82,12 @@ if(!fs_is_windows())
 
 EXPECT_EQ(fs_file_name("C:/"), "");
 EXPECT_EQ(fs_file_name(R"(C:\ab\asb)"), "asb");
+}
+
+TEST(TestFilename, WindowsLongPaths)
+{
+if(!fs_win32_long_paths_enabled())
+  GTEST_SKIP() << "Windows long paths specific test";
 
 EXPECT_EQ(fs_file_name(R"(\\?\)"), "");
 EXPECT_EQ(fs_file_name(R"(\\.\)"), "");

@@ -49,7 +49,8 @@ static bool no_arg(std::string_view fun){
     {"is_windows", fs_is_windows},
     {"is_mingw", fs_is_mingw},
     {"is_cygwin", fs_is_cygwin},
-    {"has_statx", fs_has_statx}
+    {"has_statx", fs_has_statx},
+    {"long_paths", fs_win32_long_paths_enabled}
   };
 
 using fs_function = std::function<std::variant<std::string, bool, int, char, long, unsigned long long>()>;
@@ -405,6 +406,9 @@ std::cout << "libcpp: " << fs_libcxx() << "\n";
 std::cout << "libc: " << fs_libc() << "\n";
 std::cout << "Username: " << fs_get_username() << "\n";
 std::cout << "Homedir: " << fs_get_homedir() << "\n";
+
+if (fs_is_windows())
+  std::cout << "Windows long paths enabled: " << fs_win32_long_paths_enabled() << "\n";
 
 // doesn't work usefully on Cygwin
 #if defined(ffilesystem_extra)

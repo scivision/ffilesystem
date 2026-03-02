@@ -21,6 +21,7 @@ is_empty, &
 is_symlink, read_symlink, create_symlink, &
 is_removable, exists, lexists, &
 join, &
+long_paths_enabled, &
 copy_file, mkdir, &
 relative_to, proximate_to, &
 hard_link_count, &
@@ -58,6 +59,12 @@ logical(C_BOOL) function fs_is_optimized() bind(C)
 !! ffilesystem is optimized for speed?
 import C_BOOL
 end function
+
+logical(C_BOOL) function long_paths_enabled() bind(C, name="fs_win32_long_paths_enabled")
+!! long paths enabled on Windows
+import C_BOOL
+end function
+
 
 logical(C_BOOL) function stdin_tty() bind(C)
 !! stdin is a terminal

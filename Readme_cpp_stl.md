@@ -4,7 +4,7 @@ Ffilesystem relies on the C++ standard library (STL) for its implementation as d
 STL is a critical part of the C++ programming environment.
 Computing platforms provide STL in distinct ways:
 
-* Windows MSVC: STL is provided by the [Visual Studio C++ compiler](https://github.com/microsoft/STL).
+* Windows MSVC: STL is provided by the [Visual Studio C++ compiler](https://github.com/microsoft/STL). [Changelog](https://github.com/microsoft/STL/wiki/Changelog)
 * Windows [MSYS2](https://www.msys2.org/docs/environments): STL is provided by [GNU libstdc++](https://packages.msys2.org/packages/mingw-w64-ucrt-x86_64-gcc) or [LLVM libc++](https://packages.msys2.org/packages/mingw-w64-ucrt-x86_64-libc++).
 * macOS AppleClang: STL is provided by [Xcode](https://developer.apple.com/forums/thread/715385) and is not a specific file.
 * macOS [Homebrew](https://brew.sh): STL is by default the macOS Apple system STL, but can be specified to be Homebrew [LLVM libc++](https://formulae.brew.sh/formula/llvm) or [GNU libstdc++](https://formulae.brew.sh/formula/gcc).

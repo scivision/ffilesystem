@@ -30,7 +30,7 @@ class TestCopyFile : public testing::Test {
       s2 = cwd + fs_filesep() + n + "_some_text.txt.copy";
       s3 = cwd + fs_filesep() + n + "_empty.txt";
       s4 = cwd + fs_filesep() + n + "_empty.txt.copy";
-      if(fs_is_windows()){
+      if(fs_win32_long_paths_enabled()){
         ext1 = R"(\\?\)" + s1;
         ext5 = R"(\\?\)" + s2 + ".long";
       }
@@ -56,7 +56,7 @@ class TestCopyFile : public testing::Test {
       fs_remove(s2);
       fs_remove(s3);
       fs_remove(s4);
-      if(fs_is_windows()){
+      if(fs_win32_long_paths_enabled()){
         fs_remove(ext5);
       }
     }
@@ -88,9 +88,8 @@ EXPECT_EQ(fs_file_size(s4), 0);
 
 
 TEST_F(TestCopyFile, Windows){
-  if(!fs_is_windows())
-    GTEST_SKIP() << "Windows specific test";
-
+  if(!fs_win32_long_paths_enabled())
+    GTEST_SKIP() << "Windows long paths specific test";
 
 ASSERT_TRUE(fs_copy_file(ext1, ext5, false));
 ASSERT_TRUE(fs_is_file(ext5));

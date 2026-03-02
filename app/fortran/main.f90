@@ -161,6 +161,8 @@ main : do
     print '(L1)', is_absolute(arg1)
   case ("is_appexec")
     print '(L1)', is_appexec_alias(arg1)
+  case ("long_paths")
+    print '(L1)', long_paths_enabled()
   case ("exists")
     print '(L1)', exists(arg1)
   case ("is_case_sensitive")
