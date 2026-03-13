@@ -8,8 +8,7 @@
 #include <filesystem>
 namespace Filesystem = std::filesystem;
 #else
-#include <cstdlib> // for std::free
-#include <memory> // for std::unique_ptr
+#include <vector>
 #endif
 
 #include <string>
@@ -74,9 +73,11 @@ std::string fs_get_cwd()
 // unistd.h https://www.man7.org/linux/man-pages/man3/getcwd.3.html
 // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/getcwd.3.html
 
-  std::unique_ptr<char, decltype(&std::free)> r(::getcwd(nullptr, 0), &std::free);
-  if(r)
-    return std::string(r.get());
+std::vector<char> buf(fs_get_max_path());
+
+if (::getcwd(buf.data(), buf.size()))
+  return std::string(buf.data());
+
 
 #endif
 
