@@ -76,8 +76,7 @@ std::string fs_get_cwd()
 std::vector<char> buf(fs_get_max_path());
 
 if (::getcwd(buf.data(), buf.size()))
-  return std::string(buf.data());
-
+  return buf.data();
 
 #endif
 

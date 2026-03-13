@@ -14,8 +14,7 @@ namespace Filesystem = std::filesystem;
 #endif
 
 #if !defined(_WIN32)
-#include <cstdlib> // for realpath, free
-#include <memory>  // for std::unique_ptr
+#include <vector>
 #endif
 
 
@@ -81,9 +80,9 @@ std::string fs_realpath(std::string_view path)
 #if defined(_WIN32)
   return fs_win32_final_path(path);
 #else
-  std::unique_ptr<char, decltype(&std::free)> r(::realpath(path.data(), nullptr), std::free);
-  if (r)
-    return std::string(r.get());
+  std::vector<char> buf(fs_get_max_path());
+  if (::realpath(path.data(), buf.data()))
+    return buf.data();
 
   return {};
 #endif
