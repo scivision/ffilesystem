@@ -34,8 +34,10 @@ jobs:
     strategy:
       matrix:
         gcc-version: [12, 13, 14]
-        shared: [true, false]
-        cpp: [true, false]
+        cpp: [true]
+        include:
+        - gcc-version: 14
+          cpp: false
 
     env: &gcc-env
       CC: gcc-${{ matrix.gcc-version }}
@@ -50,6 +52,25 @@ jobs:
     - uses: ./.github/workflows/composite-build
 
 
+  shared:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+
+    - *checkout
+
+    - name: build and test
+      run: cmake --workflow shared
+
+    - name: install package
+      run: cmake --install build-shared
+
+    - name: example
+      working-directory: example
+      run: cmake --workflow shared
+
+
   linux-flang:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -58,7 +79,6 @@ jobs:
       matrix:
         llvm-version: [20]
         cpp: [true, false]
-        shared: [false]
 
     env:
       CC: clang-${{ matrix.llvm-version }}
@@ -90,12 +110,10 @@ jobs:
       fail-fast: false
       matrix:
         gcc-version: [9, 10, 11]
-        shared: [false]
-        cpp: [true, false]
+        cpp: [true]
         include:
         - gcc-version: 11
-          shared: true
-          cpp: true
+          cpp: false
 
     env: *gcc-env
 
@@ -124,7 +142,6 @@ jobs:
       fail-fast: false
       matrix:
         gcc-version: [8]
-        shared: [false]
         cpp: [true, false]
         include:
         - gcc-version: 7
@@ -160,8 +177,7 @@ jobs:
       matrix:
         cpp-std: [17, 20, 23]
         gcc-version: [14]
-        cpp: [true, false]
-        shared: [false]
+        cpp: [true]
 
     env: *gcc-env
 

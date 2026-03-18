@@ -24,6 +24,12 @@ else()
     set(HAVE_Fortran_FILESYSTEM OFF)
 endif()
 
+# --- RPATH handling for transitive dependencies
+if(ffilesystem_ENABLE_RPATH AND NOT WIN32)
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
+  set(CMAKE_BUILD_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
+endif()
+
 if(HAVE_Fortran_FILESYSTEM AND NOT DEFINED HAVE_F03TYPE)
   if(ffilesystem_trace)
     file(READ ${CMAKE_CURRENT_LIST_DIR}/f03type.f90 _src)

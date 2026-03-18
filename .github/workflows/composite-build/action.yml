@@ -1,4 +1,5 @@
 name: "build-test-install-example"
+description: "Build, test, install and example workflow for CMake presets"
 
 runs:
 
@@ -6,19 +7,18 @@ runs:
 
   steps:
 
-  - name: config cpp=${{ matrix.cpp }} shared=${{ matrix.shared }}
+  - name: config cpp=${{ matrix.cpp }}
     shell: bash
     run: >-
       cmake --preset multi
       -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
-      -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared }}
       -DCMAKE_CXX_STANDARD=${{ matrix.cpp-std }}
 
   - name: Upload log failure
     if: failure()
     uses: actions/upload-artifact@v6
     with:
-      name: cpp-${{ matrix.cpp-std }}-${{ matrix.cpp }}-shared-${{ matrix.shared }}-${{ runner.os }}-CMakeConfigureLog.yaml
+      name: cpp-${{ matrix.cpp-std }}-${{ matrix.cpp }}-${{ runner.os }}-CMakeConfigureLog.yaml
       path: build/CMakeFiles/CMakeConfigureLog.yaml
 
   - name: Debug workflow

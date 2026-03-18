@@ -13,6 +13,8 @@ option(ffilesystem_tidy "Run clang-tidy on the code")
 option(ffilesystem_cppcheck "Run cppcheck on the code")
 option(ffilesystem_iwyu "Run include-what-you-use on the code")
 
+option(ffilesystem_ENABLE_RPATH "Enable RPATH handling for transitive dependencies" on)
+
 option(ffilesystem_BUILD_TESTING "Build tests")
 
 if(NOT DEFINED ffilesystem_googletest_url)

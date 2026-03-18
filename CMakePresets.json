@@ -18,6 +18,16 @@
   "generator": "Ninja"
 },
 {
+  "name": "shared", "inherits": "default",
+  "binaryDir": "${sourceDir}/build-shared",
+  "displayName": "Shared Library",
+  "description": "Build shared library instead of static.",
+  "cacheVariables": {
+    "BUILD_SHARED_LIBS": true,
+    "ffilesystem_ENABLE_RPATH": true
+  }
+},
+{
   "name": "multi", "inherits": "default",
   "displayName": "Ninja Multi-Config",
   "generator": "Ninja Multi-Config"
@@ -44,10 +54,8 @@
 }
 ],
 "buildPresets": [
-  {
-    "name": "default",
-    "configurePreset": "default"
-  },
+  { "name": "default", "configurePreset": "default", "jobs": 0 },
+  { "name": "shared", "configurePreset": "shared", "inherits": "default" },
   {
     "name": "explain",
     "configurePreset": "ninja",
@@ -103,6 +111,7 @@
     "jobs": 0
   }
 },
+{ "name": "shared", "configurePreset": "shared", "inherits": "default" },
 {
   "name": "release", "inherits": "default",
   "configurePreset": "multi",
@@ -118,65 +127,40 @@
   {
     "name": "default",
     "steps": [
-      {
-        "type": "configure",
-        "name": "default"
-      },
-      {
-        "type": "build",
-        "name": "default"
-      },
-      {
-        "type": "test",
-        "name": "default"
-      }
+      { "type": "configure", "name": "default" },
+      { "type": "build", "name": "default" },
+      { "type": "test", "name": "default" }
+    ]
+  },
+  {
+    "name": "shared",
+    "steps": [
+      { "type": "configure", "name": "shared" },
+      { "type": "build", "name": "shared" },
+      { "type": "test", "name": "shared" }
     ]
   },
   {
     "name": "debug",
     "steps": [
-      {
-        "type": "configure",
-        "name": "multi"
-      },
-      {
-        "type": "build",
-        "name": "debug"
-      },
-      {
-        "type": "test",
-        "name": "debug"
-      }
+      { "type": "configure", "name": "multi" },
+      { "type": "build", "name": "debug" },
+      { "type": "test", "name": "debug"}
     ]
   },
   {
     "name": "release",
     "steps": [
-      {
-        "type": "configure",
-        "name": "multi"
-      },
-      {
-        "type": "build",
-        "name": "release"
-      },
-      {
-        "type": "test",
-        "name": "release"
-      }
+      { "type": "configure", "name": "multi" },
+      { "type": "build", "name": "release" },
+      { "type": "test", "name": "release" }
     ]
   },
   {
     "name": "tidy",
     "steps": [
-      {
-        "type": "configure",
-        "name": "tidy"
-      },
-      {
-        "type": "build",
-        "name": "tidy"
-      }
+      { "type": "configure", "name": "tidy" },
+      { "type": "build", "name": "tidy" }
     ]
   }
 ]
