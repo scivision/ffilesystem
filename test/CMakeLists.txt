@@ -62,6 +62,7 @@ endif()
 include(FetchContent)
 
 set(FETCHCONTENT_QUIET OFF)
+set(INSTALL_GTEST OFF)
 
 FetchContent_Declare(googletest URL "${ffilesystem_googletest_url}")
 FetchContent_MakeAvailable(googletest)
