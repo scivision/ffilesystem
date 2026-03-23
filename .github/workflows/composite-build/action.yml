@@ -10,14 +10,15 @@ runs:
   - name: config cpp=${{ matrix.cpp }}
     shell: bash
     run: >-
-      cmake --preset multi
+      cmake --preset default
       -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
       -DCMAKE_CXX_STANDARD=${{ matrix.cpp-std }}
 
   - name: Upload log failure
     if: failure()
-    uses: actions/upload-artifact@v6
+    uses: actions/upload-artifact@v7
     with:
+      archive: false
       name: cpp-${{ matrix.cpp-std }}-${{ matrix.cpp }}-${{ runner.os }}-CMakeConfigureLog.yaml
       path: build/CMakeFiles/CMakeConfigureLog.yaml
 
@@ -35,10 +36,5 @@ runs:
 
   - name: example workflow
     shell: bash
-    run: cmake -G Ninja -S example -B example/build
-
-  - run: cmake --build example/build
-    shell: bash
-
-  - run: ctest --test-dir example/build -V
-    shell: bash
+    run: cmake --workflow default
+    working-directory: example

@@ -1,10 +1,5 @@
 name: ci_windows
 
-env:
-  CMAKE_BUILD_PARALLEL_LEVEL: 4
-  CMAKE_INSTALL_PREFIX: libs
-  CMAKE_PREFIX_PATH: libs
-
 on:
   push:
     paths:
@@ -41,29 +36,19 @@ jobs:
 
     - name: Configure
       run: >-
-        cmake -B build
-        -Dffilesystem_BUILD_TESTING=on
+        cmake --preset release
         -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
         -Dffilesystem_fortran:BOOL=no
-        --log-level=VERBOSE
 
     - name: build Release
-      run: cmake --build build --config Release
-
-    - name: test Release
-      run: ctest --test-dir build -C Release -V
+      run: cmake --workflow release
 
     - name: Install Release
       run: cmake --install build --config Release
 
     - name: example configure
-      run: cmake -S example -B example/build
-
-    - name: example build
-      run: cmake --build example/build --config Release
-
-    - name: example test
-      run: ctest --test-dir example/build -C Release -V
+      run: cmake --workflow default
+      working-directory: example
 
   msys2:
     runs-on: windows-latest
@@ -98,14 +83,13 @@ jobs:
     - *checkout
 
     - name: config cpp=${{ matrix.cpp }}
-      run: >-
-        cmake --preset multi
-        -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
+      run: cmake --preset default -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
 
     - name: Upload log failure
       if: failure()
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
+        archive: false
         name: cpp-${{ matrix.cpp }}-shared-${{ runner.os }}-CMakeConfigureLog.yaml
         path: build/CMakeFiles/CMakeConfigureLog.yaml
 
@@ -119,11 +103,8 @@ jobs:
       run: cmake --install build
 
     - name: example workflow
-      run: cmake -S example -B example/build
-
-    - run: cmake --build example/build
-
-    - run: ctest --test-dir example/build -V
+      run: cmake --workflow default
+      working-directory: example
 
 
   wsl:
@@ -154,11 +135,9 @@ jobs:
     - *checkout
 
     - run: >-
-        cmake -B /tmp/build -G Ninja
-        -Dffilesystem_BUILD_TESTING=on
+        cmake -B /tmp/build -G Ninja --preset default
         -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
         -Dffilesystem_fortran:BOOL=no
-        --log-level=VERBOSE
 
     - run: cmake --build /tmp/build
 

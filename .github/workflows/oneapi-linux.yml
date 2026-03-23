@@ -5,11 +5,7 @@ env:
   CXX: icpx
   FC: ifx
 # https://github.com/oneapi-src/oneapi-ci/blob/master/.github/workflows/build_all.yml
-  CTEST_PARALLEL_LEVEL: 0
-  CMAKE_BUILD_TYPE: Release
   # debug triggers asan build errors in general with oneAPI Linux
-  CMAKE_INSTALL_PREFIX: ~/libs
-  CMAKE_PREFIX_PATH: ~/libs
   CMAKE_GENERATOR: Ninja
 # don't need Ninja but it prints the command lines by default which is good for debugging
 
@@ -73,28 +69,26 @@ jobs:
     - name: Configure CMake
       timeout-minutes: 1
       run: >-
-        cmake --preset default
+        cmake --preset release
         -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
 
     - name: Upload log failure
       if: failure()
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
+        archive: false
         name: ${{ env.CXX }}-cpp-${{ matrix.cpp }}-${{ runner.os }}-CMakeConfigureLog.yaml
         path: build/CMakeFiles/CMakeConfigureLog.yaml
 
     - name: Release workflow
-      run: cmake --workflow default
+      run: cmake --workflow release
 
     - name: install package
       run: cmake --install build
 
     - name: example workflow
-      run: cmake -S example -B example/build
-
-    - run: cmake --build example/build
-
-    - run: ctest --test-dir example/build -V
+      run: cmake --workflow release
+      working-directory: example
 
 # BUILD_SHARED_LIBS=false since as with any C++ / Fortran program with Intel compiler,
 # need to have GCC environment carefully set

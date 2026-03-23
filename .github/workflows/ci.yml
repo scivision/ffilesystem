@@ -1,10 +1,5 @@
 name: ci
 
-env:
-  CMAKE_INSTALL_PREFIX: ~/libs
-  CMAKE_PREFIX_PATH: ~/libs
-  CTEST_NO_TESTS_ACTION: error
-
 on:
   push:
     paths:
@@ -194,7 +189,7 @@ jobs:
 
     strategy:
       matrix:
-        cmake_version: ["3.20.6"]
+        cmake_version: ["3.25.3"]
 
     steps:
 
@@ -203,13 +198,7 @@ jobs:
     - uses: ./.github/workflows/composite-cmake
 
     - name: configure
-      run: $CMAKE -Bbuild -DCMAKE_INSTALL_PREFIX:PATH=$(pwd)/build/local -Dffilesystem_BUILD_TESTING=on --log-level=VERBOSE
-
-    - name: build
-      run: $CMAKE --build build
-
-    - name: test
-      run: $CTEST --test-dir build --output-on-failure
+      run: $CMAKE --workflow --preset default
 
     - name: install package
       run: $CMAKE --install build

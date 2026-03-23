@@ -1,10 +1,5 @@
 name: ci_macos
 
-env:
-  CMAKE_INSTALL_PREFIX: ~/libs
-  CMAKE_PREFIX_PATH: ~/libs
-  CTEST_NO_TESTS_ACTION: error
-
 on:
   push:
     paths:

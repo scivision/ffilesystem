@@ -2,7 +2,7 @@ function(fs_check)
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE EXECUTABLE)
 
-if(NOT DEFINED ffilesystem_abi_ok AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.25)
+if(NOT DEFINED ffilesystem_abi_ok)
 
 message(CHECK_START "checking that compilers can link C++ Filesystem together")
 

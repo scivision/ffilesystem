@@ -8,10 +8,6 @@ unset(CMAKE_REQUIRED_FLAGS)
 unset(CMAKE_REQUIRED_LIBRARIES)
 unset(CMAKE_REQUIRED_DEFINITIONS)
 
-if(CMAKE_VERSION VERSION_LESS 3.25 AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  set(LINUX true)
-endif()
-
 # also MinGW Flang on ARM
 #if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.24 AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 # otherwise failed to link since -lc++ is missing
@@ -29,12 +25,13 @@ else()
 endif()
 
 if(UNIX AND BUILD_SHARED_LIBS)
+  block()
   list(APPEND CMAKE_REQUIRED_LIBRARIES ${CMAKE_DL_LIBS})
 
   set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
   check_cxx_symbol_exists(dladdr "dlfcn.h" ffilesystem_HAVE_DLADDR)
 
-  unset(CMAKE_REQUIRED_DEFINITIONS)
+  endblock()
 endif()
 
 # --- deeper filesystem check: C, C++ and Fortran compiler ABI compatibility
@@ -51,20 +48,23 @@ endif()
 
 elseif(LINUX OR ANDROID)
 
+  block()
   set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
 
   check_symbol_exists(copy_file_range "unistd.h" ffilesystem_HAVE_COPY_FILE_RANGE)
 
   check_symbol_exists(statx "sys/stat.h;fcntl.h" ffilesystem_HAVE_STATX)
-
+  endblock()
 endif()
 
 
 if(WIN32)
   check_cxx_symbol_exists(GetFileInformationByName "Windows.h" ffilesystem_HAVE_GetFileInformationByName)
 elseif(LINUX OR ANDROID)
+  block()
   set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
   check_cxx_symbol_exists(statx "sys/stat.h;fcntl.h" ffilesystem_HAVE_STATX)
+  endblock()
 endif()
 
 
@@ -154,9 +154,24 @@ endif()
 
 # --- code coverage
 if(ffilesystem_coverage)
-  include(CodeCoverage)
-  append_coverage_compiler_flags()
-  set(COVERAGE_EXCLUDES ${PROJECT_SOURCE_DIR}/src/tests)
+  if(CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
+      message(STATUS "${PROJECT_NAME} Clang coverage")
+      target_compile_options(ffilesystem PRIVATE -fprofile-instr-generate -fcoverage-mapping)
+      target_link_options(ffilesystem PRIVATE -fprofile-instr-generate)
+  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      message(STATUS "${PROJECT_NAME} GCC coverage")
+      target_compile_options(ffilesystem PRIVATE --coverage -O0 -g)
+      target_link_options(ffilesystem PRIVATE --coverage)
+  else()
+      message(FATAL_ERROR "Code coverage is only supported with Clang or GCC")
+  endif()
+
+  # Optional: custom target that runs tests + coverage collection
+  add_custom_target(coverage
+      COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --test-dir ${PROJECT_BINARY_DIR}
+      COMMAND ${CMAKE_COMMAND} -E echo "Generating coverage report..."
+      COMMAND ${CMAKE_COMMAND} -E env GCOV_PREFIX=${PROJECT_BINARY_DIR}/coverage gcovr -r ${CMAKE_SOURCE_DIR} --html --html-details -o ${PROJECT_BINARY_DIR}/coverage/coverage.html
+  )
 endif()
 
 # --- clang-tidy

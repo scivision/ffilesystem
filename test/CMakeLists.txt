@@ -89,7 +89,7 @@ foreach(t IN LISTS test_dirs)
 add_subdirectory(${t})
 
 # --- Windows shared DLLs
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.22 AND BUILD_SHARED_LIBS AND (CYGWIN OR WIN32))
+if(BUILD_SHARED_LIBS AND (CYGWIN OR WIN32))
 
   get_property(n DIRECTORY ${t} PROPERTY TESTS)
 
