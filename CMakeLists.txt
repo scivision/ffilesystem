@@ -215,6 +215,7 @@ endif()
 # ws2_32: gethostname
 
 if(ffilesystem_extra AND APPLE)
+  # for is_removable
   target_link_libraries(ffilesystem PRIVATE "$<LINK_LIBRARY:FRAMEWORK,DiskArbitration,CoreFoundation>")
 endif()
 

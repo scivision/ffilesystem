@@ -121,7 +121,7 @@ ino_t fs_inode(std::string_view path)
   const auto w1 = fs_win32_to_wide(path);
 
   if (GetFileInformationByName(w1.data(), FileStatBasicByNameInfo, &f1, sizeof(f1)))
-    return f1.FileId.QuadPart;
+    return static_cast<ino_t>(f1.FileId.QuadPart);
 
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
