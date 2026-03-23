@@ -27,27 +27,24 @@ jobs:
 
     # github actions generally broken for shared lib, even when exe in cwd
 
-    env:
-      CMAKE_GENERATOR: "Visual Studio 18 2026"
-
     steps:
     - &checkout
       uses: actions/checkout@v6
 
     - name: Configure
       run: >-
-        cmake --preset release
+        cmake --preset release -G "Visual Studio 18 2026"
         -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
         -Dffilesystem_fortran:BOOL=no
 
     - name: build Release
-      run: cmake --workflow release
+      run: cmake --workflow msvc
 
     - name: Install Release
       run: cmake --install build --config Release
 
     - name: example configure
-      run: cmake --workflow default
+      run: cmake --workflow msvc
       working-directory: example
 
   msys2:
@@ -66,7 +63,6 @@ jobs:
       CC: ${{ matrix.compiler.cc }}
       CXX: ${{ matrix.compiler.cxx }}
       FC: ${{ matrix.compiler.fc }}
-      CMAKE_GENERATOR: Ninja
 
     steps:
     - uses: msys2/setup-msys2@v2
@@ -103,7 +99,7 @@ jobs:
       run: cmake --install build
 
     - name: example workflow
-      run: cmake --workflow default
+      run: cmake --workflow release
       working-directory: example
 
 

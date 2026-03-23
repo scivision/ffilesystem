@@ -6,8 +6,6 @@ env:
   FC: ifx
 # https://github.com/oneapi-src/oneapi-ci/blob/master/.github/workflows/build_all.yml
   # debug triggers asan build errors in general with oneAPI Linux
-  CMAKE_GENERATOR: Ninja
-# don't need Ninja but it prints the command lines by default which is good for debugging
 
 
 on:
