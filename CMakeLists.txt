@@ -203,8 +203,11 @@ $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 target_link_libraries(ffilesystem PUBLIC
 ${GNU_stdfs}
 ${CMAKE_DL_LIBS}
-"$<$<BOOL:${WIN32}>:Secur32;Shlwapi;Userenv;Advapi32;ws2_32>"
 )
+# don't put generator expressions in link_libraries, causes error when consuming by FetchContent
+if(WIN32)
+  target_link_libraries(ffilesystem PRIVATE Secur32 Shlwapi Userenv Advapi32 ws2_32)
+endif()
 # Secur32: GetUserNameExW
 # Shlwapi: PathIsUNC
 # Userenv: GetUserProfileDirectoryW

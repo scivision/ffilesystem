@@ -29,9 +29,11 @@ FILE ${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}-targets.cmake
 NAMESPACE ${PROJECT_NAME}::
 )
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.3")
-  install(PACKAGE_INFO ${PROJECT_NAME} EXPORT ${PROJECT_NAME}-targets)
-endif()
+# don't do this till generator expressions allowed in link_libraries
+# https://gitlab.kitware.com/cmake/cmake/-/commit/dcadde3662a61d403b6995ced385a0f953b8e172
+# if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.3")
+#   install(PACKAGE_INFO ${PROJECT_NAME} EXPORT ${PROJECT_NAME}-targets)
+# endif()
 
 # --- CPack
 
