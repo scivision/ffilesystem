@@ -230,11 +230,7 @@ bool fs_touch(std::string_view);
 
 std::string fs_to_cygpath(std::string_view);
 
-std::string fs_to_narrow(std::wstring_view);
-
 std::string fs_to_winpath(std::string_view);
-
-std::wstring fs_to_wide(std::string_view);
 
 std::string fs_trim(std::string_view r);
 
