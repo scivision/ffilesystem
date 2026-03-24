@@ -8,17 +8,18 @@
 #include <array>
 #include <numeric>
 #include <iomanip>
+#include <sstream>
 
 #include <variant>
 #include <unordered_map>
 
 #include "ffilesystem.h"
 
+constexpr int kBenchBatches = 9;
+
 
 void print_cpp(std::chrono::duration<double> avg_t,
                std::chrono::duration<double> med_t,
-               int n,
-               int batches,
                std::string_view path,
                std::string_view func,
                std::string_view w,
@@ -29,26 +30,41 @@ void print_cpp(std::chrono::duration<double> avg_t,
   const double med_us =
     std::chrono::duration_cast<std::chrono::duration<double, std::micro>>(med_t).count();
 
-  std::cout << fs_backend() << ": " << batches << " x " << n << " x "
-            << func << "(" << path << ") = ";
+  std::string unit;
+  double avg_v = 0.0;
+  double med_v = 0.0;
+  int prec = 3;
 
-  if (w.empty())
-    std::cout << b;
-  else
-    std::cout << w;
+  if (avg_us < 1.0 && med_us < 1.0) {
+    unit = "ns";
+    avg_v = avg_us * 1000.0;
+    med_v = med_us * 1000.0;
+    prec = 1;
+  } else {
+    unit = "us";
+    avg_v = avg_us;
+    med_v = med_us;
+    prec = 3;
+  }
 
   const auto old_flags = std::cout.flags();
   const auto old_prec = std::cout.precision();
 
-  if (avg_us < 1.0 && med_us < 1.0) {
-    const double avg_ns = avg_us * 1000.0;
-    const double med_ns = med_us * 1000.0;
-    std::cout << ": avg " << std::fixed << std::setprecision(1) << avg_ns
-              << " ns, med " << med_ns << " ns\n";
-  } else {
-    std::cout << ": avg " << std::fixed << std::setprecision(3) << avg_us
-              << " us, med " << med_us << " us\n";
-  }
+  std::ostringstream avg_cell;
+  avg_cell << std::fixed << std::setprecision(prec) << avg_v << ' ' << unit;
+
+  std::ostringstream med_cell;
+  med_cell << std::fixed << std::setprecision(prec) << med_v << ' ' << unit;
+
+  std::cout << std::left << std::setw(14) << fs_backend()
+            << std::right << std::setw(12) << avg_cell.str()
+            << std::setw(12) << med_cell.str()
+            << "  " << func << "(" << path << ") = ";
+  if (w.empty())
+    std::cout << b;
+  else
+    std::cout << w;
+  std::cout << "\n";
 
   std::cout.flags(old_flags);
   std::cout.precision(old_prec);
@@ -57,7 +73,6 @@ void print_cpp(std::chrono::duration<double> avg_t,
 
 std::chrono::duration<double> bench_cpp(int n, std::string_view path, std::string_view fname, bool verbose)
 {
-constexpr int batches = 9;
 auto invalid = std::chrono::duration<double>::max();
 
 constexpr bool strict = false;
@@ -106,9 +121,9 @@ if (std::holds_alternative<std::string>(result)) {
 }
 
 std::vector<std::chrono::duration<double>> per_call;
-per_call.reserve(batches);
+per_call.reserve(kBenchBatches);
 
-for (int batch = 0; batch < batches; ++batch) {
+for (int batch = 0; batch < kBenchBatches; ++batch) {
   auto t0 = std::chrono::steady_clock::now();
 
   for (int i = 0; i < n; ++i) {
@@ -138,7 +153,7 @@ if (per_call.size() % 2 == 1) {
 }
 
 if (verbose)
-  print_cpp(avg, med, n, batches, path, fname, h, b);
+  print_cpp(avg, med, path, fname, h, b);
 
 return avg;
 }
@@ -156,6 +171,8 @@ if(argc > 1)
 std::string_view path;
 
 std::cout << fs_compiler() << "\n";
+std::cout << "backend            avg      median\n";
+std::cout << "(n=" << n << ", batches=" << kBenchBatches << ")\n";
 
 std::vector<std::string_view> funcs;
 if(argc > 3)
