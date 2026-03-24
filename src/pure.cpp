@@ -250,7 +250,8 @@ std::string fs_with_suffix(std::string_view path, std::string_view new_suffix)
     r += stem;
   }
 
-  return r + std::string(new_suffix);
+  r += new_suffix;
+  return r;
 
 #endif
 }
