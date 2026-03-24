@@ -80,6 +80,7 @@ constexpr bool strict = false;
 using fs_function = std::function<std::variant<std::string, bool>(std::string_view)>;
 
 std::unordered_map<std::string_view, fs_function> fs_function_map = {
+  {"absolute", [=](std::string_view p) { return fs_absolute(p); }},
   {"canonical", [=](std::string_view p) { return fs_canonical(p, strict); }},
   {"resolve", [=](std::string_view p) { return fs_resolve(p, strict); }},
   {"drop_slash", [](std::string_view p) { return fs_drop_slash(p); }},
@@ -178,12 +179,14 @@ std::vector<std::string_view> funcs;
 if(argc > 3)
   funcs = {argv[3]};
 else
-  funcs = {"canonical", "resolve", "which", "expanduser", "normal", "cwd", "homedir", "parent", "file_name", "reserved", "drop_slash"};
+  funcs = {"absolute", "canonical", "resolve", "which", "expanduser", "normal", "cwd",
+           "homedir", "parent", "file_name", "reserved", "drop_slash",
+           "exists", "is_dir", "is_char", "is_file", "is_symlink", "read_symlink"};
 
 for (std::string_view func : funcs)
   {
   // in sorted ascending order for binary search
-  constexpr std::array<std::string_view, 7> tf = {
+  constexpr std::array<std::string_view, 8> tf = {
     "canonical", "drop_slash", "expanduser", "file_name", "normal", "parent", "resolve"
   };
 
@@ -191,11 +194,11 @@ for (std::string_view func : funcs)
     path = argv[2];
   else {
     if (std::binary_search(tf.begin(), tf.end(), func))
-      path = "~/..";
+      path = "./..";
     else if (func == "which")
       path = (fs_is_windows()) ? "cmake.exe" : "sh";
     else
-      path = "";
+      path = ".";
   }
 
  bench_cpp(n, path, func, true);
