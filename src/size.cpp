@@ -93,7 +93,7 @@ bool fs_is_empty(std::string_view path)
 #else
 
   if (!fs_is_dir(path))
-    return fs_file_size(path) == 0 && fs_is_file(path);
+    return fs_is_file(path) &&fs_file_size(path) == 0;
 
   // directory empty
 #if defined(_WIN32)
@@ -148,7 +148,6 @@ bool fs_is_empty(std::string_view path)
     if (fs_is_dir(std::string(path) + "/" + entry->d_name))
 #endif
     {
-      // std::set is much slower than a simple if
       if (std::string_view n(entry->d_name); n == "." || n == "..")
         continue;
       // directory that is not . or ..
