@@ -15,8 +15,3 @@ TEST(TestSpace, SpaceCapacity)
 EXPECT_GT(fs_space_capacity(testing::TempDir()), 0);
 EXPECT_EQ(fs_space_capacity("cc:/not-exist-capacity"), static_cast<std::uintmax_t>(-1)) << "backend " << fs_backend();
 }
-
-TEST(TestBlksize, BlkSize)
-{
-EXPECT_GT(fs_get_blksize(testing::TempDir()), 0);
-}

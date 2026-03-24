@@ -37,4 +37,7 @@ EXPECT_TRUE(fs_equivalent("..", fs_parent(cwd)));
 EXPECT_TRUE(fs_equivalent(".", "./"));
 EXPECT_TRUE(fs_equivalent(".", cwd));
 EXPECT_FALSE(fs_equivalent("..", cwd));
+
+// NOTE: This can be false on networked drive or Windows Dev Drive
+// fs_equivalent(".", fs_realpath("."));
 }
