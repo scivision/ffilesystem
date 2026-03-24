@@ -58,7 +58,6 @@ std::string fs_get_homedir()
 
 std::string fs_get_profile_dir()
 {
-  // has no trailing slash
 
 #if defined(_WIN32)
   // https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-getuserprofiledirectorya
@@ -117,7 +116,14 @@ std::string fs_expanduser(std::string_view path)
   while(i < path.length() && (path[i] == '/' || path[i] == fs_filesep()))
     i++;
 
-  std::string e = home + "/" + std::string(path).substr(i);
+  std::string e = home;
+
+  // e.reserve(home.size() + 1 + path.size() - i);
+  // the .reserve makes no measureable improvement even at nanosecond scale.
+  if (e.back() != '/' && e.back() != fs_filesep())
+    e.push_back('/');
+
+  e += path.substr(i);
 
   return e;
 }
