@@ -222,7 +222,8 @@ std::string fs_join(std::string_view path, std::string_view other)
   if(p.back() != '/')
     p.push_back('/');
 
-  return p.append(other);
+  p += other;
+  return p;
 #endif
 }
 

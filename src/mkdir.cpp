@@ -58,7 +58,9 @@ else {
   bool ok = false;
 
   for(const auto& p : parts){
-    buf.append(p).push_back('/');
+    buf += p;
+    buf.push_back('/');
+
     if(fs_trace) std::cout << "TRACE:mkdir " << buf << "\n";
     // create directory
 #if defined(_WIN32)

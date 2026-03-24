@@ -69,7 +69,8 @@ fs_normal(std::string_view path)
      r.push_back('/');
 
   for (const auto& p : parts)
-    r.append(p).push_back('/');
+    r += p;
+    r.push_back('/');
 
 #endif
 
