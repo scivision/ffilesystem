@@ -53,8 +53,7 @@ std::unordered_map<std::string_view, fs_function> fs_function_map = {
   {"which", [](std::string_view p) { return fs_which(p); }},
   {"homedir", [](std::string_view) { return fs_get_homedir(); }},
   {"expanduser", [](std::string_view p) { return fs_expanduser(p); }},
-  {"cwd", [](std::string_view) { return fs_get_cwd(); }},
-  {"is_reserved", [](std::string_view p) { return fs_is_reserved(p); }}
+  {"cwd", [](std::string_view) { return fs_get_cwd(); }}
 };
 
 // warmup
@@ -62,37 +61,31 @@ std::string h;
 bool b = false;
 
   auto it = fs_function_map.find(fname);
-  if (it != fs_function_map.end()) {
-    auto result = it->second(path);
-    if (std::holds_alternative<std::string>(result)){
-      h = std::get<std::string>(result);
-      if(h.empty()){
-        std::cerr << "ERROR: " << fname << " " << path << " failed on warmup\n";
-        return t;
-      }
-    } else
-      b = std::get<bool>(result);
-  } else {
+  if (it == fs_function_map.end()) {
     std::cerr << "Error: unknown function " << fname << "\n";
     return t;
+  }
+
+  auto result = it->second(path);
+  if (std::holds_alternative<std::string>(result)){
+    h = std::get<std::string>(result);
+    if(h.empty()){
+      std::cerr << "ERROR: " << fname << " " << path << " failed on warmup\n";
+      return t;
+    }
+  } else {
+    b = std::get<bool>(result);
   }
 
 for (int i = 0; i < n; ++i)
 {
   auto t0 = std::chrono::steady_clock::now();
 
-  auto it = fs_function_map.find(fname);
-  if (it != fs_function_map.end()) {
-    auto result = it->second(path);
-    if (std::holds_alternative<std::string>(result))
-      h = std::get<std::string>(result);
-    else
-      b = std::get<bool>(result);
-  } else {
-    std::cerr << "Error: unknown function " << fname << "\n";
-    return t;
-  }
-
+  auto iter_result = it->second(path);
+  if (std::holds_alternative<std::string>(iter_result))
+    h = std::get<std::string>(iter_result);
+  else
+    b = std::get<bool>(iter_result);
   auto t1 = std::chrono::steady_clock::now();
   t = std::min(t, std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0));
 }
@@ -121,7 +114,7 @@ std::vector<std::string_view> funcs;
 if(argc > 3)
   funcs = {argv[3]};
 else
-  funcs = {"canonical", "resolve", "which", "expanduser", "normal", "cwd", "homedir", "parent", "file_name", "is_reserved", "drop_slash"};
+  funcs = {"canonical", "resolve", "which", "expanduser", "normal", "cwd", "homedir", "parent", "file_name", "reserved", "drop_slash"};
 
 for (std::string_view func : funcs)
   {
