@@ -7,7 +7,7 @@ endif()
 
 project(ffilesystem
 LANGUAGES C CXX
-VERSION 6.4.0
+VERSION 6.4.1
 )
 
 include(GNUInstallDirs)
@@ -189,6 +189,13 @@ EXPORT_NAME filesystem
 VERSION ${PROJECT_VERSION}
 WINDOWS_EXPORT_ALL_SYMBOLS ON
 )
+if(ffilesystem_warning_as_error)
+  set_property(TARGET ffilesystem PROPERTY COMPILE_WARNING_AS_ERROR true)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL 4.0)
+    set_property(TARGET ffilesystem PROPERTY LINK_WARNING_AS_ERROR true)
+  endif()
+endif()
+
 if(WIN32 OR CYGWIN)
   target_compile_definitions(ffilesystem PRIVATE $<$<COMPILE_LANGUAGE:CXX>:FS_DLL_NAME="$<TARGET_FILE_NAME:ffilesystem>">)
 endif()

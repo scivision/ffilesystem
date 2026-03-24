@@ -6,14 +6,12 @@
   "name": "default",
   "generator": "Ninja",
   "binaryDir": "build",
-  "installDir": "${sourceDir}/build/local",
+  "installDir": "${fileDir}/build/local",
   "cacheVariables": {
-    "CMAKE_COMPILE_WARNING_AS_ERROR": true,
-    "CMAKE_LINK_WARNING_AS_ERROR": true,
+    "ffilesystem_warning_as_error": true,
     "ffilesystem_fallback": false,
     "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE",
-    "ffilesystem_BUILD_TESTING": true,
-    "CMAKE_PREFIX_PATH": "${fileDir}/build/local"
+    "ffilesystem_BUILD_TESTING": true
   }
 },
 { "name": "debug", "inherits": "default",
@@ -114,7 +112,6 @@
     "noTestsAction": "error",
     "scheduleRandom": true,
     "stopOnFailure": false,
-    "timeout": 60,
     "jobs": 0
   }
 },
