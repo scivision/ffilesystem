@@ -16,29 +16,42 @@
 
 
 void print_cpp(std::chrono::duration<double> avg_t,
-std::chrono::duration<double> med_t,
-int n,
-int batches,
-std::string_view path,
-std::string_view func,
-std::string_view w,
-bool b)
+               std::chrono::duration<double> med_t,
+               int n,
+               int batches,
+               std::string_view path,
+               std::string_view func,
+               std::string_view w,
+               bool b)
 {
-const double avg_us =
-std::chrono::duration_cast<std::chrono::duration<double, std::micro>>(avg_t).count();
-const double med_us =
-std::chrono::duration_cast<std::chrono::duration<double, std::micro>>(med_t).count();
+  const double avg_us =
+    std::chrono::duration_cast<std::chrono::duration<double, std::micro>>(avg_t).count();
+  const double med_us =
+    std::chrono::duration_cast<std::chrono::duration<double, std::micro>>(med_t).count();
 
-std::cout << fs_backend() << ": " << batches << " x " << n << " x "
-          << func << "(" << path << ") = ";
+  std::cout << fs_backend() << ": " << batches << " x " << n << " x "
+            << func << "(" << path << ") = ";
 
-if (w.empty())
-  std::cout << b;
-else
-  std::cout << w;
+  if (w.empty())
+    std::cout << b;
+  else
+    std::cout << w;
 
-std::cout << ": avg " << std::fixed << std::setprecision(3) << avg_us
-          << " us, med " << med_us << " us\n";
+  const auto old_flags = std::cout.flags();
+  const auto old_prec = std::cout.precision();
+
+  if (avg_us < 1.0 && med_us < 1.0) {
+    const double avg_ns = avg_us * 1000.0;
+    const double med_ns = med_us * 1000.0;
+    std::cout << ": avg " << std::fixed << std::setprecision(1) << avg_ns
+              << " ns, med " << med_ns << " ns\n";
+  } else {
+    std::cout << ": avg " << std::fixed << std::setprecision(3) << avg_us
+              << " us, med " << med_us << " us\n";
+  }
+
+  std::cout.flags(old_flags);
+  std::cout.precision(old_prec);
 }
 
 
