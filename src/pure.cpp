@@ -133,7 +133,7 @@ std::string fs_root(std::string_view path)
 #else
   if (std::string r = fs_root_name(path); r.empty()){
     if (fs_slash_first(path))
-      return std::string(path.substr(0, 1));
+      return std::string(1, path.front());
 
     return {};
   } else if (fs_is_windows()) {

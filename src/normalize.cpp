@@ -68,9 +68,10 @@ fs_normal(std::string_view path)
    if (fs_slash_first(path))
      r.push_back('/');
 
-  for (const auto& p : parts)
+  for (const auto& p : parts){
     r += p;
     r.push_back('/');
+  }
 
 #endif
 
