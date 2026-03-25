@@ -3,11 +3,16 @@
 namespace Filesystem = std::filesystem;
 #else
 
-#include <cstdio> // for std::remove, std::rename
+#include <cstdio> // for _unlink, std::rename
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <direct.h> // for rmdir
+#define unlink _unlink
+#define rmdir _rmdir
+#else
+#include <unistd.h> // for unlink
 #endif
 
 #endif
@@ -17,6 +22,7 @@ namespace Filesystem = std::filesystem;
 
 #include "ffilesystem.h"
 
+#include <iostream>
 
 bool
 fs_remove(std::string_view path)
@@ -29,26 +35,16 @@ fs_remove(std::string_view path)
   if(Filesystem::remove(path, ec) && !ec) FFS_LIKELY
     return true;
 #else
+   std::string cpath(path);
   // https://en.cppreference.com/w/cpp/io/c/remove
-  if(std::remove(path.data()) == 0)
-    return true;
-
-#if defined(_WIN32)
-  // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-deletefilea
-  // may need these when deleting a symlink
-  // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsymboliclinka#remarks
-  std::wstring const w = fs_win32_to_wide(path);
-
-  if(fs_is_file(path)){
-    if(DeleteFileW(w.data()) != 0)
+  if (fs_is_dir(path)) {
+    // directory must be empty
+    // https://www.man7.org/linux/man-pages/man2/rmdir.2.html
+    // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/rmdir-wrmdir
+    if (rmdir(cpath.c_str()) == 0)
       return true;
-  } else if(fs_is_dir(path)){
-    if(RemoveDirectoryW(w.data()) != 0)
+  } else if(unlink(cpath.c_str()) == 0)
       return true;
-  }
-
-#endif
-
 #endif
 
   fs_print_error(path, __func__, ec);
