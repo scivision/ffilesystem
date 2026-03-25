@@ -50,6 +50,11 @@ TEST_F(TestOnDisk, Exists)
   EXPECT_TRUE(fs_exists(dir));
   EXPECT_FALSE(fs_exists("ffs_exists_not-exist-file"));
   EXPECT_FALSE(fs_exists(""));
+
+  std::string in2 = "./invalid-memory-trailing-non-null-terminated-string_view";
+  std::string_view v(in2.data(), 2);
+  ASSERT_NE(v.back(), '\0') << "v should not be null-terminated\n";
+  EXPECT_TRUE(fs_exists(v)) << "fs_exists(" << v << ") should be true\n";
 }
 
 TEST_F(TestOnDisk, IsDir)

@@ -116,9 +116,13 @@ fs_exists(std::string_view path)
         (fs_is_msvc() && (fs_is_appexec_alias(path) || fs_is_char_device(path)));
   if (ec && ec != std::errc::no_such_file_or_directory)
     fs_print_error(path, __func__, ec);
-#elif defined(_WIN32)
+#else
+
+  const std::string cpath(path);
+
+#if defined(_WIN32)
 // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
-  ok = _access_s(path.data(), 0) == 0 || fs_is_char_device(path);
+  ok = _access_s(cpath.c_str(), 0) == 0 || fs_is_char_device(path);
 
   // to use the approach below, need more advanced techniques like
   // https://gitlab.kitware.com/cmake/cmake/-/blob/master/Source/kwsys/SystemTools.cxx#L1408
@@ -133,9 +137,11 @@ fs_exists(std::string_view path)
   // }
 #else
   // https://www.man7.org/linux/man-pages/man2/access.2.html
-  ok = access(path.data(), F_OK) == 0;
+  ok = access(cpath.c_str(), F_OK) == 0;
   if (!ok && errno != ENOENT && errno != ENOTDIR)
     fs_print_error(path, __func__);
+#endif
+
 #endif
 
   return ok;
