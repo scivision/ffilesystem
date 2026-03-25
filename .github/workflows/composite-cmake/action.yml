@@ -3,7 +3,7 @@ description: Install CMake from GitHub releases
 
 runs:
 
-  using: "composite"
+  using: composite
 
   steps:
   - name: environment

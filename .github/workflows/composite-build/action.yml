@@ -3,7 +3,7 @@ description: "Build, test, install and example workflow for CMake presets"
 
 runs:
 
-  using: "composite"
+  using: composite
 
   steps:
 

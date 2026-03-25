@@ -526,13 +526,15 @@ p%is_absolute()
 is_absolute("my/path")
 ```
 
+## Equivalent paths
+
 Does path "p" *resolve* to the same path as "other".
 Does not expanduser().
 To be true:
 
 * path must exist
 * path must be traversable  E.g. "a/b/../c" resolves to "a/c" iff a/b also exists.
-* symlink resolves to its target
+* symlink resolves to its target on the SAME drive - networked drives and Windows Dev Drives map to different drives (even if virtual drive on same physical drive), so they do not resolve to the same path and hence report "false" for same_file() or fs_equivalent() in C++.
 
 ```fortran
 p%same_file(other)

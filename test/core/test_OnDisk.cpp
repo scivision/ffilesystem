@@ -17,7 +17,9 @@ class TestOnDisk : public testing::Test {
       std::string test_suite_name_ = info->test_suite_name();
       std::string n = test_suite_name_ + "-" + test_name_;
 
-      cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
+      cwd = fs_get_cwd();
+      ASSERT_FALSE(cwd.empty());
+
       if (fs_is_windows()) {
         auto d = fs_getenv("SystemDrive");
         ASSERT_TRUE(d.has_value()) << "Failed to get SystemDrive";
@@ -128,10 +130,18 @@ EXPECT_TRUE(fs_is_dir(dir + "/test-filesystem-dir/hello"));
 
 TEST_F(TestOnDisk, Realpath){
 
-EXPECT_EQ(fs_realpath("."), cwd);
+std::string expected = fs_realpath(cwd);
+ASSERT_FALSE(expected.empty());
+
+std::string r = fs_realpath(".");
+ASSERT_FALSE(r.empty());
+EXPECT_EQ(r, expected) << r << " vs " << expected;
+
 EXPECT_TRUE(fs_realpath("not-exist-realpath/b/c").empty());
 
-EXPECT_LT(fs_realpath("..").length(), cwd.length());
+r = fs_realpath("..");
+ASSERT_FALSE(r.empty());
+EXPECT_EQ(r, fs_parent(expected)) << r;
 }
 
 
