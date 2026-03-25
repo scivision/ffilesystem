@@ -308,11 +308,16 @@ bool fs_is_writable(std::string_view path)
 #endif
 
   return (s.permissions() & (owner_write | group_write | others_write)) != none;
-#elif defined(_WIN32)
-  // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
-  return _access_s(path.data(), 2) == 0;
 #else
-  return access(path.data(), W_OK) == 0;
+
+const std::string cpath(path);
+
+#if defined(_WIN32)
+  // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
+  return _access_s(cpath.c_str(), 2) == 0;
+#else
+  return access(cpath.c_str(), W_OK) == 0;
+#endif
 #endif
 }
 

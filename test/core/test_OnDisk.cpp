@@ -112,6 +112,8 @@ if(fs_win32_long_paths_enabled()){
   EXPECT_TRUE(fs_is_writable(s)) << s;
 }
 
+EXPECT_TRUE(fs_is_writable(nonnull2)) << "fs_is_writable(" << nonnull2 << ") should be true";
+
 }
 
 
