@@ -76,9 +76,10 @@ TEST_F(TestFifo, IsFIFO)
 TEST_F(TestFifo, IsFile)
 {
 
-  if(fs_is_msvc() && fs_backend() == "<filesystem>")
-    GTEST_SKIP() << "MSVC std::filesystem incorrectly identifies FIFOs as regular files.";
-
+  if(fs_is_windows() && fs_backend() == "<filesystem>" &&
+    (fs_is_msvc() || (fs_is_mingw() && fs_compiler().substr(0, 5) == "Clang"))) {
+       GTEST_SKIP() << "MSVC or Windows MinGW Clang std::filesystem incorrectly identifies FIFOs as regular files.";
+    }
   EXPECT_FALSE(fs_is_file(name));
 }
 

@@ -28,6 +28,10 @@ TEST(TestChar, IsFile)
 TEST(TestChar, Exists)
 {
   if (fs_is_windows()){
+     if(fs_backend() == "<filesystem>" && fs_is_mingw() && fs_compiler().substr(0, 5) == "Clang") {
+       GTEST_SKIP() << "MSVC or Windows MinGW Clang std::filesystem incorrectly identifies character devices.";
+    }
+
     EXPECT_TRUE(fs_exists("NUL"));
     EXPECT_TRUE(fs_exists("CONIN$"));
   } else {
