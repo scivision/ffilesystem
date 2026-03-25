@@ -1,13 +1,16 @@
 #include "ffilesystem.h"
 
 #include <string>
+#include <string_view>
 
 #include <gtest/gtest.h>
 
 namespace {
 class TestOnDisk : public testing::Test {
   protected:
-    std::string file, dir, cwd, sys_drive;
+    std::string file, dir, cwd, sys_drive, in2;
+    std::string_view nonnull2;
+
     void SetUp() override {
       auto inst = testing::UnitTest::GetInstance();
       auto info = inst->current_test_info();
@@ -35,6 +38,10 @@ class TestOnDisk : public testing::Test {
       dir = cwd + "/ffs_" + n + "_dir";
       ASSERT_TRUE(fs_mkdir(dir));
       ASSERT_TRUE(fs_is_dir(dir));
+
+      in2 = "./invalid-memory-trailing-non-null-terminated-string_view";
+      nonnull2 = std::string_view(in2.data(), 2);
+      ASSERT_NE(nonnull2.back(), '\0') << "nonnull2 should not be null-terminated\n";
     }
     void TearDown() override {
       fs_set_cwd(cwd);
@@ -51,10 +58,7 @@ TEST_F(TestOnDisk, Exists)
   EXPECT_FALSE(fs_exists("ffs_exists_not-exist-file"));
   EXPECT_FALSE(fs_exists(""));
 
-  std::string in2 = "./invalid-memory-trailing-non-null-terminated-string_view";
-  std::string_view v(in2.data(), 2);
-  ASSERT_NE(v.back(), '\0') << "v should not be null-terminated\n";
-  EXPECT_TRUE(fs_exists(v)) << "fs_exists(" << v << ") should be true\n";
+  EXPECT_TRUE(fs_exists(nonnull2)) << "fs_exists(" << nonnull2 << ") should be true\n";
 }
 
 TEST_F(TestOnDisk, IsDir)
@@ -93,6 +97,9 @@ if(fs_win32_long_paths_enabled()){
 }
 
 EXPECT_TRUE(fs_is_readable("/"));
+
+EXPECT_TRUE(fs_is_readable(nonnull2)) << "fs_is_readable(" << nonnull2 << ") should be true";
+
 }
 
 TEST_F(TestOnDisk, IsWritable)

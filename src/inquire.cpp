@@ -257,7 +257,8 @@ bool fs_is_readable(std::string_view path)
   // otherwise ::filesystem works for Windows ::perms,
   // but to be most efficient and deduplicate code, we implement like this.
   // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
-  return _access_s(path.data(), 4) == 0;
+  const std::string cpath(path);
+  return _access_s(cpath.c_str(), 4) == 0;
 
 #elif defined(HAVE_CXX_FILESYSTEM)
 
@@ -279,7 +280,8 @@ bool fs_is_readable(std::string_view path)
   return (s.permissions() & (owner_read | group_read | others_read)) != none;
 
 #else
-  return access(path.data(), R_OK) == 0;
+  const std::string cpath(path);
+  return access(cpath.c_str(), R_OK) == 0;
 #endif
 }
 
