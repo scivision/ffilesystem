@@ -23,7 +23,7 @@ TEST_F(TestSetCwd, SetCwd)
 
 EXPECT_FALSE(fs_set_cwd(""));
 
-EXPECT_TRUE(fs_set_cwd(dir));
+ASSERT_TRUE(fs_set_cwd(dir));
 
 EXPECT_TRUE(fs_equivalent(fs_get_cwd(), dir)) << "cwd " << fs_get_cwd() << " != " << dir << " canonical " << fs_canonical(dir);
 

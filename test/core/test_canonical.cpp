@@ -11,8 +11,16 @@ class TestCanonical : public testing::Test {
     std::string cwd, cwdp;
 
     void SetUp() override {
-      cwd = fs_realpath(fs_get_cwd());
-      cwd = fs_as_posix(cwd);
+      if(fs_is_windows()){
+        cwd = fs_realpath(::testing::TempDir());
+        // realpath for Dev Drive, network drive, short-name on Windows CI, ...
+
+        cwd = fs_drop_slash(fs_as_posix(cwd));
+        ASSERT_TRUE(fs_set_cwd(cwd));
+      } else {
+        // haven't needed realpath yet on non-Windows. Maybe for network drive?
+        cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
+      }
       ASSERT_FALSE(cwd.empty());
 
       cwdp = fs_parent(cwd);
