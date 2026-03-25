@@ -337,17 +337,18 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 #else
 
   int r = 0;
+  const std::string cpath(path);
 
 #if defined(HAVE_STATX)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
   struct statx sx;
-  r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_NLINK, &sx);
+  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_NLINK, &sx);
   if (r == 0)
     return sx.stx_nlink;
 #endif
 
   if (r == 0 || errno == ENOSYS){
-    if (struct stat s; !::stat(path.data(), &s))
+    if (struct stat s; !::stat(cpath.c_str(), &s))
       return s.st_nlink;
   }
 
