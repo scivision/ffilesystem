@@ -8,15 +8,19 @@
 
 class TestCanonical : public testing::Test {
   protected:
-    std::string cwd, cwdp;
+    std::string cwd, cwdp, realcwd;
 
     void SetUp() override {
-      cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
+      cwd = fs_get_cwd();
       cwd = fs_as_posix(cwd);
       ASSERT_FALSE(cwd.empty());
 
       cwdp = fs_parent(cwd);
       ASSERT_FALSE(cwdp.empty());
+
+      realcwd = fs_realpath(fs_get_cwd());
+      realcwd = fs_as_posix(realcwd);
+      ASSERT_FALSE(realcwd.empty());
     }
 };
 
@@ -25,25 +29,21 @@ TEST_F(TestCanonical, CanonicalParentDir)
 {
 std::string r = fs_canonical("..", true);
 ASSERT_FALSE(r.empty());
-ASSERT_EQ(r.length(), cwdp.length()) << r << " vs " << cwdp;
-EXPECT_TRUE(fs_equivalent(r, cwdp));
+EXPECT_EQ(fs_as_posix(r), cwdp) << r << " vs " << cwdp;
 
 r = fs_canonical("..", false);
 ASSERT_FALSE(r.empty());
-ASSERT_EQ(r.length(), cwdp.length()) << r << " vs " << cwdp;
-EXPECT_TRUE(fs_equivalent(r, cwdp));
+EXPECT_EQ(fs_as_posix(r), cwdp) << r << " vs " << cwdp;
 }
 TEST_F(TestCanonical, ResolveParentDir)
 {
 std::string r = fs_resolve("..", true);
 ASSERT_FALSE(r.empty());
-ASSERT_EQ(r.length(), cwdp.length()) << r << " vs " << cwdp;
-EXPECT_TRUE(fs_equivalent(r, cwdp));
+EXPECT_EQ(fs_as_posix(r), cwdp) << r << " vs " << cwdp;
 
 r = fs_resolve("..", false);
 ASSERT_FALSE(r.empty());
-ASSERT_EQ(r.length(), cwdp.length()) << r << " vs " << cwdp;
-EXPECT_TRUE(fs_equivalent(r, cwdp));
+EXPECT_EQ(fs_as_posix(r), cwdp) << r << " vs " << cwdp;
 }
 
 
@@ -127,7 +127,5 @@ TEST_F(TestCanonical, Realpath)
 {
 std::string r = fs_realpath(".");
 ASSERT_FALSE(r.empty());
-ASSERT_EQ(r.length(), cwd.length());
-
-EXPECT_TRUE(fs_equivalent(r, cwd));
+EXPECT_EQ(fs_as_posix(r), realcwd);
 }
