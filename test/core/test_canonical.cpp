@@ -8,19 +8,15 @@
 
 class TestCanonical : public testing::Test {
   protected:
-    std::string cwd, cwdp, realcwd;
+    std::string cwd, cwdp;
 
     void SetUp() override {
-      cwd = fs_get_cwd();
+      cwd = fs_realpath(fs_get_cwd());
       cwd = fs_as_posix(cwd);
       ASSERT_FALSE(cwd.empty());
 
       cwdp = fs_parent(cwd);
       ASSERT_FALSE(cwdp.empty());
-
-      realcwd = fs_realpath(fs_get_cwd());
-      realcwd = fs_as_posix(realcwd);
-      ASSERT_FALSE(realcwd.empty());
     }
 };
 
@@ -127,5 +123,5 @@ TEST_F(TestCanonical, Realpath)
 {
 std::string r = fs_realpath(".");
 ASSERT_FALSE(r.empty());
-EXPECT_EQ(fs_as_posix(r), realcwd);
+EXPECT_EQ(fs_as_posix(r), cwd);
 }

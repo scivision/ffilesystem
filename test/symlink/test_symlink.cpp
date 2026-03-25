@@ -15,7 +15,8 @@ class TestSymlink : public testing::Test {
       std::string test_suite_name_ = info->test_suite_name();
       std::string n = test_suite_name_ + "-" + test_name_;
 
-      cwd = inst->original_working_dir();
+      cwd = fs_realpath(inst->original_working_dir());
+      // realpath is for Windows Dev Drive and Networked drives
       ASSERT_FALSE(cwd.empty()) << "get_cwd() should not return empty string";
       tgt = cwd + fs_filesep() + "test_" + n + "_cpp.txt";
       not_exist_tgt = cwd + fs_filesep() + "test_" + n + "_cpp.notexist";
