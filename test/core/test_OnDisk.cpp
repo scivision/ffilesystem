@@ -127,6 +127,16 @@ TEST_F(TestOnDisk, IsOther){
 }
 
 
+TEST_F(TestOnDisk, StatMode){
+  EXPECT_NE(fs_st_mode(file), 0);
+  EXPECT_NE(fs_st_mode(dir), 0);
+  EXPECT_EQ(fs_st_mode("ffs_stat_mode_not-exist-file"), 0);
+  EXPECT_EQ(fs_st_mode(""), 0);
+
+  EXPECT_NE(fs_st_mode(nonnull2), 0) << "fs_st_mode(" << nonnull2 << ") should not be 0\n";
+}
+
+
 TEST_F(TestOnDisk, Mkdir){
 
 EXPECT_FALSE(fs_mkdir(""));
