@@ -32,9 +32,11 @@ else()
 endif()
 
 # --- RPATH handling for transitive dependencies
-if(ffilesystem_ENABLE_RPATH AND NOT WIN32)
+if(ffilesystem_ENABLE_RPATH AND BUILD_SHARED_LIBS AND NOT WIN32)
   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
   set(CMAKE_BUILD_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
+  #set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+  # BUILD_WITH_INSTALL_RPATH makes exe build error can't find libffilesystem.*
 endif()
 
 if(HAVE_Fortran_FILESYSTEM AND NOT DEFINED HAVE_F03TYPE)
