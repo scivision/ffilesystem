@@ -17,6 +17,13 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 include(options.cmake)
 
+if(DEFINED ENV{CONDA_PREFIX})
+  list(APPEND CMAKE_IGNORE_PREFIX_PATH $ENV{CONDA_PREFIX})
+  list(APPEND CMAKE_IGNORE_PATH $ENV{CONDA_PREFIX}/bin $ENV{CONDA_PREFIX}/lib $ENV{CONDA_PREFIX}/include)
+  # need CMAKE_IGNORE_PATH to ensure env var PATH doesn't interfere
+  # despite CMAKE_IGNORE_PREFIX_PATH
+endif()
+
 if(ffilesystem_fortran)
     enable_language(Fortran)
     set(HAVE_Fortran_FILESYSTEM ON)

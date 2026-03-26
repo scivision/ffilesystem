@@ -64,8 +64,12 @@ include(FetchContent)
 set(FETCHCONTENT_QUIET OFF)
 set(INSTALL_GTEST OFF)
 
-FetchContent_Declare(googletest URL "${ffilesystem_googletest_url}")
-FetchContent_MakeAvailable(googletest)
+FetchContent_Declare(GTest
+URL "${ffilesystem_googletest_url}"
+FIND_PACKAGE_ARGS
+)
+
+FetchContent_MakeAvailable(GTest)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
   foreach(t IN ITEMS gtest gtest_main gmock gmock_main)
