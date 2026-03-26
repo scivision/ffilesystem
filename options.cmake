@@ -8,7 +8,6 @@ option(ffilesystem_extra "enable extra functions not strictly filesystem-based" 
 option(ffilesystem_unicode "Windows Unicode support" on)
 
 option(BUILD_SHARED_LIBS "Build shared libraries")
-option(ffilesystem_coverage "Code coverage tests")
 option(ffilesystem_tidy "Run clang-tidy on the code")
 option(ffilesystem_cppcheck "Run cppcheck on the code")
 option(ffilesystem_iwyu "Run include-what-you-use on the code")

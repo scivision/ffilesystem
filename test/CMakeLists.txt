@@ -103,12 +103,3 @@ if(BUILD_SHARED_LIBS AND (CYGWIN OR WIN32))
 endif()
 
 endforeach()
-
-# --- coverage
-
-if(${PROJECT_NAME}_coverage)
-  setup_target_for_coverage_gcovr_html(
-  NAME coverage
-  EXECUTABLE ${CMAKE_CTEST_COMMAND}
-  )
-endif()
