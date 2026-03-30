@@ -11,6 +11,7 @@ VERSION 6.4.1
 )
 
 include(GNUInstallDirs)
+include(CheckSourceCompiles)
 
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 # This project isn't using C++ modules; avoid bugs in module scanning CMake 3.28, 3.29 with GCC >= 14.
@@ -41,7 +42,7 @@ endif()
 
 if(HAVE_Fortran_FILESYSTEM AND NOT DEFINED HAVE_F03TYPE)
   if(ffilesystem_trace)
-    file(READ ${CMAKE_CURRENT_LIST_DIR}/f03type.f90 _src)
+    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/cmake/f03type.f90 _src)
     check_source_compiles(Fortran "${_src}" HAVE_F03TYPE)
   else()
     set(HAVE_F03TYPE true)
