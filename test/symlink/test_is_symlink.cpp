@@ -5,8 +5,8 @@
 
 class TestSymlink : public testing::Test {
   protected:
-    std::string tfile;
-    std::string tdir;
+    std::string tfile, tdir, in_file;
+    std::string_view nonnull_file;
 
     void SetUp() override {
       std::vector<std::string> argvs = ::testing::internal::GetArgvs();
@@ -18,6 +18,10 @@ class TestSymlink : public testing::Test {
 
       tdir = argvs[argc-1];
       ASSERT_TRUE(fs_is_dir(tdir)) << tdir << " is not a directory";
+
+      in_file = tfile + "-read_past_the_end_of_buffer";
+      nonnull_file = std::string_view(in_file.data(), tfile.size());
+      ASSERT_NE(nonnull_file.back(), '\0');
     }
 };
 
@@ -29,6 +33,8 @@ EXPECT_FALSE(fs_is_symlink("not-exist-file"));
 EXPECT_FALSE(fs_is_symlink(""));
 
 EXPECT_TRUE(fs_is_symlink(tfile));
+
+EXPECT_TRUE(fs_is_symlink(nonnull_file)) << "is_symlink() should not read past the end of string_view buffer";
 }
 
 TEST_F(TestSymlink, IsSymlinkDir){

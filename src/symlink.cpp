@@ -79,6 +79,7 @@ bool fs_is_symlink(std::string_view path)
 #else
 
   int r = 0;
+  const std::string cpath(path);
 
 #if defined(HAVE_STATX)
 // Linux Glibc only
@@ -86,14 +87,14 @@ bool fs_is_symlink(std::string_view path)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
 
   struct statx sx;
-  r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_MODE, &sx);
+  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_MODE, &sx);
   if (r == 0) FFS_LIKELY
     return S_ISLNK(sx.stx_mode);
 #endif
 // https://linux.die.net/man/2/lstat
 
   if(r == 0 || errno == ENOSYS){
-    if(struct stat s; ::lstat(path.data(), &s) == 0)
+    if(struct stat s; ::lstat(cpath.c_str(), &s) == 0)
       return S_ISLNK(s.st_mode);
   }
 
