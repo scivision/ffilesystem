@@ -18,6 +18,20 @@ class TestNoEnv : public testing::Test {
     }
 };
 
+class TestEnv : public testing::Test {
+  protected:
+    std::string name, in_name;
+    std::string_view nonnull_name;
+
+    void SetUp() override {
+    name = fs_is_windows() ? "USERPROFILE" : "HOME";
+    in_name = name + "-walkoff-end-of-buffer";
+
+    nonnull_name = std::string_view(in_name.data(), name.size());
+    ASSERT_NE(nonnull_name.back(), '\0') << "Environment variable name should not be null-terminated in test";
+    }
+};
+
 
 TEST(TestUsername, Username)
 {
@@ -54,18 +68,37 @@ EXPECT_TRUE(fs_is_dir(t));
 }
 
 
+TEST_F(TestEnv, GetEnv){
+auto h = fs_getenv(fs_is_windows() ? "USERPROFILE" : "HOME");
+ASSERT_TRUE(h.has_value()) << "Environment variable HOME or USERPROFILE should not be set in test";
+
+h = fs_getenv(nonnull_name);
+EXPECT_TRUE(h.has_value()) << "Environment variable " << nonnull_name << " should be set in test";
+}
+
+
 TEST(TestEnvironment, SetEnv){
-std::string k = "FORTtest";
-std::string v = "FORTvalue";
+const std::string k = "FORTtest";
+const std::string v = "FORTvalue";
 fs_setenv(k, v);
 
 auto e = fs_getenv(k);
-EXPECT_TRUE(e.has_value()) << "Environment variable " << k << " not set";
+ASSERT_TRUE(e.has_value()) << "Environment variable " << k << " not set";
 EXPECT_EQ(e.value(), v);
 
 fs_setenv(k, ""); // unset
 e = fs_getenv(k);
-EXPECT_FALSE(e.has_value()) << "Environment variable " << k << " should be unset";
+ASSERT_FALSE(e.has_value()) << "Environment variable " << k << " should be unset";
+
+std::string in_k = k + "-walkoff-end-of-buffer";
+std::string_view nonnull_k(in_k.data(), k.size());
+ASSERT_NE(nonnull_k.back(), '\0') << "Environment variable name should not be null-terminated in test";
+
+ASSERT_TRUE(fs_setenv(nonnull_k, v)) << "Failed to set environment variable with non-null-terminated name";
+e = fs_getenv(k);
+ASSERT_TRUE(e.has_value()) << "Environment variable " << k << " not set with non-null-terminated name";
+EXPECT_EQ(e.value(), v) << "Environment variable " << k << " has wrong value with non-null-terminated name";
+
 }
 
 
