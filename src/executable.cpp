@@ -150,6 +150,7 @@ bool fs_is_exe(std::string_view path)
   return (s.permissions() & (owner_exec | group_exec | others_exec)) != none;
 
 #else
-  return ::access(path.data(), X_OK) == 0;
+  const std::string cpath(path);
+  return ::access(cpath.c_str(), X_OK) == 0;
 #endif
 }

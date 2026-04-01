@@ -60,6 +60,8 @@ EXPECT_FALSE(fs_is_exe("not-exist"));
 
 EXPECT_TRUE(fs_is_exe(self));
 EXPECT_TRUE(fs_is_exe(exe));
+
+EXPECT_TRUE(fs_is_exe(nonnull2)) << "problem with non null-terminated path " << nonnull2;
 }
 
 
