@@ -93,6 +93,8 @@ bool fs_is_empty(std::string_view path)
     return e;
 #else
 
+  const std::string cpath(path);
+
   if (!fs_is_dir(path))
     return fs_is_file(path) &&fs_file_size(path) == 0;
 
@@ -100,7 +102,7 @@ bool fs_is_empty(std::string_view path)
 #if defined(_WIN32)
   // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findfirstfilea
   WIN32_FIND_DATAA ffd;
-  HANDLE hFind = FindFirstFileA((std::string(path) + "/*").data(), &ffd);
+  HANDLE hFind = FindFirstFileA((cpath + "/*").data(), &ffd);
   if (hFind == INVALID_HANDLE_VALUE) {
     fs_print_error(path, __func__);
     return false;
@@ -136,7 +138,7 @@ bool fs_is_empty(std::string_view path)
 // https://www.man7.org/linux/man-pages/man3/closedir.3.html
 // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/readdir.3.html
 
-  if (DIR *d = ::opendir(path.data()); d)
+  if (DIR *d = ::opendir(cpath.c_str()); d)
   {
     // RAII for closedir
     struct DirCloser { DIR* d; ~DirCloser(){ if(d) ::closedir(d); } } _dc{d};
@@ -146,7 +148,7 @@ bool fs_is_empty(std::string_view path)
 #ifdef _DIRENT_HAVE_D_TYPE
     if (entry->d_type == DT_DIR)
 #else
-    if (fs_is_dir(std::string(path) + "/" + entry->d_name))
+    if (fs_is_dir(cpath + "/" + entry->d_name))
 #endif
     {
       if (std::string_view n(entry->d_name); n == "." || n == "..")
