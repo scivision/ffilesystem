@@ -9,7 +9,8 @@
 
 class TestExe : public testing::Test {
   protected:
-    std::string cwd, exe, noexe, self;
+    std::string cwd, exe, noexe, self, in2;
+    std::string_view nonnull2;
 
     void SetUp() override {
       auto inst = testing::UnitTest::GetInstance();
@@ -37,6 +38,10 @@ class TestExe : public testing::Test {
       ASSERT_TRUE(fs_set_permissions(noexe, 0, 0, -1));
 
       ASSERT_FALSE(fs_get_permissions(exe).empty());
+
+      in2 = self + "-invalid-memory-trailing-non-null-terminated-string_view";
+      nonnull2 = std::string_view(in2.data(), self.size());
+      ASSERT_NE(nonnull2.back(), '\0') << "nonnull2 should not be null-terminated\n";
     }
 
     void TearDown() override {
@@ -68,6 +73,8 @@ if (!fs_is_cygwin()){
 
 EXPECT_FALSE(fs_is_executable_binary(exe));
 EXPECT_FALSE(fs_is_executable_binary(noexe));
+
+EXPECT_TRUE(fs_is_executable_binary(nonnull2)) << "problem with non null-terminated path " << nonnull2;
 }
 
 

@@ -50,12 +50,16 @@ bool fs_is_executable_binary(std::string_view path)
 #else
   // https://github.com/jart/cosmopolitan/blob/master/ape/specification.md
   std::array<std::uint8_t, 4> magic;
+  const std::string cpath(path);
 
-  if(std::ifstream f{path.data(), std::ios::binary}){
-    if( !f.read(reinterpret_cast<char*>(magic.data()), magic.size()) )
+  if(std::ifstream f{cpath.c_str(), std::ios::binary}){
+    if( !f.read(reinterpret_cast<char*>(magic.data()), magic.size()) ) {
       return false;
-  } else
+    }
+  } else {
+    fs_print_error(path, __func__, "could not open file");
     return false;
+  }
 
 #if defined(__APPLE__)
   // https://ss64.com/mac/file.html
