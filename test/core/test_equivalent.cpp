@@ -1,4 +1,5 @@
 #include <string>
+#include <string_view>
 
 #include "ffilesystem.h"
 
@@ -7,7 +8,9 @@
 
 class TestSame : public testing::Test {
     protected:
-      std::string cwd, self, self_name;
+      std::string cwd, self, self_name, in_file;
+      std::string_view nonnull_file;
+
       void SetUp() override {
         cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
         std::vector<std::string> argvs = ::testing::internal::GetArgvs();
@@ -16,12 +19,21 @@ class TestSame : public testing::Test {
         self_name = fs_file_name(self);
 
         ASSERT_TRUE(fs_is_file(self)) << "Test executable not found: " << self;
+
+        in_file = self + "-read_past_the_end_of_buffer";
+        nonnull_file = std::string_view(in_file.data(), self.size());
+        ASSERT_NE(nonnull_file.back(), '\0') << "Test executable name should not end with null character";
       }
 };
 
 TEST_F(TestSame, FileName)
 {
 EXPECT_TRUE(fs_equivalent(self_name, "./" + self_name));
+
+EXPECT_TRUE(fs_equivalent(self_name, self));
+EXPECT_TRUE(fs_equivalent(self_name, nonnull_file));
+EXPECT_TRUE(fs_equivalent(self, self_name));
+EXPECT_TRUE(fs_equivalent(self, self));
 }
 
 TEST_F(TestSame, NotExist)

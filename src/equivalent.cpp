@@ -105,16 +105,17 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
 #else
   int r1 = 0;
   int r2 = 0;
+  const std::string p1(path1);
+  const std::string p2(path2);
 
 // https://www.man7.org/linux/man-pages/man7/inode.7.html
 #if defined(HAVE_STATX)
 
-  struct statx x1;
-  struct statx x2;
+  struct statx x1, x2;
 
-  r1 = ::statx(AT_FDCWD, path1.data(), AT_NO_AUTOMOUNT, STATX_INO, &x1);
+  r1 = ::statx(AT_FDCWD, p1.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &x1);
   if(r1 == 0){
-    r2 = ::statx(AT_FDCWD, path2.data(), AT_NO_AUTOMOUNT, STATX_INO, &x2);
+    r2 = ::statx(AT_FDCWD, p2.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &x2);
     if(r2 == 0)
       return x1.stx_dev_major == x2.stx_dev_major && x1.stx_dev_minor == x2.stx_dev_minor && x1.stx_ino == x2.stx_ino;
   }
@@ -126,7 +127,7 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
     struct stat s2;
 
     // https://www.boost.org/doc/libs/1_86_0/libs/filesystem/doc/reference.html#equivalent
-    if(!::stat(path1.data(), &s1) && !::stat(path2.data(), &s2))
+    if(!::stat(p1.c_str(), &s1) && !::stat(p2.c_str(), &s2))
       return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
   }
 
