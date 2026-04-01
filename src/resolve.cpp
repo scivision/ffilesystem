@@ -81,7 +81,9 @@ std::string fs_realpath(std::string_view path)
   return fs_win32_final_path(path);
 #else
   std::vector<char> buf(fs_get_max_path());
-  if (::realpath(path.data(), buf.data()))
+  std::string cpath(path);
+
+  if (::realpath(cpath.c_str(), buf.data()))
     return buf.data();
 
   return {};

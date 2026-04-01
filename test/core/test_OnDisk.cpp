@@ -169,6 +169,8 @@ EXPECT_TRUE(fs_realpath("not-exist-realpath/b/c").empty());
 r = fs_realpath("..");
 ASSERT_FALSE(r.empty());
 EXPECT_EQ(r, fs_parent(expected)) << r;
+
+EXPECT_EQ(fs_realpath(nonnull2), expected) << "problem with non null-terminated path " << nonnull2;
 }
 
 
