@@ -28,12 +28,12 @@ class TestSymlink : public testing::Test {
       link_dir = cwd + fs_filesep() + "test_" + n + "_cpp.dir.link";
       broken_link = cwd + fs_filesep() + "test_" + n + "_cpp.broken";
 
-      if (fs_is_symlink(link_file)){
-        ASSERT_TRUE(fs_remove(link_file));
+      if (fs_exists(link_file)){
+        ASSERT_TRUE(fs_remove(link_file)) << "Failed to remove existing symlink file: " << link_file;
       }
 
-      if (fs_is_symlink(link_dir)){
-        ASSERT_TRUE(fs_remove(link_dir));
+      if (fs_exists(link_dir)){
+        ASSERT_TRUE(fs_remove(link_dir)) << "Failed to remove existing symlink directory: " << link_dir;
       }
 
     ASSERT_TRUE(fs_create_symlink(tgt, link_file));

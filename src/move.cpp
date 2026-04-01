@@ -3,18 +3,12 @@
 namespace Filesystem = std::filesystem;
 #else
 
-#include <cstdio> // for _unlink, std::rename
+#include <cstdio> // for std::remove, std::rename
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <direct.h> // for rmdir
-#define unlink _unlink
-#define rmdir _rmdir
-#else
-#include <unistd.h> // for unlink
+#include <windows.h> // for DeleteFile
 #endif
-
 #endif
 
 #include <string_view>
@@ -28,6 +22,7 @@ bool
 fs_remove(std::string_view path)
 {
   // remove a file or empty directory
+  // returns false if path does not exist or is a non-empty directory
   std::error_code ec;
 
 #if defined(HAVE_CXX_FILESYSTEM)
@@ -35,16 +30,24 @@ fs_remove(std::string_view path)
   if(Filesystem::remove(path, ec) && !ec) FFS_LIKELY
     return true;
 #else
-   std::string cpath(path);
+  const std::string cpath(path);
   // https://en.cppreference.com/w/cpp/io/c/remove
-  if (fs_is_dir(path)) {
-    // directory must be empty
-    // https://www.man7.org/linux/man-pages/man2/rmdir.2.html
-    // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/rmdir-wrmdir
-    if (rmdir(cpath.c_str()) == 0)
+  if(std::remove(cpath.c_str()) == 0)
+    return true;
+
+#if defined(_WIN32)
+  // Windows std::remove is confused by symlink directories, not deleting them, so give an _unlink
+  if(fs_exists(path)){
+  // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-deletefilea
+  // Need RemoveDirectoryW when deleting a directory symlink with std::remove()
+  // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsymboliclinka#remarks
+  std::wstring const w = fs_win32_to_wide(path);
+
+    if(RemoveDirectoryW(w.data()) != 0)
       return true;
-  } else if(unlink(cpath.c_str()) == 0)
-      return true;
+  }
+#endif
+
 #endif
 
   fs_print_error(path, __func__, ec);
