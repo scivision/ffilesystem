@@ -42,8 +42,7 @@ bool fs_set_cwd(std::string_view path)
     return true;
 #else
   // unistd.h https://www.man7.org/linux/man-pages/man2/chdir.2.html
-  std::string cpath(path);
-  if(::chdir(cpath.c_str()) == 0)
+  if(std::string cpath(path); ::chdir(cpath.c_str()) == 0)
     return true;
 #endif
 

@@ -1,5 +1,7 @@
 #include "ffilesystem.h"
 #include <iostream>
+#include <string>
+#include <string_view>
 
 #include <gtest/gtest.h>
 
@@ -9,6 +11,9 @@ class TestPermissions : public testing::Test {
   std::string read = "readable.txt";
   std::string noread = "nonreadable.txt";
   std::string nowrite = "nonwritable.txt";
+  std::string in_file;
+  std::string_view nonnull_file;
+
     void SetUp() override {
       ASSERT_TRUE(fs_touch(read));
       ASSERT_TRUE(fs_is_file(read));
@@ -21,6 +26,10 @@ class TestPermissions : public testing::Test {
 
       ASSERT_TRUE(fs_exists(nowrite));
       ASSERT_TRUE(fs_is_file(nowrite));
+
+      in_file = read + "-read_past_the_end_of_buffer";
+      nonnull_file = std::string_view(in_file.data(), read.size());
+      ASSERT_NE(nonnull_file.back(), '\0');
     }
     void TearDown() override {
       fs_remove(read);
@@ -29,31 +38,41 @@ class TestPermissions : public testing::Test {
     }
   };
 
-TEST_F(TestPermissions, Permissions)
-{
-
+TEST_F(TestPermissions, Empty){
 EXPECT_TRUE(fs_get_permissions("").empty());
 EXPECT_TRUE(fs_get_permissions("nonexistent.txt").empty());
-
-EXPECT_TRUE(fs_set_permissions(read, 1, 0, 0));
 EXPECT_FALSE(fs_get_permissions(read).empty());
+}
+
+TEST_F(TestPermissions, IsReadable){
 EXPECT_TRUE(fs_is_readable(read));
+}
 
+TEST_F(TestPermissions, NotReadable){
 // for Ffilesystem, even non-readable files "exist" and are "is_file"
-EXPECT_TRUE(fs_set_permissions(noread, -1, 0, 0));
-
-std::string p = fs_get_permissions(noread);
+ASSERT_TRUE(fs_set_permissions(noread, -1, 0, 0));
+const std::string p = fs_get_permissions(noread);
 
 std::cout << "Permissions: " << noread << " " << p << "\n";
 
 if(!(fs_is_windows() || fs_is_cygwin())){
   EXPECT_EQ(p[0], '-');
 }
+}
+
+TEST_F(TestPermissions, Read){
+EXPECT_TRUE(fs_set_permissions(read, 1, 0, 0));
+EXPECT_TRUE(fs_is_readable(read));
+EXPECT_TRUE(fs_set_permissions(nonnull_file, 1, 0, 0));
+}
+
+TEST_F(TestPermissions, Writable)
+{
 
 // writable
-EXPECT_TRUE(fs_set_permissions(nowrite, 0, -1, 0));
+ASSERT_TRUE(fs_set_permissions(nowrite, 0, -1, 0));
 
-p = fs_get_permissions(nowrite);
+const std::string p = fs_get_permissions(nowrite);
 
 // MSVC with <filesystem>, but we'll skip all windows
 if (!fs_is_windows()){

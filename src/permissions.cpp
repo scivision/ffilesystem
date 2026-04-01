@@ -87,11 +87,13 @@ bool fs_set_permissions(std::string_view path, int readable, int writable, int e
     m |= x;
   else if (executable < 0)
     m &= ~x;
+
 // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/chmod-wchmod
+  const std::string cpath(path);
 #ifdef _MSC_VER
-  return _chmod(path.data(), static_cast<int>(m)) == 0;
+  return _chmod(cpath.c_str(), static_cast<int>(m)) == 0;
 #else
-  return chmod(path.data(), m) == 0;
+  return chmod(cpath.c_str(), m) == 0;
 #endif
 
 #endif
