@@ -23,7 +23,7 @@ class TestRemove : public testing::Test {
 
 TEST_F(TestRemove, Remove)
 {
-ASSERT_FALSE(fs_remove(nonnull2)) << "fs_remove(" << nonnull2 << ") should fail because it is not null-terminated\n";
+ASSERT_FALSE(fs_remove(nonnull2)) << "Failed with input not null-terminated\n";
 
 EXPECT_TRUE(fs_remove(file));
 }

@@ -58,7 +58,7 @@ TEST_F(TestOnDisk, Exists)
   EXPECT_FALSE(fs_exists("ffs_exists_not-exist-file"));
   EXPECT_FALSE(fs_exists(""));
 
-  EXPECT_TRUE(fs_exists(nonnull2)) << "fs_exists(" << nonnull2 << ") should be true\n";
+  EXPECT_TRUE(fs_exists(nonnull2));
 }
 
 TEST_F(TestOnDisk, IsDir)
@@ -98,7 +98,7 @@ if(fs_win32_long_paths_enabled()){
 
 EXPECT_TRUE(fs_is_readable("/"));
 
-EXPECT_TRUE(fs_is_readable(nonnull2)) << "fs_is_readable(" << nonnull2 << ") should be true";
+EXPECT_TRUE(fs_is_readable(nonnull2));
 
 }
 
@@ -112,7 +112,7 @@ if(fs_win32_long_paths_enabled()){
   EXPECT_TRUE(fs_is_writable(s)) << s;
 }
 
-EXPECT_TRUE(fs_is_writable(nonnull2)) << "fs_is_writable(" << nonnull2 << ") should be true";
+EXPECT_TRUE(fs_is_writable(nonnull2));
 
 }
 
@@ -133,7 +133,7 @@ TEST_F(TestOnDisk, StatMode){
   EXPECT_EQ(fs_st_mode("ffs_stat_mode_not-exist-file"), 0);
   EXPECT_EQ(fs_st_mode(""), 0);
 
-  EXPECT_NE(fs_st_mode(nonnull2), 0) << "fs_st_mode(" << nonnull2 << ") should not be 0\n";
+  EXPECT_NE(fs_st_mode(nonnull2), 0);
 }
 
 
@@ -149,6 +149,9 @@ ASSERT_TRUE(fs_set_cwd(dir));
 
 ASSERT_TRUE(fs_mkdir("test-filesystem-dir/hello"));
 EXPECT_TRUE(fs_is_dir(dir + "/test-filesystem-dir/hello"));
+
+EXPECT_TRUE(fs_mkdir(nonnull2));
+EXPECT_FALSE(fs_is_dir(in2));
 }
 
 
