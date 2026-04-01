@@ -107,6 +107,12 @@ EXPECT_TRUE(fs_is_absolute(R"(\\?\UNC\server\share)"));
 EXPECT_TRUE(fs_is_absolute(R"(\\?\UNC\server\share\日本語)"));
 EXPECT_TRUE(fs_is_absolute(R"(\\server\share\some space here)"));
 EXPECT_TRUE(fs_is_absolute(R"(\\?\C:\some space here)"));
+
+const std::string unc_prefixed = R"(\\server\share\must-not-be-read)";
+std::string_view truncated_unc(unc_prefixed.data(), 2);
+ASSERT_EQ(truncated_unc, R"(\\)");
+EXPECT_FALSE(fs_is_absolute(truncated_unc))
+  << "fs_is_absolute() read past string_view length while checking UNC path";
 }
 
 TEST(IsAbs, Posix)

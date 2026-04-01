@@ -77,7 +77,7 @@ bool fs_is_absolute(std::string_view path)
     if(fs_win32_is_ext_path(path))
         return true;
 #if defined(_WIN32)
-    if(PathIsUNCA(path.data()))
+    if(std::string cpath(path); PathIsUNCA(cpath.c_str()))
       return true;
 #endif
     // Windows drive letter with slash (e.g. C: without slash is relative)
