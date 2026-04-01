@@ -34,7 +34,7 @@ std::string fs_parent(std::string_view path)
   std::string dir, drive;
   dir.resize(_MAX_DIR);
   drive.resize(_MAX_DRIVE);
-  if(_splitpath_s(p.data(), drive.data(), _MAX_DRIVE, dir.data(), _MAX_DIR, nullptr, 0, nullptr, 0) != 0)
+  if(_splitpath_s(p.c_str(), drive.data(), _MAX_DRIVE, dir.data(), _MAX_DIR, nullptr, 0, nullptr, 0) != 0)
     return {};
 
   p = fs_drop_trailing_slash(fs_trim(drive) + fs_trim(dir));
