@@ -178,6 +178,14 @@ EXPECT_EQ(fs_realpath(nonnull_dir), expected) << "problem with non null-terminat
 }
 
 
+TEST_F(TestOnDisk, GetModTime){
+EXPECT_GT(fs_get_modtime(cwd), 0);
+
+ASSERT_GT(fs_get_modtime(dir), 0);
+EXPECT_GT(fs_get_modtime(nonnull_dir), 0) << "problem with non null-terminated path " << nonnull_dir;
+}
+
+
 TEST_F(TestOnDisk, Touch)
 {
 
