@@ -154,7 +154,7 @@ ASSERT_TRUE(fs_set_cwd(dir));
 ASSERT_TRUE(fs_mkdir("test-filesystem-dir/hello"));
 EXPECT_TRUE(fs_is_dir(dir + "/test-filesystem-dir/hello"));
 
-EXPECT_TRUE(fs_mkdir(nonnull_dir));
+ASSERT_TRUE(fs_mkdir(nonnull_dir));
 EXPECT_FALSE(fs_is_dir(in_dir));
 }
 
