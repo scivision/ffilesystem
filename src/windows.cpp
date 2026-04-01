@@ -415,13 +415,13 @@ std::wstring fs_win32_to_wide(std::string_view n)
 
 #if defined(_WIN32) || defined(__CYGWIN__)
   // https://docs.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
-
-  if (int L = MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, nullptr, 0); L > 0)  FFS_LIKELY
+  std::string ns(n);
+  if (int L = MultiByteToWideChar(CP_UTF8, 0, ns.c_str(), -1, nullptr, 0); L > 0)  FFS_LIKELY
   {
     std::wstring w;
     w.resize(L);
 
-    if(MultiByteToWideChar(CP_UTF8, 0, n.data(), -1, w.data(), L) == L) {
+    if(MultiByteToWideChar(CP_UTF8, 0, ns.c_str(), -1, w.data(), L) == L) {
       w.resize(L-1);  // discard null terminator
       return w;
     }
