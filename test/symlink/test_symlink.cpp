@@ -6,7 +6,8 @@
 
 class TestSymlink : public testing::Test {
   protected:
-    std::string cwd, tgt, link_file, link_dir, broken_link, not_exist_tgt;
+    std::string cwd, tgt, link_file, link_dir, broken_link, not_exist_tgt, in_file;
+    std::string_view nonnull_file;
 
     void SetUp() override {
       auto inst = testing::UnitTest::GetInstance();
@@ -47,6 +48,10 @@ class TestSymlink : public testing::Test {
     ASSERT_TRUE(fs_remove(not_exist_tgt));
     ASSERT_FALSE(fs_exists(not_exist_tgt)) << "exists() should be false for non-existent target: " << not_exist_tgt;
     std::cout << "Created broken symlink: " << broken_link << " -> " << not_exist_tgt << "\n";
+
+    in_file = link_file + "-read_past_the_end_of_buffer";
+    nonnull_file = std::string_view(in_file.data(), link_file.size());
+    ASSERT_NE(nonnull_file.back(), '\0');
     }
 
     void TearDown() override {
@@ -84,9 +89,10 @@ TEST_F(TestSymlink, CreateSymlink){
   EXPECT_TRUE(fs_read_symlink(not_exist_tgt).empty());
   EXPECT_FALSE(fs_is_symlink(cwd));
 
-
   EXPECT_TRUE(fs_is_dir(link_dir)) << "is_dir(" << link_dir << ") should be true for link to existing dir";
   EXPECT_TRUE(fs_is_symlink(link_dir)) << "is_symlink() should be true for symlink: " << link_dir;
+
+  EXPECT_EQ(fs_read_symlink(nonnull_file), tgt) << "read_symlink() should not read past the end of string_view buffer";
 }
 
 

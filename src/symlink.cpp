@@ -46,17 +46,18 @@ std::string_view::size_type fs_symlink_length([[maybe_unused]] std::string_view 
 
 #if !defined(_WIN32)
   int r = 0;
+  const std::string cpath(path);
 
 #if defined(HAVE_STATX)
   struct statx sx;
-  r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_SIZE, &sx);
+  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_SIZE, &sx);
   if (r == 0)
     L = sx.stx_size;
 #endif
 // https://linux.die.net/man/2/lstat
 
   if(r == 0 || errno == ENOSYS){
-    if(struct stat s; ::lstat(path.data(), &s) == 0)
+    if(struct stat s; ::lstat(cpath.c_str(), &s) == 0)
       L = s.st_size;
   }
 #endif
@@ -139,7 +140,9 @@ std::string fs_read_symlink(std::string_view path)
   std::string p;
   p.resize(L);
 
-  if (ssize_t Lr = ::readlink(path.data(), p.data(), p.size());
+  const std::string cpath(path);
+
+  if (ssize_t Lr = ::readlink(cpath.c_str(), p.data(), p.size());
       Lr == static_cast<ssize_t>(L-1)){
     // readlink() does not null-terminate the result
     p.resize(Lr);
