@@ -248,8 +248,9 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
   auto opt = COPYFILE_ALL;
   if (!overwrite)
     opt |= COPYFILE_EXCL;
-
-  if(::copyfile(source.data(), dest.data(), nullptr, opt) == 0)
+  const std::string src = std::string(source);
+  const std::string dst = std::string(dest);
+  if(::copyfile(src.c_str(), dst.c_str(), nullptr, opt) == 0)
     return true;
 #else
 
