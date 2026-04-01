@@ -61,15 +61,16 @@ std::uintmax_t fs_file_size(std::string_view path)
 #else
 
   int r = 0;
+  const std::string cpath(path);
 #if defined(HAVE_STATX)
   struct statx sx;
-  r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_SIZE, &sx);
+  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_SIZE, &sx);
   if (r == 0)
     return sx.stx_size;
 #endif
 
   if (r == 0 || errno == ENOSYS){
-    if (struct stat s; !::stat(path.data(), &s))
+    if (struct stat s; !::stat(cpath.c_str(), &s))
       return s.st_size;
   }
 
