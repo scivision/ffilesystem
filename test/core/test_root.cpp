@@ -47,6 +47,12 @@ if(!fs_is_windows())
 EXPECT_EQ(fs_root_name("c:/a/b"), "c:");
 EXPECT_EQ(fs_root_name("/etc"), "");
 EXPECT_EQ(fs_root_name(R"(C:\)"), "C:");
+
+const std::string drive_prefixed = "C:/must-not-be-read";
+const std::string_view truncated_drive(drive_prefixed.data(), 1);
+ASSERT_EQ(truncated_drive, "C");
+EXPECT_EQ(fs_root_name(truncated_drive), "")
+  << "fs_root_name() read past string_view length for a non-null-terminated path";
 }
 
 TEST(TestRootName, Posix)
