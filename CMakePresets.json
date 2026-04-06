@@ -29,6 +29,7 @@
 {
   "name": "shared", "inherits": "default",
   "binaryDir": "build-shared",
+  "installDir": "${fileDir}/build-shared/local",
   "displayName": "Shared Library",
   "description": "Build shared library instead of static.",
   "cacheVariables": {
@@ -112,7 +113,8 @@
     "noTestsAction": "error",
     "scheduleRandom": true,
     "stopOnFailure": false,
-    "jobs": 0
+    "jobs": 8,
+    "$comment": "don't put 0 or ulimit too many open files failures result"
   }
 },
 { "name": "shared", "configurePreset": "shared", "inherits": "default" },
