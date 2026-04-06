@@ -78,7 +78,8 @@ std::unordered_map<std::string_view, fs_function> fs_function_map = {
   {"max_path", []() { return static_cast<unsigned long long>(fs_get_max_path()); }},
   {"cwd", []() { return fs_get_cwd(); }},
   {"free_ram", []() { return fs_get_free_memory(); }},
-  {"total_ram", []() { return fs_total_sys_memory(); }}
+  {"total_ram", []() { return fs_total_sys_memory(); }},
+  {"max_open_files", []() { return fs_get_max_open_files(); }}
 };
 
   bool ok = true;

@@ -284,6 +284,7 @@ long fs_c_lang();
 long libcxx_release();
 
 size_t fs_get_max_path();
+long fs_get_max_open_files();
 size_t fs_max_component(const char*);
 
 bool fs_is_optimized();

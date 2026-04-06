@@ -39,7 +39,7 @@ backend, cpp_lang, c_lang, &
 fs_lang, &
 fs_is_optimized, filesep, pathsep, is_safe_name, &
 is_admin, is_bsd, is_macos, is_rosetta, is_windows, is_cygwin, is_wsl, is_mingw, is_msvc, is_linux, is_unix, &
-max_path, max_component, &
+max_path, max_component, get_max_open_files, &
 exe_path, lib_path, compiler, compiler_c, get_shell, get_terminal, &
 longname, shortname, getenv, setenv, getarg, &
 is_alpha, filesystem_type, devnull, cpu_arch, &
@@ -154,6 +154,9 @@ end function
 integer(C_SIZE_T) function fs_max_component(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
+end function
+integer(C_LONG) function fs_get_max_open_files() bind(C)
+import
 end function
 
 integer (C_SIZE_T) function fs_as_posix(path, result, buffer_size) bind(C)
@@ -667,6 +670,11 @@ integer function max_component(path) result (r)
 !! Maximum component length is dynamically determined for this computer.
 character(*), intent(in) :: path
 r = int(fs_max_component(trim(path) // C_NULL_CHAR))
+end function
+
+integer(int64) function get_max_open_files() result (r)
+!! returns maximum number of open files for this process
+r = fs_get_max_open_files()
 end function
 
 

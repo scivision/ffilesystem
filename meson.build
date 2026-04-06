@@ -65,6 +65,7 @@ comm_src = files(
 'src/tempdir.cpp',
 'src/time.cpp',
 'src/touch.cpp',
+'src/ulimit.cpp',
 'src/which.cpp',
 'src/windows.cpp'
 )

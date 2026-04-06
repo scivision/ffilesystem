@@ -13,3 +13,7 @@ EXPECT_GT(fs_total_sys_memory(), 0);
 TEST(TestMemory, FreeLessThanTotal){
 EXPECT_LE(fs_get_free_memory(), fs_total_sys_memory());
 }
+
+TEST(TestMemory, MaxOpenFiles){
+EXPECT_GT(fs_get_max_open_files(), 0);
+}

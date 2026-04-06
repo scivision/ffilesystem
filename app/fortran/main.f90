@@ -99,6 +99,8 @@ main : do
     print '(A)', exe_path()
   case("lib_path")
     print '(A)', lib_path()
+  case("max_open_files")
+    print '(i0)', get_max_open_files()
   case default
     done = .false.
   end select

@@ -131,6 +131,7 @@ src/symlink.cpp
 src/tempdir.cpp
 src/touch.cpp
 src/time.cpp
+src/ulimit.cpp
 src/which.cpp
 src/windows.cpp
 )

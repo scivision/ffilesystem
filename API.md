@@ -352,6 +352,12 @@ p%file_size()
 file_size("my/file.txt")
 ```
 
+Maximum number of open files for this process:
+
+```fortran
+get_max_open_files()
+```
+
 Space available to user on drive containing path (bytes):
 
 ```fortran
