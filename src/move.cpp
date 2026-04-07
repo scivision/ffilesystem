@@ -68,7 +68,8 @@ fs_rename(std::string_view from, std::string_view to)
   if(Filesystem::rename(from, to, ec); !ec)
 #else
   // https://en.cppreference.com/w/cpp/io/c/rename
-  if(std::rename(from.data(), to.data()) == 0)
+  const std::string cfrom(from), cto(to);
+  if(std::rename(cfrom.c_str(), cto.c_str()) == 0)
 #endif
     return true;
 
