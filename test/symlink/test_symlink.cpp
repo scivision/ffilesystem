@@ -6,7 +6,7 @@
 
 class TestSymlink : public testing::Test {
   protected:
-    std::string cwd, tgt, link_file, link_dir, broken_link, not_exist_tgt, in_file;
+    std::string cwd, tgt, link_file, link_dir, broken_link, not_exist_tgt, in_file, in2;
     std::string_view nonnull_file;
 
     void SetUp() override {
@@ -28,13 +28,14 @@ class TestSymlink : public testing::Test {
       link_file = cwd + fs_filesep() + "test_" + n + "_cpp.link";
       link_dir = cwd + fs_filesep() + "test_" + n + "_cpp.dir.link";
       broken_link = cwd + fs_filesep() + "test_" + n + "_cpp.broken";
+      in_file = link_file + "-in_file";
+      in2 = in_file + "-read_past_the_end_of_buffer";
 
-      if (fs_exists(link_file)){
-        ASSERT_TRUE(fs_remove(link_file)) << "Failed to remove existing symlink file: " << link_file;
-      }
-
-      if (fs_exists(link_dir)){
-        ASSERT_TRUE(fs_remove(link_dir)) << "Failed to remove existing symlink directory: " << link_dir;
+      for (const auto& link : {link_file, link_dir, broken_link, in_file, in2}){
+        if (fs_is_symlink(link)){
+          std::cout << "Removing existing symlink: " << link << "\n";
+          ASSERT_TRUE(fs_remove(link)) << "Failed to remove existing symlink: " << link;
+        }
       }
 
     ASSERT_TRUE(fs_create_symlink(tgt, link_file));
@@ -49,18 +50,14 @@ class TestSymlink : public testing::Test {
     ASSERT_FALSE(fs_exists(not_exist_tgt)) << "exists() should be false for non-existent target: " << not_exist_tgt;
     std::cout << "Created broken symlink: " << broken_link << " -> " << not_exist_tgt << "\n";
 
-    in_file = link_file + "-read_past_the_end_of_buffer";
-    nonnull_file = std::string_view(in_file.data(), link_file.size());
+    nonnull_file = std::string_view(in2.data(), in_file.size());
     ASSERT_NE(nonnull_file.back(), '\0');
     }
 
     void TearDown() override {
-      fs_remove(tgt);
-      if (fs_is_symlink(link_file))
-        fs_remove(link_file);
-      if (fs_is_symlink(link_dir))
-        fs_remove(link_dir);
-      fs_remove(broken_link);
+      for (const auto& link : {tgt, link_file, link_dir, broken_link, in_file, in2}){
+        fs_remove(link);
+      }
     }
 };
 
@@ -72,6 +69,9 @@ TEST_F(TestSymlink, CreateSymlink){
   ASSERT_FALSE(fs_is_symlink(tgt)) << "is_symlink() should be false for non-symlink file: " << tgt;
 
   EXPECT_FALSE(fs_create_symlink("", link_file)) << "create_symlink() should fail with empty target";
+
+  ASSERT_TRUE(fs_create_symlink(tgt, nonnull_file)) << "create_symlink(" << tgt << ", " << nonnull_file << ") should succeed even if link path is not null-terminated";
+  EXPECT_TRUE(fs_exists(in_file)) << "exists() should be false for non-existent file: " << in_file;
 
 
   EXPECT_TRUE(fs_is_symlink(link_file)) << "is_symlink() should be true for symlink: " << link_file;

@@ -187,7 +187,9 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
 #else
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/symlink.2.html
   // https://linux.die.net/man/3/symlink
-  if(::symlink(target.data(), link.data()) == 0)
+  const std::string tgt(target);
+  const std::string clink(link);
+  if(::symlink(tgt.c_str(), clink.c_str()) == 0)
     return true;
 #endif
   }
