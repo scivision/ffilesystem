@@ -5,11 +5,10 @@
 
 #include <gtest/gtest.h>
 
-namespace {
 class TestOnDisk : public testing::Test {
   protected:
-    std::string file, dir, cwd, sys_drive, in_dir, in_file;
-    std::string_view nonnull_dir, nonnull_file;
+    std::string file, dir, cwd, sys_drive, in_dir, in_sys_dir, in_file;
+    std::string_view nonnull_dir, nonnull_file, nonnull_sys_drive;
 
     void SetUp() override {
       auto inst = testing::UnitTest::GetInstance();
@@ -42,6 +41,10 @@ class TestOnDisk : public testing::Test {
       in_dir = "./invalid-memory-trailing-non-null-terminated-string_view";
       nonnull_dir = std::string_view(in_dir.data(), 2);
       ASSERT_NE(nonnull_dir.back(), '\0') << "nonnull_dir should not be null-terminated\n";
+
+      in_sys_dir = sys_drive + "/invalid-memory-trailing-non-null-terminated-string_view";
+      nonnull_sys_drive = std::string_view(sys_drive.data(), sys_drive.size());
+      ASSERT_NE(nonnull_sys_drive.back(), '\0') << "nonnull_sys_drive should not be null-terminated\n";
 
       in_file = file + "-invalid-memory-trailing-non-null-terminated-string_view";
       nonnull_file = std::string_view(in_file.data(), file.size());
@@ -204,12 +207,16 @@ ASSERT_TRUE(fs_touch(nonnull_file));
 EXPECT_TRUE(fs_is_file(nonnull_file));
 }
 
-TEST_F(TestOnDisk, FilesystemType){
-  std::string t = fs_filesystem_type(sys_drive);
+TEST_F(TestOnDisk, FilesystemType)
+{
+std::string t = fs_filesystem_type(sys_drive);
 
-  if (t.empty())
-      GTEST_SKIP() << "Unknown filesystem type, see type ID in stderr to update fs_get_type()";
-  }
+if (t.empty()){
+  GTEST_SKIP() << "Unknown filesystem type, see type ID in stderr to update fs_get_type()";
+}
+
+t = fs_filesystem_type(nonnull_sys_drive);
+EXPECT_FALSE(t.empty()) << "problem with non null-terminated path " << nonnull_sys_drive;
 
 }
 
