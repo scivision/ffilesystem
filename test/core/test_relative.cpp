@@ -1,8 +1,8 @@
 #include "ffilesystem.h"
-
 #include <gtest/gtest.h>
 
-TEST(TestRelative, Agnostic)
+
+TEST(TestRelative, RelativeTo)
 {
 
 EXPECT_EQ(fs_relative_to("", ""), "");
@@ -21,13 +21,8 @@ EXPECT_EQ(fs_relative_to("a", "a/b/.."), ".");
 EXPECT_EQ(fs_relative_to("a/b/c/d", "a/b"), "../..");
 EXPECT_EQ(fs_relative_to("a/b/c/d", "a/b/"), "../../");
 EXPECT_EQ(fs_relative_to("./a/b", "./a/c"), "../c");
-}
 
-TEST(TestRelative, Windows)
-{
-if(!fs_is_windows())
-  GTEST_SKIP() << "Windows only test";
-
+if (fs_is_windows()){
 auto e = fs_getenv("SYSTEMDRIVE");
 ASSERT_TRUE(e.has_value()) << "Failed to get SYSTEMDRIVE environment variable";
 std::string c = e.value();
@@ -43,8 +38,6 @@ EXPECT_EQ(fs_relative_to(c+"/a/b", c+"/a"), "..");
 }
 
 
-TEST(TestRelative, Posix)
-{
 EXPECT_EQ(fs_relative_to("", "a"), "a");
 EXPECT_EQ(fs_relative_to("/", "/"), ".");
 EXPECT_EQ(fs_relative_to("Hello", "Hello"), ".");

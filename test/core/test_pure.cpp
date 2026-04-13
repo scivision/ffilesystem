@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 
-TEST(TestStem, Agnostic)
+TEST(TestStem, Stem)
 {
 
 EXPECT_EQ(fs_stem(""), "");
@@ -24,20 +24,12 @@ EXPECT_EQ(fs_stem("a/."), ".");
 EXPECT_EQ(fs_stem("日本語.日本語"), "日本語");
 EXPECT_EQ(fs_stem("some space.txt"), "some space");
 EXPECT_EQ(fs_stem("some space"), "some space");
-}
 
-TEST(TestStem, Windows)
-{
-if(!fs_is_windows())
-  GTEST_SKIP() << "Windows only test";
+if(fs_is_windows()){
 
 EXPECT_EQ(fs_stem(R"(C:\a\ball.text)"), "ball");
-}
 
-TEST(TestStem, WindowsLongPaths)
-{
-if(!fs_win32_long_paths_enabled())
-  GTEST_SKIP() << "Windows long paths specific test";
+if(fs_win32_long_paths_enabled()) {
 
 EXPECT_EQ(fs_stem(R"(\\?\)"), "");
 EXPECT_EQ(fs_stem(R"(\\.\)"), "");
@@ -50,8 +42,12 @@ EXPECT_EQ(fs_stem(R"(\\?\UNC\server\share\日本語.txt)"), "日本語");
 EXPECT_EQ(fs_stem(R"(\\server\share\some space here.txt)"), "some space here");
 EXPECT_EQ(fs_stem(R"(\\?\C:\some space here.txt)"), "some space here");
 }
+}
 
-TEST(TestSuffix, Agnostic)
+}
+
+
+TEST(TestSuffix, Suffix)
 {
 EXPECT_EQ(fs_suffix(""), "");
 EXPECT_EQ(fs_suffix("a"), "");
@@ -70,20 +66,11 @@ EXPECT_EQ(fs_suffix("./b.c"), ".c");
 EXPECT_EQ(fs_suffix("../.b.c"), ".c");
 EXPECT_EQ(fs_suffix("日本語.語"), ".語");
 EXPECT_EQ(fs_suffix("some space.txt"), ".txt");
-}
 
-TEST(TestSuffix, Windows)
-{
-if(!fs_is_windows())
-  GTEST_SKIP() << "Windows only test";
-
+if(fs_is_windows()){
 EXPECT_EQ(fs_suffix(R"(C:\a\ball.text)"), ".text");
-}
 
-TEST(TestSuffix, WindowsLongPaths)
-{
-if(!fs_win32_long_paths_enabled())
-  GTEST_SKIP() << "Windows long paths specific test";
+if(fs_win32_long_paths_enabled()) {
 
 EXPECT_EQ(fs_suffix(R"(\\?\)"), "");
 EXPECT_EQ(fs_suffix(R"(\\.\)"), "");
@@ -95,14 +82,10 @@ EXPECT_EQ(fs_suffix(R"(\\?\UNC\server\share\日本語.txt)"), ".txt");
 
 EXPECT_EQ(fs_suffix(R"(\\server\share\some space here.txt)"), ".txt");
 EXPECT_EQ(fs_suffix(R"(\\?\C:\some space here.txt)"), ".txt");
-}
-
-
-TEST(TestWindowsUNC, UNC)
-{
-if(!fs_win32_long_paths_enabled())
-  GTEST_SKIP() << "Windows only test";
 
 EXPECT_TRUE(fs_win32_is_ext_path(R"(\\.\C:\)"));
 EXPECT_TRUE(fs_win32_is_ext_path(R"(\\?\C:\)"));
+}
+}
+
 }

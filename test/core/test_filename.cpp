@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(TestHasFilename, Agnostic)
+TEST(TestHasFilename, Filename)
 {
 
 EXPECT_FALSE(fs_has_filename(""));
@@ -24,23 +24,13 @@ EXPECT_TRUE(fs_has_filename("ab/.parent.txt"));
 EXPECT_TRUE(fs_has_filename("a/b/../.parent.txt"));
 EXPECT_TRUE(fs_has_filename("/.fil"));
 EXPECT_TRUE(fs_has_filename("./日本語"));
-}
 
-TEST(TestHasFilename, Windows)
-{
-if(!fs_is_windows())
-  GTEST_SKIP() << "Windows only test";
-
+if (fs_is_windows()){
 EXPECT_FALSE(fs_has_filename("C:/"));
 EXPECT_TRUE(fs_has_filename(R"(C:\ab\asb)"));
 EXPECT_TRUE(fs_has_filename(R"(\\server\share\some space here.txt)"));
-}
 
-TEST(TestHasFilename, WindowsLongPaths)
-{
-if(!fs_win32_long_paths_enabled())
-  GTEST_SKIP() << "Windows long paths specific test";
-
+if(fs_win32_long_paths_enabled()) {
 EXPECT_FALSE(fs_has_filename(R"(\\.\)"));
 
 EXPECT_FALSE(fs_has_filename(R"(\\?\C:\)"));
@@ -48,6 +38,9 @@ EXPECT_FALSE(fs_has_filename(R"(\\.\C:\)"));
 EXPECT_TRUE(fs_has_filename(R"(\\?\UNC\server\share)"));
 EXPECT_TRUE(fs_has_filename(R"(\\?\UNC\server\share\日本語)"));
 EXPECT_TRUE(fs_has_filename(R"(\\?\C:\some space here.txt)"));
+}
+}
+
 }
 
 
@@ -73,22 +66,12 @@ EXPECT_EQ(fs_file_name("ab/.parent.txt"), ".parent.txt");
 EXPECT_EQ(fs_file_name("a/b/../.parent.txt"), ".parent.txt");
 EXPECT_EQ(fs_file_name("/.fil"), ".fil");
 EXPECT_EQ(fs_file_name("./日本語"), "日本語");
-}
 
-TEST(TestFilename, Windows)
-{
-if(!fs_is_windows())
-  GTEST_SKIP() << "Windows only test";
-
+if (fs_is_windows()){
 EXPECT_EQ(fs_file_name("C:/"), "");
 EXPECT_EQ(fs_file_name(R"(C:\ab\asb)"), "asb");
-}
 
-TEST(TestFilename, WindowsLongPaths)
-{
-if(!fs_win32_long_paths_enabled())
-  GTEST_SKIP() << "Windows long paths specific test";
-
+if(fs_win32_long_paths_enabled()){
 EXPECT_EQ(fs_file_name(R"(\\?\)"), "");
 EXPECT_EQ(fs_file_name(R"(\\.\)"), "");
 
@@ -98,4 +81,7 @@ EXPECT_EQ(fs_file_name(R"(\\?\UNC\server\share)"), "share");
 EXPECT_EQ(fs_file_name(R"(\\?\UNC\server\share\日本語)"), "日本語");
 EXPECT_EQ(fs_file_name(R"(\\server\share\some space here.txt)"), "some space here.txt");
 EXPECT_EQ(fs_file_name(R"(\\?\C:\some space here.txt)"), "some space here.txt");
+}
+}
+
 }
