@@ -11,20 +11,22 @@ class TestCanonical : public testing::Test {
     std::string cwd, cwdp;
 
     void SetUp() override {
-      if(fs_is_windows()){
-        cwd = fs_realpath(::testing::TempDir());
-        // realpath for Dev Drive, network drive, short-name on Windows CI, ...
-
-        cwd = fs_drop_slash(fs_as_posix(cwd));
-        ASSERT_TRUE(fs_set_cwd(cwd));
-      } else {
-        // haven't needed realpath yet on non-Windows. Maybe for network drive?
-        cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
-      }
+      cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
+      ASSERT_FALSE(cwd.empty()) << "Failed to get current working directory";
+      // realpath for symlinks (macOS), Dev Drive or short name on CI (Windows), network drives, etc.
+      cwd = fs_realpath(cwd);
+      cwd = fs_drop_slash(fs_as_posix(cwd));
       ASSERT_FALSE(cwd.empty());
+
+      if(cwd == fs_root(fs_absolute("/"))) {
+        GTEST_SKIP() << "TempDir is not expected to be root directory: " << cwd;
+      }
+
+      ASSERT_TRUE(fs_set_cwd(cwd));
 
       cwdp = fs_parent(cwd);
       ASSERT_FALSE(cwdp.empty());
+      ASSERT_NE(cwdp, cwd) << "cwd: " << cwd << " vs parent: " << cwdp;
     }
 };
 
@@ -38,7 +40,27 @@ EXPECT_EQ(fs_as_posix(r), cwdp) << r << " vs " << cwdp;
 r = fs_canonical("..", false);
 ASSERT_FALSE(r.empty());
 EXPECT_EQ(fs_as_posix(r), cwdp) << r << " vs " << cwdp;
+
+if(fs_is_windows()) {
+
+auto d = fs_getenv("SystemDrive");
+ASSERT_TRUE(d.has_value()) << "Failed to get SystemDrive";
+std::string sys_drive = d.value();
+
+EXPECT_THAT(fs_resolve(sys_drive + "/", true), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
+EXPECT_THAT(fs_resolve(sys_drive + "/", false), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
+
+if(fs_backend() != "<filesystem>"){
+
+EXPECT_THAT(fs_resolve(R"(\\?\)" + sys_drive + "\\", true),
+             ::testing::AnyOf(R"(\\?\)" + sys_drive + "\\", R"(\\?\)" + sys_drive + "/"));
 }
+
+}
+
+}
+
+
 TEST_F(TestCanonical, ResolveParentDir)
 {
 std::string r = fs_resolve("..", true);
@@ -48,12 +70,8 @@ EXPECT_EQ(fs_as_posix(r), cwdp) << r << " vs " << cwdp;
 r = fs_resolve("..", false);
 ASSERT_FALSE(r.empty());
 EXPECT_EQ(fs_as_posix(r), cwdp) << r << " vs " << cwdp;
-}
 
-
-TEST(TestResolve, CanonicalWindows){
-if(!fs_is_windows())
-  GTEST_SKIP() << "Windows specific test";
+if (fs_is_windows()) {
 
 auto d = fs_getenv("SystemDrive");
 ASSERT_TRUE(d.has_value()) << "Failed to get SystemDrive";
@@ -71,25 +89,9 @@ EXPECT_THAT(fs_canonical(R"(\\?\)" + sys_drive + "\\", true),
 }
 
 }
-
-TEST(TestResolve, ResolveWindows){
-if(!fs_is_windows())
-  GTEST_SKIP() << "Windows specific test";
-
-auto d = fs_getenv("SystemDrive");
-ASSERT_TRUE(d.has_value()) << "Failed to get SystemDrive";
-std::string sys_drive = d.value();
-
-EXPECT_THAT(fs_resolve(sys_drive + "/", true), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
-EXPECT_THAT(fs_resolve(sys_drive + "/", false), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
-
-if(fs_backend() != "<filesystem>"){
-
-EXPECT_THAT(fs_resolve(R"(\\?\)" + sys_drive + "\\", true),
-             ::testing::AnyOf(R"(\\?\)" + sys_drive + "\\", R"(\\?\)" + sys_drive + "/"));
 }
 
-}
+
 
 
 TEST_F(TestCanonical, CanonicalParentRel)
