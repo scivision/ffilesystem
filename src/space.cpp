@@ -27,6 +27,12 @@ namespace Filesystem = std::filesystem;
 
 #endif
 
+namespace {
+
+constexpr std::uintmax_t fs_unknown_space = static_cast<std::uintmax_t>(-1);
+
+}
+
 std::uintmax_t fs_space_available(std::string_view path)
 {
   // filesystem space available for device holding path
@@ -37,6 +43,9 @@ std::uintmax_t fs_space_available(std::string_view path)
   auto s = Filesystem::space(path, ec);
   if (ec)
     fs_print_error(path, __func__, ec);
+
+  if (ec || s.available == fs_unknown_space)
+    return fs_unknown_space;
 
   return s.available;
 #elif defined(_WIN32)
@@ -56,7 +65,7 @@ std::uintmax_t fs_space_available(std::string_view path)
 #endif
 
   fs_print_error(path, __func__, ec);
-  return static_cast<std::uintmax_t>(-1);
+  return fs_unknown_space;
 }
 
 
@@ -74,6 +83,9 @@ std::uintmax_t fs_space_capacity(std::string_view path)
   if (ec)
     fs_print_error(path, __func__, ec);
 
+  if (ec || s.capacity == fs_unknown_space)
+    return fs_unknown_space;
+
   return s.capacity;
 #elif defined(_WIN32)
   if(ULARGE_INTEGER b; GetDiskFreeSpaceExW(fs_win32_to_wide(path).c_str(), nullptr, &b, nullptr) != 0)
@@ -89,5 +101,5 @@ std::uintmax_t fs_space_capacity(std::string_view path)
 #endif
 
   fs_print_error(path, __func__, ec);
-  return static_cast<std::uintmax_t>(-1);
+  return fs_unknown_space;
 }
