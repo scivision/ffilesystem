@@ -8,7 +8,7 @@
 
 class TestEquivalent : public testing::Test {
     protected:
-      std::string self, self_name, in_file;
+      std::string self, self_name;
       std::string_view nonnull_file;
       std::string in_file; // this must be in global scope for nonnull_file to be valid
 

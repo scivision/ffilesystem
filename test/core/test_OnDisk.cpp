@@ -7,8 +7,8 @@
 
 class TestOnDisk : public testing::Test {
   protected:
-    std::string file, dir, cwd, sys_drive, in_dir, in_sys_dir, in_file;
-    std::string_view nonnull_dir, nonnull_file, nonnull_sys_drive;
+    std::string self, self_name, cwd, sys_drive, in_dir, in_sys_dir;
+    std::string_view nonnull_dir, nonnull_sys_drive;
 
     void SetUp() override {
       auto inst = testing::UnitTest::GetInstance();
@@ -34,9 +34,9 @@ class TestOnDisk : public testing::Test {
         sys_drive = "/";
       }
 
-      file = cwd + "/ffs_" + n + ".txt";
-      ASSERT_TRUE(fs_touch(file));
-      ASSERT_TRUE(fs_is_file(file));
+      std::vector<std::string> argvs = ::testing::internal::GetArgvs();
+      self = argvs[0];
+      self_name = fs_file_name(self);
 
       in_dir = "./invalid-memory-trailing-non-null-terminated-string_view";
       nonnull_dir = std::string_view(in_dir.data(), 2);
@@ -45,23 +45,17 @@ class TestOnDisk : public testing::Test {
       in_sys_dir = sys_drive + "/invalid-memory-trailing-non-null-terminated-string_view";
       nonnull_sys_drive = std::string_view(sys_drive.data(), sys_drive.size());
       ASSERT_NE(nonnull_sys_drive.back(), '\0') << "nonnull_sys_drive should not be null-terminated\n";
-
-      in_file = file + "-invalid-memory-trailing-non-null-terminated-string_view";
-      nonnull_file = std::string_view(in_file.data(), file.size());
-      ASSERT_NE(nonnull_file.back(), '\0') << "nonnull_file should not be null-terminated\n";
-    }
-    void TearDown() override {
-      fs_remove(file);
     }
   };
 
 
 TEST_F(TestOnDisk, Exists)
 {
-  EXPECT_TRUE(fs_exists(file));
-  EXPECT_TRUE(fs_exists(cwd));
-  EXPECT_FALSE(fs_exists("ffs_exists_not-exist-file"));
-  EXPECT_FALSE(fs_exists(""));
+  for (auto s : {std::string("."), std::string(".."), std::string("/"), self, self_name, cwd})
+    EXPECT_TRUE(fs_exists(s)) << "Expected to exist: " << s;
+
+  for (auto s : {"ffs_exists_not-exist-file", ""})
+    EXPECT_FALSE(fs_exists(s)) << "Expected to not exist: " << s;
 
   EXPECT_TRUE(fs_exists(nonnull_dir));
 }
@@ -71,14 +65,13 @@ TEST_F(TestOnDisk, IsDir)
   EXPECT_FALSE(fs_is_dir(""));
   EXPECT_TRUE(fs_is_dir("."));
   EXPECT_TRUE(fs_is_dir(cwd));
-  EXPECT_FALSE(fs_is_dir(file));
+  EXPECT_FALSE(fs_is_dir(self));
   EXPECT_FALSE(fs_is_dir("ffs_is_dir_not-exist-dir"));
 }
 
 
 TEST_F(TestOnDisk, IsFile){
-EXPECT_TRUE(fs_is_file(file));
-EXPECT_FALSE(fs_is_exe(file));
+EXPECT_TRUE(fs_is_file(self));
 EXPECT_FALSE(fs_is_file("ffs_is_file_not-exist-file"));
 EXPECT_FALSE(fs_is_file(""));
 EXPECT_FALSE(fs_is_file("."));
@@ -88,15 +81,14 @@ EXPECT_FALSE(fs_is_file(cwd));
 TEST_F(TestOnDisk, IsReadable)
 {
 EXPECT_TRUE(fs_is_readable("."));
-EXPECT_TRUE(fs_is_readable(file));
+EXPECT_TRUE(fs_is_readable(self));
 EXPECT_TRUE(fs_is_readable(cwd));
 
 if(fs_is_windows()){
   EXPECT_TRUE(fs_is_readable(sys_drive));
-}
 
-if(fs_win32_long_paths_enabled()){
-  EXPECT_TRUE(fs_is_readable(R"(\\?\)" + sys_drive + "\\"));
+  if(fs_win32_long_paths_enabled())
+    EXPECT_TRUE(fs_is_readable(R"(\\?\)" + sys_drive + "\\"));
 }
 
 EXPECT_TRUE(fs_is_readable("/"));
@@ -107,34 +99,33 @@ EXPECT_TRUE(fs_is_readable(nonnull_dir));
 
 TEST_F(TestOnDisk, IsWritable)
 {
-EXPECT_TRUE(fs_is_writable(file));
+EXPECT_TRUE(fs_is_writable(self));
 EXPECT_TRUE(fs_is_writable(cwd));
 
-if(!fs_is_windows() && !fs_is_admin()){
+if(fs_is_windows()){
+  if(fs_win32_long_paths_enabled()){
+    std::string s = fs_as_windows(R"(\\?\)" + fs_canonical(self));
+    EXPECT_TRUE(fs_is_writable(s)) << s;
+  }
+} else if (!fs_is_admin()){
   EXPECT_FALSE(fs_is_writable("/"));
 }
 
-if(fs_win32_long_paths_enabled()){
-  std::string s = fs_as_windows(R"(\\?\)" + fs_canonical(file));
-  EXPECT_TRUE(fs_is_writable(s)) << s;
-}
-
 EXPECT_TRUE(fs_is_writable(nonnull_dir));
-
 }
 
 
 TEST_F(TestOnDisk, IsOther){
   EXPECT_FALSE(fs_is_other(""));
   EXPECT_FALSE(fs_is_other("."));
-  EXPECT_FALSE(fs_is_other(file));
+  EXPECT_FALSE(fs_is_other(self));
   EXPECT_FALSE(fs_is_other(cwd));
   EXPECT_FALSE(fs_is_other("ffs_is_other_not-exist-file"));
 }
 
 
 TEST_F(TestOnDisk, StatMode){
-  EXPECT_NE(fs_st_mode(file), 0);
+  EXPECT_NE(fs_st_mode(self), 0);
   EXPECT_NE(fs_st_mode(cwd), 0);
   EXPECT_EQ(fs_st_mode("ffs_stat_mode_not-exist-file"), 0);
   EXPECT_EQ(fs_st_mode(""), 0);
@@ -171,6 +162,7 @@ EXPECT_GT(fs_get_modtime(nonnull_dir), 0) << "problem with non null-terminated p
 
 TEST_F(TestOnDisk, Touch)
 {
+std::string_view file = "ffs_touch_test_file";
 
 EXPECT_TRUE(fs_touch(file));
 
@@ -183,8 +175,14 @@ EXPECT_GE(fs_get_modtime(file), t0);
 
 EXPECT_FALSE(fs_set_modtime("not-exist-file"));
 
+std::string in_file = self + "-invalid-memory-trailing-non-null-terminated-string_view";
+std::string_view nonnull_file = std::string_view(in_file.data(), self.size());
+ASSERT_NE(nonnull_file.back(), '\0') << "nonnull_file should not be null-terminated\n";
+
 ASSERT_TRUE(fs_touch(nonnull_file));
 EXPECT_TRUE(fs_is_file(nonnull_file));
+
+fs_remove(file);
 }
 
 TEST_F(TestOnDisk, FilesystemType)
