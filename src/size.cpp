@@ -34,7 +34,15 @@ namespace Filesystem = std::filesystem;
 
 std::uintmax_t fs_file_size(std::string_view path)
 {
+  // fs_file_size() like std::filesystem::file_size() is only for files, not directories, which are considered to have no size.
+  // Returns (uintmax_t)(-1) on error, and sets errno or std::error_code.
+  // different platforms treat non-file's size differently, so we need the fs_is_file() for consistency.
+
   std::error_code ec;
+
+  if(!fs_is_file(path))
+    return static_cast<std::uintmax_t>(-1);
+
 #if defined(HAVE_CXX_FILESYSTEM)
 
   auto s = Filesystem::file_size(path, ec);
