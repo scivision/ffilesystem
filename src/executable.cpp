@@ -11,9 +11,6 @@
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#elif defined(HAVE_CXX_FILESYSTEM)
-#include <filesystem>
-namespace Filesystem = std::filesystem;
 #else
 #include <unistd.h>  // X_OK, access()
 #endif
@@ -100,8 +97,9 @@ bool fs_is_executable_binary(std::string_view path)
 
 bool fs_is_exe(std::string_view path)
 {
-  // is path (file or symlink to a file) executable by the user
-  // directories are not considered executable--use fs_get_permissions() for that.
+  // is file or symlink to a file executable by the user.
+  // directories are not considered "executable file"
+  // use fs_get_permissions() for that.
 
   if(!fs_is_file(path))
     return false;
@@ -128,26 +126,6 @@ bool fs_is_exe(std::string_view path)
 #else
   return pathext.find(suffix) != std::string::npos;
 #endif
-
-#elif defined(HAVE_CXX_FILESYSTEM)
-
-#if defined(__cpp_using_enum)  // C++20
-  using enum Filesystem::perms;
-#else
-  constexpr Filesystem::perms none = Filesystem::perms::none;
-  constexpr Filesystem::perms others_exec = Filesystem::perms::others_exec;
-  constexpr Filesystem::perms group_exec = Filesystem::perms::group_exec;
-  constexpr Filesystem::perms owner_exec = Filesystem::perms::owner_exec;
-#endif
-
-  std::error_code ec;
-  const auto s = Filesystem::status(path, ec);
-  if(ec){
-    fs_print_error(path, __func__, ec);
-    return false;
-  }
-
-  return (s.permissions() & (owner_exec | group_exec | others_exec)) != none;
 
 #else
   const std::string cpath(path);
