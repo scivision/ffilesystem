@@ -7,9 +7,17 @@
 [![ci_fpm](https://github.com/scivision/ffilesystem/actions/workflows/ci_fpm.yml/badge.svg)](https://github.com/scivision/ffilesystem/actions/workflows/ci_fpm.yml)
 [![ci_meson](https://github.com/scivision/ffilesystem/actions/workflows/ci_meson.yml/badge.svg)](https://github.com/scivision/ffilesystem/actions/workflows/ci_meson.yml)
 
-Platform independent (Linux, macOS, Windows, Cygwin, WSL, BSD, ...) and compiler-agnostic Ffilesystem path manipulation library.
+Platform independent (Linux, macOS, Windows, Android, Cygwin, WSL, BSD, ...) and compiler-agnostic Ffilesystem path manipulation library.
 Simplicity and efficiency are focuses of Ffilesystem.
-Ffilesystem backend is implemented in C++17 using `<string_view>` for simplicity and speed.
+Ffilesystem backend is implemented in C++17, with C++ functions generally using
+[<string_view>](https://en.cppreference.com/w/cpp/header/string_view.html)
+inputs for simplicity and speed.
+C and Fortran interfaces are provided for nearly all C++ backend functions.
+For the Fortran interface, native Fortran `character` type is used.
+For the C interface,
+[C-style null-terminated strings](https://en.cppreference.com/w/cpp/string/byte.html)
+are used.
+
 If available,
 [C++ standard library `<filesystem>`](https://en.cppreference.com/w/cpp/filesystem)
 is used.

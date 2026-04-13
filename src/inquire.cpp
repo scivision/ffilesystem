@@ -39,7 +39,7 @@ namespace Filesystem = std::filesystem;
 static bool fs_win32_is_type(std::string_view path, const DWORD type){
 
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
-  HANDLE h = CreateFileW(fs_win32_to_wide(path).data(),
+  HANDLE h = CreateFileW(fs_win32_to_wide(path).c_str(),
                          0,
                          FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                          nullptr, OPEN_EXISTING, 0, nullptr);
@@ -131,7 +131,7 @@ fs_exists(std::string_view path)
 
   // WIN32_FILE_ATTRIBUTE_DATA fad;
 
-  // ok = GetFileAttributesExW(fs_win32_to_wide(path).data(), GetFileExInfoStandard, &fad);
+  // ok = GetFileAttributesExW(fs_win32_to_wide(path).c_str(), GetFileExInfoStandard, &fad);
   // if (!ok){
   //   DWORD err = GetLastError();
   //   if (err != ERROR_FILE_NOT_FOUND && err != ERROR_PATH_NOT_FOUND)
@@ -167,7 +167,7 @@ fs_is_dir(std::string_view path)
 // this also works for Symlinks to directories
   WIN32_FILE_ATTRIBUTE_DATA fad;
 
-  ok = GetFileAttributesExW(fs_win32_to_wide(path).data(), GetFileExInfoStandard, &fad) &&
+  ok = GetFileAttributesExW(fs_win32_to_wide(path).c_str(), GetFileExInfoStandard, &fad) &&
        (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 #else
   ok = S_ISDIR(fs_st_mode(path));

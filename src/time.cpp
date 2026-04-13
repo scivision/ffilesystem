@@ -96,7 +96,7 @@ bool fs_set_modtime(std::string_view path, const bool quiet)
 
 #elif defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/SysInfo/changing-a-file-time-to-the-current-time
-  HANDLE h = CreateFileW(fs_win32_to_wide(path).data(),
+  HANDLE h = CreateFileW(fs_win32_to_wide(path).c_str(),
                          FILE_WRITE_ATTRIBUTES,
                          FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                          nullptr,
@@ -115,7 +115,8 @@ bool fs_set_modtime(std::string_view path, const bool quiet)
   // utimensat available in macOS >= 10.13
   // https://github.com/python/cpython/issues/75782
   // https://gitlab.kitware.com/cmake/cmake/-/issues/17101
-  if (::utimensat(AT_FDCWD, path.data(), nullptr, 0) == 0)
+  const std::string cpath(path);
+  if (::utimensat(AT_FDCWD, cpath.c_str(), nullptr, 0) == 0)
     return true;
 #endif
 

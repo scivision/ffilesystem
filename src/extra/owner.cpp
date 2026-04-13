@@ -56,11 +56,12 @@ static std::string fs_win32_owner(std::string_view path, bool group)
   PSECURITY_DESCRIPTOR pSD = nullptr;
   PSID pSid = nullptr;
   DWORD r;
+  const std::string cpath(path);
   // https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-getnamedsecurityinfoa
   if (group)
-    r = GetNamedSecurityInfoA(path.data(), SE_FILE_OBJECT, GROUP_SECURITY_INFORMATION, nullptr, &pSid, nullptr, nullptr, &pSD);
+    r = GetNamedSecurityInfoA(cpath.c_str(), SE_FILE_OBJECT, GROUP_SECURITY_INFORMATION, nullptr, &pSid, nullptr, nullptr, &pSD);
   else
-    r = GetNamedSecurityInfoA(path.data(), SE_FILE_OBJECT, OWNER_SECURITY_INFORMATION, &pSid, nullptr, nullptr, nullptr, &pSD);
+    r = GetNamedSecurityInfoA(cpath.c_str(), SE_FILE_OBJECT, OWNER_SECURITY_INFORMATION, &pSid, nullptr, nullptr, nullptr, &pSD);
 
   std::string s;
   if(r == ERROR_SUCCESS)
@@ -77,16 +78,17 @@ static std::string fs_win32_owner(std::string_view path, bool group)
 static std::optional<uid_t> fs_stat_uid(std::string_view path)
 {
   int r = 0;
+  const std::string cpath(path);
 
 #if defined(HAVE_STATX)
   struct statx sx;
-  r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_UID, &sx);
+  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_UID, &sx);
   if (r == 0)
     return sx.stx_uid;
 #endif
 
   if(r == 0 || errno == ENOSYS){
-    if(struct stat s; !::stat(path.data(), &s))
+    if(struct stat s; !::stat(cpath.c_str(), &s))
       return s.st_uid;
   }
 
@@ -96,15 +98,17 @@ static std::optional<uid_t> fs_stat_uid(std::string_view path)
 static std::optional<gid_t> fs_stat_gid(std::string_view path)
 {
   int r = 0;
+  const std::string cpath(path);
+
 #if defined(HAVE_STATX)
   struct statx sx;
-  r = ::statx(AT_FDCWD, path.data(), AT_NO_AUTOMOUNT, STATX_GID, &sx);
+  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_GID, &sx);
   if (r == 0)
     return sx.stx_gid;
 #endif
 
 if(r == 0 || errno == ENOSYS){
-  if(struct stat s; !::stat(path.data(), &s))
+  if(struct stat s; !::stat(cpath.c_str(), &s))
     return s.st_gid;
 }
 

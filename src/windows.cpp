@@ -73,10 +73,10 @@ static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer
   std::error_code ec;
 
 
-// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesa
+// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesw
 
 // https://learn.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
-  if (DWORD attr = GetFileAttributesW(fs_win32_to_wide(path).data()); attr == INVALID_FILE_ATTRIBUTES)
+  if (DWORD attr = GetFileAttributesW(fs_win32_to_wide(path).c_str()); attr == INVALID_FILE_ATTRIBUTES)
     // ec = std::make_error_code(std::errc::no_such_file_or_directory);
     // don't emit error for non-existent files
     return false;
@@ -94,7 +94,7 @@ static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer
   // * a file or directory that has an associated reparse point, or
   // * a file that is a symbolic link.
 
-  HANDLE h = CreateFileW(fs_win32_to_wide(path).data(),
+  HANDLE h = CreateFileW(fs_win32_to_wide(path).c_str(),
                          0, 0, nullptr, OPEN_EXISTING,
                          FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
@@ -245,7 +245,7 @@ constexpr std::string_view dev = R"(\\.\)";
 
 std::string fs_win32_full_name(std::string_view path)
 {
-// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfullpathnameA
+// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfullpathnameW
 // GetFinalPathNameByHandle or GetFullPathName returns the unresolved symlink
 
   std::error_code ec;
@@ -253,13 +253,13 @@ std::string fs_win32_full_name(std::string_view path)
 #if defined(_WIN32) || defined(__CYGWIN__)
   std::wstring const w = fs_win32_to_wide(path);
 
-  auto const L = GetFullPathNameW(w.data(), 0, nullptr, nullptr);
+  auto const L = GetFullPathNameW(w.c_str(), 0, nullptr, nullptr);
   // this form includes the null terminator
   // weak detection of race condition (cwd change)
   if(L){
     std::wstring r;
     r.resize(L);
-    if(GetFullPathNameW(w.data(), L, r.data(), nullptr) == L-1)  FFS_LIKELY
+    if(GetFullPathNameW(w.c_str(), L, r.data(), nullptr) == L-1)  FFS_LIKELY
     {
       r.resize(L-1);
       return fs_win32_to_narrow(r);
@@ -282,8 +282,8 @@ std::string fs_win32_final_path(std::string_view path)
   //
   // References:
   // https://stackoverflow.com/a/50182947
-  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
-  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfinalpathnamebyhandlea
+  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
+  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfinalpathnamebyhandlew
 
   std::error_code ec;
 
@@ -294,7 +294,7 @@ std::string fs_win32_final_path(std::string_view path)
 
   std::wstring w = fs_win32_to_wide(path);
 
-  HANDLE h = CreateFileW(w.data(), GENERIC_READ, FILE_SHARE_READ, nullptr,
+  HANDLE h = CreateFileW(w.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
                          OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   if(h == INVALID_HANDLE_VALUE)
     return {};
@@ -327,21 +327,21 @@ std::string fs_win32_final_path(std::string_view path)
 
 std::string fs_longname(std::string_view in)
 {
-// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getlongpathnamea
+// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getlongpathnamew
 // the path must exist
 
   std::error_code ec;
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-// size includes terminal on 1st call, but does not include null terminator on 2nd call
+// size includes null terminator on 1st call, but does not include null terminator on 2nd call
   std::wstring const w = fs_win32_to_wide(in);
-  DWORD L = GetLongPathNameW(w.data(), nullptr, 0);
+  DWORD L = GetLongPathNameW(w.c_str(), nullptr, 0);
 
   if(L > 0){
     std::wstring out;
     out.resize(L);
 
-    if(GetLongPathNameW(w.data(), out.data(), L) == L-1) {
+    if(GetLongPathNameW(w.c_str(), out.data(), L) == L-1) {
       out.resize(L);
       return fs_win32_to_narrow(out);
     }
@@ -363,15 +363,15 @@ std::string fs_shortname(std::string_view in)
   std::error_code ec;
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-// size includes terminal on 1st call, but does not include null terminator on 2nd call
+// size includes null terminator on 1st call, but does not include null terminator on 2nd call
   std::wstring const w = fs_win32_to_wide(in);
-  DWORD L = GetShortPathNameW(w.data(), nullptr, 0);
+  DWORD L = GetShortPathNameW(w.c_str(), nullptr, 0);
 
   if(L > 0){
     std::wstring out;
     out.resize(L);
 
-    if(GetShortPathNameW(w.data(), out.data(), L) == L-1) {
+    if(GetShortPathNameW(w.c_str(), out.data(), L) == L-1) {
       out.resize(L);
       return fs_win32_to_narrow(out);
     }
@@ -390,12 +390,13 @@ std::string fs_win32_to_narrow([[maybe_unused]] std::wstring_view w)
   std::error_code ec;
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-  if (int L = WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, nullptr, 0, nullptr, nullptr); L > 0)  FFS_LIKELY
+  std::wstring ws(w);
+  if (int L = WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, nullptr, 0, nullptr, nullptr); L > 0)  FFS_LIKELY
   {
     std::string n;
     n.resize(L);
 
-    if(WideCharToMultiByte(CP_UTF8, 0, w.data(), -1, n.data(), L, nullptr, nullptr) == L) {
+    if(WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, n.data(), L, nullptr, nullptr) == L) {
       n.resize(L-1);  // discard null terminator
       return n;
     }

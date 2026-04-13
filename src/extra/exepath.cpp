@@ -46,11 +46,11 @@ std::string fs_exe_path()
   }
 #elif defined(__linux__) || defined(__CYGWIN__)
   // https://man7.org/linux/man-pages/man2/readlink.2.html
-  std::string_view exe = "/proc/self/exe";
+  const std::string exe = "/proc/self/exe";
   std::string p;
   p.resize(fs_symlink_length(exe));
 
-  if(ssize_t L = readlink(exe.data(), p.data(), p.size()); L > 0) {
+  if(ssize_t L = ::readlink(exe.c_str(), p.data(), p.size()); L > 0) {
     p.resize(L);
     return p;
   }

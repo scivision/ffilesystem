@@ -31,13 +31,15 @@ std::string_view::size_type fs_max_component(std::string_view path)
 
 #if defined(_WIN32)
   DWORD L = 0;
-  if(GetVolumeInformationW(fs_win32_to_wide(fs_root(path)).data(), nullptr, 0, nullptr, &L, nullptr, nullptr, 0) != 0)
+  if(GetVolumeInformationW(fs_win32_to_wide(fs_root(path)).c_str(), nullptr, 0, nullptr, &L, nullptr, nullptr, 0) != 0)
     return L;
 #elif defined(_PC_NAME_MAX)
   errno = 0;
-  auto const r = pathconf(path.data(), _PC_NAME_MAX);
+  const std::string cpath(path);
+  auto const r = pathconf(cpath.c_str(), _PC_NAME_MAX);
   if(r != -1)
     return r;
+
   if(errno == 0)
     return DEFAULT_MAX_PATH;
 #elif defined(NAME_MAX)

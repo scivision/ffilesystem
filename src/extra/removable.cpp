@@ -30,9 +30,9 @@ fs_is_removable(std::string_view path)
   // is path a removable device like a USB stick or SD card or CD-ROM, DVD, Blu-ray
   // not a fixed disk like a hard drive or SSD
 #if defined(_WIN32)
-  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdrivetypea
+  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdrivetypew
 
-  UINT t = GetDriveTypeW(fs_win32_to_wide(fs_root(path)).data());
+  UINT t = GetDriveTypeW(fs_win32_to_wide(fs_root(path)).c_str());
   switch (t)
   {
     case DRIVE_REMOVABLE:

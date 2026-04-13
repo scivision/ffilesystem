@@ -123,7 +123,7 @@ std::string fs_filesystem_type(std::string_view path)
   std::string name;
   name.resize(MAX_PATH+1);
 
-  if(GetVolumeInformationA(r.data(), nullptr, 0, nullptr, nullptr, nullptr, name.data(), static_cast<DWORD>(name.size())))
+  if(GetVolumeInformationA(r.c_str(), nullptr, 0, nullptr, nullptr, nullptr, name.data(), static_cast<DWORD>(name.size())))
     return fs_trim(name);
 
 #elif defined(__linux__)

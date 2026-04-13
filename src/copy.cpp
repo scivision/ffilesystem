@@ -142,8 +142,8 @@ static off_t fs_copy_loop(int const rid, int const wid, off_t const len)
 bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, bool overwrite)
 {
   // copy a file in chunks
-
-  fd_handle rid(::open(source.data(), O_RDONLY | O_CLOEXEC));
+  const std::string src(source);
+  fd_handle rid(::open(src.c_str(), O_RDONLY | O_CLOEXEC));
   if (!rid)
     return false;
 
@@ -159,7 +159,8 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
     opt |= O_EXCL;
 
 // https://linux.die.net/man/3/open
-  fd_handle wid(::open(dest.data(), opt, s.st_mode));
+  const std::string dst(dest);
+  fd_handle wid(::open(dst.c_str(), opt, s.st_mode));
   if (!wid)
     return false;
 
@@ -234,11 +235,11 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
   if(!overwrite)
     opts |= COPY_FILE_FAIL_IF_EXISTS;
 
-  // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfileexa
+  // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfileexw
   // preserves source file attributes
 
-  if(CopyFileExW(fs_win32_to_wide(source).data(),
-                 fs_win32_to_wide(dest).data(),
+  if(CopyFileExW(fs_win32_to_wide(source).c_str(),
+                 fs_win32_to_wide(dest).c_str(),
                  nullptr, nullptr, FALSE, opts) != 0)
     return true;
 

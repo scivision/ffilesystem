@@ -173,10 +173,10 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
 
   DWORD p = SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
 
-  if(fs_is_dir(target.data()))
+  if(fs_is_dir(target))
     p |= SYMBOLIC_LINK_FLAG_DIRECTORY;
 
-  if(CreateSymbolicLinkW(fs_win32_to_wide(link).data(), fs_win32_to_wide(target).data(), p))
+  if(CreateSymbolicLinkW(fs_win32_to_wide(link).c_str(), fs_win32_to_wide(target).c_str(), p))
     return true;
 
 #elif defined(HAVE_CXX_FILESYSTEM)

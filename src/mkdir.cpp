@@ -65,7 +65,7 @@ else {
     // create directory
 #if defined(_WIN32)
     // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createdirectoryw
-    ok = CreateDirectoryW(fs_win32_to_wide(buf).data(), nullptr) != 0;
+    ok = CreateDirectoryW(fs_win32_to_wide(buf).c_str(), nullptr) != 0;
     if(!ok){
       const auto err = GetLastError();
       // ERROR_PATH_NOT_FOUND if relative directory, thus we absolute() before loop.

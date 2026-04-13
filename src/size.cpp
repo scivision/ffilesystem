@@ -46,7 +46,7 @@ std::uintmax_t fs_file_size(std::string_view path)
 #elif defined(_WIN32)
   // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfilesizeex
 
-  HANDLE h = CreateFileW(fs_win32_to_wide(path).data(),
+  HANDLE h = CreateFileW(fs_win32_to_wide(path).c_str(),
                              GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
   if (h != INVALID_HANDLE_VALUE) {
@@ -102,7 +102,7 @@ bool fs_is_empty(std::string_view path)
 #if defined(_WIN32)
   // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findfirstfilea
   WIN32_FIND_DATAA ffd;
-  HANDLE hFind = FindFirstFileA((cpath + "/*").data(), &ffd);
+  HANDLE hFind = FindFirstFileA((cpath + "/*").c_str(), &ffd);
   if (hFind == INVALID_HANDLE_VALUE) {
     fs_print_error(path, __func__);
     return false;

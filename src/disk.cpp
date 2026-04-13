@@ -35,7 +35,7 @@ std::size_t fs_get_blksize(std::string_view path)
   if (root.empty())
     return {};
 
-  HANDLE h = CreateFileW(fs_win32_to_wide(R"(\\.\)" + root).data(),
+  HANDLE h = CreateFileW(fs_win32_to_wide(R"(\\.\)" + root).c_str(),
                          0,
                          FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                          nullptr, OPEN_EXISTING, 0, nullptr);
@@ -120,9 +120,8 @@ ino_t fs_inode(std::string_view path)
 #if defined(HAVE_GETFILEINFORMATIONBYNAME)
   // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-file_stat_basic_information
   FILE_STAT_BASIC_INFORMATION f1;
-  const auto w1 = fs_win32_to_wide(path);
 
-  if (GetFileInformationByName(w1.data(), FileStatBasicByNameInfo, &f1, sizeof(f1)))
+  if (GetFileInformationByName(fs_win32_to_wide(path).c_str(), FileStatBasicByNameInfo, &f1, sizeof(f1)))
     return static_cast<ino_t>(f1.FileId.QuadPart);
 
 #else

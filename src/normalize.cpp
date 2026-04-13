@@ -123,7 +123,7 @@ fs_drop_slash(std::string_view in)
     if(fs_win32_is_ext_path(in)){
       i = 4;
 #if defined(_WIN32)
-    } else if (PathIsUNCA(in.data())){
+    } else if (std::string cin(in); PathIsUNCA(cin.c_str())){
       i = in.find(R"(\)", 2);
 #endif
     }

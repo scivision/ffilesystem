@@ -38,8 +38,8 @@ static bool fs_win32_equiv(std::string_view path1, std::string_view path2, std::
   // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-file_stat_basic_information
   FILE_STAT_BASIC_INFORMATION f1, f2;
 
- if ( GetFileInformationByName(fs_win32_to_wide(path1).data(), FileStatBasicByNameInfo, &f1, sizeof(f1)) &&
-      GetFileInformationByName(fs_win32_to_wide(path2).data(), FileStatBasicByNameInfo, &f2, sizeof(f2))) {
+ if ( GetFileInformationByName(fs_win32_to_wide(path1).c_str(), FileStatBasicByNameInfo, &f1, sizeof(f1)) &&
+      GetFileInformationByName(fs_win32_to_wide(path2).c_str(), FileStatBasicByNameInfo, &f2, sizeof(f2))) {
         return f1.VolumeSerialNumber.QuadPart == f2.VolumeSerialNumber.QuadPart &&
                f1.FileId.QuadPart == f2.FileId.QuadPart;
   }
@@ -50,14 +50,14 @@ static bool fs_win32_equiv(std::string_view path1, std::string_view path2, std::
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileinformationbyhandle#remarks
 // FILE_FLAG_BACKUP_SEMANTICS to allow opening directories
 
-  HANDLE h1 = CreateFileW(fs_win32_to_wide(path1).data(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, nullptr,
+  HANDLE h1 = CreateFileW(fs_win32_to_wide(path1).c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, nullptr,
     OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   if(h1 == INVALID_HANDLE_VALUE) {
     fs_print_error(path1, __func__);
     return false;
   }
 
-  HANDLE h2 = CreateFileW(fs_win32_to_wide(path2).data(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, nullptr,
+  HANDLE h2 = CreateFileW(fs_win32_to_wide(path2).c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, nullptr,
     OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   if(h2 == INVALID_HANDLE_VALUE) {
     fs_print_error(path2, __func__);

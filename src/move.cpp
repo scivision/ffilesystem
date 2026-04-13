@@ -41,9 +41,7 @@ fs_remove(std::string_view path)
   // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-deletefilea
   // Need RemoveDirectoryW when deleting a directory symlink with std::remove()
   // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsymboliclinka#remarks
-  std::wstring const w = fs_win32_to_wide(path);
-
-    if(RemoveDirectoryW(w.data()) != 0)
+    if(RemoveDirectoryW(fs_win32_to_wide(path).c_str()) != 0)
       return true;
   }
 #endif
