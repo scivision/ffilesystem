@@ -4,7 +4,7 @@
 
 #include <string>
 
-class TestAbs : public testing::Test {
+class TestAbsolute : public testing::Test {
 protected:
 
   std::string base, ref, cwd;
@@ -13,6 +13,7 @@ protected:
   void SetUp() override {
     cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
     ASSERT_FALSE(cwd.empty()) << "Failed to get current working directory";
+    cwd = fs_drop_slash(fs_as_posix(cwd));
 
     if (fs_is_windows()) {
       base = "j:/foo";
@@ -28,7 +29,7 @@ protected:
 };
 
 
-TEST_F(TestAbs, Absolute){
+TEST_F(TestAbsolute, Absolute){
 
 EXPECT_EQ(fs_absolute(""), cwd);
 EXPECT_EQ(fs_absolute("", ""), cwd);
@@ -50,20 +51,21 @@ EXPECT_EQ(fs_absolute("", "rel"), cwd + fs_filesep() + "rel");
 EXPECT_EQ(fs_absolute("日本語"), cwd + fs_filesep() + "日本語");
 EXPECT_EQ(fs_absolute("have space"), cwd + fs_filesep() + "have space");
 
+if (fs_is_windows()) {
+  EXPECT_EQ(fs_absolute(sys_drive + "/"), sys_drive + "/");
+
+  // NOTE: no, as MYS interprets "/" totally differently depending on backend and vs MSVC
+  // EXPECT_EQ(fs_drop_slash(fs_as_posix(fs_absolute("/"))), cwd);
+} else {
+  EXPECT_EQ(fs_absolute("/"), "/");
+}
+
 }
 
 
-TEST_F(TestAbs, Windows){
-
-if(!fs_is_windows())
-  GTEST_SKIP() << "Windows only test";
-
-EXPECT_EQ(fs_absolute(sys_drive + "/"), sys_drive + "/");
-}
-
-TEST_F(TestAbs, WindowsLongPaths)
+TEST_F(TestAbsolute, WindowsLongPaths)
 {
-if(!fs_win32_long_paths_enabled())
+if(!fs_is_windows() || !fs_win32_long_paths_enabled())
   GTEST_SKIP() << "needs Windows long paths enabled";
 
 EXPECT_EQ(fs_absolute(R"(\\?\X:\anybody)"), R"(\\?\X:\anybody)");
@@ -71,19 +73,14 @@ EXPECT_EQ(fs_absolute(R"(\\?\UNC\server\share)"), R"(\\?\UNC\server\share)");
 }
 
 
-TEST(IsAbs, Agnostic)
+TEST_F(TestAbsolute, IsAbsolute)
 {
 EXPECT_FALSE(fs_is_absolute(""));
 
 EXPECT_FALSE(fs_is_absolute("日本語"));
 EXPECT_FALSE(fs_is_absolute("some space here"));
-}
 
-TEST_F(TestAbs, IsAbsWindows)
-{
-if(!fs_is_windows())
-  GTEST_SKIP() << "Windows only test";
-
+if (fs_is_windows()) {
 EXPECT_TRUE(fs_is_absolute(sys_drive + "/"));
 
 EXPECT_TRUE(fs_is_absolute("J:/"));
@@ -91,11 +88,17 @@ EXPECT_TRUE(fs_is_absolute("j:/"));
 EXPECT_FALSE(fs_is_absolute("j:"));
 EXPECT_FALSE(fs_is_absolute("/"));
 EXPECT_FALSE(fs_is_absolute("/日本語"));
+} else {
+EXPECT_TRUE(fs_is_absolute("/"));
+EXPECT_TRUE(fs_is_absolute("/日本語"));
+EXPECT_FALSE(fs_is_absolute("j:/"));
 }
 
-TEST_F(TestAbs, IsAbsWindowsLongPaths)
+}
+
+TEST_F(TestAbsolute, IsAbsWindowsLongPaths)
 {
-if(!fs_win32_long_paths_enabled())
+if(!fs_is_windows() || !fs_win32_long_paths_enabled())
   GTEST_SKIP() << "needs Windows long paths enabled";
 
 EXPECT_TRUE(fs_is_absolute(R"(\\?\)"));
@@ -113,15 +116,4 @@ std::string_view truncated_unc(unc_prefixed.data(), 2);
 ASSERT_EQ(truncated_unc, R"(\\)");
 EXPECT_FALSE(fs_is_absolute(truncated_unc))
   << "fs_is_absolute() read past string_view length while checking UNC path";
-}
-
-TEST(IsAbs, Posix)
-{
-
-if(fs_is_windows())
-  GTEST_SKIP() << "Posix only test";
-
-EXPECT_TRUE(fs_is_absolute("/"));
-EXPECT_TRUE(fs_is_absolute("/日本語"));
-EXPECT_FALSE(fs_is_absolute("j:/"));
 }

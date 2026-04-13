@@ -10,7 +10,7 @@ We do a CMake (or Meson) configure-time check to ensure C++17 `<filesystem>` is 
 
 ## Platform support
 
-Target platforms are Linux, Windows, macOS, and BSD.
+Target platforms are Linux, Windows, Windows Subsystem for Linux (WSL), macOS, Android, and BSD.
 
 * We aim to support a range of Linux C and C++ standard libraries--for example, the libc and libstdc++ available with currently supported Ubuntu LTS and RHEL versions.
 * We aim to support relative recent BSD flavors (FreeBSD, OpenBSD, NetBSD).
