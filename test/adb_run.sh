@@ -7,9 +7,10 @@
 
 
 ADB="${ADB:-$ANDROID_SDK_ROOT/platform-tools/adb}"
+RUN_DIR="${RUN_DIR:-/data/local/tmp/ffilesystem-tests}"
 
 if [ ! -x "$ADB" ]; then
-  echo "adb wrapper: adb not found at $ADB (set ADB=...)." >&2
+  echo "adb wrapper: adb not found at $ADB" >&2
   exit 77
 fi
 
@@ -20,7 +21,9 @@ if [ "$state" != "device" ]; then
 fi
 
 binary="$1"; shift
-device_path="/data/local/tmp/$(basename "$binary")"
+base="$(basename "$binary")"
+device_path="$RUN_DIR/$base"
 
+"$ADB" shell "mkdir -p '$RUN_DIR'" >/dev/null 2>&1 || exit 77
 "$ADB" push "$binary" "$device_path" >/dev/null || exit 77
-"$ADB" shell "chmod +x \"$device_path\" && \"$device_path\" $*"
+"$ADB" shell "cd '$RUN_DIR' && export TMPDIR='$RUN_DIR' TMP='$RUN_DIR' TEMP='$RUN_DIR' HOME='$RUN_DIR' && chmod +x '$device_path' && '$device_path' $*"
