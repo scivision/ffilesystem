@@ -59,7 +59,7 @@ class TestCopyFile : public testing::Test {
       fs_remove(s2);
       fs_remove(s3);
       fs_remove(s4);
-      if(fs_win32_long_paths_enabled()){
+      if(!ext5.empty()){
         fs_remove(ext5);
       }
     }
@@ -87,7 +87,7 @@ EXPECT_TRUE(fs_is_file(s4));
 
 EXPECT_EQ(fs_file_size(s4), 0);
 
-if(fs_is_windows() && fs_win32_long_paths_enabled()){
+if(!ext5.empty()){
 ASSERT_TRUE(fs_copy_file(ext1, ext5, false));
 ASSERT_TRUE(fs_is_file(ext5));
 EXPECT_EQ(fs_file_size(ext5), iref);
