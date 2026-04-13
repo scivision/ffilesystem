@@ -12,6 +12,11 @@ class TestRename: public testing::Test {
     void SetUp() override {
       f1 = "test_Ffs_rename.txt";
       f2 = "test_Ffs_rename2.txt";
+
+      if(!fs_is_writable(".")){
+        GTEST_SKIP() << "current directory is not writable";
+      }
+
       ASSERT_TRUE(fs_touch(f1));
       ASSERT_TRUE(fs_is_file(f1));
       if(fs_exists(f2)){

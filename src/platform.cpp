@@ -57,7 +57,7 @@ std::string fs_get_cwd()
   std::error_code ec;
 
 #if defined(HAVE_CXX_FILESYSTEM)
-  if(auto s = Filesystem::current_path(ec); !ec) FFS_LIKELY
+  if(auto s = Filesystem::current_path(ec); !ec)
     return s.string();
 #elif defined(_WIN32)
 // windows.h https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcurrentdirectory
