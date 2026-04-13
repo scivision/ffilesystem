@@ -8,13 +8,20 @@
 class TestPermissions : public testing::Test {
 
   protected:
-  std::string read = "readable.txt";
-  std::string noread = "nonreadable.txt";
-  std::string nowrite = "nonwritable.txt";
-  std::string in_file;
+  std::string read, noread, nowrite, in_file;
   std::string_view nonnull_file;
 
     void SetUp() override {
+      auto inst = testing::UnitTest::GetInstance();
+      auto info = inst->current_test_info();
+      std::string test_name_ = info->name();
+      std::string test_suite_name_ = info->test_suite_name();
+      std::string n = test_suite_name_ + "-" + test_name_;
+
+      read = n + "readable.txt";
+      noread = n + "nonreadable.txt";
+      nowrite = n + "nonwritable.txt";
+
       ASSERT_TRUE(fs_touch(read));
       ASSERT_TRUE(fs_is_file(read));
 
@@ -45,7 +52,7 @@ EXPECT_FALSE(fs_get_permissions(read).empty());
 }
 
 TEST_F(TestPermissions, IsReadable){
-EXPECT_TRUE(fs_is_readable(read));
+EXPECT_TRUE(fs_is_readable(read)) << read << " should be readable";
 }
 
 TEST_F(TestPermissions, NotReadable){

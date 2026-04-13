@@ -22,6 +22,9 @@ class TestExe : public testing::Test {
       if(fs_is_wsl() > 0 && fs_filesystem_type(fs_absolute(".")) == "v9fs")
         GTEST_SKIP() << "v9fs to NTFS etc. doesn't work right";
 
+      if (!fs_is_writable("."))
+        GTEST_SKIP() << "current directory is not writable";
+
       exe = "test_" + n + ".exe";
       noexe = "test_" + n + "_noexe.exe";
 

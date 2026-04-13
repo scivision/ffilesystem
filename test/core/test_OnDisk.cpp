@@ -106,6 +106,10 @@ TEST_F(TestOnDisk, IsWritable)
 EXPECT_TRUE(fs_is_writable(file));
 EXPECT_TRUE(fs_is_writable(cwd));
 
+if(!fs_is_windows() && !fs_is_admin()){
+  EXPECT_FALSE(fs_is_writable("/"));
+}
+
 if(fs_win32_long_paths_enabled()){
   std::string s = fs_as_windows(R"(\\?\)" + fs_canonical(file));
   EXPECT_TRUE(fs_is_writable(s)) << s;

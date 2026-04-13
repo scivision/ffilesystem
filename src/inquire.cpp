@@ -17,13 +17,13 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <io.h> // _access_s
+#else
+#include <unistd.h>
 #endif
 
 #if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
 namespace Filesystem = std::filesystem;
-#elif !defined(_WIN32)
-#include <unistd.h>
 #endif
 
 #include <sys/types.h>  // IWYU pragma: keep
@@ -32,7 +32,6 @@ namespace Filesystem = std::filesystem;
 #if __has_include(<fcntl.h>)
 #include <fcntl.h>   // AT_* constants for statx
 #endif
-
 
 
 #if defined(_WIN32)
@@ -290,36 +289,24 @@ bool fs_is_readable(std::string_view path)
 
 bool fs_is_writable(std::string_view path)
 {
-  // is path writable by the user
-  // does not guarantee that the path can be opened (for example, it may be locked)
+  // is path writable by the user.
+  // this is a more strict test than checking permissions bits,
+  // because it also checks ACLs and parent directory writability for creating new files.
+  // checks that path is accessible, unlink std::filesystem::perms -- ours is a stricter test
+  // more in accord with user plain expectations of "writable"
+  // and with Python's os.access(path, os.W_OK) or uv_is_writable,
+  // which also check writability by attempting to open the file for writing.
+  // std::filesystem::perms are not as useful because they don't check ACLs
+  // or other platform-specific permissions, and they don't check writability of parent directories
+  // for creating new files.
 
-#if defined(HAVE_CXX_FILESYSTEM)
-  std::error_code ec;
-  const auto s = Filesystem::status(path, ec);
-
-  if(ec || !Filesystem::exists(s))
-    return false;
-
-#if defined(__cpp_using_enum)  // C++20
-  using enum Filesystem::perms;
-#else
-  constexpr Filesystem::perms owner_write = Filesystem::perms::owner_write;
-  constexpr Filesystem::perms group_write = Filesystem::perms::group_write;
-  constexpr Filesystem::perms others_write = Filesystem::perms::others_write;
-  constexpr Filesystem::perms none = Filesystem::perms::none;
-#endif
-
-  return (s.permissions() & (owner_write | group_write | others_write)) != none;
-#else
-
-const std::string cpath(path);
+  const std::string cpath(path);
 
 #if defined(_WIN32)
   // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
   return _access_s(cpath.c_str(), 2) == 0;
 #else
   return access(cpath.c_str(), W_OK) == 0;
-#endif
 #endif
 }
 
