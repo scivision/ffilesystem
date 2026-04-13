@@ -50,6 +50,9 @@ static inline std::string fs_type_linux(std::string_view path)
 #ifndef EXFAT_SUPER_MAGIC
 #define EXFAT_SUPER_MAGIC 0x2011BAB0
 #endif
+#ifndef EROFS_SUPER_MAGIC_V1
+#define EROFS_SUPER_MAGIC_V1 0xE0F5E1E2
+#endif
 #ifndef F2FS_SUPER_MAGIC
 #define F2FS_SUPER_MAGIC 0xF2F52010
 #endif
@@ -74,6 +77,7 @@ static inline std::string fs_type_linux(std::string_view path)
     case DEBUGFS_MAGIC: return "debugfs";
     case EXT4_SUPER_MAGIC: return "ext4";
     case EXFAT_SUPER_MAGIC: return "exfat";
+    case EROFS_SUPER_MAGIC_V1: return "erofs";
     case F2FS_SUPER_MAGIC: return "f2fs";
     case FUSE_SUPER_MAGIC: return "fuse";
     case NFS_SUPER_MAGIC: return "nfs";
