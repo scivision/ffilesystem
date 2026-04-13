@@ -31,6 +31,13 @@
   }
 },
 { "name": "msvc", "inherits": "release", "generator": "Visual Studio 18 2026" },
+{ "name": "android", "inherits": "default",
+  "toolchainFile": "${sourceDir}/android.cmake",
+  "binaryDir": "build-${presetName}",
+  "cacheVariables": {
+    "ffilesystem_fortran": false
+  }
+},
 {
   "name": "shared", "inherits": "default",
   "binaryDir": "build-shared",
@@ -67,6 +74,7 @@
   { "name": "default", "configurePreset": "default", "jobs": 0 },
   { "name": "build", "configurePreset": "build", "inherits": "default" },
   { "name": "shared", "configurePreset": "shared", "inherits": "default" },
+  { "name": "android", "configurePreset": "android", "inherits": "default" },
   { "name": "msvc", "configurePreset": "msvc", "inherits": "release" },
   {
     "name": "explain",
@@ -129,6 +137,7 @@
   "configurePreset": "release",
   "configuration": "Release"
 },
+{ "name": "android", "configurePreset": "android", "inherits": "default" },
 { "name": "msvc", "configurePreset": "msvc", "inherits": "release" },
 {
   "name": "debug", "inherits": "default",
@@ -176,14 +185,21 @@
       { "type": "test", "name": "release" }
     ]
   },
-    {
-      "name": "msvc",
-      "steps": [
-        { "type": "configure", "name": "msvc" },
-        { "type": "build", "name": "msvc" },
-        { "type": "test", "name": "msvc" }
-      ]
-    },
+  { "name": "android",
+    "steps": [
+      { "type": "configure", "name": "android" },
+      { "type": "build", "name": "android" },
+      { "type": "test", "name": "android" }
+    ]
+  },
+  {
+    "name": "msvc",
+    "steps": [
+      { "type": "configure", "name": "msvc" },
+      { "type": "build", "name": "msvc" },
+      { "type": "test", "name": "msvc" }
+    ]
+  },
   {
     "name": "tidy",
     "steps": [

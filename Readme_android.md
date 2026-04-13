@@ -10,3 +10,16 @@ or Homebrew:
 ```sh
 brew install android-ndk
 ```
+
+There is a CMake preset to build and test for Android:
+
+```sh
+cmake --workflow android
+```
+
+or explicitly:
+
+```sh
+cmake -B build --toolchain android.cmake -Dffilesystem_fortran=off
+cmake --build build
+```
