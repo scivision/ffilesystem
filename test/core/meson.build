@@ -60,6 +60,7 @@ gtest_tests = [
 'is_subdir',
 'join',
 'memory',
+'mkdir',
 'owner',
 'normal',
 'parent',

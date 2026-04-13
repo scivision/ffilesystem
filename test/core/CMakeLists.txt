@@ -83,6 +83,7 @@ is_prefix
 is_subdir
 join
 memory
+mkdir
 owner
 normal
 parent

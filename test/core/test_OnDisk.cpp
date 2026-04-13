@@ -34,10 +34,6 @@ class TestOnDisk : public testing::Test {
       ASSERT_TRUE(fs_touch(file));
       ASSERT_TRUE(fs_is_file(file));
 
-      dir = cwd + "/ffs_" + n + "_dir";
-      ASSERT_TRUE(fs_mkdir(dir));
-      ASSERT_TRUE(fs_is_dir(dir));
-
       in_dir = "./invalid-memory-trailing-non-null-terminated-string_view";
       nonnull_dir = std::string_view(in_dir.data(), 2);
       ASSERT_NE(nonnull_dir.back(), '\0') << "nonnull_dir should not be null-terminated\n";
@@ -51,9 +47,7 @@ class TestOnDisk : public testing::Test {
       ASSERT_NE(nonnull_file.back(), '\0') << "nonnull_file should not be null-terminated\n";
     }
     void TearDown() override {
-      fs_set_cwd(cwd);
       fs_remove(file);
-      fs_remove(dir);
     }
   };
 
@@ -61,7 +55,7 @@ class TestOnDisk : public testing::Test {
 TEST_F(TestOnDisk, Exists)
 {
   EXPECT_TRUE(fs_exists(file));
-  EXPECT_TRUE(fs_exists(dir));
+  EXPECT_TRUE(fs_exists(cwd));
   EXPECT_FALSE(fs_exists("ffs_exists_not-exist-file"));
   EXPECT_FALSE(fs_exists(""));
 
@@ -73,7 +67,6 @@ TEST_F(TestOnDisk, IsDir)
   EXPECT_FALSE(fs_is_dir(""));
   EXPECT_TRUE(fs_is_dir("."));
   EXPECT_TRUE(fs_is_dir(cwd));
-  EXPECT_TRUE(fs_is_dir(dir));
   EXPECT_FALSE(fs_is_dir(file));
   EXPECT_FALSE(fs_is_dir("ffs_is_dir_not-exist-dir"));
 }
@@ -85,7 +78,6 @@ EXPECT_FALSE(fs_is_exe(file));
 EXPECT_FALSE(fs_is_file("ffs_is_file_not-exist-file"));
 EXPECT_FALSE(fs_is_file(""));
 EXPECT_FALSE(fs_is_file("."));
-EXPECT_FALSE(fs_is_file(dir));
 EXPECT_FALSE(fs_is_file(cwd));
 }
 
@@ -93,7 +85,7 @@ TEST_F(TestOnDisk, IsReadable)
 {
 EXPECT_TRUE(fs_is_readable("."));
 EXPECT_TRUE(fs_is_readable(file));
-EXPECT_TRUE(fs_is_readable(dir));
+EXPECT_TRUE(fs_is_readable(cwd));
 
 if(fs_is_windows()){
   EXPECT_TRUE(fs_is_readable(sys_drive));
@@ -112,7 +104,7 @@ EXPECT_TRUE(fs_is_readable(nonnull_dir));
 TEST_F(TestOnDisk, IsWritable)
 {
 EXPECT_TRUE(fs_is_writable(file));
-EXPECT_TRUE(fs_is_writable(dir));
+EXPECT_TRUE(fs_is_writable(cwd));
 
 if(fs_win32_long_paths_enabled()){
   std::string s = fs_as_windows(R"(\\?\)" + fs_canonical(file));
@@ -128,7 +120,6 @@ TEST_F(TestOnDisk, IsOther){
   EXPECT_FALSE(fs_is_other(""));
   EXPECT_FALSE(fs_is_other("."));
   EXPECT_FALSE(fs_is_other(file));
-  EXPECT_FALSE(fs_is_other(dir));
   EXPECT_FALSE(fs_is_other(cwd));
   EXPECT_FALSE(fs_is_other("ffs_is_other_not-exist-file"));
 }
@@ -136,29 +127,11 @@ TEST_F(TestOnDisk, IsOther){
 
 TEST_F(TestOnDisk, StatMode){
   EXPECT_NE(fs_st_mode(file), 0);
-  EXPECT_NE(fs_st_mode(dir), 0);
+  EXPECT_NE(fs_st_mode(cwd), 0);
   EXPECT_EQ(fs_st_mode("ffs_stat_mode_not-exist-file"), 0);
   EXPECT_EQ(fs_st_mode(""), 0);
 
   EXPECT_NE(fs_st_mode(nonnull_dir), 0);
-}
-
-
-TEST_F(TestOnDisk, Mkdir){
-
-EXPECT_FALSE(fs_mkdir(""));
-
-// Test mkdir with existing directory
-ASSERT_TRUE(fs_mkdir(dir));
-
-// Test mkdir with relative path
-ASSERT_TRUE(fs_set_cwd(dir));
-
-ASSERT_TRUE(fs_mkdir("test-filesystem-dir/hello"));
-EXPECT_TRUE(fs_is_dir(dir + "/test-filesystem-dir/hello"));
-
-ASSERT_TRUE(fs_mkdir(nonnull_dir));
-EXPECT_FALSE(fs_is_dir(in_dir));
 }
 
 
@@ -184,7 +157,6 @@ EXPECT_EQ(fs_realpath(nonnull_dir), expected) << "problem with non null-terminat
 TEST_F(TestOnDisk, GetModTime){
 EXPECT_GT(fs_get_modtime(cwd), 0);
 
-ASSERT_GT(fs_get_modtime(dir), 0);
 EXPECT_GT(fs_get_modtime(nonnull_dir), 0) << "problem with non null-terminated path " << nonnull_dir;
 }
 
