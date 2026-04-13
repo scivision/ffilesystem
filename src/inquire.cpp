@@ -252,36 +252,16 @@ bool fs_is_readable(std::string_view path)
 {
   // is path readable by the user
   // does not guarantee that the path can be opened (for example, it may be locked)
+  const std::string cpath(path);
 
-#if defined(_WIN32)
+  #if defined(_WIN32)
   // MSVC / MinGW ::perms doesn't detect App Execution Aliases readability
-  // otherwise ::filesystem works for Windows ::perms,
-  // but to be most efficient and deduplicate code, we implement like this.
+  // like Python os.access(path, os.R_OK) or uv_is_readable().
+  // same reasons as our fs_is_writable().
   // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
-  const std::string cpath(path);
+
   return _access_s(cpath.c_str(), 4) == 0;
-
-#elif defined(HAVE_CXX_FILESYSTEM)
-
-  std::error_code ec;
-  const auto s = Filesystem::status(path, ec);
-
-  if(ec || !Filesystem::exists(s))
-    return false;
-
-#if defined(__cpp_using_enum)  // C++20
-  using enum Filesystem::perms;
 #else
-  constexpr Filesystem::perms none = Filesystem::perms::none;
-  constexpr Filesystem::perms owner_read = Filesystem::perms::owner_read;
-  constexpr Filesystem::perms group_read = Filesystem::perms::group_read;
-  constexpr Filesystem::perms others_read = Filesystem::perms::others_read;
-#endif
-
-  return (s.permissions() & (owner_read | group_read | others_read)) != none;
-
-#else
-  const std::string cpath(path);
   return access(cpath.c_str(), R_OK) == 0;
 #endif
 }
@@ -294,8 +274,7 @@ bool fs_is_writable(std::string_view path)
   // because it also checks ACLs and parent directory writability for creating new files.
   // checks that path is accessible, unlink std::filesystem::perms -- ours is a stricter test
   // more in accord with user plain expectations of "writable"
-  // and with Python's os.access(path, os.W_OK) or uv_is_writable,
-  // which also check writability by attempting to open the file for writing.
+  // and with Python's os.access(path, os.W_OK) or uv_is_writable().
   // std::filesystem::perms are not as useful because they don't check ACLs
   // or other platform-specific permissions, and they don't check writability of parent directories
   // for creating new files.
