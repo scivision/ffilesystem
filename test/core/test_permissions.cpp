@@ -22,6 +22,10 @@ class TestPermissions : public testing::Test {
       noread = n + "nonreadable.txt";
       nowrite = n + "nonwritable.txt";
 
+      if(!fs_is_writable(".")){
+        GTEST_SKIP() << "current directory is not writable";
+      }
+
       ASSERT_TRUE(fs_touch(read));
       ASSERT_TRUE(fs_is_file(read));
 

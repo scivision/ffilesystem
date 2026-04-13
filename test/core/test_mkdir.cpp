@@ -17,7 +17,9 @@ class TestMkdir : public testing::Test {
       std::string n = test_suite_name_ + "-" + test_name_;
 
       cwd = fs_get_cwd();
-      ASSERT_FALSE(cwd.empty());
+      if(!fs_is_writable(cwd)){
+        GTEST_SKIP() << "current directory is not writable" << cwd;
+      }
 
       dir = cwd + "/ffs_test_" + n + "_dir";
 

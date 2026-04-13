@@ -7,7 +7,12 @@ class TestRemove : public testing::Test {
   protected:
     std::string file, in2;
     std::string_view nonnull2;
+
     void SetUp() override {
+      if(!fs_is_writable(".")){
+        GTEST_SKIP() << "current directory is not writable";
+      }
+
       file = "ffs_remove_test.txt";
       ASSERT_TRUE(fs_touch(file));
 

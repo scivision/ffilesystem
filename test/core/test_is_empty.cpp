@@ -6,7 +6,12 @@ class TestEmpty : public testing::Test {
   protected:
     std::string dir, in_dir;
     std::string_view nonnull_dir;
+
     void SetUp() override {
+      if(!fs_is_writable(".")){
+        GTEST_SKIP() << "current directory is not writable";
+      }
+
       dir = "ffs_is_empty_empty_dir";
       ASSERT_TRUE(fs_mkdir(dir));
 

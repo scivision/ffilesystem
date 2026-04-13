@@ -22,6 +22,10 @@ class TestOnDisk : public testing::Test {
       cwd = fs_get_cwd();
       ASSERT_FALSE(cwd.empty());
 
+      if(!fs_is_writable(cwd)){
+        GTEST_SKIP() << "current directory is not writable" << cwd;
+      }
+
       if (fs_is_windows()) {
         auto d = fs_getenv("SystemDrive");
         ASSERT_TRUE(d.has_value()) << "Failed to get SystemDrive";
