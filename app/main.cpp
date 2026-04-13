@@ -41,6 +41,8 @@ static bool no_arg(std::string_view fun){
   {
     {"optimized", fs_is_optimized},
     {"is_admin", fs_is_admin},
+    {"is_android", fs_is_android},
+    {"is_wsl", fs_is_wsl},
     {"is_bsd", fs_is_bsd},
     {"is_linux", fs_is_linux},
     {"is_macos", fs_is_macos},
