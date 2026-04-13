@@ -13,23 +13,17 @@ EXPECT_EQ(fs_drop_slash("////"), "/");
 EXPECT_EQ(fs_drop_slash("a////b"), "a/b");
 EXPECT_EQ(fs_drop_slash("a//b//"), "a/b");
 EXPECT_EQ(fs_drop_slash("/"), "/");
-}
 
-TEST(TestDropSlash, Windows)
-{
-if (!fs_is_windows())
-  GTEST_SKIP() << "Windows only test";
+if(fs_is_windows()){
 
 EXPECT_EQ(fs_drop_slash("c:/"), "c:/");
 EXPECT_EQ(fs_drop_slash("c:///"), "c:/");
 EXPECT_EQ(fs_drop_slash("c:///"), "c:/");
 EXPECT_EQ(fs_drop_slash("c:/a/b//"), "c:/a/b");
+
+if (fs_win32_long_paths_enabled()){
+EXPECT_EQ(fs_drop_slash(R"(\\?\C:/)"), R"(\\?\C:/)");
+}
 }
 
-TEST(TestDropSlash, WindowsLongPaths)
-{
-if (!fs_win32_long_paths_enabled())
-  GTEST_SKIP() << "Windows long paths specific test";
-
-EXPECT_EQ(fs_drop_slash(R"(\\?\C:/)"), R"(\\?\C:/)");
 }
