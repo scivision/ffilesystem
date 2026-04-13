@@ -14,6 +14,11 @@
     "ffilesystem_BUILD_TESTING": true
   }
 },
+{"name": "build", "inherits": "default",
+  "cacheVariables": {
+    "ffilesystem_BUILD_TESTING": false
+  }
+},
 { "name": "debug", "inherits": "default",
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Debug"
@@ -60,6 +65,7 @@
 ],
 "buildPresets": [
   { "name": "default", "configurePreset": "default", "jobs": 0 },
+  { "name": "build", "configurePreset": "build", "inherits": "default" },
   { "name": "shared", "configurePreset": "shared", "inherits": "default" },
   { "name": "msvc", "configurePreset": "msvc", "inherits": "release" },
   {
@@ -137,6 +143,13 @@
       { "type": "configure", "name": "default" },
       { "type": "build", "name": "default" },
       { "type": "test", "name": "default" }
+    ]
+  },
+  {
+    "name": "build",
+    "steps": [
+      { "type": "configure", "name": "build" },
+      { "type": "build", "name": "build" }
     ]
   },
   {
