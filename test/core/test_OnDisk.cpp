@@ -220,6 +220,11 @@ EXPECT_FALSE(t.empty()) << "problem with non null-terminated path " << nonnull_s
 
 }
 
+TEST_F(TestOnDisk, Removable)
+{
+EXPECT_FALSE(fs_is_removable(sys_drive)) << "we assume that a CI system's system drive would not be removable";
+}
+
 
 TEST(TestWindows, ShortLong)
 {
