@@ -123,8 +123,7 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
 #endif
 
   if((r1 == 0 && r2 == 0) || errno == ENOSYS){
-    struct stat s1;
-    struct stat s2;
+    struct stat s1, s2;
 
     // https://www.boost.org/doc/libs/1_86_0/libs/filesystem/doc/reference.html#equivalent
     if(!::stat(p1.c_str(), &s1) && !::stat(p2.c_str(), &s2))

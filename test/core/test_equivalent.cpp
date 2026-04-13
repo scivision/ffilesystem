@@ -10,6 +10,7 @@ class TestEquivalent : public testing::Test {
     protected:
       std::string self, self_name, in_file;
       std::string_view nonnull_file;
+      std::string in_file; // this must be in global scope for nonnull_file to be valid
 
       void SetUp() override {
         std::vector<std::string> argvs = ::testing::internal::GetArgvs();
@@ -89,6 +90,11 @@ if(fs_exists(base)){
 
 ASSERT_TRUE(fs_mkdir(secret));
 ASSERT_TRUE(fs_set_permissions(base, -1, -1, -1));
+
+// test that associated functions also work
+EXPECT_FALSE(fs_exists(secret)) << "inaccessible path treated as not existing";
+EXPECT_FALSE(fs_is_dir(secret)) << "inaccessible path should not be treated as directory";
+EXPECT_FALSE(fs_is_file(secret)) << "inaccessible path should not be treated as file";
 
 EXPECT_FALSE(fs_equivalent(secret, secret));
 
