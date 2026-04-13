@@ -13,7 +13,6 @@ protected:
   void SetUp() override {
     cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
     ASSERT_FALSE(cwd.empty()) << "Failed to get current working directory";
-    cwd = fs_drop_slash(fs_as_posix(cwd));
 
     if (fs_is_windows()) {
       base = "j:/foo";
@@ -56,20 +55,15 @@ if (fs_is_windows()) {
 
   // NOTE: no, as MYS interprets "/" totally differently depending on backend and vs MSVC
   // EXPECT_EQ(fs_drop_slash(fs_as_posix(fs_absolute("/"))), cwd);
+
+  if(fs_win32_long_paths_enabled()) {
+    EXPECT_EQ(fs_absolute(R"(\\?\X:\anybody)"), R"(\\?\X:\anybody)");
+    EXPECT_EQ(fs_absolute(R"(\\?\UNC\server\share)"), R"(\\?\UNC\server\share)");
+  }
 } else {
   EXPECT_EQ(fs_absolute("/"), "/");
 }
 
-}
-
-
-TEST_F(TestAbsolute, WindowsLongPaths)
-{
-if(!fs_is_windows() || !fs_win32_long_paths_enabled())
-  GTEST_SKIP() << "needs Windows long paths enabled";
-
-EXPECT_EQ(fs_absolute(R"(\\?\X:\anybody)"), R"(\\?\X:\anybody)");
-EXPECT_EQ(fs_absolute(R"(\\?\UNC\server\share)"), R"(\\?\UNC\server\share)");
 }
 
 
@@ -88,18 +82,8 @@ EXPECT_TRUE(fs_is_absolute("j:/"));
 EXPECT_FALSE(fs_is_absolute("j:"));
 EXPECT_FALSE(fs_is_absolute("/"));
 EXPECT_FALSE(fs_is_absolute("/日本語"));
-} else {
-EXPECT_TRUE(fs_is_absolute("/"));
-EXPECT_TRUE(fs_is_absolute("/日本語"));
-EXPECT_FALSE(fs_is_absolute("j:/"));
-}
 
-}
-
-TEST_F(TestAbsolute, IsAbsWindowsLongPaths)
-{
-if(!fs_is_windows() || !fs_win32_long_paths_enabled())
-  GTEST_SKIP() << "needs Windows long paths enabled";
+if(fs_win32_long_paths_enabled()) {
 
 EXPECT_TRUE(fs_is_absolute(R"(\\?\)"));
 EXPECT_TRUE(fs_is_absolute(R"(\\.\)"));
@@ -116,4 +100,12 @@ std::string_view truncated_unc(unc_prefixed.data(), 2);
 ASSERT_EQ(truncated_unc, R"(\\)");
 EXPECT_FALSE(fs_is_absolute(truncated_unc))
   << "fs_is_absolute() read past string_view length while checking UNC path";
+}
+
+} else {
+EXPECT_TRUE(fs_is_absolute("/"));
+EXPECT_TRUE(fs_is_absolute("/日本語"));
+EXPECT_FALSE(fs_is_absolute("j:/"));
+}
+
 }
