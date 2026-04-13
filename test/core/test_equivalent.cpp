@@ -8,11 +8,10 @@
 
 class TestEquivalent : public testing::Test {
     protected:
-      std::string cwd, self, self_name, in_file;
+      std::string self, self_name, in_file;
       std::string_view nonnull_file;
 
       void SetUp() override {
-        cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
         std::vector<std::string> argvs = ::testing::internal::GetArgvs();
 
         self = argvs[0];
@@ -26,10 +25,11 @@ class TestEquivalent : public testing::Test {
       }
 };
 
+
 TEST_F(TestEquivalent, FileName)
 {
 
-if (!fs_equivalent(cwd, fs_parent(self)))
+if (!fs_equivalent(".", fs_parent(self)))
   GTEST_SKIP() << "Test executable is not in the current working directory";
 
 ASSERT_TRUE(fs_is_file(self_name)) << "Test executable name not found in CWD: " << self_name;
@@ -42,11 +42,14 @@ EXPECT_TRUE(fs_equivalent(self, self_name));
 EXPECT_TRUE(fs_equivalent(self, self));
 }
 
-TEST_F(TestEquivalent, Relative)
+
+TEST(TestEquiv, Relative)
 {
 
 std::string s = "ffs_equiv_not-exist";
 EXPECT_FALSE(fs_equivalent(s, s));
+
+std::string cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
 
 EXPECT_TRUE(fs_equivalent("..", fs_parent(cwd)));
 EXPECT_TRUE(fs_equivalent(".", "./"));
@@ -55,4 +58,41 @@ EXPECT_FALSE(fs_equivalent("..", cwd));
 
 // NOTE: This can be false on networked drive or Windows Dev Drive
 // fs_equivalent(".", fs_realpath("."));
+}
+
+
+TEST(TestEquiv, InaccessibleDirectory)
+{
+if(fs_is_windows() || fs_is_cygwin()){
+  GTEST_SKIP() << "Permission-denied directory traversal semantics are POSIX-specific";
+}
+
+if(fs_is_admin()){
+  GTEST_SKIP() << "Administrator/root can bypass permission checks";
+}
+
+if(!fs_is_writable(".")){
+  GTEST_SKIP() << "current directory is not writable";
+}
+
+std::string base = "ffs_equiv_inaccessible_dir";
+std::string secret = base + "/secret";
+
+// Clean up stale state from prior interrupted runs.
+if(fs_exists(secret)){
+  fs_set_permissions(secret, 1, 1, 1);
+}
+if(fs_exists(base)){
+  fs_remove(secret);
+  fs_remove(base);
+}
+
+ASSERT_TRUE(fs_mkdir(secret));
+ASSERT_TRUE(fs_set_permissions(base, -1, -1, -1));
+
+EXPECT_FALSE(fs_equivalent(secret, secret));
+
+EXPECT_TRUE(fs_set_permissions(base, 1, 1, 1));
+EXPECT_TRUE(fs_remove(secret));
+EXPECT_TRUE(fs_remove(base));
 }
