@@ -22,6 +22,10 @@ class TestSymlink : public testing::Test {
       tgt = cwd + fs_filesep() + "test_" + n + "_cpp.txt";
       not_exist_tgt = cwd + fs_filesep() + "test_" + n + "_cpp.notexist";
 
+      if(!fs_is_writable(cwd)){
+         GTEST_SKIP() << "current directory is not writable: " << cwd;
+      }
+
       ASSERT_TRUE(fs_touch(tgt));
       ASSERT_TRUE(fs_is_file(tgt)) << "is_file(" << tgt << ") should be true for existing regular file";
 
