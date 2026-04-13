@@ -1,6 +1,7 @@
 #include <string>
 #include <fstream>
 #include <cstdint>
+#include <iostream>
 
 #include "ffilesystem.h"
 
@@ -20,6 +21,8 @@ class TestCopyFile : public testing::Test {
       std::string cwd = inst->original_working_dir();
 
       ASSERT_FALSE(cwd.empty());
+      if(!fs_is_writable(cwd))
+        GTEST_SKIP() << "working directory is not writable: " << cwd;
 
       // https://google.github.io/googletest/reference/testing.html#UnitTest::current_test_suite
       std::string test_name_ = info->name();
@@ -30,7 +33,7 @@ class TestCopyFile : public testing::Test {
       s2 = cwd + fs_filesep() + n + "_some_text.txt.copy";
       s3 = cwd + fs_filesep() + n + "_empty.txt";
       s4 = cwd + fs_filesep() + n + "_empty.txt.copy";
-      if(fs_win32_long_paths_enabled()){
+      if(fs_is_windows() && fs_win32_long_paths_enabled()){
         ext1 = R"(\\?\)" + s1;
         ext5 = R"(\\?\)" + s2 + ".long";
       }
@@ -84,16 +87,10 @@ EXPECT_TRUE(fs_is_file(s4));
 
 EXPECT_EQ(fs_file_size(s4), 0);
 
-}
-
-
-TEST_F(TestCopyFile, Windows){
-  if(!fs_win32_long_paths_enabled())
-    GTEST_SKIP() << "Windows long paths specific test";
-
+if(fs_is_windows() && fs_win32_long_paths_enabled()){
 ASSERT_TRUE(fs_copy_file(ext1, ext5, false));
 ASSERT_TRUE(fs_is_file(ext5));
 EXPECT_EQ(fs_file_size(ext5), iref);
-
+}
 
 }
