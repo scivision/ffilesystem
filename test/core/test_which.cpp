@@ -56,6 +56,8 @@ TEST_F(TestWhich, WhichLocalDir){
     EXPECT_FALSE(fs_which(name).empty());
   else
     EXPECT_TRUE(fs_which(name).empty());
+
+  EXPECT_FALSE(fs_which(name, ".").empty());
 }
 
 

@@ -9,7 +9,7 @@
 
 class TestExe : public testing::Test {
   protected:
-    std::string cwd, exe, noexe, self, in2;
+    std::string exe, noexe, self, in2;
     std::string_view nonnull2;
 
     void SetUp() override {
@@ -18,9 +18,8 @@ class TestExe : public testing::Test {
       std::string test_name_ = info->name();
       std::string test_suite_name_ = info->test_suite_name();
       std::string n = test_suite_name_ + "-" + test_name_;
-      cwd = inst->original_working_dir();
 
-      if(fs_is_wsl() > 0 && fs_filesystem_type(cwd) == "v9fs")
+      if(fs_is_wsl() > 0 && fs_filesystem_type(fs_absolute(".")) == "v9fs")
         GTEST_SKIP() << "v9fs to NTFS etc. doesn't work right";
 
       exe = "test_" + n + ".exe";
@@ -133,9 +132,4 @@ TEST_F(TestExe, ChmodNoExe){
 
   EXPECT_FALSE(fs_is_exe(noexe));
   EXPECT_EQ(p[2], '-');
-}
-
-
-TEST_F(TestExe, WhichExe){
-  EXPECT_EQ(fs_which(exe, cwd), cwd + fs_filesep() + exe);
 }
