@@ -72,9 +72,17 @@ fs_is_removable(std::string_view path)
     return false;
   }
 
-  if (std::ifstream ifs(dev); ifs) {
-    if (char c; ifs.get(c))
-      return c == '1';
+  {
+    std::ifstream ifs(dev);
+    if (ifs) {
+      char c;
+      if (ifs.get(c))
+        return c == '1';
+    } else if (errno == EACCES || errno == ENOENT) {
+      // Android / SELinux may deny access to sysfs; virtual / network filesystems
+      // won't have a sysfs entry. In both cases assume not removable.
+      return false;
+    }
   }
 
   fs_print_error(dev, __func__);
