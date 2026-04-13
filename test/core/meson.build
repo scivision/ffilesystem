@@ -65,6 +65,7 @@ gtest_tests = [
 'parent',
 'permissions',
 'pure',
+'random',
 'remove',
 'rename',
 'reserved',

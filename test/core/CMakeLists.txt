@@ -88,6 +88,7 @@ normal
 parent
 permissions
 pure
+random
 remove
 rename
 reserved
