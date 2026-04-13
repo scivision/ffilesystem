@@ -87,6 +87,32 @@ endif()
 
 include(GoogleTest)
 
+# When cross-compiling without a target runner (emulator/device), gtest_discover_tests
+# executes the test binary on the host, which fails for e.g. Android NDK builds.
+# Set CROSSCOMPILING_EMULATOR_AVAILABLE=ON to opt into gtest_discover_tests even when
+# CMAKE_CROSSCOMPILING is true (e.g. when an adb wrapper is configured as the runner).
+if(CMAKE_CROSSCOMPILING)
+  option(CROSSCOMPILING_EMULATOR_AVAILABLE
+    "Target runner/emulator is available; use gtest_discover_tests even when cross-compiling" OFF)
+else()
+  set(CROSSCOMPILING_EMULATOR_AVAILABLE ON)
+endif()
+
+# Helper macro: use gtest_discover_tests on native builds or when a runner is available,
+# fall back to gtest_add_tests (source-parsing, no host execution) otherwise.
+# Skip code 77 is reserved by adb_run.sh for "no device/emulator" cases.
+macro(ffs_gtest_register target_name)
+  if(CROSSCOMPILING_EMULATOR_AVAILABLE)
+    gtest_discover_tests(${target_name} ${ARGN} TEST_LIST _ffs_gtest_list)
+  else()
+    gtest_add_tests(TARGET ${target_name} TEST_LIST _ffs_gtest_list)
+  endif()
+
+  if(_ffs_gtest_list)
+    set_tests_properties(${_ffs_gtest_list} PROPERTIES SKIP_RETURN_CODE 77)
+  endif()
+endmacro()
+
 
 foreach(t IN LISTS test_dirs)
 

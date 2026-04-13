@@ -19,7 +19,7 @@ foreach(t IN ITEMS is_symlink symlink)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
   target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
 
-  gtest_discover_tests(test_${t}_cpp
+  ffs_gtest_register(test_${t}_cpp
     PROPERTIES
       LABELS "Cpp"
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
