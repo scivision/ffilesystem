@@ -71,14 +71,15 @@ TEST_F(TestExe, IsExeBin){
 // Cygwin is fussy about the full path, but it does work
 // Cygwin wants the /cygdrive/ prefix rather than /home/username/ prefix
 
-if (!fs_is_cygwin()){
-  EXPECT_TRUE(fs_is_executable_binary(self)) << self << " is not executable binary";
-}
+if (fs_is_cygwin())
+  GTEST_SKIP() << "not available on Cygwin";
+
+EXPECT_TRUE(fs_is_executable_binary(self)) << self << " is not executable binary";
+EXPECT_TRUE(fs_is_executable_binary(nonnull2)) << "problem with non null-terminated path " << nonnull2;
 
 EXPECT_FALSE(fs_is_executable_binary(exe));
 EXPECT_FALSE(fs_is_executable_binary(noexe));
 
-EXPECT_TRUE(fs_is_executable_binary(nonnull2)) << "problem with non null-terminated path " << nonnull2;
 }
 
 

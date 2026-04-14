@@ -39,11 +39,14 @@ bool fs_is_executable_binary(std::string_view path)
 {
   // is path a binary executable file as determined by the magic number
   // beginning the file.  This is a heuristic and may not be 100% accurate.
+
   bool ok = false;
 #if defined(_WIN32)
   // MinGW, MSVC, oneAPI at least need || is_appexec_alias()
   DWORD t;
   ok = (GetBinaryTypeW(fs_win32_to_wide(path).c_str(), &t) != 0) || fs_is_appexec_alias(path);
+#elif defined(__CYGWIN__)
+  fs_print_error(path, __func__, "not supported on Cygwin");
 #else
   // https://github.com/jart/cosmopolitan/blob/master/ape/specification.md
   std::array<std::uint8_t, 4> magic;

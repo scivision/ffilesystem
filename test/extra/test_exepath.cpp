@@ -12,6 +12,8 @@ TEST(TestExePath, ExePath){
   EXPECT_FALSE(fs_is_dir(path));
   EXPECT_TRUE(fs_is_file(path));
   EXPECT_TRUE(fs_is_exe(path));
-  EXPECT_TRUE(fs_is_executable_binary(path));
   EXPECT_TRUE(fs_is_readable(path));
+
+  if(!fs_is_cygwin())
+    EXPECT_TRUE(fs_is_executable_binary(path));
 }
