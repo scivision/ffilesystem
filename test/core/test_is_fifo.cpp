@@ -25,7 +25,9 @@ class TestFifo : public testing::Test {
     HANDLE hPipe;
 #endif
     void SetUp() override {
-#if defined(_WIN32)
+#if defined(__ANDROID__)
+      GTEST_SKIP() << "FIFOs are not supported on Android - it would be possible perhaps but we don't do it.";
+#elif defined(_WIN32)
       // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createnamedpipea
 
       // must have this path prefix or INVALID_HANDLE_VALUE results

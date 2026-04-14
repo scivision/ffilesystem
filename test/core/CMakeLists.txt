@@ -78,7 +78,6 @@ hard_link
 is_char
 OnDisk
 is_empty
-is_fifo
 is_prefix
 is_subdir
 join
@@ -106,6 +105,9 @@ with_suffix
 
 if(WIN32 OR CYGWIN)
   list(APPEND gtest_tests is_appexec_alias windows)
+endif()
+if(NOT ANDROID)
+  list(APPEND gtest_tests is_fifo)
 endif()
 if(HAVE_CXX_FILESYSTEM)
   list(APPEND gtest_tests proximate relative)

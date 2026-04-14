@@ -55,7 +55,6 @@ gtest_tests = [
 'is_char',
 'OnDisk',
 'is_empty',
-'is_fifo',
 'is_prefix',
 'is_subdir',
 'join',
@@ -82,6 +81,9 @@ gtest_tests = [
 ]
 if is_windows
   gtest_tests += ['is_appexec_alias', 'windows']
+endif
+if host_machine.system() != 'android'
+  gtest_tests += ['is_fifo']
 endif
 if backend_filesystem
   gtest_tests += ['proximate','relative']
