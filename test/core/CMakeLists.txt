@@ -1,6 +1,6 @@
 set_property(DIRECTORY PROPERTY LABELS "core")
 
-if(HAVE_Fortran_FILESYSTEM)
+if(ffilesystem_fortran)
 
 set(tests is_absolute absolute
 canonical realpath

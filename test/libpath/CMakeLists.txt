@@ -23,7 +23,7 @@ endforeach()
 
 
 
-if(HAVE_Fortran_FILESYSTEM)
+if(ffilesystem_fortran)
 
 add_executable(test_libpath_fortran test_libpath.f90)
 target_link_libraries(test_libpath_fortran PRIVATE ffilesystem)

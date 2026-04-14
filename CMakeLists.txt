@@ -27,9 +27,6 @@ endif()
 
 if(ffilesystem_fortran)
     enable_language(Fortran)
-    set(HAVE_Fortran_FILESYSTEM ON)
-else()
-    set(HAVE_Fortran_FILESYSTEM OFF)
 endif()
 
 # --- RPATH handling for transitive dependencies
@@ -40,7 +37,7 @@ if(ffilesystem_ENABLE_RPATH AND BUILD_SHARED_LIBS AND NOT WIN32)
   # BUILD_WITH_INSTALL_RPATH makes exe build error can't find libffilesystem.*
 endif()
 
-if(HAVE_Fortran_FILESYSTEM AND NOT DEFINED HAVE_F03TYPE)
+if(ffilesystem_fortran AND NOT DEFINED HAVE_F03TYPE)
   if(ffilesystem_trace)
     file(READ ${CMAKE_CURRENT_SOURCE_DIR}/cmake/f03type.f90 _src)
     check_source_compiles(Fortran "${_src}" HAVE_F03TYPE)
@@ -158,7 +155,7 @@ add_library(ffilesystem ${_src})
 include(cmake/compilers.cmake)
 
 # use separate object for Fortran to work with Visual Studio generator
-if(HAVE_Fortran_FILESYSTEM)
+if(ffilesystem_fortran)
 
   add_library(ffilesystem_Fortran OBJECT src/fortran/filesystem.F90)
 
@@ -244,7 +241,7 @@ message(VERBOSE "Ffilesystem COMPILE_OPTIONS: ${_ffs_flags}")
 get_property(_ffs_libs TARGET ffilesystem PROPERTY LINK_LIBRARIES)
 message(VERBOSE "Ffilesystem LINK_LIBRARIES: ${_ffs_libs}")
 
-if(HAVE_Fortran_FILESYSTEM)
+if(ffilesystem_fortran)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/filesystem.mod TYPE INCLUDE)
 endif()
 
@@ -277,7 +274,7 @@ if(ffilesystem_cli)
   add_executable(libc_version app/libc.cpp)
   add_executable(libcpp_version app/libcxx.cpp)
 
-  if(HAVE_Fortran_FILESYSTEM)
+  if(ffilesystem_fortran)
   add_executable(filesystem_cli app/fortran/main.f90)
   target_link_libraries(filesystem_cli PRIVATE ffilesystem)
   set_property(TARGET filesystem_cli PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
@@ -300,7 +297,7 @@ include(cmake/install.cmake)
 
 include(FeatureSummary)
 
-add_feature_info(Fortran HAVE_Fortran_FILESYSTEM "Fortran bindings")
+add_feature_info(Fortran ffilesystem_fortran "Fortran bindings")
 add_feature_info(Cpp HAVE_CXX_FILESYSTEM "C++ stdlib filesystem")
 add_feature_info(shared BUILD_SHARED_LIBS "Build shared library: enables lib_path()")
 add_feature_info(path_t HAVE_F03TYPE "Fortran path_t object-oriented interface")

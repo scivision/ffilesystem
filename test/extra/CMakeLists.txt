@@ -23,7 +23,7 @@ endforeach()
 # --------- Fortran
 
 
-if(HAVE_Fortran_FILESYSTEM)
+if(ffilesystem_fortran)
 
 set(extra_tests_fortran exepath filesystem_type)
 
