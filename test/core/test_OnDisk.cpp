@@ -15,9 +15,6 @@ class TestOnDisk : public testing::Test {
       auto info = inst->current_test_info();
 
       // https://google.github.io/googletest/reference/testing.html#UnitTest::current_test_suite
-      std::string test_name_ = info->name();
-      std::string test_suite_name_ = info->test_suite_name();
-      std::string n = test_suite_name_ + "-" + test_name_;
 
       cwd = fs_get_cwd();
       ASSERT_FALSE(cwd.empty());

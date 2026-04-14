@@ -147,8 +147,12 @@
   "configurePreset": "release",
   "configuration": "Release"
 },
-{ "name": "android", "configurePreset": "android", "inherits": "default" },
-{ "name": "android-tests", "configurePreset": "android-tests", "inherits": "default" },
+{ "name": "android-tests", "configurePreset": "android-tests", "inherits": "default",
+  "execution": {
+    "jobs": 1,
+    "$comment": "adb push clashes with multiple tests using same executable"
+  }
+},
 { "name": "msvc", "configurePreset": "msvc", "inherits": "release" },
 {
   "name": "debug", "inherits": "default",
