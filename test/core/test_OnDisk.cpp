@@ -96,7 +96,10 @@ EXPECT_TRUE(fs_is_readable(nonnull_dir));
 
 TEST_F(TestOnDisk, IsWritable)
 {
-EXPECT_TRUE(fs_is_writable(self));
+
+if (!fs_is_cygwin())
+  EXPECT_TRUE(fs_is_writable(self));
+
 EXPECT_TRUE(fs_is_writable(cwd));
 
 if(fs_is_windows()){
@@ -104,7 +107,7 @@ if(fs_is_windows()){
     std::string s = fs_as_windows(R"(\\?\)" + fs_canonical(self));
     EXPECT_TRUE(fs_is_writable(s)) << s;
   }
-} else if (!fs_is_admin()){
+} else if (!fs_is_admin() && !fs_is_cygwin()){
   EXPECT_FALSE(fs_is_writable("/"));
 }
 

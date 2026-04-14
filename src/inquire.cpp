@@ -254,7 +254,7 @@ bool fs_is_readable(std::string_view path)
   // does not guarantee that the path can be opened (for example, it may be locked)
   const std::string cpath(path);
 
-  #if defined(_WIN32)
+#if defined(_WIN32)
   // MSVC / MinGW ::perms doesn't detect App Execution Aliases readability
   // like Python os.access(path, os.R_OK) or uv_is_readable().
   // same reasons as our fs_is_writable().
