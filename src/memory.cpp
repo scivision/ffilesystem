@@ -1,4 +1,4 @@
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -22,7 +22,7 @@ unsigned long long fs_total_sys_memory()
 {
 // https://stackoverflow.com/a/2513561
 
-#if defined(_WIN32)
+#if defined(WIN32_LEAN_AND_MEAN)
 
   MEMORYSTATUSEX status;
   status.dwLength = sizeof(status);
@@ -54,7 +54,7 @@ unsigned long long fs_get_free_memory()
 {
   // https://github.com/ninja-build/ninja/pull/2605
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(WIN32_LEAN_AND_MEAN)
   thread_local static unsigned long long committed_idle = std::numeric_limits<unsigned long long>::max();
   MEMORYSTATUSEX status;
   status.dwLength = sizeof(status);
