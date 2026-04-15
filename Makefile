@@ -33,9 +33,11 @@ cpp = 1
 cfeat =
 cppfeat =
 
-CXXFLAGS := -std=c++17 -O3 -DNDEBUG $(cppfeat) $(INC) -DHAVE_CXX_FILESYSTEM
-CFLAGS := -O3 -DNDEBUG $(cfeat) $(INC)
-FFLAGS := -O3 -DNDEBUG
+oflags = -O2 -DNDEBUG
+
+CXXFLAGS := -std=c++17 $(oflags) $(cppfeat) $(INC) -DHAVE_CXX_FILESYSTEM -Dffilesystem_extra
+CFLAGS := $(oflags) $(cfeat) $(INC)
+FFLAGS := $(oflags)
 
 ARFLAGS := rcs
 
@@ -47,47 +49,51 @@ COMM_SRCS = \
 	$(comdir)pure.cpp \
 	$(comdir)copy.cpp \
 	$(comdir)inquire.cpp \
-	$(comdir)filesystem.cpp \
 	$(comdir)c.cpp \
-	$(comdir)case.cpp \
-	$(comdir)compiler.cpp \
-	$(comdir)cygwin.cpp \
+	$(comdir)disk.cpp \
 	$(comdir)equivalent.cpp \
-	$(comdir)exepath.cpp \
 	$(comdir)env.cpp \
 	$(comdir)executable.cpp \
+	$(comdir)home.cpp \
 	$(comdir)lang.cpp \
 	$(comdir)lexical.cpp \
-	$(comdir)libpath.cpp \
 	$(comdir)limits.cpp \
-	$(comdir)locale.cpp \
 	$(comdir)log.cpp \
 	$(comdir)memory.cpp \
 	$(comdir)mkdir.cpp \
 	$(comdir)move.cpp \
 	$(comdir)normalize.cpp \
-	$(comdir)owner.cpp \
 	$(comdir)os.c \
 	$(comdir)parent.cpp \
 	$(comdir)partition.cpp \
 	$(comdir)permissions.cpp \
 	$(comdir)platform.cpp \
-	$(comdir)random.cpp \
 	$(comdir)relative.cpp \
 	$(comdir)resolve.cpp \
-	$(comdir)shell.cpp \
 	$(comdir)size.cpp \
 	$(comdir)space.cpp \
-	$(comdir)sysctl.cpp \
 	$(comdir)symlink.cpp \
 	$(comdir)tempdir.cpp \
 	$(comdir)time.cpp \
 	$(comdir)touch.cpp \
-	$(comdir)uid.cpp \
-	$(comdir)uname.cpp \
+	$(comdir)ulimit.cpp \
 	$(comdir)which.cpp \
 	$(comdir)windows.cpp \
-	$(comdir)winsock.cpp
+	$(comdir)extra/case.cpp \
+	$(comdir)extra/compiler.cpp \
+	$(comdir)extra/component.cpp \
+	$(comdir)extra/cygwin.cpp \
+	$(comdir)extra/exepath.cpp \
+	$(comdir)extra/libpath.cpp \
+	$(comdir)extra/locale.cpp \
+	$(comdir)extra/owner.cpp \
+	$(comdir)extra/random.cpp \
+	$(comdir)extra/removable.cpp \
+	$(comdir)extra/shell.cpp \
+	$(comdir)extra/sysctl.cpp \
+	$(comdir)extra/uid.cpp \
+	$(comdir)extra/uname.cpp \
+	$(comdir)extra/winsock.cpp
 
 OBJS := $(COMM_SRCS:%=$(BUILD_DIR)/%.o)
 
@@ -99,11 +105,15 @@ main = $(BUILD_DIR)/$(NAME)
 ifeq ($(OS),Windows_NT)
 	SHELL := pwsh.exe
 	.SHELLFLAGS := -Command
-	LDFLAGS := -lws2_32 -lOle32 -lShell32 -luuid -lUserenv
+	LDFLAGS := -lws2_32 -lOle32 -lShell32 -luuid -lUserenv -lSecur32 -lShlwapi
 	RM := Remove-Item -Recurse
+	MKDIR := New-Item -ItemType Directory -Force -Path
+	MKDIR_QUIET := | Out-Null
 	COMMENT = ".SHELLFLAGS -Command needed to get Make to use powershell rather than cmd"
 else
 	RM := rm -rf
+	MKDIR := mkdir -p
+	MKDIR_QUIET :=
 endif
 
 ifeq (icpx,$(findstring icpx,$(CXX)))
@@ -120,16 +130,17 @@ ifeq (gfortran,$(findstring gfortran,$(FC)))
   FFLAGS += -J$(BUILD_DIR)
 endif
 
-MKDIR := mkdir -p
-
 .PHONY: $(main)
+.DEFAULT_GOAL := all
+
+$(OBJS): Makefile
 
 all: mbd $(lib) $(main) $(main_f)
 
 mbd: $(fbd)
 
 $(fbd):
-	$(MKDIR) $(fbd)
+	@$(MKDIR) $(fbd) $(MKDIR_QUIET)
 
 $(lib): $(OBJS) $(FOBJS)
 	$(AR) $(ARFLAGS) $@ $?
@@ -139,9 +150,11 @@ $(main): app/main.cpp $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $@ $< $(LDFLAGS)
 
 $(BUILD_DIR)/%.c.o: %.c
+	@$(MKDIR) $(dir $@) $(MKDIR_QUIET)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.cpp.o: %.cpp
+	@$(MKDIR) $(dir $@) $(MKDIR_QUIET)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Fortran
@@ -155,9 +168,11 @@ $(main_f): app/fortran/main.f90 $(FOBJS) $(lib)
 	$(FC) $(FFLAGS) $(FOBJS) $(lib) -o $@ $< $(LDFLAGS) $(CXXLIBS)
 
 $(BUILD_DIR)/%.f90.o: %.f90
+	@$(MKDIR) $(dir $@) $(MKDIR_QUIET)
 	$(FC) $(FFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.F90.o: %.F90
+	@$(MKDIR) $(dir $@) $(MKDIR_QUIET)
 	$(FC) $(FFLAGS) -c $< -o $@
 endif
 
