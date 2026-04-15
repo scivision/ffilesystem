@@ -7,26 +7,68 @@
 set(CMAKE_SYSTEM_NAME Generic)
 unset(CMAKE_SYSTEM_PROCESSOR)
 
-find_program(CMAKE_ASM_COMPILER cosmocc REQUIRED PATH_SUFFIXES bin HINTS ${COSMO_ROOT})
-find_program(CMAKE_C_COMPILER cosmocc REQUIRED PATH_SUFFIXES bin HINTS ${COSMO_ROOT})
-find_program(CMAKE_CXX_COMPILER cosmoc++ REQUIRED PATH_SUFFIXES bin HINTS ${COSMO_ROOT})
+# Allow users to provide COSMO_ROOT via environment without editing presets.
+if(NOT COSMO_ROOT AND DEFINED ENV{COSMO_ROOT})
+  set(COSMO_ROOT "$ENV{COSMO_ROOT}")
+endif()
 
-find_program(CMAKE_AR
-NAMES cosmoar
-REQUIRED
-PATH_SUFFIXES bin
-HINTS ${COSMO_ROOT}
-)
-find_program(CMAKE_RANLIB
-NAMES cosmoranlib
-REQUIRED
-PATH_SUFFIXES bin
-HINTS ${COSMO_ROOT}
- )
+if(DEFINED ENV{CC} AND EXISTS "$ENV{CC}")
+  set(CMAKE_C_COMPILER "$ENV{CC}")
+else()
+  find_program(CMAKE_C_COMPILER
+  NAMES cosmocc
+  REQUIRED
+  PATH_SUFFIXES bin
+  HINTS ${COSMO_ROOT}
+  )
+endif()
+
+if(DEFINED ENV{CXX} AND EXISTS "$ENV{CXX}")
+  set(CMAKE_CXX_COMPILER "$ENV{CXX}")
+else()
+  find_program(CMAKE_CXX_COMPILER
+  NAMES cosmoc++
+  REQUIRED
+  PATH_SUFFIXES bin
+  HINTS ${COSMO_ROOT}
+  )
+endif()
+
+if(DEFINED ENV{ASM} AND EXISTS "$ENV{ASM}")
+  set(CMAKE_ASM_COMPILER "$ENV{ASM}")
+else()
+  find_program(CMAKE_ASM_COMPILER
+  NAMES cosmocc
+  REQUIRED
+  PATH_SUFFIXES bin
+  HINTS ${COSMO_ROOT}
+  )
+endif()
+
+
+if(DEFINED ENV{AR} AND EXISTS "$ENV{AR}")
+  set(CMAKE_AR "$ENV{AR}")
+else()
+  find_program(CMAKE_AR
+  NAMES cosmoar
+  REQUIRED
+  PATH_SUFFIXES bin
+  HINTS ${COSMO_ROOT}
+  )
+endif()
+
+if(DEFINED ENV{RANLIB} AND EXISTS "$ENV{RANLIB}")
+  set(CMAKE_RANLIB "$ENV{RANLIB}")
+else()
+  find_program(CMAKE_RANLIB
+  NAMES cosmoranlib
+  REQUIRED
+  PATH_SUFFIXES bin
+  HINTS ${COSMO_ROOT}
+  )
+endif()
 
 set(CMAKE_CXX_FLAGS_INIT "-fexceptions -frtti")
-
-set(CMAKE_USER_MAKE_RULES_OVERRIDE ${CMAKE_CURRENT_LIST_DIR}/cmake/cosmocc-override.cmake)
 
 set(COSMOPOLITAN 1)
 set(UNIX 1)

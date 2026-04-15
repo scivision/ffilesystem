@@ -24,9 +24,9 @@ export RANLIB=$b/cosmoranlib
 export ASM=$b/cosmocc
 export CC=$b/cosmocc
 export CXX=$b/cosmoc++
-
-export PATH=$b:$PATH
 ```
+
+if you have trouble, try the CPU-specific names like "aarch64-unknown-cosmo-cc" and so on.
 
 Then to build a universal binary with Cosmopolitan, use the following commands:
 
