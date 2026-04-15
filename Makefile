@@ -62,6 +62,7 @@ COMM_SRCS = \
 	$(comdir)limits.cpp \
 	$(comdir)locale.cpp \
 	$(comdir)log.cpp \
+	$(comdir)memory.cpp \
 	$(comdir)mkdir.cpp \
 	$(comdir)move.cpp \
 	$(comdir)normalize.cpp \

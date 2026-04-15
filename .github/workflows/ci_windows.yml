@@ -33,15 +33,14 @@ jobs:
 
     - name: Configure
       run: >-
-        cmake --preset release -G "Visual Studio 18 2026"
+        cmake --preset msvc
         -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
-        -Dffilesystem_fortran:BOOL=no
 
     - name: build Release
       run: cmake --workflow msvc
 
     - name: Install Release
-      run: cmake --install build --config Release
+      run: cmake --install build-msvc --config Release
 
     - name: example configure
       run: cmake --workflow msvc
@@ -93,13 +92,13 @@ jobs:
       run: cmake --workflow debug
 
     - name: Release workflow
-      run: cmake --workflow release
+      run: cmake --workflow default
 
     - name: install package
       run: cmake --install build
 
     - name: example workflow
-      run: cmake --workflow release
+      run: cmake --workflow default
       working-directory: example
 
 

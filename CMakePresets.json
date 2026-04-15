@@ -8,6 +8,7 @@
   "binaryDir": "build",
   "installDir": "${fileDir}/build/local",
   "cacheVariables": {
+    "CMAKE_BUILD_TYPE": "Release",
     "ffilesystem_warning_as_error": true,
     "ffilesystem_fallback": false,
     "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE",
@@ -24,13 +25,13 @@
     "CMAKE_BUILD_TYPE": "Debug"
   }
 },
-{
-  "name": "release", "inherits": "default",
+{ "name": "msvc", "inherits": "default",
+  "binaryDir": "build-${presetName}",
+  "generator": "Visual Studio 18 2026",
   "cacheVariables": {
-    "CMAKE_BUILD_TYPE": "Release"
+    "ffilesystem_fortran": false
   }
 },
-{ "name": "msvc", "inherits": "release", "generator": "Visual Studio 18 2026" },
 { "name": "android", "inherits": "default",
   "toolchainFile": "${sourceDir}/android.cmake",
   "binaryDir": "build-${presetName}",
@@ -112,7 +113,7 @@
   { "name": "cosmo", "configurePreset": "cosmo", "inherits": "default" },
   { "name": "ios", "configurePreset": "ios", "inherits": "default" },
   { "name": "ios-sim", "configurePreset": "ios-sim", "inherits": "default" },
-  { "name": "msvc", "configurePreset": "msvc", "inherits": "release" },
+  { "name": "msvc", "configurePreset": "msvc", "configuration": "Release", "inherits": "default" },
   {
     "name": "explain",
     "configurePreset": "default",
@@ -127,11 +128,6 @@
     "name": "stats",
     "configurePreset": "default",
     "nativeToolOptions": ["-d", "stats"]
-  },
-  {
-    "name": "release", "inherits": "default",
-    "configurePreset": "release",
-    "configuration": "Release"
   },
   {
     "name": "debug", "inherits": "default",
@@ -156,6 +152,7 @@
 {
   "name": "default",
   "configurePreset": "default",
+  "configuration": "Release",
   "output": {
     "outputOnFailure": true,
     "verbosity": "verbose"
@@ -169,18 +166,13 @@
   }
 },
 { "name": "shared", "configurePreset": "shared", "inherits": "default" },
-{
-  "name": "release", "inherits": "default",
-  "configurePreset": "release",
-  "configuration": "Release"
-},
 { "name": "android-tests", "configurePreset": "android-tests", "inherits": "default",
   "execution": {
     "jobs": 1,
     "$comment": "adb push clashes with multiple tests using same executable"
   }
 },
-{ "name": "msvc", "configurePreset": "msvc", "inherits": "release" },
+{ "name": "msvc", "configurePreset": "msvc", "inherits": "default" },
 {
   "name": "debug", "inherits": "default",
   "configurePreset": "debug",
@@ -217,14 +209,6 @@
       { "type": "configure", "name": "debug" },
       { "type": "build", "name": "debug" },
       { "type": "test", "name": "debug"}
-    ]
-  },
-  {
-    "name": "release",
-    "steps": [
-      { "type": "configure", "name": "release" },
-      { "type": "build", "name": "release" },
-      { "type": "test", "name": "release" }
     ]
   },
   { "name": "android",

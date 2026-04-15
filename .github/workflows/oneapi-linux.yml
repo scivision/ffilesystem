@@ -67,7 +67,7 @@ jobs:
     - name: Configure CMake
       timeout-minutes: 1
       run: >-
-        cmake --preset release
+        cmake --preset default
         -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
 
     - name: Upload log failure
@@ -79,13 +79,13 @@ jobs:
         path: build/CMakeFiles/CMakeConfigureLog.yaml
 
     - name: Release workflow
-      run: cmake --workflow release
+      run: cmake --workflow default
 
     - name: install package
       run: cmake --install build
 
     - name: example workflow
-      run: cmake --workflow release
+      run: cmake --workflow default
       working-directory: example
 
 # BUILD_SHARED_LIBS=false since as with any C++ / Fortran program with Intel compiler,
