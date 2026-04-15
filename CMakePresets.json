@@ -47,6 +47,30 @@
     "CMAKE_CROSSCOMPILING_EMULATOR": "${sourceDir}/test/adb_run.sh"
   }
 },
+{ "name": "cosmo", "inherits": "default",
+  "toolchainFile": "${sourceDir}/cosmopolitan.cmake",
+  "binaryDir": "build-${presetName}",
+  "cacheVariables": {
+    "ffilesystem_fortran": false,
+    "ffilesystem_BUILD_TESTING": false
+  }
+},
+{ "name": "ios", "inherits": "default",
+  "toolchainFile": "${sourceDir}/ios.cmake",
+  "binaryDir": "build-${presetName}",
+  "cacheVariables": {
+    "ffilesystem_fortran": false,
+    "ffilesystem_extra": false,
+    "ffilesystem_BUILD_TESTING": false,
+    "CMAKE_OSX_SYSROOT": "iphoneos",
+    "CMAKE_OSX_ARCHITECTURES": "arm64"
+  }
+},
+{ "name": "ios-sim", "inherits": "ios",
+  "cacheVariables": {
+    "CMAKE_OSX_SYSROOT": "iphonesimulator"
+  }
+},
 {
   "name": "shared", "inherits": "default",
   "binaryDir": "build-shared",
@@ -85,6 +109,9 @@
   { "name": "shared", "configurePreset": "shared", "inherits": "default" },
   { "name": "android", "configurePreset": "android", "inherits": "default" },
   { "name": "android-tests", "configurePreset": "android-tests", "inherits": "default" },
+  { "name": "cosmo", "configurePreset": "cosmo", "inherits": "default" },
+  { "name": "ios", "configurePreset": "ios", "inherits": "default" },
+  { "name": "ios-sim", "configurePreset": "ios-sim", "inherits": "default" },
   { "name": "msvc", "configurePreset": "msvc", "inherits": "release" },
   {
     "name": "explain",
@@ -211,6 +238,24 @@
       { "type": "configure", "name": "android-tests" },
       { "type": "build", "name": "android-tests" },
       { "type": "test", "name": "android-tests" }
+    ]
+  },
+  { "name": "cosmo",
+    "steps": [
+      { "type": "configure", "name": "cosmo" },
+      { "type": "build", "name": "cosmo" }
+    ]
+  },
+  { "name": "ios",
+    "steps": [
+      { "type": "configure", "name": "ios" },
+      { "type": "build", "name": "ios" }
+    ]
+  },
+  { "name": "ios-sim",
+    "steps": [
+      { "type": "configure", "name": "ios-sim" },
+      { "type": "build", "name": "ios-sim" }
     ]
   },
   {

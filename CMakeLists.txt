@@ -261,7 +261,10 @@ if(ffilesystem_cli)
   "$<$<BOOL:${HAVE_CXX_FILESYSTEM}>:HAVE_CXX_FILESYSTEM>"
   "$<$<BOOL:${ffilesystem_extra}>:ffilesystem_extra>"
   )
-  install(TARGETS fs_cli EXPORT ${PROJECT_NAME}-targets)
+  install(TARGETS fs_cli EXPORT ${PROJECT_NAME}-targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
+  )
   if(WIN32)
     target_sources(fs_cli PRIVATE windows_long_paths.manifest)
   endif()
@@ -280,7 +283,10 @@ if(ffilesystem_cli)
   set_property(TARGET filesystem_cli PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   set_property(TARGET filesystem_cli PROPERTY LINKER_LANGUAGE ${ffilesystem_linker_lang})
 
-  install(TARGETS filesystem_cli EXPORT ${PROJECT_NAME}-targets)
+  install(TARGETS filesystem_cli EXPORT ${PROJECT_NAME}-targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
+  )
   if(WIN32)
     target_sources(filesystem_cli PRIVATE windows_long_paths.manifest)
   endif()

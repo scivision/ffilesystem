@@ -2,8 +2,7 @@
 # https://gitlab.kitware.com/cmake/cmake/-/issues/25578
 #
 # Usage:
-# cmake -B build-cosmo --toolchain cosmopolitan.cmake -DCOSMO_ROOT=$HOME/cosmo -Dffilesystem_fortran=off
-# cmake --build build-cosmo
+# cmake --workflow cosmo
 
 set(CMAKE_SYSTEM_NAME Generic)
 unset(CMAKE_SYSTEM_PROCESSOR)

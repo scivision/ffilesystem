@@ -406,7 +406,7 @@ std::string::size_type fs_with_suffix(const char* path, const char* new_suffix,
   }
 
   bool fs_is_removable(std::string_view path){
-    fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
+    fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
     return false;
    }
 

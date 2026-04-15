@@ -60,6 +60,7 @@ Ffilesystem works with popular C++ STL and C standard library implementations in
 [newlib](https://sourceware.org/newlib/),
 [musl](https://musl.libc.org/),
 [Android LLVM libc++](./Readme_android.md),
+[iPhone / iOS builds](./Readme_ios.md),
 [Cosmopolitan universal binaries](./Readme_cosmopolitan.md),
 [macOS universal binaries](./Readme_macos.md),
 BSD libc,
