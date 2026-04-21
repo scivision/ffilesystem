@@ -21,12 +21,16 @@ typedef unsigned short mode_t;
 
 #ifdef __cplusplus
 
+#include <cstdint> // for uintmax_t
+
 constexpr int fs_trace =
 #ifdef FS_TRACE
   1;
 #else
   0;
 #endif
+
+constexpr std::uintmax_t fs_unknown_size = static_cast<std::uintmax_t>(-1);
 
 #if !defined(__has_cpp_attribute)
 // this is a C++20 feature, but available in many older compilers
@@ -42,7 +46,6 @@ constexpr int fs_trace =
 #  define FFS_LIKELY
 #endif
 
-#include <cstdint>
 #include <cstdlib>
 #include <vector>
 #include <string>

@@ -9,7 +9,6 @@
 TEST(TestEmpty, EmptyInput){
 
 std::string_view e = "";
-constexpr std::uintmax_t ie = static_cast<std::uintmax_t>(-1);
 
 EXPECT_TRUE(fs_as_posix(e).empty());
 EXPECT_TRUE(fs_file_name(e).empty());
@@ -36,14 +35,14 @@ EXPECT_TRUE(fs_expanduser(e).empty());
 EXPECT_FALSE(fs_copy_file(e,e, false));
 EXPECT_FALSE(fs_touch(e));
 
-EXPECT_EQ(fs_file_size(e), ie) << "backend: " << fs_backend();
+EXPECT_EQ(fs_file_size(e), fs_unknown_size) << "backend: " << fs_backend();
 
 EXPECT_FALSE(fs_get_cwd().empty());
 EXPECT_FALSE(fs_get_homedir().empty());
 
 if(!fs_is_windows()){
 
-  EXPECT_EQ(fs_space_available(e), ie) << "backend: " << fs_backend();
+  EXPECT_EQ(fs_space_available(e), fs_unknown_size) << "backend: " << fs_backend();
   EXPECT_FALSE(fs_set_permissions(e, 0, 0, 0));
 }
 

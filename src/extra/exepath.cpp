@@ -7,11 +7,6 @@
 #include <string>
 #include <system_error>
 
-#if defined(__unix__)
-// https://github.com/cpredef/predef/blob/master/OperatingSystems.md#bsd-environment
-#include <sys/param.h> // IWYU pragma: keep
-#endif
-
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // GetModuleFileName
@@ -23,7 +18,7 @@
 #include <unistd.h> // for readlink
 #include <sys/types.h> // for ssize_t
 #elif defined(BSD)
-#include <sys/sysctl.h> // sysctl
+#include <sys/sysctl.h> // for sysctl
 #include <cstddef> // for size_t
 #endif
 

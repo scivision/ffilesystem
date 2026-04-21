@@ -27,11 +27,6 @@ namespace Filesystem = std::filesystem;
 
 #endif
 
-namespace {
-
-constexpr std::uintmax_t fs_unknown_space = static_cast<std::uintmax_t>(-1);
-
-}
 
 std::uintmax_t fs_space_available(std::string_view path)
 {
@@ -44,8 +39,8 @@ std::uintmax_t fs_space_available(std::string_view path)
   if (ec)
     fs_print_error(path, __func__, ec);
 
-  if (ec || s.available == fs_unknown_space)
-    return fs_unknown_space;
+  if (ec || s.available == fs_unknown_size)
+    return fs_unknown_size;
 
   return s.available;
 #elif defined(_WIN32)
@@ -65,7 +60,7 @@ std::uintmax_t fs_space_available(std::string_view path)
 #endif
 
   fs_print_error(path, __func__, ec);
-  return fs_unknown_space;
+  return fs_unknown_size;
 }
 
 
@@ -83,8 +78,8 @@ std::uintmax_t fs_space_capacity(std::string_view path)
   if (ec)
     fs_print_error(path, __func__, ec);
 
-  if (ec || s.capacity == fs_unknown_space)
-    return fs_unknown_space;
+  if (ec || s.capacity == fs_unknown_size)
+    return fs_unknown_size;
 
   return s.capacity;
 #elif defined(_WIN32)
@@ -101,5 +96,5 @@ std::uintmax_t fs_space_capacity(std::string_view path)
 #endif
 
   fs_print_error(path, __func__, ec);
-  return fs_unknown_space;
+  return fs_unknown_size;
 }

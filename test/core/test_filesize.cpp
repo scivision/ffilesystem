@@ -33,8 +33,8 @@ TEST_F(TestFileSize, FileSize)
 {
 EXPECT_EQ(fs_file_size(file), 5);
 
-EXPECT_EQ(fs_file_size("."), static_cast<std::uintmax_t>(-1)) << "backend " << fs_backend();
-EXPECT_EQ(fs_file_size("not-exist-file"), static_cast<std::uintmax_t>(-1)) << "backend " << fs_backend();
+EXPECT_EQ(fs_file_size("."), fs_unknown_size) << "backend " << fs_backend();
+EXPECT_EQ(fs_file_size("not-exist-file"), fs_unknown_size) << "backend " << fs_backend();
 
 EXPECT_EQ(fs_file_size(nonnull_file), 5) << "fs_file_size() non-null-terminated path";
 }

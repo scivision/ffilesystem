@@ -4,11 +4,6 @@
 #include <iostream>
 #include <system_error>
 
-#if defined(__unix__)
-// https://github.com/cpredef/predef/blob/master/OperatingSystems.md#bsd-environment
-#include <sys/param.h>  // IWYU pragma: keep
-#endif
-
 #if defined(__linux__) && (__has_include(<linux/magic.h>) || __has_include("linux/magic.h"))
 // GCC < 10 doesn't detect <linux/magic.h>
 // IWYU pragma: no_include <sys/statfs.h>
@@ -17,6 +12,7 @@
 #include <linux/magic.h>
 // https://github.com/torvalds/linux/blob/master/include/uapi/linux/magic.h
 #elif defined(__APPLE__) || defined(BSD)
+#include <sys/param.h>
 #include <sys/mount.h>
 #elif defined(_WIN32) || defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN

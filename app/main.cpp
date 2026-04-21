@@ -215,7 +215,8 @@ static bool one_arg(std::string_view fun, std::string_view a1)
       ok = false;
 
   } else if (m1uintm.find(fun) != m1uintm.end()) {
-    std::cout << m1uintm[fun](a1);
+    if(auto r = m1uintm[fun](a1); r != fs_unknown_size)
+      std::cout << r;
   } else if (fun == "modtime"){
 
 #if defined(HAVE_CXX_FILESYSTEM) && defined(__cpp_lib_format) // C++20

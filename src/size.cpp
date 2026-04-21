@@ -41,7 +41,7 @@ std::uintmax_t fs_file_size(std::string_view path)
   std::error_code ec;
 
   if(!fs_is_file(path))
-    return static_cast<std::uintmax_t>(-1);
+    return fs_unknown_size;
 
 #if defined(HAVE_CXX_FILESYSTEM)
 
@@ -85,7 +85,7 @@ std::uintmax_t fs_file_size(std::string_view path)
 #endif
 
   fs_print_error(path, __func__, ec);
-  return static_cast<std::uintmax_t>(-1);
+  return fs_unknown_size;
 }
 
 

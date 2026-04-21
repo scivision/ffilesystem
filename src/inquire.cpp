@@ -321,6 +321,6 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
   }
 
   fs_print_error(path, __func__, ec);
-  return static_cast<std::uintmax_t>(-1);
+  return fs_unknown_size;
 #endif
 }
