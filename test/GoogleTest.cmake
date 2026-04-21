@@ -6,7 +6,7 @@ set(INSTALL_GTEST OFF)
 
 FetchContent_Declare(GTest
 URL "${ffilesystem_googletest_url}"
-FIND_PACKAGE_ARGS
+FIND_PACKAGE_ARGS CONFIG
 )
 
 FetchContent_MakeAvailable(GTest)
