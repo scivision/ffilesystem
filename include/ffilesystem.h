@@ -220,7 +220,7 @@ std::uintmax_t fs_space_capacity(std::string_view);
 std::size_t fs_get_blksize(std::string_view);
 
 std::vector<std::string> fs_split(std::string_view);
-
+std::vector<std::string> fs_split_pathsep(std::string_view);
 bool fs_stdin_tty();
 
 std::string fs_stem(std::string_view);

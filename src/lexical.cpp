@@ -6,7 +6,7 @@
 #include <ranges>  // IWYU pragma: keep
 #endif
 
-#include <algorithm> // for std::transform, std::ranges::contains, std::find, std::replace
+#include <algorithm> // for std::transform, std::ranges::contains, std::replace
 #include <cctype> // for std::isalnum, toupper
 #include <array>
 

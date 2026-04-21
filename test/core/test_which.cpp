@@ -2,6 +2,10 @@
 
 #include <gtest/gtest.h>
 
+#include <vector>
+#include <string>
+#include <algorithm> // for std::find
+
 
 class TestWhich : public testing::Test {
   protected:
@@ -57,7 +61,15 @@ TEST_F(TestWhich, WhichLocalDir){
   else
     EXPECT_TRUE(fs_which(name).empty());
 
-  EXPECT_FALSE(fs_which(name, ".").empty());
+  std::string path;
+  auto opath = fs_getenv("PATH");
+  if (!opath) return;
+
+  std::vector<std::string> paths = fs_split_pathsep(opath.value());
+  if (std::find(paths.begin(), paths.end(), ".") == paths.end())
+    EXPECT_FALSE(fs_which(name, ".").empty());
+  else
+    EXPECT_TRUE( fs_which(name, ".").empty());
 }
 
 

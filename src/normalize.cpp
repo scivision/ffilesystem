@@ -208,3 +208,31 @@ fs_split(std::string_view path)
 
   return parts;
 }
+
+std::vector<std::string>
+fs_split_pathsep(std::string_view path)
+{
+  // break paths into elements separated by path separator,
+  // excluding empty elements.
+  std::vector<std::string> parts;
+
+  // split path, including last component
+  std::string_view::size_type start = 0;
+  std::string_view::size_type end;
+
+  while (start < path.length()) {
+    end = path.find(fs_pathsep(), start);
+
+    if (end == std::string_view::npos){
+      parts.push_back(std::string(path.substr(start)));
+      break;
+    }
+
+    if (end != start)
+      parts.push_back(std::string(path.substr(start, end - start)));
+
+    start = end + 1;
+  }
+
+  return parts;
+}
