@@ -37,9 +37,12 @@ TEST_F(TestDevice, BlkSize)
   auto b1 = fs_get_blksize(testing::TempDir());
   EXPECT_GT(b1, 0);
 
-  if(!fs_is_windows()) {
-    EXPECT_EQ(fs_get_blksize(nonnull2), b1) << "fs_get_blksize(" << nonnull2 << ") should be the same as fs_get_blksize(" << testing::TempDir() << ")";
-  }
+  if(fs_is_windows())
+    return;
+
+  b1 = fs_get_blksize(".");
+  EXPECT_GT(b1, 0);
+  EXPECT_EQ(fs_get_blksize(nonnull2), b1) << "fs_get_blksize(" << nonnull2 << ") should be the same as fs_get_blksize(" << testing::TempDir() << ")";
 }
 
 
