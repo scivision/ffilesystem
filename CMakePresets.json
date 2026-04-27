@@ -105,7 +105,7 @@
 }
 ],
 "buildPresets": [
-  { "name": "default", "configurePreset": "default", "jobs": 0 },
+  { "name": "default", "configurePreset": "default" },
   { "name": "build", "configurePreset": "build", "inherits": "default" },
   { "name": "shared", "configurePreset": "shared", "inherits": "default" },
   { "name": "android", "configurePreset": "android", "inherits": "default" },
