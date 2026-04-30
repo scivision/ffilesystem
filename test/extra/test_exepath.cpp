@@ -1,19 +1,22 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
 
-TEST(TestExePath, ExePath){
+int main() {
+  using namespace boost::ut;
 
-  std::string path = fs_exe_path();
+  "exe_path"_test = [] {
+    std::string path = fs_exe_path();
 
-  ASSERT_FALSE(path.empty());
-  ASSERT_TRUE(fs_exists(path));
-  EXPECT_FALSE(fs_is_dir(path));
-  EXPECT_TRUE(fs_is_file(path));
-  EXPECT_TRUE(fs_is_exe(path));
-  EXPECT_TRUE(fs_is_readable(path));
+    expect(!path.empty());
+    expect(fs_exists(path));
+    expect(!fs_is_dir(path));
+    expect(fs_is_file(path));
+    expect(fs_is_exe(path));
+    expect(fs_is_readable(path));
 
-  if(!fs_is_cygwin())
-    EXPECT_TRUE(fs_is_executable_binary(path));
+    if(!fs_is_cygwin())
+      expect(fs_is_executable_binary(path));
+  };
 }

@@ -1,24 +1,25 @@
 set_directory_properties(PROPERTIES LABELS "extra")
 
-set(gtest_tests exepath hostname)
+
+if(HAVE_BOOST_UT)
+
+set(boost_ut_tests exepath hostname)
 
 if(ffilesystem_locale)
-  list(APPEND gtest_tests locale)
+  list(APPEND boost_ut_tests locale)
 endif()
 
-foreach(t IN LISTS gtest_tests)
-
+foreach(t IN LISTS boost_ut_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
-  target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
+  target_include_directories(test_${t}_cpp PRIVATE ${boost_ut_SOURCE_DIR}/include)
+  target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
 
-  ffs_gtest_register(test_${t}_cpp
-    PROPERTIES
-      LABELS "Cpp"
-      WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
-  )
+  add_test(NAME ${t}_cpp COMMAND test_${t}_cpp)
+  set_tests_properties(${t}_cpp PROPERTIES LABELS "Cpp")
 endforeach()
 
+endif()
 
 # --------- Fortran
 

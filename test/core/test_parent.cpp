@@ -1,54 +1,62 @@
 #include <string>
-#include <tuple>
+#include <array>
 
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-class ParentTest : public ::testing::TestWithParam<std::tuple<std::string, std::string>> {};
+int main() {
+  using namespace boost::ut;
 
-TEST_P(ParentTest, Parent) {
-  auto [inp, exp] = GetParam();
+  struct case_t {
+    std::string inp;
+    std::string exp;
+  };
 
-  if(fs_backend() == "<filesystem>"){
-    if (fs_win32_is_ext_path(inp)) {
-      GTEST_SKIP() << "<filesystem> doesn't yet support extended-length or device paths";
-  }
+  const std::array<case_t, 16> cases{{
+      {"", "."},
+      {"/", "/"},
+      {".", "."},
+      {"./", "."},
+      {"..", "."},
+      {"../", "."},
+      {"a", "."},
+      {"a/", "."},
+      {"a/.", "a"},
+      {"a/..", "a"},
+      {"a/b", "a"},
+      {"a/b/", "a"},
+      {"a/b/c", "a/b"},
+      {"ab/.parent", "ab"},
+      {"ab/.parent.txt", "ab"},
+      {"a/b/../.parent.txt", "a/b/.."},
+  }};
+
+  "parent"_test = [cases] {
+    for (const auto& test_case : cases) {
+      if (fs_backend() == "<filesystem>" && fs_win32_is_ext_path(test_case.inp)) {
+        return;
+      }
+      expect(eq(fs_parent(test_case.inp), test_case.exp));
+    }
+  };
+
+if (fs_is_windows()) {
+  const std::array<case_t, 4> windows_cases{{
+      {"c:\\a\\b/../.parent.txt", "c:\\a\\b/.."},
+      {"x:/", "x:/"},
+      {"x:\\", "x:/"},
+      {R"(\\?\C:\a\b/../.parent.txt)", R"(\\?\C:\a\b/..)"},
+  }};
+
+  "parent_windows"_test = [windows_cases] {
+    for (const auto& test_case : windows_cases) {
+      if (fs_backend() == "<filesystem>" && fs_win32_is_ext_path(test_case.inp)) {
+        return;
+      }
+      expect(eq(fs_parent(test_case.inp), test_case.exp));
+    }
+  };
 }
 
-  EXPECT_EQ(fs_parent(inp), exp);
 }
-
-INSTANTIATE_TEST_SUITE_P(
-  Parent, ParentTest,
-  ::testing::Values(
-      std::make_tuple("", "."),
-      std::make_tuple("/", "/"),
-      std::make_tuple(".", "."),
-      std::make_tuple("./", "."),
-      std::make_tuple("..", "."),
-      std::make_tuple("../", "."),
-      std::make_tuple("a", "."),
-      std::make_tuple("a/", "."),
-      std::make_tuple("a/.", "a"),
-      std::make_tuple("a/..", "a"),
-      std::make_tuple("a/b", "a"),
-      std::make_tuple("a/b/", "a"),
-      std::make_tuple("a/b/c", "a/b"),
-      std::make_tuple("ab/.parent", "ab"),
-      std::make_tuple("ab/.parent.txt", "ab"),
-      std::make_tuple("a/b/../.parent.txt", "a/b/..")
-  )
-);
-
-#if defined(_WIN32)
-INSTANTIATE_TEST_SUITE_P(
-  ParentWindows, ParentTest,
-  ::testing::Values(
-    std::make_tuple("c:\\a\\b/../.parent.txt", "c:\\a\\b/.."),
-    std::make_tuple("x:/", "x:/"),
-    std::make_tuple("x:\\", "x:/"),
-    std::make_tuple(R"(\\?\C:\a\b/../.parent.txt)", R"(\\?\C:\a\b/..)")
-  )
-);
-#endif

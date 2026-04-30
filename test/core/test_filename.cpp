@@ -1,87 +1,90 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-TEST(TestHasFilename, Filename)
-{
+int main() {
+using namespace boost::ut;
 
-EXPECT_FALSE(fs_has_filename(""));
-EXPECT_FALSE(fs_has_filename("/"));
-EXPECT_TRUE(fs_has_filename("."));
-EXPECT_FALSE(fs_has_filename("./"));
-EXPECT_TRUE(fs_has_filename(".."));
-EXPECT_FALSE(fs_has_filename("../"));
-EXPECT_TRUE(fs_has_filename("a"));
-EXPECT_FALSE(fs_has_filename("a/"));
-EXPECT_TRUE(fs_has_filename("a/."));
-EXPECT_TRUE(fs_has_filename("a/.."));
-EXPECT_TRUE(fs_has_filename("a/b"));
-EXPECT_FALSE(fs_has_filename("a/b/"));
-EXPECT_TRUE(fs_has_filename("a/b/c"));
-EXPECT_TRUE(fs_has_filename("a/b sdc/some space"));
-EXPECT_TRUE(fs_has_filename("ab/.parent"));
-EXPECT_TRUE(fs_has_filename("ab/.parent.txt"));
-EXPECT_TRUE(fs_has_filename("a/b/../.parent.txt"));
-EXPECT_TRUE(fs_has_filename("/.fil"));
-EXPECT_TRUE(fs_has_filename("./日本語"));
+"HasFilename"_test = [] {
 
-if (fs_is_windows()){
-EXPECT_FALSE(fs_has_filename("C:/"));
-EXPECT_TRUE(fs_has_filename(R"(C:\ab\asb)"));
-EXPECT_TRUE(fs_has_filename(R"(\\server\share\some space here.txt)"));
+    expect(!fs_has_filename("") >> fatal);
 
-if(fs_win32_long_paths_enabled()) {
-EXPECT_FALSE(fs_has_filename(R"(\\.\)"));
-
-EXPECT_FALSE(fs_has_filename(R"(\\?\C:\)"));
-EXPECT_FALSE(fs_has_filename(R"(\\.\C:\)"));
-EXPECT_TRUE(fs_has_filename(R"(\\?\UNC\server\share)"));
-EXPECT_TRUE(fs_has_filename(R"(\\?\UNC\server\share\日本語)"));
-EXPECT_TRUE(fs_has_filename(R"(\\?\C:\some space here.txt)"));
-}
-}
-
-}
-
-
-TEST(TestFilename, Agnostic)
-{
-
-EXPECT_EQ(fs_file_name(""), "");
-EXPECT_EQ(fs_file_name("/"), "");
-EXPECT_EQ(fs_file_name("."), ".");
-EXPECT_EQ(fs_file_name("./"), "");
-EXPECT_EQ(fs_file_name(".."), "..");
-EXPECT_EQ(fs_file_name("../"), "");
-EXPECT_EQ(fs_file_name("a"), "a");
-EXPECT_EQ(fs_file_name("a/"), "");
-EXPECT_EQ(fs_file_name("a/."), ".");
-EXPECT_EQ(fs_file_name("a/.."), "..");
-EXPECT_EQ(fs_file_name("a/b"), "b");
-EXPECT_EQ(fs_file_name("a/b/"), "");
-EXPECT_EQ(fs_file_name("a/b/c"), "c");
-EXPECT_EQ(fs_file_name("a/b sdc/some space"), "some space");
-EXPECT_EQ(fs_file_name("ab/.parent"), ".parent");
-EXPECT_EQ(fs_file_name("ab/.parent.txt"), ".parent.txt");
-EXPECT_EQ(fs_file_name("a/b/../.parent.txt"), ".parent.txt");
-EXPECT_EQ(fs_file_name("/.fil"), ".fil");
-EXPECT_EQ(fs_file_name("./日本語"), "日本語");
+    expect(!fs_has_filename("/"));
+    expect(fs_has_filename("."));
+    expect(!fs_has_filename("./"));
+    expect(fs_has_filename(".."));
+    expect(!fs_has_filename("../"));
+    expect(fs_has_filename("a"));
+    expect(!fs_has_filename("a/"));
+    expect(fs_has_filename("a/."));
+    expect(fs_has_filename("a/.."));
+    expect(fs_has_filename("a/b"));
+    expect(!fs_has_filename("a/b/"));
+    expect(fs_has_filename("a/b/c"));
+    expect(fs_has_filename("a/b sdc/some space"));
+    expect(fs_has_filename("ab/.parent"));
+    expect(fs_has_filename("ab/.parent.txt"));
+    expect(fs_has_filename("a/b/../.parent.txt"));
+    expect(fs_has_filename("/.fil"));
+    expect(fs_has_filename("./日本語"));
 
 if (fs_is_windows()){
-EXPECT_EQ(fs_file_name("C:/"), "");
-EXPECT_EQ(fs_file_name(R"(C:\ab\asb)"), "asb");
+    expect(!fs_has_filename("C:/"));
+    expect(fs_has_filename(R"(C:\ab\asb)"));
+    expect(fs_has_filename(R"(\\server\share\some space here.txt)"));
+
+    if(fs_win32_long_paths_enabled()) {
+        expect(!fs_has_filename(R"(\\.\)"));
+
+        expect(!fs_has_filename(R"(\\?\C:\)"));
+        expect(!fs_has_filename(R"(\\.\C:\)"));
+        expect(fs_has_filename(R"(\\?\UNC\server\share)"));
+        expect(fs_has_filename(R"(\\?\UNC\server\share\日本語)"));
+        expect(fs_has_filename(R"(\\?\C:\some space here.txt)"));
+  }
+}
+
+};
+
+"FileName"_test = [] {
+
+    expect(fs_file_name("") == "");
+    expect(fs_file_name("/") == "");
+    expect(fs_file_name(".") == ".");
+    expect(fs_file_name("./") == "");
+    expect(fs_file_name("..") == "..");
+    expect(fs_file_name("../") == "");
+    expect(fs_file_name("a") == "a");
+    expect(fs_file_name("a/") == "");
+    expect(fs_file_name("a/.") == ".");
+    expect(fs_file_name("a/..") == "..");
+    expect(fs_file_name("a/b") == "b");
+    expect(fs_file_name("a/b/") == "");
+    expect(fs_file_name("a/b/c") == "c");
+    expect(fs_file_name("a/b sdc/some space") == "some space");
+    expect(fs_file_name("ab/.parent") == ".parent");
+    expect(fs_file_name("ab/.parent.txt") == ".parent.txt");
+    expect(fs_file_name("a/b/../.parent.txt") == ".parent.txt");
+    expect(fs_file_name("/.fil") == ".fil");
+    expect(fs_file_name("./日本語") == "日本語");
+
+if (fs_is_windows()){
+    expect(fs_file_name("C:/") == "");
+    expect(fs_file_name(R"(C:\ab\asb)") == "asb");
 
 if(fs_win32_long_paths_enabled()){
-EXPECT_EQ(fs_file_name(R"(\\?\)"), "");
-EXPECT_EQ(fs_file_name(R"(\\.\)"), "");
+    expect(fs_file_name(R"(\\?\)") == "");
+    expect(fs_file_name(R"(\\.\)") == "");
 
-EXPECT_EQ(fs_file_name(R"(\\?\C:\)"), "");
-EXPECT_EQ(fs_file_name(R"(\\.\C:\)"), "");
-EXPECT_EQ(fs_file_name(R"(\\?\UNC\server\share)"), "share");
-EXPECT_EQ(fs_file_name(R"(\\?\UNC\server\share\日本語)"), "日本語");
-EXPECT_EQ(fs_file_name(R"(\\server\share\some space here.txt)"), "some space here.txt");
-EXPECT_EQ(fs_file_name(R"(\\?\C:\some space here.txt)"), "some space here.txt");
+    expect(fs_file_name(R"(\\?\C:\)") == "");
+    expect(fs_file_name(R"(\\.\C:\)") == "");
+    expect(fs_file_name(R"(\\?\UNC\server\share)") == "share");
+    expect(fs_file_name(R"(\\?\UNC\server\share\日本語)") == "日本語");
+    expect(fs_file_name(R"(\\server\share\some space here.txt)") == "some space here.txt");
+    expect(fs_file_name(R"(\\?\C:\some space here.txt)") == "some space here.txt");
 }
 }
+
+};
 
 }

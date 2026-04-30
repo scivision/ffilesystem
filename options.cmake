@@ -16,8 +16,8 @@ option(ffilesystem_ENABLE_RPATH "Enable RPATH handling for transitive dependenci
 
 option(ffilesystem_BUILD_TESTING "Build tests")
 
-if(NOT DEFINED ffilesystem_googletest_url)
-  set(ffilesystem_googletest_url "https://github.com/google/googletest/archive/refs/tags/v1.17.0.tar.gz")
+if(NOT DEFINED boost_ut_url)
+  set(boost_ut_url "https://github.com/boost-ext/ut/archive/59a9beba0763dbb45b3cc68e4cf484c659319a97.tar.gz")
 endif()
 
 file(GENERATE OUTPUT .gitignore CONTENT "*")

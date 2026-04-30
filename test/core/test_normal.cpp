@@ -1,88 +1,90 @@
 #include "ffilesystem.h"
+#include <array>
 #include <string>
-#include <tuple>
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-class TestNormal : public ::testing::TestWithParam<std::tuple<std::string, std::string>> {};
+int main() {
+    using namespace boost::ut;
 
-TEST_P(TestNormal, Normalize)
-{
-    auto [inp, expected] = GetParam();
-    EXPECT_EQ(fs_normal(inp), expected);
-}
+    struct case_t {
+        std::string inp;
+        std::string expected;
+    };
 
+    const std::array<case_t, 48> cases{{
+            {"", "."},
+            {"/", "/"},
+            {"//", "/"},
+            {"/////", "/"},
+            {".", "."},
+            {"./", "."},
+            {"./.", "."},
+            {"..", ".."},
+            {"../", ".."},
+            {"a/..", "."},
+            {"../..", "../.."},
+            {"a/b/..", "a"},
+            {"a/b/../..", "."},
+            {"a/b/../../..", ".."},
+            {"/a", "/a"},
+            {"/a/", "/a"},
+            {"/a/.", "/a"},
+            {"/a/..", "/"},
+            {"/a/b/..", "/a"},
+            {"a", "a"},
+            {".a", ".a"},
+            {"a.", "a."},
+            {"a./", "a."},
+            {"a/b", "a/b"},
+            {"..a", "..a"},
+            {"a..", "a.."},
+            {"a../", "a.."},
+            {"a/", "a"},
+            {"a//", "a"},
+            {"./a", "a"},
+            {"./a/", "a"},
+            {"./a/.", "a"},
+            {"../a", "../a"},
+            {"../a/b/..", "../a"},
+            {"a/b/", "a/b"},
+            {"a/b/.", "a/b"},
+            {"a/b/..", "a"},
+            {"a/b/../", "a"},
+            {"a/b/../c", "a/c"},
+            {"a/b/../c/d", "a/c/d"},
+            {"a/b/../../c/d", "c/d"},
+            {"././a/./b/././c/./.", "a/b/c"},
+            {"a/b/../../c/../..", ".."},
+            {"a/b/../../../c/../..", "../.."},
+            {"a/./b/..", "a"},
+            {"a/.///b/../", "a"},
+            {"/a/../..", "/"},
+            {"/a/../../../../", "/"},
+    }};
 
-INSTANTIATE_TEST_SUITE_P(
-    Normalize,
-    TestNormal,
-    ::testing::Values(
-
-std::make_tuple("", "."),
-std::make_tuple("/", "/"),
-std::make_tuple("//", "/"),
-std::make_tuple("/////", "/"),
-std::make_tuple(".", "."),
-std::make_tuple("./", "."),
-std::make_tuple("./.", "."),
-std::make_tuple("..", ".."),
-std::make_tuple("../", ".."),
-std::make_tuple("a/..", "."),
-std::make_tuple("../..", "../.."),
-std::make_tuple("a/b/..", "a"),
-std::make_tuple("a/b/../..", "."),
-std::make_tuple("a/b/../../..", ".."),
-std::make_tuple("/a", "/a"),
-std::make_tuple("/a/", "/a"),
-std::make_tuple("/a/.", "/a"),
-std::make_tuple("/a/..", "/"),
-std::make_tuple("/a/b/..", "/a"),
-std::make_tuple("a", "a"),
-std::make_tuple(".a", ".a"),
-std::make_tuple("a.", "a."),
-std::make_tuple("a./", "a."),
-std::make_tuple("a/b", "a/b"),
-std::make_tuple("..a", "..a"),
-std::make_tuple("a..", "a.."),
-std::make_tuple("a../", "a.."),
-std::make_tuple("a/", "a"),
-std::make_tuple("a//", "a"),
-std::make_tuple("./a", "a"),
-std::make_tuple("./a/", "a"),
-std::make_tuple("./a/.", "a"),
-std::make_tuple("../a", "../a"),
-std::make_tuple("../a/b/..", "../a"),
-std::make_tuple("a/b/", "a/b"),
-std::make_tuple("a/b/.", "a/b"),
-std::make_tuple("a/b/..", "a"),
-std::make_tuple("a/b/../", "a"),
-std::make_tuple("a/b/../c", "a/c"),
-std::make_tuple("a/b/../c/d", "a/c/d"),
-std::make_tuple("a/b/../../c/d", "c/d"),
-std::make_tuple("././a/./b/././c/./.", "a/b/c"),
-std::make_tuple("a/b/../../c/../..", ".."),
-std::make_tuple("a/b/../../../c/../..", "../.."),
-std::make_tuple("a/./b/..", "a"),
-std::make_tuple("a/.///b/../", "a"),
-std::make_tuple("/a/../..", "/"),
-std::make_tuple("/a/../../../../", "/")
-    )
-);
+    "normalize"_test = [cases] {
+        for (const auto& test_case : cases) {
+            expect(eq(fs_normal(test_case.inp), test_case.expected));
+        }
+    };
 
 #if defined(_WIN32)
-INSTANTIATE_TEST_SUITE_P(
-    NormalizeWindows,
-    TestNormal,
-    ::testing::Values(
+    const std::array<case_t, 7> windows_cases{{
+            {R"(\/\///\/)", "/"},
+            {R"(a/b/..\//..///\/../c\\/)", "../c"},
+            {R"(..a/b/..\//..///\/../c\\/)", "../c"},
+            {R"(..\)", ".."},
+            {R"(c:\)", "c:/"},
+            {R"(c:\\)", "c:/"},
+            {R"(c:\a/b/../)", "c:/a"},
+    }};
 
-    std::make_tuple(R"(\/\///\/)", "/"),
-    std::make_tuple(R"(a/b/..\//..///\/../c\\/)", "../c"),
-    std::make_tuple(R"(..a/b/..\//..///\/../c\\/)", "../c"),
-    std::make_tuple(R"(..\)", ".."),
-    std::make_tuple(R"(c:\)", "c:/"),
-    std::make_tuple(R"(c:\\)", "c:/"),
-    std::make_tuple(R"(c:\a/b/../)", "c:/a")
-    )
-);
+    "normalize_windows"_test = [windows_cases] {
+        for (const auto& test_case : windows_cases) {
+            expect(eq(fs_normal(test_case.inp), test_case.expected));
+        }
+    };
 #endif
 // some tests from https://github.com/gulrak/filesystem/blob/b1982f06c84f08a99fb90bac43c2d03712efe921/test/filesystem_test.cpp#L950
+}

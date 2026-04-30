@@ -1,14 +1,17 @@
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
 #include "ffilesystem.h"
 
 #include <cctype> // for std::isalnum
 
-TEST(Random, AlphanumericString)
-{
+int main() {
+  using namespace boost::ut;
+
+  "alphanumeric_string"_test = [] {
   const std::string s = fs_generate_random_alphanumeric_string(16);
-  EXPECT_EQ(s.size(), 16);
+  expect(eq(s.size(), std::size_t{16}));
   for (char c : s) {
-    EXPECT_TRUE(std::isalnum(static_cast<unsigned char>(c)));
+    expect(std::isalnum(static_cast<unsigned char>(c)) != 0);
   }
+  };
 }

@@ -2,121 +2,154 @@
 
 #include <iostream>
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-class TestSymlink : public testing::Test {
-  protected:
-    std::string cwd, tgt, link_file, link_dir, broken_link, not_exist_tgt, in_file, in2;
-    std::string_view nonnull_file;
+namespace {
 
-    void SetUp() override {
-      auto inst = testing::UnitTest::GetInstance();
-      auto info = inst->current_test_info();
-      std::string test_name_ = info->name();
-      std::string test_suite_name_ = info->test_suite_name();
-      std::string n = test_suite_name_ + "-" + test_name_;
+struct symlink_ctx {
+  std::string cwd;
+  std::string tgt;
+  std::string link_file;
+  std::string link_dir;
+  std::string broken_link;
+  std::string not_exist_tgt;
+  std::string in_file;
+  std::string in2;
+  std::string_view nonnull_file;
+  bool skip = false;
 
-      cwd = fs_realpath(inst->original_working_dir());
-      // realpath is for Windows Dev Drive and Networked drives
-      ASSERT_FALSE(cwd.empty()) << "get_cwd() should not return empty string";
-      tgt = cwd + fs_filesep() + "test_" + n + "_cpp.txt";
-      not_exist_tgt = cwd + fs_filesep() + "test_" + n + "_cpp.notexist";
-
-      if(!fs_is_writable(cwd)){
-         GTEST_SKIP() << "current directory is not writable: " << cwd;
-      }
-
-      ASSERT_TRUE(fs_touch(tgt));
-      ASSERT_TRUE(fs_is_file(tgt)) << "is_file(" << tgt << ") should be true for existing regular file";
-
-      link_file = cwd + fs_filesep() + "test_" + n + "_cpp.link";
-      link_dir = cwd + fs_filesep() + "test_" + n + "_cpp.dir.link";
-      broken_link = cwd + fs_filesep() + "test_" + n + "_cpp.broken";
-      in_file = link_file + "-in_file";
-      in2 = in_file + "-read_past_the_end_of_buffer";
-
-      for (const auto& link : {link_file, link_dir, broken_link, in_file, in2}){
-        if (fs_is_symlink(link)){
-          std::cout << "Removing existing symlink: " << link << "\n";
-          ASSERT_TRUE(fs_remove(link)) << "Failed to remove existing symlink: " << link;
-        }
-      }
-
-    ASSERT_TRUE(fs_create_symlink(tgt, link_file));
-    std::cout << "Created symlink FILE: " << link_file << " -> " << tgt << "\n";
-    ASSERT_TRUE(fs_create_symlink(cwd, link_dir));
-    std::cout << "Created symlink DIR: " << link_dir << " -> " << cwd << "\n";
-
-    // to create a broken link, we first create a valid link and then remove the target
-    ASSERT_TRUE(fs_touch(not_exist_tgt));
-    ASSERT_TRUE(fs_create_symlink(not_exist_tgt, broken_link));
-    ASSERT_TRUE(fs_remove(not_exist_tgt));
-    ASSERT_FALSE(fs_exists(not_exist_tgt)) << "exists() should be false for non-existent target: " << not_exist_tgt;
-    std::cout << "Created broken symlink: " << broken_link << " -> " << not_exist_tgt << "\n";
-
-    nonnull_file = std::string_view(in2.data(), in_file.size());
-    ASSERT_NE(nonnull_file.back(), '\0');
+  void cleanup() const {
+    for (const auto& link : {tgt, link_file, link_dir, broken_link, in_file, in2}) {
+      fs_remove(link);
     }
+  }
 
-    void TearDown() override {
-      for (const auto& link : {tgt, link_file, link_dir, broken_link, in_file, in2}){
-        fs_remove(link);
-      }
-    }
+  ~symlink_ctx() { cleanup(); }
 };
 
+auto setup(symlink_ctx& ctx, std::string_view name) {
+  using namespace boost::ut;
 
-TEST_F(TestSymlink, CreateSymlink){
+  const std::string n = std::string{"TestSymlink-"} + std::string{name};
+  ctx.cwd = fs_realpath(fs_get_cwd());
+  // realpath is for Windows Dev Drive and Networked drives
+  expect(!ctx.cwd.empty() >> fatal) << "get_cwd() should not return empty string";
 
-  EXPECT_FALSE(fs_create_symlink(tgt, "")) << "create_symlink() should fail with empty link";
+  ctx.tgt = ctx.cwd + fs_filesep() + "test_" + n + "_cpp.txt";
+  ctx.not_exist_tgt = ctx.cwd + fs_filesep() + "test_" + n + "_cpp.notexist";
 
-  ASSERT_FALSE(fs_is_symlink(tgt)) << "is_symlink() should be false for non-symlink file: " << tgt;
-
-  EXPECT_FALSE(fs_create_symlink("", link_file)) << "create_symlink() should fail with empty target";
-
-  ASSERT_TRUE(fs_create_symlink(tgt, nonnull_file)) << "create_symlink(" << tgt << ", " << nonnull_file << ") should succeed even if link path is not null-terminated";
-  EXPECT_TRUE(fs_exists(in_file)) << "exists() should be false for non-existent file: " << in_file;
-
-
-  EXPECT_TRUE(fs_is_symlink(link_file)) << "is_symlink() should be true for symlink: " << link_file;
-  EXPECT_TRUE(fs_is_file(link_file)) << "is_file(" << link_file << ") should be true for existing regular file target " << tgt;
-  EXPECT_EQ(fs_read_symlink(link_file), tgt);
-  // Cygwin will have /cygdrive/c and /home/ as roots
-  if (!fs_is_cygwin()){
-    std::string r = fs_canonical(link_file, true);
-    ASSERT_FALSE(r.empty());
-    ASSERT_EQ(r.length(), tgt.length()) << r << " vs " << tgt;
-    EXPECT_TRUE(fs_equivalent(r, tgt));
+  if (!fs_is_writable(ctx.cwd)) {
+    std::cout << "Skipping test because current directory is not writable: " << ctx.cwd << "\n";
+    ctx.skip = true;
+    return;
   }
 
-  EXPECT_TRUE(fs_read_symlink(tgt).empty());
-  EXPECT_TRUE(fs_read_symlink(not_exist_tgt).empty());
-  EXPECT_FALSE(fs_is_symlink(cwd));
+  expect(fs_touch(ctx.tgt) >> fatal);
+  expect(fs_is_file(ctx.tgt) >> fatal) << "is_file(" << ctx.tgt << ") should be true for existing regular file";
 
-  EXPECT_TRUE(fs_is_dir(link_dir)) << "is_dir(" << link_dir << ") should be true for link to existing dir";
-  EXPECT_TRUE(fs_is_symlink(link_dir)) << "is_symlink() should be true for symlink: " << link_dir;
+  ctx.link_file = ctx.cwd + fs_filesep() + "test_" + n + "_cpp.link";
+  ctx.link_dir = ctx.cwd + fs_filesep() + "test_" + n + "_cpp.dir.link";
+  ctx.broken_link = ctx.cwd + fs_filesep() + "test_" + n + "_cpp.broken";
+  ctx.in_file = ctx.link_file + "-in_file";
+  ctx.in2 = ctx.in_file + "-read_past_the_end_of_buffer";
 
-  EXPECT_EQ(fs_read_symlink(nonnull_file), tgt) << "read_symlink() should not read past the end of string_view buffer";
-}
-
-
-TEST_F(TestSymlink, Exists){
-  EXPECT_TRUE(fs_exists(tgt)) << "exists() should be true for existing file: " << tgt;
-  EXPECT_TRUE(fs_exists(link_file)) << "exists() should be true for existing symlink: " << link_file;
-  EXPECT_TRUE(fs_exists(link_dir)) << "exists() should be true for existing symlink: " << link_dir;
-
-  if (!fs_is_windows() || (fs_is_msvc() && fs_backend() == "<filesystem>")) {
-    // Python os.stat() and os.lstat() handle broken symlink correctly on Windows
-    EXPECT_FALSE(fs_exists(broken_link)) << "exists() should be false for broken symlink: " << broken_link;
+  for (const auto& link : {ctx.link_file, ctx.link_dir, ctx.broken_link, ctx.in_file, ctx.in2}) {
+    if (fs_is_symlink(link)) {
+      std::cout << "Removing existing symlink: " << link << "\n";
+      expect(fs_remove(link) >> fatal) << "Failed to remove existing symlink: " << link;
+    }
   }
+
+  expect(fs_create_symlink(ctx.tgt, ctx.link_file) >> fatal);
+  std::cout << "Created symlink FILE: " << ctx.link_file << " -> " << ctx.tgt << "\n";
+  expect(fs_create_symlink(ctx.cwd, ctx.link_dir) >> fatal);
+  std::cout << "Created symlink DIR: " << ctx.link_dir << " -> " << ctx.cwd << "\n";
+
+  // to create a broken link, we first create a valid link and then remove the target
+  expect(fs_touch(ctx.not_exist_tgt) >> fatal);
+  expect(fs_create_symlink(ctx.not_exist_tgt, ctx.broken_link) >> fatal);
+  expect(fs_remove(ctx.not_exist_tgt) >> fatal);
+  expect(!fs_exists(ctx.not_exist_tgt) >> fatal)
+      << "exists() should be false for non-existent target: " << ctx.not_exist_tgt;
+  std::cout << "Created broken symlink: " << ctx.broken_link << " -> " << ctx.not_exist_tgt << "\n";
+
+  ctx.nonnull_file = std::string_view(ctx.in2.data(), ctx.in_file.size());
+  expect(ctx.nonnull_file.back() != '\0' >> fatal);
 }
 
+} // namespace
 
-TEST_F(TestSymlink, Lexists){
-  EXPECT_FALSE(fs_lexists(not_exist_tgt)) << "lexists() should be false for non-existent target: " << not_exist_tgt;
-  EXPECT_FALSE(fs_lexists("")) << "lexists() should be false for empty path";
-  EXPECT_TRUE(fs_lexists(tgt)) << "lexists() should be true for existing file: " << tgt;
-  EXPECT_TRUE(fs_lexists(link_file)) << "lexists() should be true for existing symlink: " << link_file;
-  EXPECT_TRUE(fs_lexists(link_dir)) << "lexists() should be true for existing symlink: " << link_dir;
-  EXPECT_TRUE(fs_lexists(broken_link)) << "lexists() should be true for broken symlink: " << broken_link;
+int main() {
+  using namespace boost::ut;
+
+  "create_symlink"_test = [] {
+    symlink_ctx ctx;
+    setup(ctx, "CreateSymlink");
+    if (ctx.skip) {
+      return;
+    }
+
+    expect(!fs_create_symlink(ctx.tgt, "")) << "create_symlink() should fail with empty link";
+    expect(!fs_is_symlink(ctx.tgt) >> fatal) << "is_symlink() should be false for non-symlink file: " << ctx.tgt;
+    expect(!fs_create_symlink("", ctx.link_file)) << "create_symlink() should fail with empty target";
+
+    expect(fs_create_symlink(ctx.tgt, ctx.nonnull_file) >> fatal)
+        << "create_symlink(" << ctx.tgt << ", " << ctx.nonnull_file
+        << ") should succeed even if link path is not null-terminated";
+    expect(fs_exists(ctx.in_file)) << "exists() should be false for non-existent file: " << ctx.in_file;
+
+    expect(fs_is_symlink(ctx.link_file)) << "is_symlink() should be true for symlink: " << ctx.link_file;
+    expect(fs_is_file(ctx.link_file))
+        << "is_file(" << ctx.link_file << ") should be true for existing regular file target " << ctx.tgt;
+    expect(eq(fs_read_symlink(ctx.link_file), ctx.tgt));
+
+    // Cygwin will have /cygdrive/c and /home/ as roots
+    if (!fs_is_cygwin()) {
+      const std::string r = fs_canonical(ctx.link_file, true);
+      expect(!r.empty() >> fatal);
+      expect(eq(r.length(), ctx.tgt.length())) << r << " vs " << ctx.tgt;
+      expect(fs_equivalent(r, ctx.tgt));
+    }
+
+    expect(fs_read_symlink(ctx.tgt).empty());
+    expect(fs_read_symlink(ctx.not_exist_tgt).empty());
+    expect(!fs_is_symlink(ctx.cwd));
+
+    expect(fs_is_dir(ctx.link_dir)) << "is_dir(" << ctx.link_dir << ") should be true for link to existing dir";
+    expect(fs_is_symlink(ctx.link_dir)) << "is_symlink() should be true for symlink: " << ctx.link_dir;
+    expect(eq(fs_read_symlink(ctx.nonnull_file), ctx.tgt))
+        << "read_symlink() should not read past the end of string_view buffer";
+  };
+
+  "exists"_test = [] {
+    symlink_ctx ctx;
+    setup(ctx, "Exists");
+    if (ctx.skip) {
+      return;
+    }
+
+    expect(fs_exists(ctx.tgt)) << "exists() should be true for existing file: " << ctx.tgt;
+    expect(fs_exists(ctx.link_file)) << "exists() should be true for existing symlink: " << ctx.link_file;
+    expect(fs_exists(ctx.link_dir)) << "exists() should be true for existing symlink: " << ctx.link_dir;
+
+    if (!fs_is_windows() || (fs_is_msvc() && fs_backend() == "<filesystem>")) {
+      // Python os.stat() and os.lstat() handle broken symlink correctly on Windows
+      expect(!fs_exists(ctx.broken_link)) << "exists() should be false for broken symlink: " << ctx.broken_link;
+    }
+  };
+
+  "lexists"_test = [] {
+    symlink_ctx ctx;
+    setup(ctx, "Lexists");
+    if (ctx.skip) {
+      return;
+    }
+
+    expect(!fs_lexists(ctx.not_exist_tgt)) << "lexists() should be false for non-existent target: " << ctx.not_exist_tgt;
+    expect(!fs_lexists("")) << "lexists() should be false for empty path";
+    expect(fs_lexists(ctx.tgt)) << "lexists() should be true for existing file: " << ctx.tgt;
+    expect(fs_lexists(ctx.link_file)) << "lexists() should be true for existing symlink: " << ctx.link_file;
+    expect(fs_lexists(ctx.link_dir)) << "lexists() should be true for existing symlink: " << ctx.link_dir;
+    expect(fs_lexists(ctx.broken_link)) << "lexists() should be true for broken symlink: " << ctx.broken_link;
+  };
 }

@@ -1,30 +1,46 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <string>
 
-class TestAppExec : public testing::Test {
-  protected:
-    std::string path;
+#include <boost/ut.hpp>
 
-    void SetUp() override {
+namespace {
 
-      if(!fs_is_windows())
-        GTEST_SKIP() << "requires Windows";
-
-      std::string appdir = fs_getenv("LOCALAPPDATA").value_or("") + "/Microsoft/WindowsApps";
-      ASSERT_TRUE(fs_is_dir(appdir));
-
-      for (const auto& exe : {"wt.exe", "winget.exe", "wsl.exe", "bash.exe"}){
-        path = fs_which(exe, appdir);
-        if (!path.empty())
-          break;
-      }
-      if(path.empty())
-        GTEST_SKIP() << "didn't find an App Execution Alias to test";
-    }
+struct app_exec_ctx {
+  std::string path;
 };
 
+auto setup(app_exec_ctx& ctx) -> bool {
+  using namespace boost::ut;
 
-TEST_F(TestAppExec, AppExecAlias) {
-EXPECT_TRUE(fs_is_appexec_alias(path));
+  if (!fs_is_windows()) {
+    return false;
+  }
+
+  const std::string appdir = fs_getenv("LOCALAPPDATA").value_or("") + "/Microsoft/WindowsApps";
+  expect(fs_is_dir(appdir) >> fatal);
+
+  for (const auto& exe : {"wt.exe", "winget.exe", "wsl.exe", "bash.exe"}) {
+    ctx.path = fs_which(exe, appdir);
+    if (!ctx.path.empty()) {
+      break;
+    }
+  }
+
+  return !ctx.path.empty();
+}
+
+} // namespace
+
+int main() {
+  using namespace boost::ut;
+
+  "app_exec_alias"_test = [] {
+    app_exec_ctx ctx;
+    if (!setup(ctx)) {
+      return;
+    }
+
+    expect(fs_is_appexec_alias(ctx.path));
+  };
 }

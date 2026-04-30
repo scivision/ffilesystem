@@ -1,22 +1,29 @@
 #include "ffilesystem.h"
 #include <string>
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-TEST(TestExpand, Expanduser)
-{
-std::string r;
-std::string const h = fs_get_homedir();
 
-ASSERT_TRUE(fs_expanduser("").empty());
-EXPECT_EQ(fs_expanduser("."), ".");
-EXPECT_EQ(fs_expanduser("~"), h);
-EXPECT_EQ(fs_expanduser("~/"), h);
-EXPECT_EQ(fs_expanduser("~/test"), h + "/test");
-EXPECT_EQ(fs_expanduser("~test"), "~test");
-EXPECT_EQ(fs_expanduser("test~"), "test~");
-EXPECT_EQ(fs_expanduser("test~test"), "test~test");
+int main() {
 
-EXPECT_EQ(fs_expanduser("日本語"), "日本語");
+using namespace boost::ut;
 
+suite TestExpand = [] {
+    "Expanduser"_test = [] {
+        std::string const h = fs_get_homedir();
+        expect(!h.empty() >> fatal) << "Home directory should not be empty";
+        expect(fs_is_dir(h) >> fatal) << "Home directory should be a directory: " << h;
+
+        expect(fs_expanduser("").empty());
+        expect(fs_expanduser(".") == ".");
+        expect(fs_expanduser("~") == h);
+        expect(fs_expanduser("~/") == h);
+        expect(fs_expanduser("~/test") == h + "/test");
+        expect(fs_expanduser("~test") == "~test");
+        expect(fs_expanduser("test~") == "test~");
+        expect(fs_expanduser("test~test") == "test~test");
+
+        expect(fs_expanduser("日本語") == "日本語");
+    };
+};
 }

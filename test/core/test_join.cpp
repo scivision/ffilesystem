@@ -1,20 +1,23 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-TEST(TestJoin, Join)
-{
-  EXPECT_EQ(fs_join("", ""), "");
-  EXPECT_EQ(fs_join("a", ""), "a");
-  EXPECT_EQ(fs_join("", "b"), "b");
-  EXPECT_EQ(fs_join("a/b/", "c/"), "a/b/c/");
-  EXPECT_EQ(fs_join("/", ""), "/");
-  EXPECT_EQ(fs_join("", "/"), "/");
-  EXPECT_EQ(fs_join("a", "b/"), "a/b/");
-  EXPECT_EQ(fs_join("a/", "b/"), "a/b/");
-  EXPECT_EQ(fs_join("a/b/../", "c/d/../"), "a/b/../c/d/../");
-  EXPECT_EQ(fs_join("a/b", ".."), "a/b/..");
-  EXPECT_EQ(fs_join("./a/b", "."), "./a/b/.");
-  EXPECT_EQ(fs_join("a/b", "c/d"), "a/b/c/d");
-  EXPECT_EQ(fs_join("ab/cd", "/ef"), "/ef");
+int main() {
+  using namespace boost::ut;
+
+  "join"_test = [] {
+    expect(eq(fs_join("", ""), std::string{""}));
+    expect(eq(fs_join("a", ""), std::string{"a"}));
+    expect(eq(fs_join("", "b"), std::string{"b"}));
+    expect(eq(fs_join("a/b/", "c/"), std::string{"a/b/c/"}));
+    expect(eq(fs_join("/", ""), std::string{"/"}));
+    expect(eq(fs_join("", "/"), std::string{"/"}));
+    expect(eq(fs_join("a", "b/"), std::string{"a/b/"}));
+    expect(eq(fs_join("a/", "b/"), std::string{"a/b/"}));
+    expect(eq(fs_join("a/b/../", "c/d/../"), std::string{"a/b/../c/d/../"}));
+    expect(eq(fs_join("a/b", ".."), std::string{"a/b/.."}));
+    expect(eq(fs_join("./a/b", "."), std::string{"./a/b/."}));
+    expect(eq(fs_join("a/b", "c/d"), std::string{"a/b/c/d"}));
+    expect(eq(fs_join("ab/cd", "/ef"), std::string{"/ef"}));
+  };
 }

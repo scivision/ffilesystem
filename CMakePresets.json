@@ -42,7 +42,7 @@
 },
 { "name": "android-tests", "inherits": "android",
   "displayName": "Android NDK with tests",
-  "description": "Cross-compile for Android and register tests via gtest_add_tests (no host execution). Set CROSSCOMPILING_EMULATOR_AVAILABLE=ON separately to enable gtest_discover_tests with a runner.",
+  "description": "Cross-compile for Android and register tests.",
   "cacheVariables": {
     "ffilesystem_BUILD_TESTING": true,
     "CMAKE_CROSSCOMPILING_EMULATOR": "${sourceDir}/test/adb_run.sh"
@@ -113,7 +113,7 @@
   { "name": "cosmo", "configurePreset": "cosmo", "inherits": "default" },
   { "name": "ios", "configurePreset": "ios", "inherits": "default" },
   { "name": "ios-sim", "configurePreset": "ios-sim", "inherits": "default" },
-  { "name": "msvc", "configurePreset": "msvc", "configuration": "Release", "inherits": "default" },
+  { "name": "msvc", "configurePreset": "msvc", "configuration": "Release", "inherits": "default", "jobs": 8 },
   {
     "name": "explain",
     "configurePreset": "default",

@@ -1,34 +1,48 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <string>
 
+#include <boost/ut.hpp>
 
-class TestRemove : public testing::Test {
-  protected:
-    std::string file, in2;
-    std::string_view nonnull2;
+namespace {
 
-    void SetUp() override {
-      if(!fs_is_writable(".")){
-        GTEST_SKIP() << "current directory is not writable";
-      }
+struct remove_ctx {
+  std::string file;
+  std::string in2;
+  std::string_view nonnull2;
 
-      file = "ffs_remove_test.txt";
-      ASSERT_TRUE(fs_touch(file));
+  ~remove_ctx() {
+    fs_remove(file);
+  }
+};
 
-      in2 = "./" + file;
-      nonnull2 = std::string_view(in2.data(), 2);
-      ASSERT_NE(nonnull2.back(), '\0') << "nonnull2 should not be null-terminated\n";
+auto setup(remove_ctx& ctx) -> bool {
+  using namespace boost::ut;
+  if (!fs_is_writable(".")) {
+    return false;
+  }
+
+  ctx.file = "ffs_remove_test.txt";
+  expect(fs_touch(ctx.file) >> fatal);
+
+  ctx.in2 = "./" + ctx.file;
+  ctx.nonnull2 = std::string_view(ctx.in2.data(), 2);
+  expect(ctx.nonnull2.back() != '\0' >> fatal) << "nonnull2 should not be null-terminated\n";
+  return true;
+}
+
+} // namespace
+
+int main() {
+  using namespace boost::ut;
+
+  "remove"_test = [] {
+    remove_ctx ctx;
+    if (!setup(ctx)) {
+      return;
     }
-    void TearDown() override {
-      fs_remove(file);
-    }
+
+    expect(!fs_remove(ctx.nonnull2)) << "Failed with input not null-terminated\n";
+    expect(fs_remove(ctx.file));
   };
-
-
-TEST_F(TestRemove, Remove)
-{
-ASSERT_FALSE(fs_remove(nonnull2)) << "Failed with input not null-terminated\n";
-
-EXPECT_TRUE(fs_remove(file));
 }

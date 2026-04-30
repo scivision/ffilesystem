@@ -1,4 +1,6 @@
 include(CheckIncludeFile)
+include(CheckIncludeFileCXX)
+include(FetchContent)
 
 if(LINUX)
   check_include_file("linux/magic.h" ffilesystem_HAVE_LINUX_MAGIC)
@@ -23,7 +25,11 @@ if(ffilesystem_extra)
 endif()
 
 
-include(${CMAKE_CURRENT_LIST_DIR}/GoogleTest.cmake)
+if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
+  FetchContent_Populate(boost_ut URL ${boost_ut_url})
+  set(CMAKE_REQUIRED_INCLUDES ${boost_ut_SOURCE_DIR}/include)
+  check_include_file_cxx(boost/ut.hpp HAVE_BOOST_UT)
+endif()
 
 
 foreach(t IN LISTS test_dirs)

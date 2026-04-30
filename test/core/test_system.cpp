@@ -1,12 +1,15 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-TEST(TestSystem, System)
-{
-  EXPECT_FALSE(fs_compiler().empty()) << "unknown compiler";
-  EXPECT_NE(fs_compiler().length(), fs_get_max_path()) << "compiler has blank space";
+int main() {
+  using namespace boost::ut;
 
-  EXPECT_FALSE(fs_get_username().empty());
-  EXPECT_NE(fs_get_username().length(), fs_get_max_path()) << "username has blank space";
+  "system"_test = [] {
+    expect(!fs_compiler().empty()) << "unknown compiler";
+    expect(neq(fs_compiler().length(), fs_get_max_path())) << "compiler has blank space";
+
+    expect(!fs_get_username().empty());
+    expect(neq(fs_get_username().length(), fs_get_max_path())) << "username has blank space";
+  };
 }

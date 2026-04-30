@@ -11,10 +11,10 @@ or Homebrew:
 brew install android-ndk
 ```
 
-## GoogleTest with Android NDK
+## CTest with Android NDK
 
 Because Android binaries cannot run on the host, the standard
-`gtest_discover_tests` (which executes the test binary at build time to
+`ctest` (which executes the test binary at build time to
 enumerate tests) does not work when cross-compiling. Three modes are
 supported:
 
@@ -28,8 +28,7 @@ cmake --workflow android
 
 ### Mode 2 — Build and register tests, no runner
 
-Tests are compiled and registered using `gtest_add_tests` (source
-parsing only — no host execution). `ctest` will show them as registered
+Tests are compiled and registered. `ctest` will show them as registered
 but cannot run them without a device or emulator.
 
 ```sh

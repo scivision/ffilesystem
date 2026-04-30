@@ -1,71 +1,88 @@
 #include "ffilesystem.h"
 #include <iostream>
-#include <gtest/gtest.h>
 
+#include <boost/ut.hpp>
 
-class TestSymlink : public testing::Test {
-  protected:
-    std::string tfile, tdir, in_file, tgt, test_dir;
-    std::string_view nonnull_file;
+namespace {
 
-    void SetUp() override {
-      std::string cwd = testing::UnitTest::GetInstance()->original_working_dir();
+struct symlink_ctx {
+  std::string tfile;
+  std::string tdir;
+  std::string in_file;
+  std::string tgt;
+  std::string test_dir;
+  std::string_view nonnull_file;
 
-      test_dir = cwd + "/symlink_test_dir";
-      ASSERT_TRUE(fs_mkdir(test_dir)) << "Failed to create test directory: " << test_dir;
-
-      tgt = test_dir + "/test_is_symlink_target.txt";
-      ASSERT_TRUE(fs_touch(tgt)) << "Failed to create target file: " << tgt;
-
-      tdir = test_dir + "/link.dir";
-      tfile = tdir + "/cmake_test_symlink.txt.link";
-
-      if(fs_is_symlink(tfile)){
-        std::cout << "Removing existing test symlink file: " << tfile << "\n";
-        ASSERT_TRUE(fs_remove(tfile)) << "Failed to remove existing test symlink file: " << tfile;
+  void cleanup() const {
+    for (const auto& link : {tfile, tdir}) {
+      if (fs_is_symlink(link)) {
+        fs_remove(link);
       }
-
-      if(fs_is_symlink(tdir)){
-        std::cout << "Removing existing test symlink dir: " << tdir << "\n";
-        ASSERT_TRUE(fs_remove(tdir)) << "Failed to remove existing test symlink dir: " << tdir;
-      }
-
-      ASSERT_TRUE(fs_create_symlink(test_dir, tdir)) << "Failed to create symlink: " << tdir << " -> " << test_dir;
-      ASSERT_TRUE(fs_is_dir(tdir)) << tdir << " is not a directory";
-      std::cout << "Created symlink DIR: " << tdir << " -> " << test_dir << "\n";
-
-      ASSERT_TRUE(fs_create_symlink(tgt, tfile)) << "Failed to create symlink: " << tfile << " -> " << tgt;
-      ASSERT_TRUE(fs_is_file(tfile)) << tfile << " is not a file after creating symlink";
-      std::cout << "Created symlink FILE: " << tfile << " -> " << tgt << "\n";
-
-      in_file = tfile + "-read_past_the_end_of_buffer";
-      nonnull_file = std::string_view(in_file.data(), tfile.size());
-      ASSERT_NE(nonnull_file.back(), '\0');
     }
+    fs_remove(tgt);
+    fs_remove(test_dir);
+  }
 
-    void TearDown() override {
-      for (const auto& link : {tfile, tdir}){
-        if (fs_is_symlink(link))
-          fs_remove(link);
-      }
-
-      fs_remove(tgt);
-      fs_remove(test_dir);
-    }
+  ~symlink_ctx() { cleanup(); }
 };
 
+auto setup(symlink_ctx& ctx) {
+  using namespace boost::ut;
 
-TEST_F(TestSymlink, IsSymlinkFile){
+  const std::string cwd = fs_get_cwd();
+  ctx.test_dir = cwd + "/symlink_test_dir";
+  expect(fs_mkdir(ctx.test_dir) >> fatal) << "Failed to create test directory: " << ctx.test_dir;
 
-EXPECT_FALSE(fs_is_symlink("not-exist-file"));
+  ctx.tgt = ctx.test_dir + "/test_is_symlink_target.txt";
+  expect(fs_touch(ctx.tgt) >> fatal) << "Failed to create target file: " << ctx.tgt;
 
-EXPECT_FALSE(fs_is_symlink(""));
+  ctx.tdir = ctx.test_dir + "/link.dir";
+  ctx.tfile = ctx.tdir + "/cmake_test_symlink.txt.link";
 
-EXPECT_TRUE(fs_is_symlink(tfile));
+  if (fs_is_symlink(ctx.tfile)) {
+    std::cout << "Removing existing test symlink file: " << ctx.tfile << "\n";
+    expect(fs_remove(ctx.tfile) >> fatal) << "Failed to remove existing test symlink file: " << ctx.tfile;
+  }
 
-EXPECT_TRUE(fs_is_symlink(nonnull_file)) << "is_symlink() should not read past the end of string_view buffer";
+  if (fs_is_symlink(ctx.tdir)) {
+    std::cout << "Removing existing test symlink dir: " << ctx.tdir << "\n";
+    expect(fs_remove(ctx.tdir) >> fatal) << "Failed to remove existing test symlink dir: " << ctx.tdir;
+  }
+
+  expect(fs_create_symlink(ctx.test_dir, ctx.tdir) >> fatal)
+      << "Failed to create symlink: " << ctx.tdir << " -> " << ctx.test_dir;
+  expect(fs_is_dir(ctx.tdir) >> fatal) << ctx.tdir << " is not a directory";
+  std::cout << "Created symlink DIR: " << ctx.tdir << " -> " << ctx.test_dir << "\n";
+
+  expect(fs_create_symlink(ctx.tgt, ctx.tfile) >> fatal)
+      << "Failed to create symlink: " << ctx.tfile << " -> " << ctx.tgt;
+  expect(fs_is_file(ctx.tfile) >> fatal) << ctx.tfile << " is not a file after creating symlink";
+  std::cout << "Created symlink FILE: " << ctx.tfile << " -> " << ctx.tgt << "\n";
+
+  ctx.in_file = ctx.tfile + "-read_past_the_end_of_buffer";
+  ctx.nonnull_file = std::string_view(ctx.in_file.data(), ctx.tfile.size());
+  expect(ctx.nonnull_file.back() != '\0' >> fatal);
 }
 
-TEST_F(TestSymlink, IsSymlinkDir){
-  EXPECT_TRUE(fs_is_symlink(tdir));
+} // namespace
+
+int main() {
+  using namespace boost::ut;
+
+  "is_symlink_file"_test = [] {
+    symlink_ctx ctx;
+    setup(ctx);
+
+    expect(!fs_is_symlink("not-exist-file"));
+    expect(!fs_is_symlink(""));
+    expect(fs_is_symlink(ctx.tfile));
+    expect(fs_is_symlink(ctx.nonnull_file)) << "is_symlink() should not read past the end of string_view buffer";
+  };
+
+  "is_symlink_dir"_test = [] {
+    symlink_ctx ctx;
+    setup(ctx);
+
+    expect(fs_is_symlink(ctx.tdir));
+  };
 }

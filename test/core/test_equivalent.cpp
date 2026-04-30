@@ -3,102 +3,109 @@
 
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
+namespace {
 
-class TestEquivalent : public testing::Test {
-    protected:
-      std::string self, self_name;
-      std::string_view nonnull_file;
-      std::string in_file; // this must be in global scope for nonnull_file to be valid
-
-      void SetUp() override {
-        std::vector<std::string> argvs = ::testing::internal::GetArgvs();
-
-        self = argvs[0];
-        self_name = fs_file_name(self);
-
-        ASSERT_TRUE(fs_is_file(self)) << "Test executable not found: " << self;
-
-        in_file = self + "-read_past_the_end_of_buffer";
-        nonnull_file = std::string_view(in_file.data(), self.size());
-        ASSERT_NE(nonnull_file.back(), '\0') << "Test executable name should not end with null character";
-      }
+struct equivalent_ctx {
+  std::string self;
+  std::string self_name;
+  std::string in_file;
+  std::string_view nonnull_file;
 };
 
+auto make_ctx(std::string_view arg0) {
+  using namespace boost::ut;
 
-TEST_F(TestEquivalent, FileName)
-{
+    std::optional<equivalent_ctx> ctx{equivalent_ctx{}};
 
-if (!fs_equivalent(".", fs_parent(self)))
-  GTEST_SKIP() << "Test executable is not in the current working directory";
+  ctx->self = arg0;
+  ctx->self_name = fs_file_name(ctx->self);
+  expect(fs_is_file(ctx->self) >> fatal) << "Test executable not found: " << ctx->self;
 
-ASSERT_TRUE(fs_is_file(self_name)) << "Test executable name not found in CWD: " << self_name;
+  ctx->in_file = ctx->self + "-read_past_the_end_of_buffer";
+  ctx->nonnull_file = std::string_view(ctx->in_file.data(), ctx->self.size());
+  expect(ctx->nonnull_file.back() != '\0') << "Test executable name should not end with null character";
 
-EXPECT_TRUE(fs_equivalent(self_name, "./" + self_name));
-
-EXPECT_TRUE(fs_equivalent(self_name, self));
-EXPECT_TRUE(fs_equivalent(self_name, nonnull_file));
-EXPECT_TRUE(fs_equivalent(self, self_name));
-EXPECT_TRUE(fs_equivalent(self, self));
+  return ctx;
 }
 
+} // namespace
 
-TEST(TestEquiv, Relative)
-{
+int main(int argc, char** argv) {
+  using namespace boost::ut;
 
-std::string s = "ffs_equiv_not-exist";
-EXPECT_FALSE(fs_equivalent(s, s));
+  "equivalent_filename"_test = [argv] {
+    const auto ctx = make_ctx(argv[0]);
+    expect(static_cast<bool>(ctx) >> fatal);
+    if (!ctx) {
+      return;
+    }
 
-std::string cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
+    if (!fs_equivalent(".", fs_parent(ctx->self))) {
+      return;
+    }
 
-EXPECT_TRUE(fs_equivalent("..", fs_parent(cwd)));
-EXPECT_TRUE(fs_equivalent(".", "./"));
-EXPECT_TRUE(fs_equivalent(".", cwd));
-EXPECT_FALSE(fs_equivalent("..", cwd));
+    expect(fs_is_file(ctx->self_name) >> fatal) << "Test executable name not found in CWD: " << ctx->self_name;
 
-// NOTE: This can be false on networked drive or Windows Dev Drive
-// fs_equivalent(".", fs_realpath("."));
-}
+    expect(fs_equivalent(ctx->self_name, "./" + ctx->self_name));
+    expect(fs_equivalent(ctx->self_name, ctx->self));
+    expect(fs_equivalent(ctx->self_name, ctx->nonnull_file));
+    expect(fs_equivalent(ctx->self, ctx->self_name));
+    expect(fs_equivalent(ctx->self, ctx->self));
+  };
 
+  "equivalent_relative"_test = [] {
+    std::string s = "ffs_equiv_not-exist";
+    expect(!fs_equivalent(s, s));
 
-TEST(TestEquiv, InaccessibleDirectory)
-{
-if(fs_is_windows() || fs_is_cygwin()){
-  GTEST_SKIP() << "Permission-denied directory traversal semantics are POSIX-specific";
-}
+    std::string cwd = fs_get_cwd();
+    expect(!cwd.empty() >> fatal);
 
-if(fs_is_admin()){
-  GTEST_SKIP() << "Administrator/root can bypass permission checks";
-}
+    expect(fs_equivalent("..", fs_parent(cwd)));
+    expect(fs_equivalent(".", "./"));
+    expect(fs_equivalent(".", cwd));
+    expect(!fs_equivalent("..", cwd));
 
-if(!fs_is_writable(".")){
-  GTEST_SKIP() << "current directory is not writable";
-}
+    // NOTE: This can be false on networked drive or Windows Dev Drive
+    // fs_equivalent(".", fs_realpath("."));
+  };
 
-std::string base = "ffs_equiv_inaccessible_dir";
-std::string secret = base + "/secret";
+  "equivalent_inaccessible_directory"_test = [] {
+    if (fs_is_windows() || fs_is_cygwin()) {
+      return;
+    }
+    if (fs_is_admin()) {
+      return;
+    }
+    if (!fs_is_writable(".")) {
+      return;
+    }
 
-// Clean up stale state from prior interrupted runs.
-if(fs_exists(secret)){
-  fs_set_permissions(secret, 1, 1, 1);
-}
-if(fs_exists(base)){
-  fs_remove(secret);
-  fs_remove(base);
-}
+    std::string base = "ffs_equiv_inaccessible_dir";
+    std::string secret = base + "/secret";
 
-ASSERT_TRUE(fs_mkdir(secret));
-ASSERT_TRUE(fs_set_permissions(base, -1, -1, -1));
+    // Clean up stale state from prior interrupted runs.
+    if (fs_exists(secret)) {
+      fs_set_permissions(secret, 1, 1, 1);
+    }
+    if (fs_exists(base)) {
+      fs_remove(secret);
+      fs_remove(base);
+    }
 
-// test that associated functions also work
-EXPECT_FALSE(fs_exists(secret)) << "inaccessible path treated as not existing";
-EXPECT_FALSE(fs_is_dir(secret)) << "inaccessible path should not be treated as directory";
-EXPECT_FALSE(fs_is_file(secret)) << "inaccessible path should not be treated as file";
+    expect(fs_mkdir(secret) >> fatal);
+    expect(fs_set_permissions(base, -1, -1, -1) >> fatal);
 
-EXPECT_FALSE(fs_equivalent(secret, secret));
+    // test that associated functions also work
+    expect(!fs_exists(secret)) << "inaccessible path treated as not existing";
+    expect(!fs_is_dir(secret)) << "inaccessible path should not be treated as directory";
+    expect(!fs_is_file(secret)) << "inaccessible path should not be treated as file";
 
-EXPECT_TRUE(fs_set_permissions(base, 1, 1, 1));
-EXPECT_TRUE(fs_remove(secret));
-EXPECT_TRUE(fs_remove(base));
+    expect(!fs_equivalent(secret, secret));
+
+    expect(fs_set_permissions(base, 1, 1, 1));
+    expect(fs_remove(secret));
+    expect(fs_remove(base));
+  };
 }

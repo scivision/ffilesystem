@@ -3,35 +3,39 @@
 #include <vector>
 #include <string>
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-TEST(TestHostname, Hostname){
+int main() {
+using namespace boost::ut;
+
+"Hostname"_test = [] {
   std::string s = fs_hostname();
 
-  EXPECT_FALSE(s.empty());
+  expect(!s.empty());
 
-  EXPECT_NE(s.length(), fs_get_max_path()) << "hostname length is equal to max path length";
-}
+  expect(s.length() != fs_get_max_path()) << "hostname length is equal to max path length";
+};
 
-TEST(TestMax, MaxComponent){
-  EXPECT_GE(fs_max_component("/"), 1);
-}
+"MaxComponent"_test = [] {
+  expect(fs_max_component("/") >= 1);
+};
 
 
-TEST(TestShell, Shell){
+"Shell"_test = [] {
   std::string s = fs_get_shell();
   if (s.empty())
-    GTEST_SKIP() << "unknown shell";
+    return;
 
-  EXPECT_NE(s.length(), fs_get_max_path()) << "shell has blank space";
-}
+  expect(s.length() != fs_get_max_path()) << "shell has blank space";
+};
 
 
-TEST(TestShell, Terminal){
+"Terminal"_test = [] {
   std::string s = fs_get_terminal();
 
   if (s.empty())
-    GTEST_SKIP() << "unknown terminal";
+    return;
 
-  EXPECT_NE(s.length(), fs_get_max_path()) << "terminal has blank space";
+  expect(s.length() != fs_get_max_path()) << "terminal has blank space";
+};
 }

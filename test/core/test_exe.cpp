@@ -1,139 +1,189 @@
 #include <string>
-#include <vector>
 #include <iostream>
+#include <string_view>
 
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
+namespace {
 
-class TestExe : public testing::Test {
-  protected:
-    std::string exe, noexe, self, in2;
-    std::string_view nonnull2;
+struct exe_ctx {
+  std::string exe;
+  std::string noexe;
+  std::string self;
+  std::string in2;
+  std::string_view nonnull2;
 
-    void SetUp() override {
-      auto inst = testing::UnitTest::GetInstance();
-      auto info = inst->current_test_info();
-      std::string test_name_ = info->name();
-      std::string test_suite_name_ = info->test_suite_name();
-      std::string n = test_suite_name_ + "-" + test_name_;
-
-      if(fs_is_wsl() > 0 && fs_filesystem_type(fs_absolute(".")) == "v9fs")
-        GTEST_SKIP() << "v9fs to NTFS etc. doesn't work right";
-
-      if (!fs_is_writable("."))
-        GTEST_SKIP() << "current directory is not writable";
-
-      exe = "test_" + n + ".exe";
-      noexe = "test_" + n + "_noexe.exe";
-
-      std::vector<std::string> argvs = ::testing::internal::GetArgvs();
-      self = argvs[0];
-      if(fs_is_cygwin())
-        self += ".exe";
-
-      ASSERT_TRUE(fs_touch(exe));
-      ASSERT_TRUE(fs_touch(noexe));
-
-      ASSERT_TRUE(fs_set_permissions(exe, 0, 0, 1));
-      ASSERT_TRUE(fs_set_permissions(noexe, 0, 0, -1));
-
-      ASSERT_FALSE(fs_get_permissions(exe).empty());
-
-      in2 = self + "-invalid-memory-trailing-non-null-terminated-string_view";
-      nonnull2 = std::string_view(in2.data(), self.size());
-      ASSERT_NE(nonnull2.back(), '\0') << "nonnull2 should not be null-terminated\n";
-    }
-
-    void TearDown() override {
+  ~exe_ctx() {
+    if (!exe.empty()) {
       fs_remove(exe);
+    }
+    if (!noexe.empty()) {
       fs_remove(noexe);
     }
+  }
 };
 
+auto setup_ctx(exe_ctx& ctx, std::string_view test_name, std::string_view arg0) -> bool {
+  using namespace boost::ut;
 
-TEST_F(TestExe, IsExe){
+  if (fs_is_wsl() > 0 && fs_filesystem_type(fs_absolute(".")) == "v9fs") {
+    return false;
+  }
 
-EXPECT_FALSE(fs_is_exe(""));
+  if (!fs_is_writable(".")) {
+    return false;
+  }
 
-EXPECT_FALSE(fs_is_file("not-exist"));
-EXPECT_FALSE(fs_is_exe("not-exist"));
+  const std::string n = std::string{"TestExe-"} + std::string{test_name};
+  ctx.exe = "test_" + n + ".exe";
+  ctx.noexe = "test_" + n + "_noexe.exe";
 
-EXPECT_TRUE(fs_is_exe(self));
-EXPECT_TRUE(fs_is_exe(exe));
+  ctx.self = arg0;
+  if (fs_is_cygwin()) {
+    ctx.self += ".exe";
+  }
+  expect(fs_is_file(ctx.self) >> fatal) << "Self not found: " << ctx.self;
 
-EXPECT_TRUE(fs_is_exe(nonnull2)) << "problem with non null-terminated path " << nonnull2;
+  expect(fs_touch(ctx.exe) >> fatal);
+  expect(fs_is_file(ctx.exe) >> fatal) << "Failed to create test executable file: " << ctx.exe;
+
+  expect(fs_touch(ctx.noexe) >> fatal);
+  expect(fs_is_file(ctx.noexe) >> fatal) << "Failed to create test non-executable file: " << ctx.noexe;
+
+  expect(fs_set_permissions(ctx.exe, 0, 0, 1) >> fatal);
+  expect(fs_set_permissions(ctx.noexe, 0, 0, -1) >> fatal);
+
+  expect(!fs_get_permissions(ctx.exe).empty() >> fatal);
+
+  ctx.in2 = ctx.self + "-invalid-memory-trailing-non-null-terminated-string_view";
+  ctx.nonnull2 = std::string_view(ctx.in2.data(), ctx.self.size());
+  expect(ctx.nonnull2.back() != '\0' >> fatal) << "nonnull2 should not be null-terminated\n";
+
+  return true;
 }
 
+} // namespace
 
-TEST_F(TestExe, IsExeBin){
-// Cygwin is fussy about the full path, but it does work
-// Cygwin wants the /cygdrive/ prefix rather than /home/username/ prefix
+int main(int argc, char** argv) {
+  using namespace boost::ut;
 
-if (fs_is_cygwin())
-  GTEST_SKIP() << "not available on Cygwin";
+  "is_exe"_test = [argv] {
+    exe_ctx ctx;
+    if (!setup_ctx(ctx, "IsExe", argv[0])) {
+      return;
+    }
 
-EXPECT_TRUE(fs_is_executable_binary(self)) << self << " is not executable binary";
-EXPECT_TRUE(fs_is_executable_binary(nonnull2)) << "problem with non null-terminated path " << nonnull2;
+    expect(!fs_is_exe(""));
 
-EXPECT_FALSE(fs_is_executable_binary(exe));
-EXPECT_FALSE(fs_is_executable_binary(noexe));
+    expect(!fs_is_file("not-exist"));
+    expect(!fs_is_exe("not-exist"));
 
-}
+    expect(fs_is_exe(ctx.self)) << "Self " << ctx.self << " should be an executable file";
+    expect(fs_is_exe(ctx.exe)) << "Test executable " << ctx.exe << " should be an executable file";
 
+    expect(fs_is_exe(ctx.nonnull2)) << "problem with non null-terminated path " << ctx.nonnull2;
+  };
 
-TEST_F(TestExe, PermsSelf){
-  std::string p = fs_get_permissions(self);
-  EXPECT_EQ(p[2], 'x');
-}
+  "is_exe_bin"_test = [argv] {
+    exe_ctx ctx;
+    if (!setup_ctx(ctx, "IsExeBin", argv[0])) {
+      return;
+    }
 
+    // Cygwin is fussy about the full path, but it does work.
+    // Cygwin wants the /cygdrive/ prefix rather than /home/username/ prefix.
+    if (fs_is_cygwin()) {
+      return;
+    }
 
-TEST_F(TestExe, IsExePerms){
-  std::string p = fs_get_permissions(exe);
-  EXPECT_EQ(p[2], 'x');
-}
+    expect(fs_is_executable_binary(ctx.self)) << ctx.self << " is not executable binary";
+    expect(fs_is_executable_binary(ctx.nonnull2)) << "problem with non null-terminated path " << ctx.nonnull2;
 
+    expect(!fs_is_executable_binary(ctx.exe));
+    expect(!fs_is_executable_binary(ctx.noexe));
+  };
 
-TEST_F(TestExe, IsNotExePerms){
-  if(fs_is_windows())
-    GTEST_SKIP() << "not available on Windows";
+  "perms_self"_test = [argv] {
+    exe_ctx ctx;
+    if (!setup_ctx(ctx, "PermsSelf", argv[0])) {
+      return;
+    }
 
-  EXPECT_FALSE(fs_is_exe(noexe));
+    std::string p = fs_get_permissions(ctx.self);
+    expect(p.size() >= 3U >> fatal);
+    expect(eq(p[2], 'x'));
+  };
 
-  std::string p = fs_get_permissions(noexe);
-  EXPECT_EQ(p[2], '-');
-}
+  "is_exe_perms"_test = [argv] {
+    exe_ctx ctx;
+    if (!setup_ctx(ctx, "IsExePerms", argv[0])) {
+      return;
+    }
 
+    std::string p = fs_get_permissions(ctx.exe);
+    expect(p.size() >= 3U >> fatal);
+    expect(eq(p[2], 'x'));
+  };
 
-TEST_F(TestExe, ChmodExe){
+  "is_not_exe_perms"_test = [argv] {
+    exe_ctx ctx;
+    if (!setup_ctx(ctx, "IsNotExePerms", argv[0])) {
+      return;
+    }
 
-  std::string p = fs_get_permissions(exe);
-  std::cout << "permissions before chmod(" << exe << ", true)  = " << p << "\n";
+    if (fs_is_windows()) {
+      return;
+    }
 
-  ASSERT_TRUE(fs_set_permissions(exe, -1, 0, 1));
-  // test executable even without read permission
+    expect(!fs_is_exe(ctx.noexe));
 
-  p = fs_get_permissions(exe);
-  std::cout << "permissions after chmod(" << exe << ", true) = " << p << "\n";
+    std::string p = fs_get_permissions(ctx.noexe);
+    expect(p.size() >= 3U >> fatal);
+    expect(eq(p[2], '-'));
+  };
 
-  EXPECT_TRUE(fs_is_exe(exe));
-  EXPECT_EQ(p[2], 'x');
-}
+  "chmod_exe"_test = [argv] {
+    exe_ctx ctx;
+    if (!setup_ctx(ctx, "ChmodExe", argv[0])) {
+      return;
+    }
 
+    std::string p = fs_get_permissions(ctx.exe);
+    std::cout << "permissions before chmod(" << ctx.exe << ", true)  = " << p << "\n";
 
-TEST_F(TestExe, ChmodNoExe){
-  if(fs_is_windows())
-    GTEST_SKIP() << "not available on Windows";
+    expect(fs_set_permissions(ctx.exe, -1, 0, 1) >> fatal);
+    // test executable even without read permission
 
-  std::string p = fs_get_permissions(noexe);
-  std::cout << "permissions before chmod(" << noexe << ", false)  = " << p << "\n";
+    p = fs_get_permissions(ctx.exe);
+    std::cout << "permissions after chmod(" << ctx.exe << ", true) = " << p << "\n";
 
-  ASSERT_TRUE(fs_set_permissions(noexe, 0, 0, -1));
+    expect(fs_is_exe(ctx.exe));
+    expect(p.size() >= 3U >> fatal);
+    expect(eq(p[2], 'x'));
+  };
 
-  p = fs_get_permissions(noexe);
-  std::cout << "permissions after chmod(" << noexe << ",false) = " << p << "\n";
+  "chmod_noexe"_test = [argv] {
+    exe_ctx ctx;
+    if (!setup_ctx(ctx, "ChmodNoExe", argv[0])) {
+      return;
+    }
 
-  EXPECT_FALSE(fs_is_exe(noexe));
-  EXPECT_EQ(p[2], '-');
+    if (fs_is_windows()) {
+      return;
+    }
+
+    std::string p = fs_get_permissions(ctx.noexe);
+    std::cout << "permissions before chmod(" << ctx.noexe << ", false)  = " << p << "\n";
+
+    expect(fs_set_permissions(ctx.noexe, 0, 0, -1) >> fatal);
+
+    p = fs_get_permissions(ctx.noexe);
+    std::cout << "permissions after chmod(" << ctx.noexe << ",false) = " << p << "\n";
+
+    expect(!fs_is_exe(ctx.noexe));
+    expect(p.size() >= 3U >> fatal);
+    expect(eq(p[2], '-'));
+  };
 }

@@ -1,14 +1,16 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
+int main() {
+using namespace boost::ut;
 
-TEST(TestLibPath, LibPath){
+  "LibPath"_test = [] {
+    std::string path = fs_lib_path();
 
-  std::string path = fs_lib_path();
-
-  ASSERT_FALSE(path.empty());
-  ASSERT_TRUE(fs_exists(path));
-  EXPECT_FALSE(fs_is_dir(path));
-  EXPECT_TRUE(fs_is_file(path));
+    expect(!path.empty());
+    expect(fs_exists(path));
+    expect(!fs_is_dir(path));
+    expect(fs_is_file(path));
+};
 }

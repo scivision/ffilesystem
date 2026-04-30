@@ -1,23 +1,23 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
+int main() {
+using namespace boost::ut;
 
-TEST(Windows, ToWide)
-{
-  std::string_view s = "hello";
-  std::wstring w = fs_win32_to_wide(s);
+  "ToWide"_test = [] {
+    std::string_view s = "hello";
+    std::wstring w = fs_win32_to_wide(s);
 
-  EXPECT_EQ(w.size(), s.size());
-  EXPECT_EQ(w, L"hello");
-}
+    expect(w.size() == s.size());
+    expect(w == L"hello");
+  };
 
+  "ToNarrow"_test = [] {
+    std::wstring_view w = L"hello";
+    std::string n = fs_win32_to_narrow(w);
 
-TEST(Windows, ToNarrow)
-{
-  std::wstring_view w = L"hello";
-  std::string n = fs_win32_to_narrow(w);
-
-  EXPECT_EQ(n.size(), w.size());
-  EXPECT_EQ(n, "hello");
+    expect(n.size() == w.size());
+    expect(n == "hello");
+  };
 }

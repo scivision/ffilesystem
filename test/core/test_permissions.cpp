@@ -3,95 +3,127 @@
 #include <string>
 #include <string_view>
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-class TestPermissions : public testing::Test {
+namespace {
 
-  protected:
-  std::string read, noread, nowrite, in_file;
+struct permissions_ctx {
+  std::string read;
+  std::string noread;
+  std::string nowrite;
+  std::string in_file;
   std::string_view nonnull_file;
 
-    void SetUp() override {
-      auto inst = testing::UnitTest::GetInstance();
-      auto info = inst->current_test_info();
-      std::string test_name_ = info->name();
-      std::string test_suite_name_ = info->test_suite_name();
-      std::string n = test_suite_name_ + "-" + test_name_;
+  ~permissions_ctx() {
+    fs_remove(read);
+    fs_remove(noread);
+    fs_remove(nowrite);
+  }
+};
 
-      read = n + "readable.txt";
-      noread = n + "nonreadable.txt";
-      nowrite = n + "nonwritable.txt";
+auto setup(permissions_ctx& ctx, std::string_view test_name) -> bool {
+  using namespace boost::ut;
 
-      if(!fs_is_writable(".")){
-        GTEST_SKIP() << "current directory is not writable";
-      }
+  const std::string n = std::string{test_name};
 
-      ASSERT_TRUE(fs_touch(read));
-      ASSERT_TRUE(fs_is_file(read));
+  ctx.read = n + "readable.txt";
+  ctx.noread = n + "nonreadable.txt";
+  ctx.nowrite = n + "nonwritable.txt";
 
-      ASSERT_TRUE(fs_touch(noread));
-      ASSERT_TRUE(fs_is_file(noread));
-      if(!fs_is_file(nowrite)){
-        ASSERT_TRUE(fs_touch(nowrite));
-      }
+  if (!fs_is_writable(".")) {
+    return false;
+  }
 
-      ASSERT_TRUE(fs_exists(nowrite));
-      ASSERT_TRUE(fs_is_file(nowrite));
+  expect(fs_touch(ctx.read) >> fatal);
+  expect(fs_is_file(ctx.read) >> fatal);
 
-      in_file = read + "-read_past_the_end_of_buffer";
-      nonnull_file = std::string_view(in_file.data(), read.size());
-      ASSERT_NE(nonnull_file.back(), '\0');
+  expect(fs_touch(ctx.noread) >> fatal);
+  expect(fs_is_file(ctx.noread) >> fatal);
+  if (!fs_is_file(ctx.nowrite)) {
+    expect(fs_touch(ctx.nowrite) >> fatal);
+  }
+
+  expect(fs_exists(ctx.nowrite) >> fatal);
+  expect(fs_is_file(ctx.nowrite) >> fatal);
+
+  ctx.in_file = ctx.read + "-read_past_the_end_of_buffer";
+  ctx.nonnull_file = std::string_view(ctx.in_file.data(), ctx.read.size());
+  expect(ctx.nonnull_file.back() != '\0' >> fatal);
+
+  return true;
+}
+
+} // namespace
+
+int main() {
+  using namespace boost::ut;
+
+  "permissions_empty"_test = [] {
+    permissions_ctx ctx;
+    if (!setup(ctx, "permissions_empty")) {
+      return;
     }
-    void TearDown() override {
-      fs_remove(read);
-      fs_remove(noread);
-      fs_remove(nowrite);
+
+    expect(fs_get_permissions("").empty());
+    expect(fs_get_permissions("nonexistent.txt").empty());
+    expect(!fs_get_permissions(ctx.read).empty());
+  };
+
+  "permissions_is_readable"_test = [] {
+    permissions_ctx ctx;
+    if (!setup(ctx, "permissions_is_readable")) {
+      return;
+    }
+
+    expect(fs_is_readable(ctx.read)) << ctx.read << " should be readable";
+  };
+
+  "permissions_not_readable"_test = [] {
+    permissions_ctx ctx;
+    if (!setup(ctx, "permissions_not_readable")) {
+      return;
+    }
+
+    // for Ffilesystem, even non-readable files "exist" and are "is_file"
+    expect(fs_set_permissions(ctx.noread, -1, 0, 0) >> fatal);
+    const std::string p = fs_get_permissions(ctx.noread);
+
+    std::cout << "Permissions: " << ctx.noread << " " << p << "\n";
+
+    if (!(fs_is_windows() || fs_is_cygwin())) {
+      expect(eq(p[0], '-'));
     }
   };
 
-TEST_F(TestPermissions, Empty){
-EXPECT_TRUE(fs_get_permissions("").empty());
-EXPECT_TRUE(fs_get_permissions("nonexistent.txt").empty());
-EXPECT_FALSE(fs_get_permissions(read).empty());
-}
+  "permissions_read"_test = [] {
+    permissions_ctx ctx;
+    if (!setup(ctx, "permissions_read")) {
+      return;
+    }
 
-TEST_F(TestPermissions, IsReadable){
-EXPECT_TRUE(fs_is_readable(read)) << read << " should be readable";
-}
+    expect(fs_set_permissions(ctx.read, 1, 0, 0));
+    expect(fs_is_readable(ctx.read));
+    expect(fs_set_permissions(ctx.nonnull_file, 1, 0, 0));
+  };
 
-TEST_F(TestPermissions, NotReadable){
-// for Ffilesystem, even non-readable files "exist" and are "is_file"
-ASSERT_TRUE(fs_set_permissions(noread, -1, 0, 0));
-const std::string p = fs_get_permissions(noread);
+  "permissions_writable"_test = [] {
+    permissions_ctx ctx;
+    if (!setup(ctx, "permissions_writable")) {
+      return;
+    }
 
-std::cout << "Permissions: " << noread << " " << p << "\n";
+    // writable
+    expect(fs_set_permissions(ctx.nowrite, 0, -1, 0) >> fatal);
 
-if(!(fs_is_windows() || fs_is_cygwin())){
-  EXPECT_EQ(p[0], '-');
-}
-}
+    const std::string p = fs_get_permissions(ctx.nowrite);
 
-TEST_F(TestPermissions, Read){
-EXPECT_TRUE(fs_set_permissions(read, 1, 0, 0));
-EXPECT_TRUE(fs_is_readable(read));
-EXPECT_TRUE(fs_set_permissions(nonnull_file, 1, 0, 0));
-}
+    // MSVC with <filesystem>, but we'll skip all windows
+    if (!fs_is_windows()) {
+      expect(eq(p[1], '-'));
 
-TEST_F(TestPermissions, Writable)
-{
-
-// writable
-ASSERT_TRUE(fs_set_permissions(nowrite, 0, -1, 0));
-
-const std::string p = fs_get_permissions(nowrite);
-
-// MSVC with <filesystem>, but we'll skip all windows
-if (!fs_is_windows()){
-  EXPECT_EQ(p[1], '-');
-
-  if(!fs_is_admin()){
-    EXPECT_FALSE(fs_is_writable(nowrite));
-  }
-}
-
+      if (!fs_is_admin()) {
+        expect(!fs_is_writable(ctx.nowrite));
+      }
+    }
+  };
 }

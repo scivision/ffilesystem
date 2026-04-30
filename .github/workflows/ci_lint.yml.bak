@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
 
-# valgrind needs some simple non-googletest tests perhaps
+# valgrind needs some simple tests perhaps
   valgrind-memory:
     runs-on: ubuntu-latest
     continue-on-error: true

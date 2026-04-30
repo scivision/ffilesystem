@@ -1,32 +1,36 @@
 #include "ffilesystem.h"
+#include <array>
 #include <string>
-#include <tuple>
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
+int main() {
+    using namespace boost::ut;
 
-class TestPrefix : public ::testing::TestWithParam<std::tuple<std::string, std::string, bool>> {};
+    struct case_t {
+        std::string base;
+        std::string pre;
+        bool expected;
+    };
 
-TEST_P(TestPrefix, IsPrefix) {
-    auto [base, pre, expected] = GetParam();
-    EXPECT_EQ(fs_is_prefix(base, pre), expected);
+    const std::array<case_t, 12> cases{{
+            {"a/b//c", "a/b", false},
+            {"a/b/c", "a/b/", false},
+            {"a/b/c", "a", false},
+            {"a/b", "a/b", true},
+            {"a/b/", "a/b", true},
+            {"/a/b", "a/b", false},
+            {"a/b", "/a/b", false},
+            {"a/b", "a/b/", true},
+            {"a/b", "c", false},
+            {"b", "a/b", false},
+            {"c:/a", "c:/", false},
+            {"c:/", "c:/a", true},
+    }};
+
+    "is_prefix"_test = [cases] {
+        for (const auto& test_case : cases) {
+            expect(eq(fs_is_prefix(test_case.base, test_case.pre), test_case.expected));
+        }
+    };
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    PrefixTests,
-    TestPrefix,
-    ::testing::Values(
-        std::make_tuple("a/b//c", "a/b", false),
-        std::make_tuple("a/b/c", "a/b/", false),
-        std::make_tuple("a/b/c", "a", false),
-        std::make_tuple("a/b", "a/b", true),
-        std::make_tuple("a/b/", "a/b", true),
-        std::make_tuple("/a/b", "a/b", false),
-        std::make_tuple("a/b", "/a/b", false),
-        std::make_tuple("a/b", "a/b/", true),
-        std::make_tuple("a/b", "c", false),
-        std::make_tuple("b", "a/b", false),
-        std::make_tuple("c:/a", "c:/", false),
-        std::make_tuple("c:/", "c:/a", true)
-    )
-);

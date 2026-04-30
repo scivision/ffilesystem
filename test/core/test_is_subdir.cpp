@@ -1,32 +1,35 @@
 #include "ffilesystem.h"
+#include <array>
 #include <string>
-#include <tuple>
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
+int main() {
+    using namespace boost::ut;
 
-class TestSubdir : public ::testing::TestWithParam<std::tuple<std::string, std::string, bool>> {};
+    struct case_t {
+        std::string base;
+        std::string sub;
+        bool expected;
+    };
 
-TEST_P(TestSubdir, IsSubdir)
-{
-    auto [base, sub, expected] = GetParam();
-    EXPECT_EQ(fs_is_subdir(base, sub), expected);
+    const std::array<case_t, 11> cases{{
+            {"a/b/c", "a/b", true},
+            {"a/b/c", "a/b/", true},
+            {"a/b/c", "a", true},
+            {"a/b/", "a/b", false},
+            {"a/b", "a/b", false},
+            {"/a/b", "a/b", false},
+            {"a/b", "/a/b", false},
+            {"a/b", "a/b/", false},
+            {"a/b", "c", false},
+            {"b", "a/b", false},
+            {"c:/a", "c:/", true},
+    }};
+
+    "is_subdir"_test = [cases] {
+        for (const auto& test_case : cases) {
+            expect(eq(fs_is_subdir(test_case.base, test_case.sub), test_case.expected));
+        }
+    };
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    SubdirTests,
-    TestSubdir,
-    ::testing::Values(
-        std::make_tuple("a/b/c", "a/b", true),
-        std::make_tuple("a/b/c", "a/b/", true),
-        std::make_tuple("a/b/c", "a", true),
-        std::make_tuple("a/b/", "a/b", false),
-        std::make_tuple("a/b", "a/b", false),
-        std::make_tuple("/a/b", "a/b", false),
-        std::make_tuple("a/b", "/a/b", false),
-        std::make_tuple("a/b", "a/b/", false),
-        std::make_tuple("a/b", "c", false),
-        std::make_tuple("b", "a/b", false),
-        std::make_tuple("c:/a", "c:/", true)
-    )
-);

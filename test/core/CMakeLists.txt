@@ -62,7 +62,10 @@ set_tests_properties(Fortran_relative Fortran_proximate PROPERTIES DISABLED $<NO
 endif()
 
 
-set(gtest_tests
+# --- Boost UT tests
+if(HAVE_BOOST_UT)
+
+set(boost_ut_tests
 absolute
 canonical
 copyfile
@@ -76,15 +79,15 @@ filename
 filesize
 hard_link
 is_char
-OnDisk
 is_empty
 is_prefix
 is_subdir
 join
 memory
 mkdir
-owner
 normal
+OnDisk
+owner
 parent
 permissions
 pure
@@ -103,27 +106,31 @@ which
 with_suffix
 )
 
-if(WIN32 OR CYGWIN)
-  list(APPEND gtest_tests is_appexec_alias windows)
-endif()
 if(NOT ANDROID)
-  list(APPEND gtest_tests is_fifo)
-endif()
-if(HAVE_CXX_FILESYSTEM)
-  list(APPEND gtest_tests proximate relative)
+  list(APPEND boost_ut_tests is_fifo)
 endif()
 
-foreach(t IN LISTS gtest_tests)
+if(WIN32 OR CYGWIN)
+  list(APPEND boost_ut_tests is_appexec_alias windows)
+endif()
+
+if(HAVE_CXX_FILESYSTEM)
+  list(APPEND boost_ut_tests proximate relative)
+endif()
+foreach(t IN LISTS boost_ut_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
-  target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
+  target_include_directories(test_${t}_cpp PRIVATE ${boost_ut_SOURCE_DIR}/include)
+  target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
 
-  ffs_gtest_register(test_${t}_cpp
-    PROPERTIES
-      LABELS "Cpp"
-      WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
+  add_test(NAME ${t}_cpp COMMAND test_${t}_cpp)
+  set_tests_properties(${t}_cpp PROPERTIES
+  LABELS "Cpp"
+  WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
   )
 endforeach()
+
+endif()
 
 # C
 

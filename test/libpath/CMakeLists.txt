@@ -8,19 +8,21 @@ else()
   set(_p $<TARGET_FILE:ffilesystem>)
 endif()
 
-foreach(t IN ITEMS libpath)
+if(HAVE_BOOST_UT)
+
+set(boost_ut_tests libpath)
+
+foreach(t IN LISTS boost_ut_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
-  target_link_libraries(test_${t}_cpp PRIVATE GTest::gtest_main GTest::gmock)
+  target_include_directories(test_${t}_cpp PRIVATE ${boost_ut_SOURCE_DIR}/include)
+  target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
 
-  ffs_gtest_register(test_${t}_cpp
-    PROPERTIES
-      LABELS "Cpp"
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      PASS_REGULAR_EXPRESSION "${_p}"
-  )
+  add_test(NAME ${t}_cpp COMMAND test_${t}_cpp)
+  set_tests_properties(${t}_cpp PROPERTIES LABELS "Cpp")
 endforeach()
 
+endif()
 
 
 if(ffilesystem_fortran)

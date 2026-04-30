@@ -1,29 +1,49 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <array>
+#include <string_view>
 
-TEST(TestDropSlash, DropSlash)
-{
-EXPECT_EQ(fs_drop_slash(""), "");
-EXPECT_EQ(fs_drop_slash("a"), "a");
-EXPECT_EQ(fs_drop_slash("a/"), "a");
-EXPECT_EQ(fs_drop_slash("a/b"), "a/b");
-EXPECT_EQ(fs_drop_slash("a/b/"), "a/b");
-EXPECT_EQ(fs_drop_slash("////"), "/");
-EXPECT_EQ(fs_drop_slash("a////b"), "a/b");
-EXPECT_EQ(fs_drop_slash("a//b//"), "a/b");
-EXPECT_EQ(fs_drop_slash("/"), "/");
+#include <boost/ut.hpp>
 
-if(fs_is_windows()){
+int main() {
+	using namespace boost::ut;
 
-EXPECT_EQ(fs_drop_slash("c:/"), "c:/");
-EXPECT_EQ(fs_drop_slash("c:///"), "c:/");
-EXPECT_EQ(fs_drop_slash("c:///"), "c:/");
-EXPECT_EQ(fs_drop_slash("c:/a/b//"), "c:/a/b");
+	"drop_slash"_test = [] {
+		struct case_t {
+			std::string_view input;
+			std::string_view expected;
+		};
 
-if (fs_win32_long_paths_enabled()){
-EXPECT_EQ(fs_drop_slash(R"(\\?\C:/)"), R"(\\?\C:/)");
-}
-}
+		constexpr std::array<case_t, 9> cases{{
+			{"", ""},
+			{"a", "a"},
+			{"a/", "a"},
+			{"a/b", "a/b"},
+			{"a/b/", "a/b"},
+			{"////", "/"},
+			{"a////b", "a/b"},
+			{"a//b//", "a/b"},
+			{"/", "/"},
+		}};
 
+		for (const auto& test_case : cases) {
+			expect(eq(fs_drop_slash(test_case.input), test_case.expected));
+		}
+
+		if (fs_is_windows()) {
+			constexpr std::array<case_t, 3> windows_cases{{
+				{"c:/", "c:/"},
+				{"c:///", "c:/"},
+				{"c:/a/b//", "c:/a/b"},
+			}};
+
+			for (const auto& test_case : windows_cases) {
+				expect(eq(fs_drop_slash(test_case.input), test_case.expected));
+			}
+
+			if (fs_win32_long_paths_enabled()) {
+				expect(eq(fs_drop_slash(R"(\\?\C:/)"), std::string_view{R"(\\?\C:/)"}));
+			}
+		}
+	};
 }

@@ -1,35 +1,58 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <string>
+#include <string_view>
 
-class TestEmpty : public testing::Test {
-  protected:
-    std::string dir, in_dir;
-    std::string_view nonnull_dir;
+#include <boost/ut.hpp>
 
-    void SetUp() override {
-      if(!fs_is_writable(".")){
-        GTEST_SKIP() << "current directory is not writable";
-      }
+namespace {
 
-      dir = "ffs_is_empty_empty_dir";
-      ASSERT_TRUE(fs_mkdir(dir));
+struct empty_ctx {
+  std::string dir;
+  std::string in_dir;
+  std::string_view nonnull_dir;
 
-      in_dir = dir + "/read_past_the_end_of_buffer";
-      nonnull_dir = std::string_view(in_dir.data(), dir.size());
-      ASSERT_NE(nonnull_dir.back(), '\0');
-    }
-    void TearDown() override {
+  ~empty_ctx() {
+    if (!dir.empty()) {
       fs_remove(dir);
     }
+  }
 };
 
-TEST_F(TestEmpty, IsEmpty)
-{
-    EXPECT_FALSE(fs_is_empty("."));
-    EXPECT_TRUE(fs_is_empty(dir));
+auto setup(empty_ctx& ctx) -> bool {
+  using namespace boost::ut;
 
-    EXPECT_FALSE(fs_is_empty(dir + "/not-exist-is-empty_cpp"));
+  if (!fs_is_writable(".")) {
+    return false;
+  }
 
-    EXPECT_TRUE(fs_is_empty(nonnull_dir)) << "fs_is_empty() should not read past the end of string_view buffer";
+  ctx.dir = "ffs_is_empty_empty_dir";
+  expect(fs_mkdir(ctx.dir) >> fatal);
+
+  ctx.in_dir = ctx.dir + "/read_past_the_end_of_buffer";
+  ctx.nonnull_dir = std::string_view(ctx.in_dir.data(), ctx.dir.size());
+  expect(ctx.nonnull_dir.back() != '\0' >> fatal);
+
+  return true;
+}
+
+} // namespace
+
+int main() {
+  using namespace boost::ut;
+
+  "is_empty"_test = [] {
+    empty_ctx ctx;
+    if (!setup(ctx)) {
+      return;
+    }
+
+    expect(!fs_is_empty("."));
+    expect(fs_is_empty(ctx.dir));
+
+    expect(!fs_is_empty(ctx.dir + "/not-exist-is-empty_cpp"));
+
+    expect(fs_is_empty(ctx.nonnull_dir))
+        << "fs_is_empty() should not read past the end of string_view buffer";
+  };
 }

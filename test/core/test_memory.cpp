@@ -1,19 +1,23 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-TEST(TestMemory, FreeMemory){
-EXPECT_GT(fs_get_free_memory(), 0);
-}
+int main() {
+using namespace boost::ut;
 
-TEST(TestMemory, TotalMemory){
-EXPECT_GT(fs_total_sys_memory(), 0);
-}
+"memory"_test = [] {
+  expect(gt(fs_get_free_memory(), 0));
+};
 
-TEST(TestMemory, FreeLessThanTotal){
-EXPECT_LE(fs_get_free_memory(), fs_total_sys_memory());
-}
+"total_memory"_test = [] {
+  expect(gt(fs_total_sys_memory(), 0));
+};
 
-TEST(TestMemory, MaxOpenFiles){
-EXPECT_GT(fs_get_max_open_files(), 0);
+"free_less_than_total"_test = [] {
+  expect(le(fs_get_free_memory(), fs_total_sys_memory()));
+};
+
+"max_open_files"_test = [] {
+  expect(gt(fs_get_max_open_files(), 0));
+};
 }

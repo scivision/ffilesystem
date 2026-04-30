@@ -1,24 +1,27 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-TEST(TestSeparator, AsPosix)
-{
+int main() {
+using namespace boost::ut;
 
-EXPECT_TRUE(fs_as_posix("").empty());
+"as_posix"_test = [] {
 
-if(fs_is_windows()){
-EXPECT_EQ(fs_as_posix(R"(a\b)"), "a/b");
-EXPECT_EQ(fs_as_posix(R"(C:\my\path)"), "C:/my/path");
-}
-
-}
-
-TEST(TestSeparator, PathSep) {
+expect(fs_as_posix("").empty());
 
 if(fs_is_windows()){
-  EXPECT_EQ(fs_pathsep(), ';');
+expect(eq(fs_as_posix(R"(a\b)"), std::string{"a/b"}));
+expect(eq(fs_as_posix(R"(C:\my\path)"), std::string{"C:/my/path"}));
+}
+
+};
+
+"path_sep"_test = [] {
+
+if(fs_is_windows()){
+  expect(eq(fs_pathsep(), ';'));
 } else {
-  EXPECT_EQ(fs_pathsep(), ':');
+  expect(eq(fs_pathsep(), ':'));
 }
+};
 }

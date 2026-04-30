@@ -1,79 +1,91 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
 #include <vector>
 #include <string>
 #include <algorithm> // for std::find
 
+namespace {
 
-class TestWhich : public testing::Test {
-  protected:
-    std::string name;
-    std::string rel;
-    std::string testExe;
-
-    void SetUp() override {
-
-      testExe = fs_is_windows() ? "cmake.exe" : "ls";
-
-      std::vector<std::string> argvs = ::testing::internal::GetArgvs();
-      std::string self = argvs[0];
-      ASSERT_TRUE(fs_is_exe(self));
-
-      name = fs_file_name(self);
-      rel = std::string("./") + name;
-    }
+struct which_ctx {
+  std::string name;
+  std::string rel;
+  std::string testExe;
 };
 
-class TestWhichNoPath : public testing::Test {
-  protected:
-    std::string testExe;
-    void SetUp() override {
-      testExe = fs_is_windows() ? "cmake.exe" : "ls";
-      ASSERT_TRUE(fs_setenv("PATH", ""));
+auto setup_which(which_ctx& ctx, std::string_view arg0) {
+  using namespace boost::ut;
+
+  ctx.testExe = fs_is_windows() ? "cmake.exe" : "ls";
+
+  const std::string self{arg0};
+  expect(fs_is_exe(self) >> fatal);
+
+  ctx.name = fs_file_name(self);
+  ctx.rel = std::string("./") + ctx.name;
+  expect(fs_is_file(ctx.rel) >> fatal) << ctx.rel << " does not exist";
+}
+
+auto setup_which_no_path(which_ctx& ctx) {
+  using namespace boost::ut;
+
+  ctx.testExe = fs_is_windows() ? "cmake.exe" : "ls";
+  expect(fs_setenv("PATH", "") >> fatal);
+}
+
+} // namespace
+
+int main(int argc, char** argv) {
+  using namespace boost::ut;
+
+  "which"_test = [argv] {
+    which_ctx ctx;
+    setup_which(ctx, argv[0]);
+
+    expect(fs_is_absolute(fs_which(ctx.testExe)));
+    expect(eq(fs_file_name(fs_which(ctx.testExe)), ctx.testExe));
+    expect(fs_which(ctx.testExe, "nowhere").empty());
+
+    expect(fs_which("/not/a/path").empty());
+    expect(fs_which("").empty());
+
+    // Build a relative path from the running program
+    expect(!fs_which(ctx.rel).empty()) << ctx.rel << " is not found";
+
+    expect(fs_which("not-exist/" + ctx.name).empty());
+  };
+
+  "which_local_dir"_test = [argv] {
+    which_ctx ctx;
+    setup_which(ctx, argv[0]);
+
+    expect(fs_is_file(ctx.name) >> fatal) << ctx.name << " does not exist";
+    // for Windows only: local dir is preferred
+    if (fs_is_windows()) {
+      expect(!fs_which(ctx.name).empty());
+    } else {
+      expect(fs_which(ctx.name).empty());
     }
-};
 
+    auto opath = fs_getenv("PATH");
+    if (!opath) {
+      return;
+    }
 
-TEST_F(TestWhich, Which){
+    std::vector<std::string> paths = fs_split_pathsep(opath.value());
+    if (std::find(paths.begin(), paths.end(), ".") == paths.end()) {
+      expect(!fs_which(ctx.name, ".").empty());
+    } else {
+      expect(fs_which(ctx.name, ".").empty());
+    }
+  };
 
-  EXPECT_TRUE(fs_is_absolute(fs_which(testExe)));
-  EXPECT_EQ(fs_file_name(fs_which(testExe)), testExe);
-  EXPECT_TRUE(fs_which(testExe, "nowhere").empty());
+  "which_no_path"_test = [] {
+    which_ctx ctx;
+    setup_which_no_path(ctx);
 
-  EXPECT_TRUE(fs_which("/not/a/path").empty());
-  EXPECT_TRUE(fs_which("").empty());
-
-  // Build a relative path from the running program
-  EXPECT_TRUE(fs_is_file(rel)) << rel << " does not exist";
-  EXPECT_FALSE(fs_which(rel).empty()) << rel << " is not found";
-
-  EXPECT_TRUE(fs_which("not-exist/" + name).empty());
-}
-
-
-TEST_F(TestWhich, WhichLocalDir){
-  ASSERT_TRUE(fs_is_file(name)) << name << " does not exist";
-  // for Windows only: local dir is preferred
-  if (fs_is_windows())
-    EXPECT_FALSE(fs_which(name).empty());
-  else
-    EXPECT_TRUE(fs_which(name).empty());
-
-  std::string path;
-  auto opath = fs_getenv("PATH");
-  if (!opath) return;
-
-  std::vector<std::string> paths = fs_split_pathsep(opath.value());
-  if (std::find(paths.begin(), paths.end(), ".") == paths.end())
-    EXPECT_FALSE(fs_which(name, ".").empty());
-  else
-    EXPECT_TRUE( fs_which(name, ".").empty());
-}
-
-
-TEST_F(TestWhichNoPath, WhichNoPath){
-  EXPECT_TRUE(fs_which(testExe).empty());
-  EXPECT_TRUE(fs_which(testExe, "nowhere").empty());
+    expect(fs_which(ctx.testExe).empty());
+    expect(fs_which(ctx.testExe, "nowhere").empty());
+  };
 }

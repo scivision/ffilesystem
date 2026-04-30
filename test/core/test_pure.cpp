@@ -1,91 +1,92 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
+int main() {
+using namespace boost::ut;
 
-TEST(TestStem, Stem)
-{
+"stem"_test = [] {
 
-EXPECT_EQ(fs_stem(""), "");
-EXPECT_EQ(fs_stem("stem.a.b"), "stem.a");
-EXPECT_EQ(fs_stem("stem.a"), "stem");
-EXPECT_EQ(fs_stem("stem"), "stem");
-EXPECT_EQ(fs_stem(".stem"), ".stem");
-EXPECT_EQ(fs_stem("stem."), "stem");
-EXPECT_EQ(fs_stem("stem.a."), "stem.a");
-EXPECT_EQ(fs_stem("stem/a/b"), "b");
-EXPECT_EQ(fs_stem("./.stem"), ".stem");
-EXPECT_EQ(fs_stem("../.stem"), ".stem");
-EXPECT_EQ(fs_stem(".stem.txt"), ".stem");
-EXPECT_EQ(fs_stem("a/.."), "..");
-EXPECT_EQ(fs_stem("a/../"), "");
-EXPECT_EQ(fs_stem("a/."), ".");
+expect(eq(fs_stem(""), std::string{""}));
+expect(eq(fs_stem("stem.a.b"), std::string{"stem.a"}));
+expect(eq(fs_stem("stem.a"), std::string{"stem"}));
+expect(eq(fs_stem("stem"), std::string{"stem"}));
+expect(eq(fs_stem(".stem"), std::string{".stem"}));
+expect(eq(fs_stem("stem."), std::string{"stem"}));
+expect(eq(fs_stem("stem.a."), std::string{"stem.a"}));
+expect(eq(fs_stem("stem/a/b"), std::string{"b"}));
+expect(eq(fs_stem("./.stem"), std::string{".stem"}));
+expect(eq(fs_stem("../.stem"), std::string{".stem"}));
+expect(eq(fs_stem(".stem.txt"), std::string{".stem"}));
+expect(eq(fs_stem("a/.."), std::string{".."}));
+expect(eq(fs_stem("a/../"), std::string{""}));
+expect(eq(fs_stem("a/."), std::string{"."}));
 
-EXPECT_EQ(fs_stem("日本語.日本語"), "日本語");
-EXPECT_EQ(fs_stem("some space.txt"), "some space");
-EXPECT_EQ(fs_stem("some space"), "some space");
+expect(eq(fs_stem("日本語.日本語"), std::string{"日本語"}));
+expect(eq(fs_stem("some space.txt"), std::string{"some space"}));
+expect(eq(fs_stem("some space"), std::string{"some space"}));
 
 if(fs_is_windows()){
 
-EXPECT_EQ(fs_stem(R"(C:\a\ball.text)"), "ball");
+expect(eq(fs_stem(R"(C:\a\ball.text)"), std::string{"ball"}));
 
 if(fs_win32_long_paths_enabled()) {
 
-EXPECT_EQ(fs_stem(R"(\\?\)"), "");
-EXPECT_EQ(fs_stem(R"(\\.\)"), "");
+expect(eq(fs_stem(R"(\\?\)"), std::string{""}));
+expect(eq(fs_stem(R"(\\.\)"), std::string{""}));
 
-EXPECT_EQ(fs_stem(R"(\\?\C:\)"), "");
-EXPECT_EQ(fs_stem(R"(\\.\C:\)"), "");
-EXPECT_EQ(fs_stem(R"(\\?\UNC\server\share)"), "share");
-EXPECT_EQ(fs_stem(R"(\\?\UNC\server\share\日本語.txt)"), "日本語");
+expect(eq(fs_stem(R"(\\?\C:\)"), std::string{""}));
+expect(eq(fs_stem(R"(\\.\C:\)"), std::string{""}));
+expect(eq(fs_stem(R"(\\?\UNC\server\share)"), std::string{"share"}));
+expect(eq(fs_stem(R"(\\?\UNC\server\share\日本語.txt)"), std::string{"日本語"}));
 
-EXPECT_EQ(fs_stem(R"(\\server\share\some space here.txt)"), "some space here");
-EXPECT_EQ(fs_stem(R"(\\?\C:\some space here.txt)"), "some space here");
+expect(eq(fs_stem(R"(\\server\share\some space here.txt)"), std::string{"some space here"}));
+expect(eq(fs_stem(R"(\\?\C:\some space here.txt)"), std::string{"some space here"}));
 }
 }
 
-}
+};
 
-
-TEST(TestSuffix, Suffix)
-{
-EXPECT_EQ(fs_suffix(""), "");
-EXPECT_EQ(fs_suffix("a"), "");
-EXPECT_EQ(fs_suffix("a."), ".");
-EXPECT_EQ(fs_suffix("a.b"), ".b");
-EXPECT_EQ(fs_suffix("a.b.c"), ".c");
-EXPECT_EQ(fs_suffix("a/b.c"), ".c");
-EXPECT_EQ(fs_suffix("a/b.c.d"), ".d");
-EXPECT_EQ(fs_suffix("a/b/c.d"), ".d");
-EXPECT_EQ(fs_suffix("a/b/c.d.e"), ".e");
-EXPECT_EQ(fs_suffix("a/b/c.d/e"), "");
-EXPECT_EQ(fs_suffix(".a"), "");
-EXPECT_EQ(fs_suffix(".a."), ".");
-EXPECT_EQ(fs_suffix(".a.b"), ".b");
-EXPECT_EQ(fs_suffix("./b.c"), ".c");
-EXPECT_EQ(fs_suffix("../.b.c"), ".c");
-EXPECT_EQ(fs_suffix("日本語.語"), ".語");
-EXPECT_EQ(fs_suffix("some space.txt"), ".txt");
+"suffix"_test = [] {
+expect(eq(fs_suffix(""), std::string{""}));
+expect(eq(fs_suffix("a"), std::string{""}));
+expect(eq(fs_suffix("a."), std::string{"."}));
+expect(eq(fs_suffix("a.b"), std::string{".b"}));
+expect(eq(fs_suffix("a.b.c"), std::string{".c"}));
+expect(eq(fs_suffix("a/b.c"), std::string{".c"}));
+expect(eq(fs_suffix("a/b.c.d"), std::string{".d"}));
+expect(eq(fs_suffix("a/b/c.d"), std::string{".d"}));
+expect(eq(fs_suffix("a/b/c.d.e"), std::string{".e"}));
+expect(eq(fs_suffix("a/b/c.d/e"), std::string{""}));
+expect(eq(fs_suffix(".a"), std::string{""}));
+expect(eq(fs_suffix(".a."), std::string{"."}));
+expect(eq(fs_suffix(".a.b"), std::string{".b"}));
+expect(eq(fs_suffix("./b.c"), std::string{".c"}));
+expect(eq(fs_suffix("../.b.c"), std::string{".c"}));
+expect(eq(fs_suffix("日本語.語"), std::string{".語"}));
+expect(eq(fs_suffix("some space.txt"), std::string{".txt"}));
 
 if(fs_is_windows()){
-EXPECT_EQ(fs_suffix(R"(C:\a\ball.text)"), ".text");
+expect(eq(fs_suffix(R"(C:\a\ball.text)"), std::string{".text"}));
 
 if(fs_win32_long_paths_enabled()) {
 
-EXPECT_EQ(fs_suffix(R"(\\?\)"), "");
-EXPECT_EQ(fs_suffix(R"(\\.\)"), "");
+expect(eq(fs_suffix(R"(\\?\)"), std::string{""}));
+expect(eq(fs_suffix(R"(\\.\)"), std::string{""}));
 
-EXPECT_EQ(fs_suffix(R"(\\?\C:\)"), "");
-EXPECT_EQ(fs_suffix(R"(\\.\C:\)"), "");
-EXPECT_EQ(fs_suffix(R"(\\?\UNC\server\share)"), "");
-EXPECT_EQ(fs_suffix(R"(\\?\UNC\server\share\日本語.txt)"), ".txt");
+expect(eq(fs_suffix(R"(\\?\C:\)"), std::string{""}));
+expect(eq(fs_suffix(R"(\\.\C:\)"), std::string{""}));
+expect(eq(fs_suffix(R"(\\?\UNC\server\share)"), std::string{""}));
+expect(eq(fs_suffix(R"(\\?\UNC\server\share\日本語.txt)"), std::string{".txt"}));
 
-EXPECT_EQ(fs_suffix(R"(\\server\share\some space here.txt)"), ".txt");
-EXPECT_EQ(fs_suffix(R"(\\?\C:\some space here.txt)"), ".txt");
+expect(eq(fs_suffix(R"(\\server\share\some space here.txt)"), std::string{".txt"}));
+expect(eq(fs_suffix(R"(\\?\C:\some space here.txt)"), std::string{".txt"}));
 
-EXPECT_TRUE(fs_win32_is_ext_path(R"(\\.\C:\)"));
-EXPECT_TRUE(fs_win32_is_ext_path(R"(\\?\C:\)"));
+expect(fs_win32_is_ext_path(R"(\\.\C:\)"));
+expect(fs_win32_is_ext_path(R"(\\?\C:\)"));
 }
 }
+
+};
 
 }

@@ -1,137 +1,177 @@
 #include <string>
+#include <string_view>
 
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include <boost/ut.hpp>
 
 
-class TestCanonical : public testing::Test {
-  protected:
-    std::string cwd, cwdp;
+namespace {
+  using namespace boost::ut;
 
-    void SetUp() override {
-      cwd = ::testing::UnitTest::GetInstance()->original_working_dir();
-      ASSERT_FALSE(cwd.empty()) << "Failed to get current working directory";
-      // realpath for symlinks (macOS), Dev Drive or short name on CI (Windows), network drives, etc.
-      cwd = fs_realpath(cwd);
-      cwd = fs_drop_slash(fs_as_posix(cwd));
-      ASSERT_FALSE(cwd.empty());
-
-      if(cwd == fs_root(fs_absolute("/"))) {
-        GTEST_SKIP() << "TempDir is not expected to be root directory: " << cwd;
-      }
-
-      ASSERT_TRUE(fs_set_cwd(cwd));
-
-      cwdp = fs_parent(cwd);
-      ASSERT_FALSE(cwdp.empty());
-      ASSERT_NE(cwdp, cwd) << "cwd: " << cwd << " vs parent: " << cwdp;
-    }
+struct canonical_ctx {
+  std::string cwd;
+  std::string cwdp;
 };
 
-
-TEST_F(TestCanonical, CanonicalParentDir)
-{
-std::string r = fs_canonical("..", true);
-ASSERT_FALSE(r.empty());
-EXPECT_EQ(fs_as_posix(r), cwdp) << r << " vs " << cwdp;
-
-r = fs_canonical("..", false);
-ASSERT_FALSE(r.empty());
-EXPECT_EQ(fs_as_posix(r), cwdp) << r << " vs " << cwdp;
-
-if(fs_is_windows()) {
-
-auto d = fs_getenv("SystemDrive");
-ASSERT_TRUE(d.has_value()) << "Failed to get SystemDrive";
-std::string sys_drive = d.value();
-
-EXPECT_THAT(fs_resolve(sys_drive + "/", true), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
-EXPECT_THAT(fs_resolve(sys_drive + "/", false), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
-
-if(fs_backend() != "<filesystem>"){
-
-EXPECT_THAT(fs_resolve(R"(\\?\)" + sys_drive + "\\", true),
-             ::testing::AnyOf(R"(\\?\)" + sys_drive + "\\", R"(\\?\)" + sys_drive + "/"));
-}
-
-}
-
+auto one_of(const std::string& actual, std::string_view expected1, std::string_view expected2) {
+  return actual == expected1 || actual == expected2;
 }
 
 
-TEST_F(TestCanonical, ResolveParentDir)
-{
-std::string r = fs_resolve("..", true);
-ASSERT_FALSE(r.empty());
-EXPECT_EQ(fs_as_posix(r), cwdp) << r << " vs " << cwdp;
+auto make_ctx() {
+  canonical_ctx ctx{};
 
-r = fs_resolve("..", false);
-ASSERT_FALSE(r.empty());
-EXPECT_EQ(fs_as_posix(r), cwdp) << r << " vs " << cwdp;
+  ctx.cwd = fs_get_cwd();
+  expect(!ctx.cwd.empty() >> fatal);
+  ctx.cwd = fs_realpath(ctx.cwd);
+  // realpath for symlinks (macOS), Dev Drive or short name on CI (Windows), network drives, etc.
+  ctx.cwd = fs_drop_slash(fs_as_posix(ctx.cwd));
+  expect(!ctx.cwd.empty() >> fatal);
 
-if (fs_is_windows()) {
+  if (ctx.cwd.empty() || ctx.cwd == fs_root(fs_absolute("/"))) {
+    return std::optional<canonical_ctx>{};
+  }
 
-auto d = fs_getenv("SystemDrive");
-ASSERT_TRUE(d.has_value()) << "Failed to get SystemDrive";
-std::string sys_drive = d.value();
+  expect(fs_set_cwd(ctx.cwd) >> fatal);
+  ctx.cwdp = fs_parent(ctx.cwd);
+  expect(!ctx.cwdp.empty() && ctx.cwdp != ctx.cwd >> fatal);
 
-EXPECT_THAT(fs_canonical(sys_drive + "/", true), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
-EXPECT_THAT(fs_canonical(sys_drive + "/", false), ::testing::AnyOf(sys_drive + "\\", sys_drive + "/"));
-
-EXPECT_THAT(fs_canonical("M:/", false), ::testing::AnyOf("M:\\", "M:/"));
-
-if(fs_backend() != "<filesystem>"){
-
-EXPECT_THAT(fs_canonical(R"(\\?\)" + sys_drive + "\\", true),
-             ::testing::AnyOf(R"(\\?\)" + sys_drive + "\\", R"(\\?\)" + sys_drive + "/"));
+  return std::optional<canonical_ctx>{ctx};
 }
 
-}
-}
+auto system_drive() {
+  const auto value = fs_getenv("SystemDrive");
+  if (!value || value->empty()) {
+    return std::optional<std::string>{};
+  }
 
-
-
-
-TEST_F(TestCanonical, CanonicalParentRel)
-{
-EXPECT_THAT(fs_canonical("../not-exist", false), ::testing::AnyOf("../not-exist", cwdp + "/not-exist"));
-EXPECT_THAT(fs_canonical("./not-exist", false), ::testing::AnyOf("not-exist", cwd + "/not-exist"));
-EXPECT_THAT(fs_canonical("a/b/../c", false), ::testing::AnyOf("a/c", cwd + "/a/c"));
-}
-TEST_F(TestCanonical, ResolveParentRel)
-{
-EXPECT_EQ(fs_resolve("../not-exist", false), cwdp + "/not-exist");
-EXPECT_EQ(fs_resolve("./not-exist", false), cwd + "/not-exist");
-EXPECT_EQ(fs_resolve("a/b/../c", false), cwd + "/a/c");
+  return std::optional<std::string>{*value};
 }
 
+} // namespace
 
-TEST_F(TestCanonical, RelativeFile)
-{
+int main() {
+  using namespace boost::ut;
 
-if(fs_is_cygwin())
-  GTEST_SKIP() << "Cygwin can't handle non-existing canonical paths";
+  "canonical_parent_dir"_test = [] {
+    const auto ctx = make_ctx();
+    expect(static_cast<bool>(ctx));
+    if (!ctx) {
+      return;
+    }
 
-std::string name = "ffs_not-exist_cpp.txt";
-std::string h = fs_canonical("../" + name, false);
-EXPECT_FALSE(h.empty());
+    std::string r = fs_canonical("..", true);
+    expect(!r.empty() >> fatal);
+    expect(eq(fs_as_posix(r), ctx->cwdp));
 
-EXPECT_GT(h.length(), name.length());
-EXPECT_THAT(h, ::testing::EndsWith(name));
+    r = fs_canonical("..", false);
+    expect(!r.empty() >> fatal);
+    expect(eq(fs_as_posix(r), ctx->cwdp));
 
-std::string r = "日本語";
+    if (fs_is_windows()) {
+      const auto sys_drive = system_drive();
+      expect(static_cast<bool>(sys_drive) >> fatal);
+      if (!sys_drive) {
+        return;
+      }
 
-h = fs_canonical(r, false);
+      expect(one_of(fs_resolve(*sys_drive + "/", true), *sys_drive + "\\", *sys_drive + "/"));
+      expect(one_of(fs_resolve(*sys_drive + "/", false), *sys_drive + "\\", *sys_drive + "/"));
 
-EXPECT_THAT(h, ::testing::EndsWith(r));
-}
+      if (fs_backend() != "<filesystem>") {
+        expect(one_of(fs_resolve(R"(\\?\)" + *sys_drive + "\\", true),
+                      R"(\\?\)" + *sys_drive + "\\",
+                      R"(\\?\)" + *sys_drive + "/"));
+      }
+    }
+  };
 
+  "resolve_parent_dir"_test = [] {
+    const auto ctx = make_ctx();
+    expect(static_cast<bool>(ctx));
+    if (!ctx) {
+      return;
+    }
 
-TEST_F(TestCanonical, Realpath)
-{
-std::string r = fs_realpath(".");
-ASSERT_FALSE(r.empty());
-EXPECT_EQ(fs_as_posix(r), cwd);
+    std::string r = fs_resolve("..", true);
+    expect(!r.empty() >> fatal);
+    expect(eq(fs_as_posix(r), ctx->cwdp));
+
+    r = fs_resolve("..", false);
+    expect(!r.empty() >> fatal);
+    expect(eq(fs_as_posix(r), ctx->cwdp));
+
+    if (fs_is_windows()) {
+      const auto sys_drive = system_drive();
+      expect(static_cast<bool>(sys_drive) >> fatal);
+      if (!sys_drive) {
+        return;
+      }
+
+      expect(one_of(fs_canonical(*sys_drive + "/", true), *sys_drive + "\\", *sys_drive + "/"));
+      expect(one_of(fs_canonical(*sys_drive + "/", false), *sys_drive + "\\", *sys_drive + "/"));
+      expect(one_of(fs_canonical("M:/", false), "M:\\", "M:/"));
+
+      if (fs_backend() != "<filesystem>") {
+        expect(one_of(fs_canonical(R"(\\?\)" + *sys_drive + "\\", true),
+                      R"(\\?\)" + *sys_drive + "\\",
+                      R"(\\?\)" + *sys_drive + "/"));
+      }
+    }
+  };
+
+  "canonical_parent_rel"_test = [] {
+    const auto ctx = make_ctx();
+    expect(static_cast<bool>(ctx));
+    if (!ctx) {
+      return;
+    }
+
+    expect(one_of(fs_canonical("../not-exist", false), "../not-exist", ctx->cwdp + "/not-exist"));
+    expect(one_of(fs_canonical("./not-exist", false), "not-exist", ctx->cwd + "/not-exist"));
+    expect(one_of(fs_canonical("a/b/../c", false), "a/c", ctx->cwd + "/a/c"));
+  };
+
+  "resolve_parent_rel"_test = [] {
+    const auto ctx = make_ctx();
+    expect(static_cast<bool>(ctx));
+    if (!ctx) {
+      return;
+    }
+
+    expect(eq(fs_resolve("../not-exist", false), ctx->cwdp + "/not-exist"));
+    expect(eq(fs_resolve("./not-exist", false), ctx->cwd + "/not-exist"));
+    expect(eq(fs_resolve("a/b/../c", false), ctx->cwd + "/a/c"));
+  };
+
+  "relative_file"_test = [] {
+    const auto ctx = make_ctx();
+    expect(static_cast<bool>(ctx));
+    if (!ctx || fs_is_cygwin()) {
+      return;
+    }
+
+    const std::string name = "ffs_not-exist_cpp.txt";
+    std::string h = fs_canonical("../" + name, false);
+    expect(!h.empty());
+    expect(h.length() > name.length());
+    expect(h.ends_with(name));
+
+    const std::string r = "日本語";
+    h = fs_canonical(r, false);
+    expect(h.ends_with(r));
+  };
+
+  "realpath"_test = [] {
+    const auto ctx = make_ctx();
+    expect(static_cast<bool>(ctx));
+    if (!ctx) {
+      return;
+    }
+
+    const std::string r = fs_realpath(".");
+    expect(!r.empty() >> fatal);
+    expect(eq(fs_as_posix(r), ctx->cwd));
+  };
 }

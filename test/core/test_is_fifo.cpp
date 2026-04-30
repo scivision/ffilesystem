@@ -16,80 +16,103 @@
 #include <format>
 #endif
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-class TestFifo : public testing::Test {
-  protected:
-    std::string name;
+namespace {
+
+struct fifo_ctx {
+            std::string name;
 #if defined(_WIN32)
-    HANDLE hPipe;
+            HANDLE hPipe{INVALID_HANDLE_VALUE};
 #endif
-    void SetUp() override {
+
+            ~fifo_ctx() {
+#if defined(_WIN32)
+                  if (hPipe != INVALID_HANDLE_VALUE) {
+                        CloseHandle(hPipe);
+                  }
+                  if (!name.empty()) {
+                        DeleteFileA(name.c_str());
+                  }
+#else
+                  if (!name.empty()) {
+                        unlink(name.c_str());
+                  }
+#endif
+            }
+};
+
+auto setup(fifo_ctx& ctx) -> bool {
+      using namespace boost::ut;
+
 #if defined(__ANDROID__)
-      GTEST_SKIP() << "FIFOs are not supported on Android - it would be possible perhaps but we don't do it.";
+                  return false;
 #elif defined(_WIN32)
       // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createnamedpipea
 
       // must have this path prefix or INVALID_HANDLE_VALUE results
 #ifdef __cpp_lib_format  // C++20
-      name = std::format(R"(\\.\pipe\test_pipe_{})", GetCurrentProcessId());
+                  ctx.name = std::format(R"(\\.\pipe\test_pipe_{})", GetCurrentProcessId());
 #else
-      name = R"(\\.\pipe\test_pipe_)" + std::to_string(GetCurrentProcessId());
+                  ctx.name = R"(\\.\pipe\test_pipe_)" + std::to_string(GetCurrentProcessId());
 #endif
-      hPipe = CreateNamedPipeA(name.data(),
+                  ctx.hPipe = CreateNamedPipeA(ctx.name.data(),
                                 PIPE_ACCESS_DUPLEX,
                                 PIPE_TYPE_BYTE,
                                 1,
                                 0, 0, 0, nullptr);
 
-      ASSERT_NE(hPipe, INVALID_HANDLE_VALUE);
+                  expect(ctx.hPipe != INVALID_HANDLE_VALUE >> fatal);
 #else
 
 #ifdef __cpp_lib_format
-      name = std::format("test_pipe_{}", getpid());
+                  ctx.name = std::format("test_pipe_{}", getpid());
 #else
-      name = "test_pipe_" + std::to_string(getpid());
+                  ctx.name = "test_pipe_" + std::to_string(getpid());
 #endif
 
-      ASSERT_NE(mkfifo(name.c_str(), 0666), -1);
+                  expect(mkfifo(ctx.name.c_str(), 0666) != -1 >> fatal);
 #endif
-    }
-
-    void TearDown() override {
-#if defined(_WIN32)
-      if (hPipe != INVALID_HANDLE_VALUE) {
-        CloseHandle(hPipe);
-      }
-      // Delete the named pipe
-      DeleteFileA(name.c_str());
-#else
-      unlink(name.c_str());
-#endif
-    }
-};
-
-
-TEST_F(TestFifo, IsFIFO)
-{
-  EXPECT_TRUE(fs_is_fifo(name));
+      return true;
 }
 
+} // namespace
 
-TEST_F(TestFifo, IsFile)
-{
+int main() {
+      using namespace boost::ut;
 
-  if(fs_is_windows() && fs_backend() == "<filesystem>" &&
-    (fs_is_msvc() || (fs_is_mingw() && fs_compiler().substr(0, 5) == "Clang"))) {
-       GTEST_SKIP() << "MSVC or Windows MinGW Clang std::filesystem incorrectly identifies FIFOs as regular files.";
-    }
-  EXPECT_FALSE(fs_is_file(name));
-}
+      "is_fifo"_test = [] {
+            fifo_ctx ctx;
+            if (!setup(ctx)) {
+                  return;
+            }
 
+            expect(fs_is_fifo(ctx.name));
+      };
 
-TEST_F(TestFifo, Exists)
-{
-  if (fs_is_mingw() && fs_backend() == "<filesystem>")
-    GTEST_SKIP() << "MinGW std::filesystem incorrectly identifies FIFOs as non-existent.";
+      "is_file"_test = [] {
+            fifo_ctx ctx;
+            if (!setup(ctx)) {
+                  return;
+            }
 
-  EXPECT_TRUE(fs_exists(name));
+            if (fs_is_windows() && fs_backend() == "<filesystem>" &&
+                        (fs_is_msvc() || (fs_is_mingw() && fs_compiler().substr(0, 5) == "Clang"))) {
+                  return;
+            }
+            expect(!fs_is_file(ctx.name));
+      };
+
+      "exists"_test = [] {
+            fifo_ctx ctx;
+            if (!setup(ctx)) {
+                  return;
+            }
+
+            if (fs_is_mingw() && fs_backend() == "<filesystem>") {
+                  return;
+            }
+
+            expect(fs_exists(ctx.name));
+      };
 }

@@ -1,32 +1,44 @@
 #include "ffilesystem.h"
 #include <string>
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-class TestSetCwd : public testing::Test {
-  protected:
-    std::string tmp, in_dir;
-    std::string_view nonnull_dir;
+namespace {
 
-    void SetUp() override {
-      tmp = ::testing::TempDir();
-      ASSERT_TRUE(fs_is_dir(tmp));
-
-      in_dir = "./invalid-memory-trailing-non-null-terminated-string_view";
-      nonnull_dir = std::string_view(in_dir.data(), 2);
-      ASSERT_NE(nonnull_dir.back(), '\0') << "nonnull_dir should not be null-terminated\n";
-    }
+struct set_cwd_ctx {
+  std::string tmp;
+  std::string in_dir;
+  std::string_view nonnull_dir;
 };
 
-TEST_F(TestSetCwd, SetCwd)
-{
+auto setup(set_cwd_ctx& ctx) {
+  using namespace boost::ut;
 
-EXPECT_FALSE(fs_set_cwd(""));
+  ctx.tmp = fs_drop_slash(fs_get_tempdir());
+  expect(fs_is_dir(ctx.tmp) >> fatal);
 
-ASSERT_TRUE(fs_set_cwd(tmp));
-// needs to be fs_equivalent due to links, network drives, etc.
-EXPECT_TRUE(fs_equivalent(fs_get_cwd(), tmp)) << "cwd " << fs_get_cwd() << " != " << tmp << " canonical " << fs_canonical(tmp);
+  ctx.in_dir = "./invalid-memory-trailing-non-null-terminated-string_view";
+  ctx.nonnull_dir = std::string_view(ctx.in_dir.data(), 2);
+  expect(ctx.nonnull_dir.back() != '\0' >> fatal) << "nonnull_dir should not be null-terminated\n";
+}
 
-ASSERT_TRUE(fs_set_cwd(nonnull_dir)) << "problem with non null-terminated path " << nonnull_dir;
-EXPECT_TRUE(fs_equivalent(fs_get_cwd(), tmp));
+} // namespace
+
+int main() {
+  using namespace boost::ut;
+
+  "set_cwd"_test = [] {
+    set_cwd_ctx ctx;
+    setup(ctx);
+
+    expect(!fs_set_cwd(""));
+
+    expect(fs_set_cwd(ctx.tmp) >> fatal);
+    // needs to be fs_equivalent due to links, network drives, etc.
+    expect(fs_equivalent(fs_get_cwd(), ctx.tmp))
+        << "cwd " << fs_get_cwd() << " != " << ctx.tmp << " canonical " << fs_canonical(ctx.tmp);
+
+    expect(fs_set_cwd(ctx.nonnull_dir) >> fatal) << "problem with non null-terminated path " << ctx.nonnull_dir;
+    expect(fs_equivalent(fs_get_cwd(), ctx.tmp));
+  };
 }

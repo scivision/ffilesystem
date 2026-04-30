@@ -1,96 +1,103 @@
 #include <string>
 #include <fstream>
 #include <cstdint>
-#include <iostream>
 
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
+namespace {
 
-class TestCopyFile : public testing::Test {
-  protected:
-    std::string s1, s2, s3, s4, t1;
-    std::string ext1, ext5;
-    std::uintmax_t iref;
-
-    void SetUp() override {
-
-      auto inst = testing::UnitTest::GetInstance();
-      auto info = inst->current_test_info();
-      std::string cwd = inst->original_working_dir();
-
-      ASSERT_FALSE(cwd.empty());
-      if(!fs_is_writable(cwd))
-        GTEST_SKIP() << "working directory is not writable: " << cwd;
-
-      // https://google.github.io/googletest/reference/testing.html#UnitTest::current_test_suite
-      std::string test_name_ = info->name();
-      std::string test_suite_name_ = info->test_suite_name();
-      std::string n = test_suite_name_ + "-" + test_name_;
-
-      s1 = cwd + fs_filesep() + n + "_some_text.txt";
-      s2 = cwd + fs_filesep() + n + "_some_text.txt.copy";
-      s3 = cwd + fs_filesep() + n + "_empty.txt";
-      s4 = cwd + fs_filesep() + n + "_empty.txt.copy";
-      if(fs_is_windows() && fs_win32_long_paths_enabled()){
-        ext1 = R"(\\?\)" + s1;
-        ext5 = R"(\\?\)" + s2 + ".long";
-      }
-
-      t1 = "及せゃ市人購ゅトてへ投際ト点吉で速流つ今日";
-
-      // Write to the first file
-      std::ofstream ofs(s1);
-      ASSERT_TRUE(ofs);
-      ofs << t1;
-      ofs.close(); // ensure flush
-
-      iref = fs_file_size(s1);
-      ASSERT_NE(iref, 0);
-
-      std::cout << "TestCopyFile::SetUp: " << s1 << " bytes " << iref << "\n";
-
-      ASSERT_TRUE(fs_touch(s3));
-    }
-
-    void TearDown() override {
-      fs_remove(s1);
-      fs_remove(s2);
-      fs_remove(s3);
-      fs_remove(s4);
-      if(!ext5.empty()){
-        fs_remove(ext5);
-      }
-    }
+struct copyfile_ctx {
+  std::string s1, s2, s3, s4, t1;
+  std::string ext1, ext5;
+  std::uintmax_t iref;
+  std::string cwd;
 };
 
-TEST_F(TestCopyFile, CopyFile){
+auto make_ctx() {
+  using namespace boost::ut;
+  copyfile_ctx ctx{};
 
-std::string t2;
+  ctx.cwd = fs_get_cwd();
+  expect(!ctx.cwd.empty() && fs_is_writable(ctx.cwd) >> fatal);
 
-// Copy the file
-EXPECT_TRUE(fs_copy_file(s1, s2, false));
-EXPECT_TRUE(fs_is_file(s2));
-EXPECT_FALSE(fs_copy_file(s1, s2, false)); // Should fail since s2 already exists
+  std::string n = "TestCopyFile";
 
-EXPECT_EQ(fs_file_size(s2), iref);
+  ctx.s1 = ctx.cwd + fs_filesep() + n + "_some_text.txt";
+  ctx.s2 = ctx.cwd + fs_filesep() + n + "_some_text.txt.copy";
+  ctx.s3 = ctx.cwd + fs_filesep() + n + "_empty.txt";
+  ctx.s4 = ctx.cwd + fs_filesep() + n + "_empty.txt.copy";
+  if (fs_is_windows() && fs_win32_long_paths_enabled()) {
+    ctx.ext1 = R"(\\?\)" + ctx.s1;
+    ctx.ext5 = R"(\\?\)" + ctx.s2 + ".long";
+  }
 
-// Read from the copied file
-std::ifstream ifs(s2);
-std::getline(ifs, t2);
+  ctx.t1 = "及せゃ市人購ゅトてへ投際ト点吉で速流つ今日";
 
-EXPECT_EQ(t1, t2);
+  // Write to the first file
+  std::ofstream ofs(ctx.s1);
+  if (!ofs) {
+    return std::optional<copyfile_ctx>{};
+  }
+  ofs << ctx.t1;
+  ofs.close(); // ensure flush
 
-EXPECT_TRUE(fs_copy_file(s3, s4, true));
-EXPECT_TRUE(fs_is_file(s4));
+  ctx.iref = fs_file_size(ctx.s1);
+  expect(ctx.iref > 0 >> fatal);
 
-EXPECT_EQ(fs_file_size(s4), 0);
+  fs_remove(ctx.s2);
 
-if(!ext5.empty()){
-ASSERT_TRUE(fs_copy_file(ext1, ext5, false));
-ASSERT_TRUE(fs_is_file(ext5));
-EXPECT_EQ(fs_file_size(ext5), iref);
+  expect(fs_touch(ctx.s3) >> fatal);
+
+  return std::optional<copyfile_ctx>{ctx};
 }
 
+} // namespace
+
+int main() {
+  using namespace boost::ut;
+
+  "copyfile"_test = [] {
+    const auto ctx = make_ctx();
+    expect(static_cast<bool>(ctx));
+    if (!ctx) {
+      return;
+    }
+
+    std::string t2;
+
+    // Copy the file
+    expect(fs_copy_file(ctx->s1, ctx->s2, false));
+    expect(fs_is_file(ctx->s2));
+    expect(!fs_copy_file(ctx->s1, ctx->s2, false)); // Should fail since s2 already exists
+
+    expect(eq(fs_file_size(ctx->s2), ctx->iref));
+
+    // Read from the copied file
+    std::ifstream ifs(ctx->s2);
+    std::getline(ifs, t2);
+
+    expect(eq(ctx->t1, t2));
+
+    expect(fs_copy_file(ctx->s3, ctx->s4, true));
+    expect(fs_is_file(ctx->s4));
+
+    expect(eq(fs_file_size(ctx->s4), static_cast<std::uintmax_t>(0)));
+
+    if (!ctx->ext5.empty()) {
+      expect(fs_copy_file(ctx->ext1, ctx->ext5, false) >> fatal);
+      expect(fs_is_file(ctx->ext5) >> fatal);
+      expect(eq(fs_file_size(ctx->ext5), ctx->iref));
+    }
+
+    // Cleanup
+    fs_remove(ctx->s1);
+    fs_remove(ctx->s2);
+    fs_remove(ctx->s3);
+    fs_remove(ctx->s4);
+    if (!ctx->ext5.empty()) {
+      fs_remove(ctx->ext5);
+    }
+  };
 }

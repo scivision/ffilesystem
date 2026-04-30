@@ -2,219 +2,270 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-class TestOnDisk : public testing::Test {
-  protected:
-    std::string self, self_name, cwd, sys_drive, in_dir, in_sys_dir;
-    std::string_view nonnull_dir, nonnull_sys_drive;
+namespace {
 
-    void SetUp() override {
-      auto inst = testing::UnitTest::GetInstance();
-      auto info = inst->current_test_info();
+struct ondisk_ctx {
+  std::string self;
+  std::string self_name;
+  std::string cwd;
+  std::string sys_drive;
+  std::string in_dir;
+  std::string in_sys_dir;
+  std::string_view nonnull_dir;
+  std::string_view nonnull_sys_drive;
+};
 
-      // https://google.github.io/googletest/reference/testing.html#UnitTest::current_test_suite
+auto setup(ondisk_ctx& ctx, std::string_view arg0) -> bool {
+  using namespace boost::ut;
 
-      cwd = fs_get_cwd();
-      ASSERT_FALSE(cwd.empty());
+  ctx.cwd = fs_get_cwd();
+  expect(!ctx.cwd.empty() >> fatal);
 
-      if(!fs_is_writable(cwd)){
-        GTEST_SKIP() << "current directory is not writable" << cwd;
-      }
+  if (!fs_is_writable(ctx.cwd)) {
+    return false;
+  }
 
-      if (fs_is_windows()) {
-        auto d = fs_getenv("SystemDrive");
-        ASSERT_TRUE(d.has_value()) << "Failed to get SystemDrive";
-        sys_drive = d.value();
-      } else {
-        sys_drive = "/";
-      }
+  if (fs_is_windows()) {
+    auto d = fs_getenv("SystemDrive");
+    expect(d.has_value() >> fatal) << "Failed to get SystemDrive";
+    ctx.sys_drive = d.value();
+  } else {
+    ctx.sys_drive = "/";
+  }
 
-      std::vector<std::string> argvs = ::testing::internal::GetArgvs();
-      self = argvs[0];
-      self_name = fs_file_name(self);
+  ctx.self = std::string{arg0};
+  ctx.self_name = fs_file_name(ctx.self);
 
-      in_dir = "./invalid-memory-trailing-non-null-terminated-string_view";
-      nonnull_dir = std::string_view(in_dir.data(), 2);
-      ASSERT_NE(nonnull_dir.back(), '\0') << "nonnull_dir should not be null-terminated\n";
+  ctx.in_dir = "./invalid-memory-trailing-non-null-terminated-string_view";
+  ctx.nonnull_dir = std::string_view(ctx.in_dir.data(), 2);
+  expect(ctx.nonnull_dir.back() != '\0' >> fatal) << "nonnull_dir should not be null-terminated\n";
 
-      in_sys_dir = sys_drive + "/invalid-memory-trailing-non-null-terminated-string_view";
-      nonnull_sys_drive = std::string_view(sys_drive.data(), sys_drive.size());
-      ASSERT_NE(nonnull_sys_drive.back(), '\0') << "nonnull_sys_drive should not be null-terminated\n";
+  ctx.in_sys_dir = ctx.sys_drive + "/invalid-memory-trailing-non-null-terminated-string_view";
+  ctx.nonnull_sys_drive = std::string_view(ctx.sys_drive.data(), ctx.sys_drive.size());
+  expect(ctx.nonnull_sys_drive.back() != '\0' >> fatal) << "nonnull_sys_drive should not be null-terminated\n";
+
+  return true;
+}
+
+} // namespace
+
+int main(int argc, char** argv) {
+  using namespace boost::ut;
+
+  "exists"_test = [argv] {
+    ondisk_ctx ctx;
+    if (!setup(ctx, argv[0])) {
+      return;
     }
+
+    for (const auto& s : {std::string("."), std::string(".."), std::string("/"), ctx.self, ctx.self_name, ctx.cwd}) {
+      expect(fs_exists(s)) << "Expected to exist: " << s;
+    }
+
+    for (const auto& s : {"ffs_exists_not-exist-file", ""}) {
+      expect(!fs_exists(s)) << "Expected to not exist: " << s;
+    }
+
+    expect(fs_exists(ctx.nonnull_dir));
   };
 
+  "is_dir"_test = [argv] {
+    ondisk_ctx ctx;
+    if (!setup(ctx, argv[0])) {
+      return;
+    }
 
-TEST_F(TestOnDisk, Exists)
-{
-  for (auto s : {std::string("."), std::string(".."), std::string("/"), self, self_name, cwd})
-    EXPECT_TRUE(fs_exists(s)) << "Expected to exist: " << s;
+    expect(!fs_is_dir(""));
+    expect(fs_is_dir("."));
+    expect(fs_is_dir(ctx.cwd));
+    expect(!fs_is_dir(ctx.self));
+    expect(!fs_is_dir("ffs_is_dir_not-exist-dir"));
+  };
 
-  for (auto s : {"ffs_exists_not-exist-file", ""})
-    EXPECT_FALSE(fs_exists(s)) << "Expected to not exist: " << s;
+  "is_file"_test = [argv] {
+    ondisk_ctx ctx;
+    if (!setup(ctx, argv[0])) {
+      return;
+    }
 
-  EXPECT_TRUE(fs_exists(nonnull_dir));
-}
+    expect(fs_is_file(ctx.self));
+    expect(!fs_is_file("ffs_is_file_not-exist-file"));
+    expect(!fs_is_file(""));
+    expect(!fs_is_file("."));
+    expect(!fs_is_file(ctx.cwd));
+  };
 
-TEST_F(TestOnDisk, IsDir)
-{
-  EXPECT_FALSE(fs_is_dir(""));
-  EXPECT_TRUE(fs_is_dir("."));
-  EXPECT_TRUE(fs_is_dir(cwd));
-  EXPECT_FALSE(fs_is_dir(self));
-  EXPECT_FALSE(fs_is_dir("ffs_is_dir_not-exist-dir"));
-}
+  "is_readable"_test = [argv] {
+    ondisk_ctx ctx;
+    if (!setup(ctx, argv[0])) {
+      return;
+    }
 
+    expect(fs_is_readable("."));
+    expect(fs_is_readable(ctx.self));
+    expect(fs_is_readable(ctx.cwd));
 
-TEST_F(TestOnDisk, IsFile){
-EXPECT_TRUE(fs_is_file(self));
-EXPECT_FALSE(fs_is_file("ffs_is_file_not-exist-file"));
-EXPECT_FALSE(fs_is_file(""));
-EXPECT_FALSE(fs_is_file("."));
-EXPECT_FALSE(fs_is_file(cwd));
-}
+    if (fs_is_windows()) {
+      expect(fs_is_readable(ctx.sys_drive));
 
-TEST_F(TestOnDisk, IsReadable)
-{
-EXPECT_TRUE(fs_is_readable("."));
-EXPECT_TRUE(fs_is_readable(self));
-EXPECT_TRUE(fs_is_readable(cwd));
+      if (fs_win32_long_paths_enabled()) {
+        expect(fs_is_readable(R"(\\?\)" + ctx.sys_drive + "\\"));
+      }
+    }
 
-if(fs_is_windows()){
-  EXPECT_TRUE(fs_is_readable(sys_drive));
+    expect(fs_is_readable("/"));
+    expect(fs_is_readable(ctx.nonnull_dir));
+  };
 
-  if(fs_win32_long_paths_enabled())
-    EXPECT_TRUE(fs_is_readable(R"(\\?\)" + sys_drive + "\\"));
-}
+  "is_writable"_test = [argv] {
+    ondisk_ctx ctx;
+    if (!setup(ctx, argv[0])) {
+      return;
+    }
 
-EXPECT_TRUE(fs_is_readable("/"));
+    if (!fs_is_cygwin()) {
+      expect(fs_is_writable(ctx.self));
+    }
 
-EXPECT_TRUE(fs_is_readable(nonnull_dir));
+    expect(fs_is_writable(ctx.cwd));
 
-}
+    if (fs_is_windows()) {
+      if (fs_win32_long_paths_enabled()) {
+        std::string s = fs_as_windows(R"(\\?\)" + fs_canonical(ctx.self));
+        expect(fs_is_writable(s)) << s;
+      }
+    } else if (!fs_is_admin() && !fs_is_cygwin()) {
+      expect(!fs_is_writable("/"));
+    }
 
-TEST_F(TestOnDisk, IsWritable)
-{
+    expect(fs_is_writable(ctx.nonnull_dir));
+  };
 
-if (!fs_is_cygwin())
-  EXPECT_TRUE(fs_is_writable(self));
+  "is_other"_test = [argv] {
+    ondisk_ctx ctx;
+    if (!setup(ctx, argv[0])) {
+      return;
+    }
 
-EXPECT_TRUE(fs_is_writable(cwd));
+    expect(!fs_is_other(""));
+    expect(!fs_is_other("."));
+    expect(!fs_is_other(ctx.self));
+    expect(!fs_is_other(ctx.cwd));
+    expect(!fs_is_other("ffs_is_other_not-exist-file"));
+  };
 
-if(fs_is_windows()){
-  if(fs_win32_long_paths_enabled()){
-    std::string s = fs_as_windows(R"(\\?\)" + fs_canonical(self));
-    EXPECT_TRUE(fs_is_writable(s)) << s;
-  }
-} else if (!fs_is_admin() && !fs_is_cygwin()){
-  EXPECT_FALSE(fs_is_writable("/"));
-}
+  "stat_mode"_test = [argv] {
+    ondisk_ctx ctx;
+    if (!setup(ctx, argv[0])) {
+      return;
+    }
 
-EXPECT_TRUE(fs_is_writable(nonnull_dir));
-}
+    expect(neq(fs_st_mode(ctx.self), 0));
+    expect(neq(fs_st_mode(ctx.cwd), 0));
+    expect(eq(fs_st_mode("ffs_stat_mode_not-exist-file"), 0));
+    expect(eq(fs_st_mode(""), 0));
+    expect(neq(fs_st_mode(ctx.nonnull_dir), 0));
+  };
 
+  "realpath"_test = [argv] {
+    ondisk_ctx ctx;
+    if (!setup(ctx, argv[0])) {
+      return;
+    }
 
-TEST_F(TestOnDisk, IsOther){
-  EXPECT_FALSE(fs_is_other(""));
-  EXPECT_FALSE(fs_is_other("."));
-  EXPECT_FALSE(fs_is_other(self));
-  EXPECT_FALSE(fs_is_other(cwd));
-  EXPECT_FALSE(fs_is_other("ffs_is_other_not-exist-file"));
-}
+    std::string expected = fs_realpath(ctx.cwd);
+    expect(!expected.empty() >> fatal);
 
+    std::string r = fs_realpath(".");
+    expect(!r.empty() >> fatal);
+    expect(eq(r, expected)) << r << " vs " << expected;
 
-TEST_F(TestOnDisk, StatMode){
-  EXPECT_NE(fs_st_mode(self), 0);
-  EXPECT_NE(fs_st_mode(cwd), 0);
-  EXPECT_EQ(fs_st_mode("ffs_stat_mode_not-exist-file"), 0);
-  EXPECT_EQ(fs_st_mode(""), 0);
+    expect(fs_realpath("not-exist-realpath/b/c").empty());
 
-  EXPECT_NE(fs_st_mode(nonnull_dir), 0);
-}
+    r = fs_realpath("..");
+    expect(!r.empty() >> fatal);
+    expect(eq(r, fs_parent(expected))) << r;
 
+    expect(eq(fs_realpath(ctx.nonnull_dir), expected))
+        << "problem with non null-terminated path " << ctx.nonnull_dir;
+  };
 
-TEST_F(TestOnDisk, Realpath){
+  "get_mod_time"_test = [argv] {
+    ondisk_ctx ctx;
+    if (!setup(ctx, argv[0])) {
+      return;
+    }
 
-std::string expected = fs_realpath(cwd);
-ASSERT_FALSE(expected.empty());
+    expect(fs_get_modtime(ctx.cwd) > 0);
+    expect(fs_get_modtime(ctx.nonnull_dir) > 0)
+        << "problem with non null-terminated path " << ctx.nonnull_dir;
+  };
 
-std::string r = fs_realpath(".");
-ASSERT_FALSE(r.empty());
-EXPECT_EQ(r, expected) << r << " vs " << expected;
+  "touch"_test = [argv] {
+    ondisk_ctx ctx;
+    if (!setup(ctx, argv[0])) {
+      return;
+    }
 
-EXPECT_TRUE(fs_realpath("not-exist-realpath/b/c").empty());
+    std::string_view file = "ffs_touch_test_file";
+    expect(fs_touch(file));
 
-r = fs_realpath("..");
-ASSERT_FALSE(r.empty());
-EXPECT_EQ(r, fs_parent(expected)) << r;
+    auto t0 = fs_get_modtime(file);
+    expect(t0 > 0);
 
-EXPECT_EQ(fs_realpath(nonnull_dir), expected) << "problem with non null-terminated path " << nonnull_dir;
-}
+    expect(fs_set_modtime(file));
+    expect(fs_get_modtime(file) >= t0);
+    expect(!fs_set_modtime("not-exist-file"));
 
+    std::string in_file = ctx.self + "-invalid-memory-trailing-non-null-terminated-string_view";
+    std::string_view nonnull_file = std::string_view(in_file.data(), ctx.self.size());
+    expect(nonnull_file.back() != '\0' >> fatal) << "nonnull_file should not be null-terminated\n";
 
-TEST_F(TestOnDisk, GetModTime){
-EXPECT_GT(fs_get_modtime(cwd), 0);
+    expect(fs_touch(nonnull_file) >> fatal);
+    expect(fs_is_file(nonnull_file));
 
-EXPECT_GT(fs_get_modtime(nonnull_dir), 0) << "problem with non null-terminated path " << nonnull_dir;
-}
+    fs_remove(file);
+  };
 
+  "filesystem_type"_test = [argv] {
+    ondisk_ctx ctx;
+    if (!setup(ctx, argv[0])) {
+      return;
+    }
 
-TEST_F(TestOnDisk, Touch)
-{
-std::string_view file = "ffs_touch_test_file";
+    std::string t = fs_filesystem_type(ctx.sys_drive);
+    if (t.empty()) {
+      return;
+    }
 
-EXPECT_TRUE(fs_touch(file));
+    t = fs_filesystem_type(ctx.nonnull_sys_drive);
+    expect(!t.empty()) << "problem with non null-terminated path " << ctx.nonnull_sys_drive;
+  };
 
-auto t0 = fs_get_modtime(file);
-EXPECT_GT(t0, 0);
+  "removable"_test = [argv] {
+    ondisk_ctx ctx;
+    if (!setup(ctx, argv[0])) {
+      return;
+    }
 
-EXPECT_TRUE(fs_set_modtime(file));
+    expect(!fs_is_removable(ctx.sys_drive))
+        << "we assume that a CI system's system drive would not be removable";
+  };
 
-EXPECT_GE(fs_get_modtime(file), t0);
+  "short_long"_test = [] {
+    if (!fs_is_windows()) {
+      return;
+    }
 
-EXPECT_FALSE(fs_set_modtime("not-exist-file"));
+    auto e = fs_getenv("PROGRAMFILES");
+    expect(e.has_value() >> fatal) << "Failed to get PROGRAMFILES environment variable";
+    std::string long_path = e.value();
+    expect(!long_path.empty() >> fatal);
 
-std::string in_file = self + "-invalid-memory-trailing-non-null-terminated-string_view";
-std::string_view nonnull_file = std::string_view(in_file.data(), self.size());
-ASSERT_NE(nonnull_file.back(), '\0') << "nonnull_file should not be null-terminated\n";
-
-ASSERT_TRUE(fs_touch(nonnull_file));
-EXPECT_TRUE(fs_is_file(nonnull_file));
-
-fs_remove(file);
-}
-
-TEST_F(TestOnDisk, FilesystemType)
-{
-std::string t = fs_filesystem_type(sys_drive);
-
-if (t.empty()){
-  GTEST_SKIP() << "Unknown filesystem type, see type ID in stderr to update fs_get_type()";
-}
-
-t = fs_filesystem_type(nonnull_sys_drive);
-EXPECT_FALSE(t.empty()) << "problem with non null-terminated path " << nonnull_sys_drive;
-
-}
-
-TEST_F(TestOnDisk, Removable)
-{
-EXPECT_FALSE(fs_is_removable(sys_drive)) << "we assume that a CI system's system drive would not be removable";
-}
-
-
-TEST(TestWindows, ShortLong)
-{
-
-if(!fs_is_windows())
-  GTEST_SKIP() << "Test only for Windows";
-
-auto e = fs_getenv("PROGRAMFILES");
-ASSERT_TRUE(e.has_value()) << "Failed to get PROGRAMFILES environment variable";
-std::string long_path = e.value();
-ASSERT_FALSE(long_path.empty());
-
-EXPECT_EQ(fs_longname(fs_shortname(long_path)), long_path);
-
+    expect(eq(fs_longname(fs_shortname(long_path)), long_path));
+  };
 }

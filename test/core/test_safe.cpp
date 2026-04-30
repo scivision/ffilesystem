@@ -1,20 +1,23 @@
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-TEST(TestSafe, Safe)
-{
+int main() {
+using namespace boost::ut;
 
-EXPECT_FALSE(fs_is_safe_name("test/re/"));
-EXPECT_FALSE(fs_is_safe_name("test/re"));
+"safe"_test = [] {
+
+expect(!fs_is_safe_name("test/re/"));
+expect(!fs_is_safe_name("test/re"));
 
 if(fs_is_windows())
-  EXPECT_FALSE(fs_is_safe_name("hi."));
+  expect(!fs_is_safe_name("hi."));
 else
-  EXPECT_TRUE(fs_is_safe_name("hi."));
+  expect(fs_is_safe_name("hi."));
 
-EXPECT_FALSE(fs_is_safe_name("hi there"));
+expect(!fs_is_safe_name("hi there"));
 
-EXPECT_FALSE(fs_is_safe_name("日本語"));
+expect(!fs_is_safe_name("日本語"));
 
+};
 }

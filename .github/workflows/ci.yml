@@ -116,7 +116,7 @@ jobs:
     - *checkout
 
     - name: GCC APT
-      if: matrix.gcc-version < 11
+      if: matrix.gcc-version < 10
       run: |
         sudo apt update -y
         sudo apt install -y --no-install-recommends gcc-${{ matrix.gcc-version }} g++-${{ matrix.gcc-version }} gfortran-${{ matrix.gcc-version }}

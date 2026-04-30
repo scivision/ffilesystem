@@ -1,40 +1,60 @@
 #include <string>
 #include <fstream>
+#include <string_view>
 
 #include "ffilesystem.h"
 
-#include <gtest/gtest.h>
+#include <boost/ut.hpp>
 
-class TestFileSize : public testing::Test {
-  protected:
-    std::string file, in_file;
-    std::string_view nonnull_file;
+namespace {
 
-    void SetUp() override {
-      if(!fs_is_writable(".")){
-        GTEST_SKIP() << "current directory is not writable";
-      }
+struct filesize_ctx {
+  std::string file;
+  std::string in_file;
+  std::string_view nonnull_file;
 
-      file = "ffs_filesize_5bytes.txt";
-      std::ofstream ofs(file);
-      ofs << "hello";
-
-      in_file = file + "-read_past_the_end_of_buffer";
-      nonnull_file = std::string_view(in_file.data(), file.size());
-      ASSERT_NE(nonnull_file.back(), '\0');
-    }
-    void TearDown() override {
+  ~filesize_ctx() {
+    if (!file.empty()) {
       fs_remove(file);
     }
+  }
 };
 
+auto setup(filesize_ctx& ctx) -> bool {
+  using namespace boost::ut;
 
-TEST_F(TestFileSize, FileSize)
-{
-EXPECT_EQ(fs_file_size(file), 5);
+  if (!fs_is_writable(".")) {
+    return false;
+  }
 
-EXPECT_EQ(fs_file_size("."), fs_unknown_size) << "backend " << fs_backend();
-EXPECT_EQ(fs_file_size("not-exist-file"), fs_unknown_size) << "backend " << fs_backend();
+  ctx.file = "ffs_filesize_5bytes.txt";
+  std::ofstream ofs(ctx.file);
+  ofs << "hello";
 
-EXPECT_EQ(fs_file_size(nonnull_file), 5) << "fs_file_size() non-null-terminated path";
+  ctx.in_file = ctx.file + "-read_past_the_end_of_buffer";
+  ctx.nonnull_file = std::string_view(ctx.in_file.data(), ctx.file.size());
+  expect(ctx.nonnull_file.back() != '\0' >> fatal);
+
+  return true;
+}
+
+} // namespace
+
+int main() {
+  using namespace boost::ut;
+
+  "file_size"_test = [] {
+    filesize_ctx ctx;
+    if (!setup(ctx)) {
+      return;
+    }
+
+    expect(eq(fs_file_size(ctx.file), static_cast<std::size_t>(5)));
+
+    expect(eq(fs_file_size("."), fs_unknown_size)) << "backend " << fs_backend();
+    expect(eq(fs_file_size("not-exist-file"), fs_unknown_size)) << "backend " << fs_backend();
+
+    expect(eq(fs_file_size(ctx.nonnull_file), static_cast<std::size_t>(5)))
+        << "fs_file_size() non-null-terminated path";
+  };
 }
