@@ -14,7 +14,6 @@ class TestSpace : public testing::Test {
   protected:
     std::string dir, in_dir;
     std::string_view nonnull_dir, nonnull_file;
-    std::uintmax_t bad = -1;
 
     void SetUp() override {
       dir = fs_drop_slash(::testing::TempDir());
@@ -28,18 +27,18 @@ class TestSpace : public testing::Test {
 
 TEST_F(TestSpace, SpaceAvailable)
 {
-EXPECT_THAT(fs_space_available(dir), AllOf(Gt(0), Lt(bad)));
+EXPECT_THAT(fs_space_available(dir), AllOf(Gt(0), Lt(fs_unknown_size)));
 
-EXPECT_EQ(fs_space_available("cc:/not-exist-available"), bad) << "backend " << fs_backend();
+EXPECT_EQ(fs_space_available("cc:/not-exist-available"), fs_unknown_size) << "backend " << fs_backend();
 
-EXPECT_NE(fs_space_available(nonnull_dir), bad) << "problem with non null-terminated path " << nonnull_dir;
+EXPECT_NE(fs_space_available(nonnull_dir), fs_unknown_size) << "problem with non null-terminated path " << nonnull_dir;
 }
 
 TEST_F(TestSpace, SpaceCapacity)
 {
-EXPECT_THAT(fs_space_capacity(dir), AllOf(Gt(0), Lt(bad)));
+EXPECT_THAT(fs_space_capacity(dir), AllOf(Gt(0), Lt(fs_unknown_size)));
 
-EXPECT_EQ(fs_space_capacity("cc:/not-exist-capacity"), bad) << "backend " << fs_backend();
+EXPECT_EQ(fs_space_capacity("cc:/not-exist-capacity"), fs_unknown_size) << "backend " << fs_backend();
 
-EXPECT_NE(fs_space_capacity(nonnull_dir), bad) << "problem with non null-terminated path " << nonnull_dir;
+EXPECT_NE(fs_space_capacity(nonnull_dir), fs_unknown_size) << "problem with non null-terminated path " << nonnull_dir;
 }

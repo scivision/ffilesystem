@@ -121,6 +121,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_L
   # this is for UNLIKELY/LIKELY macros
 endif()
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+  target_compile_options(ffilesystem PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:--diag_suppress=code_is_unreachable>")
+endif()
+
 # --- Fortran compile flags
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
 
