@@ -1,6 +1,0 @@
-option('cpp', type : 'boolean', value : true)
-option('fortran', type : 'boolean', value : true)
-option('extra', type : 'boolean', value : true)
-option('locale', type: 'boolean', value: false)
-option('trace', type : 'boolean', value: false)
-option('test', type : 'boolean', value: true)
