@@ -80,6 +80,7 @@ std::size_t fs_get_blksize(std::string_view path)
 dev_t fs_st_dev(std::string_view path)
 {
   // device number of the file or directory
+  // in general dev_t may be unsigned.
 
   const std::string cpath(path);
   int r = 0;
@@ -101,7 +102,7 @@ dev_t fs_st_dev(std::string_view path)
   }
 
   fs_print_error(path, __func__);
-  return -1;
+  return {};
 }
 
 

@@ -54,7 +54,7 @@ TEST_F(TestDevice, Device)
 
   EXPECT_EQ(fs_st_dev(nonnull2), fs_st_dev(in)) << "fs_st_dev(" << nonnull2 << ") should be the same as fs_st_dev(" << in << ")";
 
-  EXPECT_EQ(fs_st_dev("not-exist-file"), static_cast<dev_t>(-1)) << "backend " << fs_backend();
+  EXPECT_EQ(fs_st_dev("not-exist-file"), static_cast<dev_t>(0)) << "backend " << fs_backend();
 }
 
 
