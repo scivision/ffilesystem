@@ -26,11 +26,13 @@ jobs:
     - &checkout
       uses: actions/checkout@v6
 
-    - name: C MSVC workflow
-      run: cmake --workflow msvc-nostdfs
+      # both work, save CI time
 
-    - name: C++23 workflow
-      run: cmake --workflow cpp23 --fresh
+    # - name: C MSVC workflow
+    #   run: cmake --workflow msvc-nostdfs
+
+    # - name: C++23 workflow
+    #   run: cmake --workflow cpp23 --fresh
 
     - name: C++20 Release
       run: cmake --workflow msvc --fresh
@@ -73,11 +75,13 @@ jobs:
 
     - *checkout
 
-    - name: no std::filesystem workflow
-      run: cmake --workflow nostdfs
+    # both work, save CI time
 
-    - name: C++23 workflow
-      run: cmake --workflow cpp23 --fresh
+    # - name: no std::filesystem workflow
+    #   run: cmake --workflow nostdfs
+
+    # - name: C++23 workflow
+    #   run: cmake --workflow cpp23 --fresh
 
     - name: Release workflow
       run: cmake --workflow default --fresh

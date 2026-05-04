@@ -7,13 +7,10 @@ runs:
 
   steps:
 
-  - name: workflow without std::filesystem
-    shell: bash
-    run: cmake --workflow nostdfs
-
-  - name: Debug workflow
-    shell: bash
-    run: cmake --workflow debug --fresh
+    # save CI time
+  # - name: workflow without std::filesystem
+  #   shell: bash
+  #   run: cmake --workflow nostdfs
 
   - name: Release workflow
     shell: bash

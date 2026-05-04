@@ -46,6 +46,10 @@ jobs:
       if: matrix.gcc-version == 14
       run: cmake --workflow cpp23 --fresh
 
+    - name: Debug workflow
+      if: matrix.gcc-version == 14
+      run: cmake --workflow debug --fresh
+
 
   shared:
 
@@ -97,6 +101,9 @@ jobs:
 
     - name: C++23 workflow
       run: cmake --workflow cpp23 --fresh
+
+    - name: Debug workflow
+      run: cmake --workflow debug --fresh
 
 
   gcc-9-10-11:
