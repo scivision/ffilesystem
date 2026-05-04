@@ -29,10 +29,6 @@ jobs:
     strategy:
       matrix:
         gcc-version: [12, 13, 14]
-        cpp: [true]
-        include:
-        - gcc-version: 14
-          cpp: false
 
     env: &gcc-env
       CC: gcc-${{ matrix.gcc-version }}
@@ -46,8 +42,13 @@ jobs:
 
     - uses: ./.github/workflows/composite-build
 
+    - name: C++23 workflow
+      if: matrix.gcc-version == 14
+      run: cmake --workflow cpp23 --fresh
+
 
   shared:
+
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -73,7 +74,6 @@ jobs:
     strategy:
       matrix:
         llvm-version: [20]
-        cpp: [true, false]
 
     env:
       CC: clang-${{ matrix.llvm-version }}
@@ -95,6 +95,9 @@ jobs:
 
     - uses: ./.github/workflows/composite-build
 
+    - name: C++23 workflow
+      run: cmake --workflow cpp23 --fresh
+
 
   gcc-9-10-11:
 
@@ -105,10 +108,6 @@ jobs:
       fail-fast: false
       matrix:
         gcc-version: [9, 10, 11]
-        cpp: [true]
-        include:
-        - gcc-version: 11
-          cpp: false
 
     env: *gcc-env
 
@@ -134,13 +133,8 @@ jobs:
     timeout-minutes: 15
 
     strategy:
-      fail-fast: false
       matrix:
         gcc-version: [8]
-        cpp: [true, false]
-        include:
-        - gcc-version: 7
-          cpp: false
 
     env: *gcc-env
 
@@ -164,25 +158,6 @@ jobs:
     - uses: ./.github/workflows/composite-build
 
 
-  cxx-std:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-
-    strategy:
-      matrix:
-        # default is C++20, testing other standards here
-        cpp-std: [17, 23]
-        gcc-version: [14]
-
-    env: *gcc-env
-
-    steps:
-
-    - *checkout
-
-    - run: cmake --workflow cpp${{ matrix.cpp-std }}
-
-
   cmake-older:
     timeout-minutes: 30
 
@@ -198,8 +173,11 @@ jobs:
 
     - uses: ./.github/workflows/composite-cmake
 
+    - name: workflow without std::filesystem
+      run: $CMAKE --workflow --preset nostdfs
+
     - name: configure
-      run: $CMAKE --workflow --preset default
+      run: $CMAKE --workflow --preset default --fresh
 
     - name: install package
       run: $CMAKE --install build

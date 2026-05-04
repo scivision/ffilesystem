@@ -37,10 +37,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    strategy:
-      matrix:
-        cpp: [true, false]
-
     steps:
     - uses: actions/checkout@v6
 
@@ -64,11 +60,11 @@ jobs:
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
 
-    - name: Configure CMake
-      timeout-minutes: 1
-      run: >-
-        cmake --preset default
-        -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
+    - name: workflow without std::filesystem
+      run: cmake --workflow nostdfs
+
+    - name: Release workflow
+      run: cmake --workflow default --fresh
 
     - name: Upload log failure
       if: failure()
@@ -76,9 +72,6 @@ jobs:
       with:
         name: ${{ env.CXX }}-cpp-${{ matrix.cpp }}-${{ runner.os }}-CMakeConfigureLog.yaml
         path: build/CMakeFiles/CMakeConfigureLog.yaml
-
-    - name: Release workflow
-      run: cmake --workflow default
 
     - name: install package
       run: cmake --install build

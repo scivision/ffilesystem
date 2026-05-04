@@ -29,6 +29,8 @@ if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
   FetchContent_Populate(boost_ut URL ${boost_ut_url})
   set(CMAKE_REQUIRED_INCLUDES ${boost_ut_SOURCE_DIR}/include)
   check_include_file_cxx(boost/ut.hpp HAVE_BOOST_UT)
+else()
+  unset(HAVE_BOOST_UT CACHE)
 endif()
 
 

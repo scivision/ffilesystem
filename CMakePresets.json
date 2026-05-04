@@ -11,6 +11,7 @@
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Release",
     "ffilesystem_warning_as_error": true,
+    "ffilesystem_cpp": true,
     "ffilesystem_fallback": false,
     "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE",
     "ffilesystem_BUILD_TESTING": true,
@@ -23,6 +24,13 @@
   "name": "build", "inherits": "default",
   "cacheVariables": {
     "ffilesystem_BUILD_TESTING": false
+  }
+},
+{ "name": "nostdfs", "inherits": "default",
+  "displayName": "Build without std::filesystem",
+  "description": "Build with C++ but without std::filesystem to test C fallback code.",
+  "cacheVariables": {
+    "ffilesystem_cpp": false
   }
 },
 {
@@ -60,6 +68,20 @@
   "cacheVariables": {
     "ffilesystem_fortran": false
   }
+},
+{ "name": "msvc-nostdfs", "inherits": "msvc",
+  "displayName": "MSVC without std::filesystem",
+  "description": "Build with MSVC but without std::filesystem to test C fallback code.",
+  "cacheVariables": {
+    "ffilesystem_cpp": false
+  }
+},
+{
+  "name": "linux", "inherits": "default",
+  "displayName": "Linux build (for WSL on GHA)",
+  "generator": "Ninja",
+  "binaryDir": "/tmp/build",
+  "installDir": "/tmp/build/local"
 },
 { "name": "android", "inherits": "default",
   "toolchainFile": "${sourceDir}/android.cmake",
@@ -136,6 +158,8 @@
 "buildPresets": [
   { "name": "default", "configurePreset": "default" },
   { "name": "build", "configurePreset": "build", "inherits": "default" },
+  { "name": "linux", "configurePreset": "linux", "inherits": "default" },
+  { "name" : "nostdfs", "configurePreset": "nostdfs", "inherits": "default" },
   { "name": "cpp17", "configurePreset": "cpp17", "inherits": "default" },
   { "name": "cpp23", "configurePreset": "cpp23", "inherits": "default" },
   { "name": "cpp26", "configurePreset": "cpp26", "inherits": "default" },
@@ -146,6 +170,7 @@
   { "name": "ios", "configurePreset": "ios", "inherits": "default" },
   { "name": "ios-sim", "configurePreset": "ios-sim", "inherits": "default" },
   { "name": "msvc", "configurePreset": "msvc", "configuration": "Release", "inherits": "default", "jobs": 8 },
+  { "name": "msvc-nostdfs", "configurePreset": "msvc-nostdfs", "inherits": "msvc" },
   {
     "name": "explain",
     "configurePreset": "default",
@@ -198,6 +223,8 @@
   }
 },
 { "name": "shared", "configurePreset": "shared", "inherits": "default" },
+{ "name": "linux", "configurePreset": "linux", "inherits": "default" },
+{ "name": "nostdfs", "configurePreset": "nostdfs", "inherits": "default" },
 { "name": "cpp17", "configurePreset": "cpp17", "inherits": "default" },
 { "name": "cpp23", "configurePreset": "cpp23", "inherits": "default" },
 { "name": "cpp26", "configurePreset": "cpp26", "inherits": "default" },
@@ -208,6 +235,7 @@
   }
 },
 { "name": "msvc", "configurePreset": "msvc", "inherits": "default" },
+{ "name": "msvc-nostdfs", "configurePreset": "msvc-nostdfs", "inherits": "msvc" },
 {
   "name": "debug", "inherits": "default",
   "configurePreset": "debug",
@@ -229,6 +257,24 @@
     "steps": [
       { "type": "configure", "name": "build" },
       { "type": "build", "name": "build" }
+    ]
+  },
+  {
+    "name": "linux",
+    "displayName": "Linux build (for WSL on GHA)",
+    "steps": [
+      { "type": "configure", "name": "linux" },
+      { "type": "build", "name": "linux" },
+      { "type": "test", "name": "linux" }
+    ]
+  },
+  {
+    "name": "nostdfs",
+    "displayName": "Build and test without std::filesystem",
+    "steps": [
+      { "type": "configure", "name": "nostdfs" },
+      { "type": "build", "name": "nostdfs" },
+      { "type": "test", "name": "nostdfs" }
     ]
   },
   {
@@ -311,6 +357,14 @@
       { "type": "configure", "name": "msvc" },
       { "type": "build", "name": "msvc" },
       { "type": "test", "name": "msvc" }
+    ]
+  },
+  {
+    "name": "msvc-nostdfs",
+    "steps": [
+      { "type": "configure", "name": "msvc-nostdfs" },
+      { "type": "build", "name": "msvc-nostdfs" },
+      { "type": "test", "name": "msvc-nostdfs" }
     ]
   },
   {

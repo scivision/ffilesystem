@@ -20,24 +20,20 @@ jobs:
     runs-on: windows-2025-vs2026
     timeout-minutes: 15
 
-    strategy:
-      fail-fast: false
-      matrix:
-        cpp: [false, true]
-
     # github actions generally broken for shared lib, even when exe in cwd
 
     steps:
     - &checkout
       uses: actions/checkout@v6
 
-    - name: Configure
-      run: >-
-        cmake --preset msvc
-        -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
+    - name: C MSVC workflow
+      run: cmake --workflow msvc-nostdfs
 
-    - name: build Release
-      run: cmake --workflow msvc
+    - name: C++23 workflow
+      run: cmake --workflow cpp23 --fresh
+
+    - name: C++20 Release
+      run: cmake --workflow msvc --fresh
 
     - name: Install Release
       run: cmake --install build-msvc --config Release
@@ -46,6 +42,7 @@ jobs:
       run: cmake --workflow msvc
       working-directory: example
 
+
   msys2:
     runs-on: windows-latest
     timeout-minutes: 10
@@ -53,7 +50,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cpp: [false, true]
         compiler: [ { ccname: "gcc", cc: "gcc", cxx: "g++", fcname: "gcc-fortran", fc: "gfortran" },]
                  #   { ccname: "clang", cc: "clang", cxx: "clang++", fcname: "flang", fc: "flang" } ]
 
@@ -77,21 +73,21 @@ jobs:
 
     - *checkout
 
-    - name: config cpp=${{ matrix.cpp }}
-      run: cmake --preset default -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
+    - name: no std::filesystem workflow
+      run: cmake --workflow nostdfs
+
+    - name: C++23 workflow
+      run: cmake --workflow cpp23 --fresh
+
+    - name: Release workflow
+      run: cmake --workflow default --fresh
 
     - name: Upload log failure
       if: failure()
       uses: actions/upload-artifact@v7
       with:
-        name: cpp-${{ matrix.cpp }}-shared-${{ runner.os }}-CMakeConfigureLog.yaml
+        name: gcc-${{ runner.os }}-CMakeConfigureLog.yaml
         path: build/CMakeFiles/CMakeConfigureLog.yaml
-
-    - name: Debug workflow
-      run: cmake --workflow debug
-
-    - name: Release workflow
-      run: cmake --workflow default
 
     - name: install package
       run: cmake --install build
@@ -128,11 +124,4 @@ jobs:
 
     - *checkout
 
-    - run: >-
-        cmake -B /tmp/build -G Ninja --preset default
-        -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
-        -Dffilesystem_fortran:BOOL=no
-
-    - run: cmake --build /tmp/build
-
-    - run: ctest --test-dir /tmp/build -V
+    - run: cmake --workflow --preset linux

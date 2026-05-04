@@ -7,27 +7,21 @@ runs:
 
   steps:
 
-  - name: config cpp=${{ matrix.cpp }}
+  - name: workflow without std::filesystem
     shell: bash
-    run: >-
-      cmake --preset default
-      -Dffilesystem_cpp:BOOL=${{ matrix.cpp }}
-      -DCMAKE_CXX_STANDARD=${{ matrix.cpp-std }}
+    run: cmake --workflow nostdfs
 
-  - name: Upload log failure
-    if: failure()
-    uses: actions/upload-artifact@v7
-    with:
-      name: cpp-${{ matrix.cpp-std }}-${{ matrix.cpp }}-${{ runner.os }}-CMakeConfigureLog.yaml
-      path: build/CMakeFiles/CMakeConfigureLog.yaml
+  - name: C++17 workflow
+    shell: bash
+    run: cmake --workflow cpp17 --fresh
 
   - name: Debug workflow
     shell: bash
-    run: cmake --workflow debug
+    run: cmake --workflow debug --fresh
 
   - name: Release workflow
     shell: bash
-    run: cmake --workflow default
+    run: cmake --workflow default --fresh
 
   - name: install package
     shell: bash
