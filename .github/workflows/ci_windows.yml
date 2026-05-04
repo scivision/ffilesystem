@@ -96,32 +96,33 @@ jobs:
       run: cmake --workflow default
       working-directory: example
 
+# works, save CI time
 
-  wsl:
-    runs-on: windows-latest
-    timeout-minutes: 10
+  # wsl:
+  #   runs-on: windows-latest
+  #   timeout-minutes: 10
 
-    defaults:
-      run:
-        shell: wsl-bash {0}
+  #   defaults:
+  #     run:
+  #       shell: wsl-bash {0}
 
-    steps:
+  #   steps:
 
-    - uses: Vampire/setup-wsl@v7
-      with:
-        distribution: Ubuntu-24.04
-        additional-packages:
-          cmake ninja-build gcc g++ gfortran
-        use-cache: true
-        wsl-shell-user: tester
+  #   - uses: Vampire/setup-wsl@v7
+  #     with:
+  #       distribution: Ubuntu-24.04
+  #       additional-packages:
+  #         cmake ninja-build gcc g++ gfortran
+  #       use-cache: true
+  #       wsl-shell-user: tester
 
-    - name: tell OS release
-      run: cat /etc/os-release
+  #   - name: tell OS release
+  #     run: cat /etc/os-release
 
-    - name: tell WSL version
-      run: wsl.exe -l -v
-      shell: pwsh
+  #   - name: tell WSL version
+  #     run: wsl.exe -l -v
+  #     shell: pwsh
 
-    - *checkout
+  #   - *checkout
 
-    - run: cmake --workflow --preset linux
+  #   - run: cmake --workflow --preset linux

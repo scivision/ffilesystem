@@ -122,40 +122,45 @@ jobs:
 
     - uses: ./.github/workflows/composite-build
 
+    - name: C++17 workflow
+      if: matrix.gcc-version == 9
+      run: cmake --workflow cpp17 --fresh
 
-  gcc-7-8:
-    runs-on: ubuntu-latest
-    container:
-      image: ubuntu:20.04
-      env:
-        DEBIAN_FRONTEND: noninteractive
+# works, save CI time
 
-    timeout-minutes: 15
+  # gcc-7-8:
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: ubuntu:20.04
+  #     env:
+  #       DEBIAN_FRONTEND: noninteractive
 
-    strategy:
-      matrix:
-        gcc-version: [8]
+  #   timeout-minutes: 15
 
-    env: *gcc-env
+  #   strategy:
+  #     matrix:
+  #       gcc-version: [8]
 
-    steps:
-    - name: install compilers
-      run: |
-        apt update -y
-        apt install -y --no-install-recommends ca-certificates gpg curl ninja-build ${{ env.CC }} ${{ env.CXX }} ${{ env.FC }}
+  #   env: *gcc-env
 
-    - name: install CMake
-      run: |
-        curl -s https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
-        echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ focal main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null
-        apt-get update
-        test -f /usr/share/doc/kitware-archive-keyring/copyright || rm /usr/share/keyrings/kitware-archive-keyring.gpg
-        apt-get install --no-install-recommends -y kitware-archive-keyring
-        apt-get install --no-install-recommends -y cmake
+  #   steps:
+  #   - name: install compilers
+  #     run: |
+  #       apt update -y
+  #       apt install -y --no-install-recommends ca-certificates gpg curl ninja-build ${{ env.CC }} ${{ env.CXX }} ${{ env.FC }}
 
-    - *checkout
+  #   - name: install CMake
+  #     run: |
+  #       curl -s https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+  #       echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ focal main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null
+  #       apt-get update
+  #       test -f /usr/share/doc/kitware-archive-keyring/copyright || rm /usr/share/keyrings/kitware-archive-keyring.gpg
+  #       apt-get install --no-install-recommends -y kitware-archive-keyring
+  #       apt-get install --no-install-recommends -y cmake
 
-    - uses: ./.github/workflows/composite-build
+  #   - *checkout
+
+  #   - uses: ./.github/workflows/composite-build
 
 
   cmake-older:

@@ -11,10 +11,6 @@ runs:
     shell: bash
     run: cmake --workflow nostdfs
 
-  - name: C++17 workflow
-    shell: bash
-    run: cmake --workflow cpp17 --fresh
-
   - name: Debug workflow
     shell: bash
     run: cmake --workflow debug --fresh
