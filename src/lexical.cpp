@@ -6,8 +6,8 @@
 #include <ranges>  // IWYU pragma: keep
 #endif
 
-#include <algorithm> // for std::transform, std::ranges::contains, std::replace
-#include <cctype> // for std::isalnum, toupper
+#include <algorithm> // for std::transform, std::ranges::contains, std::replace, std::binary_search
+#include <cctype> // for std::isalnum, std::toupper
 #include <array>
 
 #include "ffilesystem.h"
@@ -32,6 +32,22 @@ std::string fs_as_windows(std::string_view path)
 
   return s;
 }
+
+
+void to_upper_inplace(std::string& s)
+{
+  // for ASCII characters, not locale-aware.
+  auto to_upper = [](char c) -> char {
+      return static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+  };
+
+#if defined(__cpp_lib_ranges)
+  std::ranges::transform(s, s.begin(), to_upper);
+#else
+  std::transform(s.begin(), s.end(), s.begin(), to_upper);
+#endif
+}
+
 
 
 bool
@@ -62,11 +78,6 @@ fs_is_reserved(std::string_view path)
   if(auto L = s.length(); L < 3 || L > 4)
     return false;
 
-  // convert to upper case
-  std::transform(s.begin(), s.end(), s.begin(), ::toupper);
-
-  // check if the stem is a reserved device name
-  // must be sorted in ascending order for binary search
   constexpr std::array<std::string_view, 30> r = {"AUX",
     "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM¹", "COM²", "COM³",
     "CON", "CONIN$", "CONOUT$",
@@ -74,7 +85,13 @@ fs_is_reserved(std::string_view path)
     "NUL", "PRN"
   };
 
+  to_upper_inplace(s);
+
+#if defined(__cpp_lib_ranges) // C++20
+  return std::ranges::binary_search(r, s);
+#else
   return std::binary_search(r.begin(), r.end(), s);
+#endif
 }
 
 

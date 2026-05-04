@@ -175,6 +175,8 @@ bool fs_mkdir(std::string_view);
 
 bool fs_non_ascii(std::string_view);
 
+void to_upper_inplace(std::string& s);
+
 std::string fs_normal(std::string_view);
 std::vector<std::string> fs_normal_vector(std::string_view);
 
