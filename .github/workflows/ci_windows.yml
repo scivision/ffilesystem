@@ -84,7 +84,6 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v7
       with:
-        archive: false
         name: cpp-${{ matrix.cpp }}-shared-${{ runner.os }}-CMakeConfigureLog.yaml
         path: build/CMakeFiles/CMakeConfigureLog.yaml
 

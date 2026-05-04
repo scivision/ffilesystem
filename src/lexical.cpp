@@ -87,7 +87,9 @@ fs_is_reserved(std::string_view path)
 
   to_upper_inplace(s);
 
-#if defined(__cpp_lib_ranges) // C++20
+#if defined(__cpp_lib_ranges_contains) // C++23
+  return std::ranges::contains(r, s);
+#elif defined(__cpp_lib_ranges) // C++20
   return std::ranges::binary_search(r, s);
 #else
   return std::binary_search(r.begin(), r.end(), s);

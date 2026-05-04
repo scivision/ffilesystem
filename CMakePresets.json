@@ -6,18 +6,47 @@
   "name": "default",
   "generator": "Ninja",
   "binaryDir": "build",
+  "displayName": "Build and test with C++20 standard",
   "installDir": "${fileDir}/build/local",
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Release",
     "ffilesystem_warning_as_error": true,
     "ffilesystem_fallback": false,
     "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE",
-    "ffilesystem_BUILD_TESTING": true
+    "ffilesystem_BUILD_TESTING": true,
+    "CMAKE_CXX_STANDARD": "20",
+    "CMAKE_CXX_STANDARD_REQUIRED": true,
+    "CMAKE_CXX_EXTENSIONS": false
   }
 },
-{"name": "build", "inherits": "default",
+{
+  "name": "build", "inherits": "default",
   "cacheVariables": {
     "ffilesystem_BUILD_TESTING": false
+  }
+},
+{
+  "name": "cpp17", "inherits": "default",
+  "displayName": "C++17",
+  "description": "Build with C++17 standard enabled.",
+  "cacheVariables": {
+    "CMAKE_CXX_STANDARD": "17"
+  }
+},
+{
+  "name": "cpp23", "inherits": "default",
+  "displayName": "C++23",
+  "description": "Build with C++23 standard enabled.",
+  "cacheVariables": {
+    "CMAKE_CXX_STANDARD": "23"
+  }
+},
+{
+  "name": "cpp26", "inherits": "default",
+  "displayName": "C++26",
+  "description": "Build with C++26 standard enabled.",
+  "cacheVariables": {
+    "CMAKE_CXX_STANDARD": "26"
   }
 },
 { "name": "debug", "inherits": "default",
@@ -107,6 +136,9 @@
 "buildPresets": [
   { "name": "default", "configurePreset": "default" },
   { "name": "build", "configurePreset": "build", "inherits": "default" },
+  { "name": "cpp17", "configurePreset": "cpp17", "inherits": "default" },
+  { "name": "cpp23", "configurePreset": "cpp23", "inherits": "default" },
+  { "name": "cpp26", "configurePreset": "cpp26", "inherits": "default" },
   { "name": "shared", "configurePreset": "shared", "inherits": "default" },
   { "name": "android", "configurePreset": "android", "inherits": "default" },
   { "name": "android-tests", "configurePreset": "android-tests", "inherits": "default" },
@@ -166,6 +198,9 @@
   }
 },
 { "name": "shared", "configurePreset": "shared", "inherits": "default" },
+{ "name": "cpp17", "configurePreset": "cpp17", "inherits": "default" },
+{ "name": "cpp23", "configurePreset": "cpp23", "inherits": "default" },
+{ "name": "cpp26", "configurePreset": "cpp26", "inherits": "default" },
 { "name": "android-tests", "configurePreset": "android-tests", "inherits": "default",
   "execution": {
     "jobs": 1,
@@ -182,6 +217,7 @@
 "workflowPresets": [
   {
     "name": "default",
+    "displayName": "Build and test with C++20 standard",
     "steps": [
       { "type": "configure", "name": "default" },
       { "type": "build", "name": "default" },
@@ -193,6 +229,33 @@
     "steps": [
       { "type": "configure", "name": "build" },
       { "type": "build", "name": "build" }
+    ]
+  },
+  {
+    "name": "cpp17",
+    "displayName": "Build and test with C++17 standard",
+    "steps": [
+      { "type": "configure", "name": "cpp17" },
+      { "type": "build", "name": "cpp17" },
+      { "type": "test", "name": "cpp17" }
+    ]
+  },
+  {
+    "name": "cpp23",
+    "displayName": "Build and test with C++23 standard",
+    "steps": [
+      { "type": "configure", "name": "cpp23" },
+      { "type": "build", "name": "cpp23" },
+      { "type": "test", "name": "cpp23" }
+    ]
+  },
+  {
+    "name": "cpp26",
+    "displayName": "Build and test with C++26 standard",
+    "steps": [
+      { "type": "configure", "name": "cpp26" },
+      { "type": "build", "name": "cpp26" },
+      { "type": "test", "name": "cpp26" }
     ]
   },
   {

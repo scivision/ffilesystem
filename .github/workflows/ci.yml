@@ -166,20 +166,21 @@ jobs:
 
   cxx-std:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     strategy:
       matrix:
-        cpp-std: [17, 20, 23]
+        # default is C++20, testing other standards here
+        cpp-std: [17, 23]
         gcc-version: [14]
-        cpp: [true]
 
     env: *gcc-env
 
     steps:
 
     - *checkout
-    - uses: ./.github/workflows/composite-build
+
+    - run: cmake --workflow cpp${{ matrix.cpp-std }}
 
 
   cmake-older:
