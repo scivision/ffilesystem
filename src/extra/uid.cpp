@@ -47,7 +47,7 @@ pid_t fs_getpid()
   // get process ID
 #if defined(_WIN32)
   // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocessid
-  return GetCurrentProcessId();
+  return static_cast<pid_t>(GetCurrentProcessId());
 #else
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/getpid.2.html
   // https://www.man7.org/linux/man-pages/man2/getpid.2.html

@@ -5,16 +5,20 @@
 
 #ifdef _MSC_VER
 
-#ifndef DWORD
-typedef unsigned long DWORD;
-#endif
-
 #ifndef pid_t
-#define pid_t DWORD
+#ifdef __cplusplus
+using pid_t = long;
+#else
+typedef long pid_t;
+#endif
 #endif
 
 #ifndef mode_t
-typedef unsigned short mode_t;
+#ifdef __cplusplus
+using mode_t = unsigned int;
+#else
+typedef unsigned int mode_t;
+#endif
 #endif
 
 #endif
