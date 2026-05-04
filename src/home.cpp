@@ -38,9 +38,9 @@ struct passwd* fs_getpwuid()
 #if defined(__cpp_lib_format)  // C++20
     std::format("uid: {}", eff_uid)
 #else
-    ""
+    std::to_string(eff_uid)
 #endif
-    , __func__);
+    );
 #endif
 
   return {};
@@ -85,7 +85,7 @@ std::string fs_get_profile_dir()
     return pw->pw_dir;
 #endif
 
-  fs_print_error("", __func__);
+  fs_print_error("");
   return {};
 }
 
@@ -152,6 +152,6 @@ std::string fs_get_username()
 
 #endif
 
-  fs_print_error("", __func__);
+  fs_print_error("");
   return {};
 }

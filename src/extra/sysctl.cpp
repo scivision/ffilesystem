@@ -15,7 +15,7 @@ fs_is_rosetta()
 
     if (sysctlbyname("sysctl.proc_translated", &ret, &size, nullptr, 0) < 0) {
         if (errno != ENOENT)
-            fs_print_error("", __func__);
+            fs_print_error("");
         return false;
     }
 

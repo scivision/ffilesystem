@@ -114,7 +114,7 @@ static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer
   }
 
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return false;
 }
 #endif
@@ -146,7 +146,7 @@ bool fs_is_appexec_alias(std::string_view path)
   return data->ReparseTag == IO_REPARSE_TAG_APPEXECLINK;
 
 #else
-  fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
+  fs_print_error(path, std::make_error_code(std::errc::function_not_supported));
   return false;
 #endif
 
@@ -184,7 +184,7 @@ bool fs_win32_long_paths_enabled() {
   }
 
 #else
-  fs_print_error("", __func__, std::make_error_code(std::errc::function_not_supported));
+  fs_print_error("", std::make_error_code(std::errc::function_not_supported));
 #endif
 
   return false;
@@ -213,7 +213,7 @@ bool fs_win32_is_symlink(std::string_view path)
   return (reparseTag == IO_REPARSE_TAG_SYMLINK) ||
          (reparseTag == IO_REPARSE_TAG_MOUNT_POINT);
 #else
-  fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
+  fs_print_error(path, std::make_error_code(std::errc::function_not_supported));
   return false;
 #endif
 
@@ -269,7 +269,7 @@ std::string fs_win32_full_name(std::string_view path)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return {};
 }
 
@@ -320,7 +320,7 @@ std::string fs_win32_final_path(std::string_view path)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return {};
 }
 
@@ -350,7 +350,7 @@ std::string fs_longname(std::string_view in)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(in, __func__, ec);
+  fs_print_error(in, ec);
   return {};
 }
 
@@ -380,7 +380,7 @@ std::string fs_shortname(std::string_view in)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(in, __func__, ec);
+  fs_print_error(in, ec);
   return {};
 }
 
@@ -405,7 +405,7 @@ std::string fs_win32_to_narrow([[maybe_unused]] std::wstring_view w)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error("", __func__, ec);
+  fs_print_error("", ec);
   return {};
 }
 
@@ -431,6 +431,6 @@ std::wstring fs_win32_to_wide(std::string_view n)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(n, __func__, ec);
+  fs_print_error(n, ec);
   return {};
 }

@@ -106,7 +106,7 @@ bool fs_is_symlink(std::string_view path)
 
 #endif
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return false;
 }
 
@@ -156,7 +156,7 @@ std::string fs_read_symlink(std::string_view path)
   }
 #endif
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return {};
 }
 
@@ -197,6 +197,6 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
 #endif
   }
 
-  fs_print_error(target, link, __func__, ec);
+  fs_print_error(target, link, ec);
   return false;
 }

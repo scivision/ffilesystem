@@ -25,7 +25,7 @@ static std::string fs_convert_path(std::string_view path, [[maybe_unused]] int c
   }
 #endif
 
-  fs_print_error(path, __func__);
+  fs_print_error(path);
   return {};
 }
 

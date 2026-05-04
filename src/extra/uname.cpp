@@ -78,7 +78,7 @@ std::string fs_cpu_arch()
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error("", __func__, ec);
+  fs_print_error("", ec);
   return {};
 }
 
@@ -109,6 +109,6 @@ std::string fs_os_version()
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error("", __func__, ec);
+  fs_print_error("", ec);
   return {};
 }

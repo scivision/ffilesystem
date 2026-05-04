@@ -30,7 +30,7 @@ static std::string fs_which_generic(std::string_view name, std::string_view path
   }
 
   if(paths.empty()){
-    fs_print_error(paths, __func__, std::make_error_code(std::errc::not_a_directory));
+    fs_print_error(paths, std::make_error_code(std::errc::not_a_directory));
     return {};
   }
 
@@ -88,7 +88,7 @@ std::string fs_which(std::string_view name, std::string_view path, const bool fi
   // environment variable PATH or "path" if specified
 
   if (!path.empty() && !fs_is_dir(path)){
-    fs_print_error(path, __func__, std::make_error_code(std::errc::not_a_directory));
+    fs_print_error(path, std::make_error_code(std::errc::not_a_directory));
     return {};
   }
 
@@ -116,7 +116,7 @@ std::string fs_which(std::string_view name, std::string_view path, const bool fi
     return {};
 
   if(L == 0 || L >= wr.length()){
-    fs_print_error(name, __func__);
+    fs_print_error(name);
     return {};
   }
   wr.resize(L);

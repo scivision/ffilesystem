@@ -18,7 +18,7 @@ long fs_get_max_open_files()
 #else
   omax = ::sysconf(_SC_OPEN_MAX);
   if (omax < 0) {
-    fs_print_error("", __func__, "sysconf");
+    fs_print_error("", "sysconf");
   }
 #endif
   return omax;

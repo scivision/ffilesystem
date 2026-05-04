@@ -49,7 +49,7 @@ static bool fs_win32_is_type(std::string_view path, const DWORD type){
       case ERROR_CANT_ACCESS_FILE: case ERROR_FILE_NOT_FOUND: case ERROR_PATH_NOT_FOUND: case ERROR_SUCCESS:
         return false;
       default:
-        fs_print_error(path, __func__);
+        fs_print_error(path);
         return false;
     }
   }
@@ -60,7 +60,7 @@ static bool fs_win32_is_type(std::string_view path, const DWORD type){
   if (t != FILE_TYPE_UNKNOWN)
     return t == type;
 
-  fs_print_error(path, __func__);
+  fs_print_error(path);
   return false;
 }
 #endif
@@ -116,7 +116,7 @@ fs_exists(std::string_view path)
   ok = (Filesystem::exists(path, ec) && !ec) ||
         (fs_is_msvc() && (fs_is_appexec_alias(path) || fs_is_char_device(path)));
   if (ec && ec != std::errc::no_such_file_or_directory)
-    fs_print_error(path, __func__, ec);
+    fs_print_error(path, ec);
 #else
 
   const std::string cpath(path);
@@ -134,13 +134,13 @@ fs_exists(std::string_view path)
   // if (!ok){
   //   DWORD err = GetLastError();
   //   if (err != ERROR_FILE_NOT_FOUND && err != ERROR_PATH_NOT_FOUND)
-  //     fs_print_error(path, __func__);
+  //     fs_print_error(path);
   // }
 #else
   // https://www.man7.org/linux/man-pages/man2/access.2.html
   ok = access(cpath.c_str(), F_OK) == 0;
   if (!ok && errno != ENOENT && errno != ENOTDIR)
-    fs_print_error(path, __func__);
+    fs_print_error(path);
 #endif
 
 #endif
@@ -160,7 +160,7 @@ fs_is_dir(std::string_view path)
   std::error_code ec;
   ok = Filesystem::is_directory(path, ec);
   if (ec && ec != std::errc::no_such_file_or_directory)
-    fs_print_error(path, __func__, ec);
+    fs_print_error(path, ec);
 #elif defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesexa
 // this also works for Symlinks to directories
@@ -298,7 +298,7 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 
   auto s = Filesystem::hard_link_count(path, ec);
   if(ec)
-    fs_print_error(path, __func__, ec);
+    fs_print_error(path, ec);
 
   return s;
 
@@ -320,7 +320,7 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
       return s.st_nlink;
   }
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return fs_unknown_size;
 #endif
 }

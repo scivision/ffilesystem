@@ -53,14 +53,14 @@ static bool fs_win32_equiv(std::string_view path1, std::string_view path2, std::
   HANDLE h1 = CreateFileW(fs_win32_to_wide(path1).c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, nullptr,
     OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   if(h1 == INVALID_HANDLE_VALUE) {
-    fs_print_error(path1, __func__);
+    fs_print_error(path1);
     return false;
   }
 
   HANDLE h2 = CreateFileW(fs_win32_to_wide(path2).c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, nullptr,
     OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   if(h2 == INVALID_HANDLE_VALUE) {
-    fs_print_error(path2, __func__);
+    fs_print_error(path2);
     CloseHandle(h1);
     return false;
   }
@@ -79,7 +79,7 @@ static bool fs_win32_equiv(std::string_view path1, std::string_view path2, std::
 
 #endif
 
-  fs_print_error(path1, path2, __func__, ec);
+  fs_print_error(path1, path2, ec);
   return false;
 }
 #endif
@@ -134,6 +134,6 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
 
 #endif // HAVE_CXX_FILESYSTEM
 
-  fs_print_error(path1, path2, __func__, ec);
+  fs_print_error(path1, path2, ec);
   return false;
 }

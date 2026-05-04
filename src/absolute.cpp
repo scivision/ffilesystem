@@ -30,7 +30,7 @@ std::string fs_absolute(std::string_view path)
   if(auto a = Filesystem::absolute(path, ec); !ec)
     return a.string();
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return {};
 #else
   std::string a = fs_get_cwd();

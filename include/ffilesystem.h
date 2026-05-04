@@ -188,6 +188,18 @@ std::string fs_os_version();
 std::string fs_parent(std::string_view);
 
 void fs_emit_error();
+void fs_print_error(std::string_view
+#if defined(__cpp_lib_source_location)
+, const std::source_location& = std::source_location::current()
+#endif
+);
+
+void fs_print_error(std::string_view, const std::error_code&
+#if defined(__cpp_lib_source_location)
+, const std::source_location& = std::source_location::current()
+#endif
+);
+
 void fs_print_error(std::string_view, std::string_view
 #if defined(__cpp_lib_source_location)
 , const std::source_location& = std::source_location::current()
@@ -195,18 +207,6 @@ void fs_print_error(std::string_view, std::string_view
 );
 
 void fs_print_error(std::string_view, std::string_view, const std::error_code&
-#if defined(__cpp_lib_source_location)
-, const std::source_location& = std::source_location::current()
-#endif
-);
-
-void fs_print_error(std::string_view, std::string_view, std::string_view
-#if defined(__cpp_lib_source_location)
-, const std::source_location& = std::source_location::current()
-#endif
-);
-
-void fs_print_error(std::string_view, std::string_view, std::string_view, const std::error_code&
 #if defined(__cpp_lib_source_location)
 , const std::source_location& = std::source_location::current()
 #endif

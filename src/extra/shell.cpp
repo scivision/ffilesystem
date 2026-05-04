@@ -23,7 +23,7 @@ fs_get_shell()
 #if defined(_WIN32)
   const HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
   if (h == INVALID_HANDLE_VALUE) {
-    fs_print_error("", __func__);
+    fs_print_error("");
     return {};
   }
 
@@ -73,6 +73,6 @@ fs_get_shell()
     return pw->pw_shell;
 #endif
 
-  fs_print_error("", __func__, ec);
+  fs_print_error("", ec);
   return {};
 }

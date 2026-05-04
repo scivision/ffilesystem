@@ -46,7 +46,7 @@ std::string::size_type fs_strncpy(const char* path, char* result, const std::str
 // check size before copy
   const auto L = std::strlen(path);
   if(L >= buffer_size){
-    fs_print_error(path, __func__, std::make_error_code(std::errc::result_out_of_range));
+    fs_print_error(path, std::make_error_code(std::errc::result_out_of_range));
     return 0;
   }
 
@@ -263,7 +263,7 @@ std::string fs_lexically_normal(std::string_view path){
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).lexically_normal().generic_string();
 #else
-  fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
+  fs_print_error(path, std::make_error_code(std::errc::function_not_supported));
   return {};
 #endif
 }
@@ -273,7 +273,7 @@ std::string fs_make_preferred(std::string_view path){
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).make_preferred().string();
 #else
-  fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
+  fs_print_error(path, std::make_error_code(std::errc::function_not_supported));
   return {};
 #endif
 }

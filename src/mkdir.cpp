@@ -91,6 +91,6 @@ else {
 
 #endif
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return false;
 }

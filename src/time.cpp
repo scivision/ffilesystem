@@ -64,7 +64,7 @@ std::time_t fs_get_modtime(std::string_view path)
   }
 #endif
 
-  fs_print_error(path, __func__);
+  fs_print_error(path);
   return {};
 }
 
@@ -77,7 +77,7 @@ std::optional<Filesystem::file_time_type> fs_get_modtime_fs(std::string_view pat
   if(Filesystem::file_time_type t_fs = Filesystem::last_write_time(path, ec); !ec)
     return t_fs;
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return {};
 }
 #endif
@@ -121,7 +121,7 @@ bool fs_set_modtime(std::string_view path, const bool quiet)
 #endif
 
   if (!quiet)
-    fs_print_error(path, __func__, ec);
+    fs_print_error(path, ec);
 
   return false;
 }

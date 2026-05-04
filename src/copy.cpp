@@ -225,7 +225,7 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
 // WORKAROUND: Windows MinGW GCC 11..13, Intel oneAPI Linux: bug with overwrite_existing failing on overwrite
 
   if(overwrite && fs_is_file(dest) && !fs_remove(dest))
-    fs_print_error(dest, __func__, std::make_error_code(std::errc::io_error));
+    fs_print_error(dest, std::make_error_code(std::errc::io_error));
 
   if(Filesystem::copy_file(source, dest, opt, ec) && !ec)
     return true;
@@ -261,7 +261,7 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
 
 #endif
 
-  fs_print_error(source, dest, __func__, ec);
+  fs_print_error(source, dest, ec);
   return false;
 
 }

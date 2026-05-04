@@ -30,7 +30,7 @@ static inline std::string fs_type_linux(std::string_view path)
   const std::string cpath(path);
 
   if(statfs(cpath.c_str(), &s)) {
-    fs_print_error(path, __func__);
+    fs_print_error(path);
     return {};
   }
 
@@ -142,6 +142,6 @@ std::string fs_filesystem_type(std::string_view path)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return {};
 }

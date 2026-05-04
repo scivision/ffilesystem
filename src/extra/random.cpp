@@ -46,7 +46,7 @@ std::string fs_generate_random_alphanumeric_string(const std::string::size_type 
 
   return result;
 #else
-  fs_print_error("" , __func__, std::make_error_code(std::errc::function_not_supported));
+  fs_print_error("", std::make_error_code(std::errc::function_not_supported));
   return {};
 #endif
 }

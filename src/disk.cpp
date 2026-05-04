@@ -72,7 +72,7 @@ std::size_t fs_get_blksize(std::string_view path)
   }
 #endif
 
-  fs_print_error(path, __func__);
+  fs_print_error(path);
   return {};
 }
 
@@ -101,7 +101,7 @@ dev_t fs_st_dev(std::string_view path)
       return s.st_dev;
   }
 
-  fs_print_error(path, __func__);
+  fs_print_error(path);
   return {};
 }
 
@@ -150,7 +150,7 @@ ino_t fs_inode(std::string_view path)
 
 #endif // _WIN32
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return 0;
 
 }

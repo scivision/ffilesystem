@@ -47,7 +47,7 @@ std::uintmax_t fs_file_size(std::string_view path)
 
   auto s = Filesystem::file_size(path, ec);
   if (ec)
-    fs_print_error(path, __func__, ec);
+    fs_print_error(path, ec);
 
   return s;
 
@@ -84,7 +84,7 @@ std::uintmax_t fs_file_size(std::string_view path)
 
 #endif
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return fs_unknown_size;
 }
 
@@ -112,7 +112,7 @@ bool fs_is_empty(std::string_view path)
   WIN32_FIND_DATAA ffd;
   HANDLE hFind = FindFirstFileA((cpath + "/*").c_str(), &ffd);
   if (hFind == INVALID_HANDLE_VALUE) {
-    fs_print_error(path, __func__);
+    fs_print_error(path);
     return false;
   }
 
@@ -175,7 +175,7 @@ bool fs_is_empty(std::string_view path)
 
 #endif
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return false;
 
 }

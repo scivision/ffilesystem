@@ -37,7 +37,7 @@ std::uintmax_t fs_space_available(std::string_view path)
 #if defined(HAVE_CXX_FILESYSTEM)
   auto s = Filesystem::space(path, ec);
   if (ec)
-    fs_print_error(path, __func__, ec);
+    fs_print_error(path, ec);
 
   if (ec || s.available == fs_unknown_size)
     return fs_unknown_size;
@@ -59,7 +59,7 @@ std::uintmax_t fs_space_available(std::string_view path)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return fs_unknown_size;
 }
 
@@ -76,7 +76,7 @@ std::uintmax_t fs_space_capacity(std::string_view path)
 #if defined(HAVE_CXX_FILESYSTEM)
   auto s = Filesystem::space(path, ec);
   if (ec)
-    fs_print_error(path, __func__, ec);
+    fs_print_error(path, ec);
 
   if (ec || s.capacity == fs_unknown_size)
     return fs_unknown_size;
@@ -95,6 +95,6 @@ std::uintmax_t fs_space_capacity(std::string_view path)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(path, __func__, ec);
+  fs_print_error(path, ec);
   return fs_unknown_size;
 }

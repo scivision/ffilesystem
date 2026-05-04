@@ -30,7 +30,7 @@ std::string fs_relative_to(std::string_view base, std::string_view other)
    ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(base, other, __func__, ec);
+  fs_print_error(base, other, ec);
   return {};
 }
 
@@ -52,6 +52,6 @@ std::string fs_proximate_to(std::string_view base, std::string_view other)
    ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(base, other, __func__, ec);
+  fs_print_error(base, other, ec);
   return {};
 }

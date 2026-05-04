@@ -29,7 +29,7 @@ unsigned long long fs_total_sys_memory()
   if(GlobalMemoryStatusEx(&status))
     return status.ullTotalPhys;
 
-  fs_print_error("", __func__, "GlobalMemoryStatusEx");
+  fs_print_error("", "GlobalMemoryStatusEx");
 
 #else
 
@@ -42,7 +42,7 @@ unsigned long long fs_total_sys_memory()
       return static_cast<unsigned long long>(pages) * page_size;
   }
 
-  fs_print_error("", __func__, "sysconf");
+  fs_print_error("", "sysconf");
 
 #endif
 
@@ -59,7 +59,7 @@ unsigned long long fs_get_free_memory()
   MEMORYSTATUSEX status;
   status.dwLength = sizeof(status);
   if (!GlobalMemoryStatusEx(&status)) {
-    fs_print_error("", __func__, "GlobalMemoryStatusEx");
+    fs_print_error("", "GlobalMemoryStatusEx");
     return std::numeric_limits<unsigned long long>::max();
   }
   const unsigned long long committed = (status.ullTotalPageFile - status.ullAvailPageFile);
@@ -104,7 +104,7 @@ unsigned long long fs_get_free_memory()
   struct sysinfo infos;
 
   if(::sysinfo(&infos) != 0) {
-    fs_print_error("", __func__, "sysinfo");
+    fs_print_error("", "sysinfo");
     return std::numeric_limits<unsigned long long>::max();
   }
 

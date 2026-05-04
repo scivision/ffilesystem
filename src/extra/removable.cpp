@@ -44,7 +44,7 @@ fs_is_removable(std::string_view path)
       return false;
     case DRIVE_UNKNOWN:
     case DRIVE_NO_ROOT_DIR:
-      fs_print_error(path, __func__, std::make_error_code(std::errc::no_such_device));
+      fs_print_error(path, std::make_error_code(std::errc::no_such_device));
       return false;
     default:
       return false;
@@ -68,7 +68,7 @@ fs_is_removable(std::string_view path)
     dev = "/sys/dev/block/" + std::to_string(major(s.st_dev)) + ":" + std::to_string(minor(s.st_dev)) + "/removable";
 #endif
   } else {
-    fs_print_error(path, __func__);
+    fs_print_error(path);
     return false;
   }
 
@@ -85,7 +85,7 @@ fs_is_removable(std::string_view path)
     }
   }
 
-  fs_print_error(dev, __func__);
+  fs_print_error(dev);
   return false;
 
 #elif defined(__APPLE__) && defined(__MACH__)
@@ -98,7 +98,7 @@ fs_is_removable(std::string_view path)
 
   struct stat s;
   if (::stat(cpath.c_str(), &s) != 0) {
-    fs_print_error(path, __func__);
+    fs_print_error(path);
     return false;
   }
 
@@ -115,7 +115,7 @@ fs_is_removable(std::string_view path)
 
   DASessionRef session = DASessionCreate(kCFAllocatorDefault);
   if (!session) {
-    fs_print_error(path, __func__);
+    fs_print_error(path);
     return false;
   }
 
@@ -135,7 +135,7 @@ fs_is_removable(std::string_view path)
   return ok;
 
 #else
-  fs_print_error(path, __func__, std::make_error_code(std::errc::function_not_supported));
+  fs_print_error(path, std::make_error_code(std::errc::function_not_supported));
   return false;
 #endif
 
