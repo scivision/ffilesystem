@@ -13,7 +13,6 @@ foreach(t IN LISTS boost_ut_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
   target_include_directories(test_${t}_cpp PRIVATE ${boost_ut_SOURCE_DIR}/include)
-  target_compile_features(test_${t}_cpp PRIVATE cxx_std_20)
 
   add_test(NAME ${t}_cpp COMMAND test_${t}_cpp)
   set_tests_properties(${t}_cpp PROPERTIES LABELS "Cpp")

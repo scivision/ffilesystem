@@ -2,6 +2,11 @@ include(CheckIncludeFile)
 include(CheckIncludeFileCXX)
 include(FetchContent)
 
+if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+  set(CMAKE_CXX_STANDARD 20)
+endif()
+
+
 if(LINUX)
   check_include_file("linux/magic.h" ffilesystem_HAVE_LINUX_MAGIC)
 endif()
