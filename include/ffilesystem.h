@@ -107,8 +107,8 @@ std::uintmax_t fs_file_size(std::string_view);
 std::string fs_filesystem_type(std::string_view);
 
 std::string fs_generate_random_alphanumeric_string(const std::string::size_type);
-void fs_ascii_lower(std::string& s);
-void fs_ascii_upper(std::string& s);
+void fs_ascii_lower(std::string&);
+void fs_ascii_upper(std::string&);
 
 std::string fs_get_cwd();
 
@@ -180,8 +180,6 @@ std::string::size_type fs_max_component(std::string_view);
 bool fs_mkdir(std::string_view);
 
 bool fs_non_ascii(std::string_view);
-
-void to_upper_inplace(std::string& s);
 
 std::string fs_normal(std::string_view);
 std::vector<std::string> fs_normal_vector(std::string_view);

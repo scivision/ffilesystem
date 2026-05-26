@@ -2,6 +2,7 @@
 #include <string_view>
 
 #include "ffilesystem.h"
+#include "ffilesystem_test.hpp"
 
 #include <boost/ut.hpp>
 
@@ -13,10 +14,6 @@ struct canonical_ctx {
   std::string cwd;
   std::string cwdp;
 };
-
-auto one_of(const std::string& actual, std::string_view expected1, std::string_view expected2) {
-  return actual == expected1 || actual == expected2;
-}
 
 
 auto make_ctx() {
@@ -76,13 +73,12 @@ int main() {
         return;
       }
 
-      expect(one_of(fs_resolve(*sys_drive + "/", true), *sys_drive + "\\", *sys_drive + "/"));
-      expect(one_of(fs_resolve(*sys_drive + "/", false), *sys_drive + "\\", *sys_drive + "/"));
+      expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_resolve(*sys_drive + "/", true));
+      expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_resolve(*sys_drive + "/", false));
 
       if (fs_backend() != "<filesystem>") {
-        expect(one_of(fs_resolve(R"(\\?\)" + *sys_drive + "\\", true),
-                      R"(\\?\)" + *sys_drive + "\\",
-                      R"(\\?\)" + *sys_drive + "/"));
+        expect(any_of{R"(\\?\)" + *sys_drive + "\\", R"(\\?\)" + *sys_drive + "/"} ==
+          fs_resolve(R"(\\?\)" + *sys_drive + "\\", true));
       }
     }
   };
@@ -109,14 +105,12 @@ int main() {
         return;
       }
 
-      expect(one_of(fs_canonical(*sys_drive + "/", true), *sys_drive + "\\", *sys_drive + "/"));
-      expect(one_of(fs_canonical(*sys_drive + "/", false), *sys_drive + "\\", *sys_drive + "/"));
-      expect(one_of(fs_canonical("M:/", false), "M:\\", "M:/"));
+      expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_canonical(*sys_drive + "/", true));
+      expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_canonical(*sys_drive + "/", false));
+      expect(any_of{"M:\\", "M:/"} == fs_canonical("M:/", false));
 
       if (fs_backend() != "<filesystem>") {
-        expect(one_of(fs_canonical(R"(\\?\)" + *sys_drive + "\\", true),
-                      R"(\\?\)" + *sys_drive + "\\",
-                      R"(\\?\)" + *sys_drive + "/"));
+        expect(any_of{R"(\\?\)" + *sys_drive + "\\", R"(\\?\)" + *sys_drive + "/"} == fs_canonical(R"(\\?\)" + *sys_drive + "\\", true));
       }
     }
   };
@@ -128,9 +122,9 @@ int main() {
       return;
     }
 
-    expect(one_of(fs_canonical("../not-exist", false), "../not-exist", ctx->cwdp + "/not-exist"));
-    expect(one_of(fs_canonical("./not-exist", false), "not-exist", ctx->cwd + "/not-exist"));
-    expect(one_of(fs_canonical("a/b/../c", false), "a/c", ctx->cwd + "/a/c"));
+    expect(any_of{"../not-exist", ctx->cwdp + "/not-exist"} == fs_canonical("../not-exist", false));
+    expect(any_of{"not-exist", ctx->cwd + "/not-exist"} == fs_canonical("./not-exist", false));
+    expect(any_of{"a/c", ctx->cwd + "/a/c"} == fs_canonical("a/b/../c", false));
   };
 
   "resolve_parent_rel"_test = [] {
