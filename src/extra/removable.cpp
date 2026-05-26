@@ -35,15 +35,11 @@ fs_is_removable(std::string_view path)
   UINT t = GetDriveTypeW(fs_win32_to_wide(fs_root(path)).c_str());
   switch (t)
   {
-    case DRIVE_REMOVABLE:
-    case DRIVE_CDROM:
+    case DRIVE_REMOVABLE: case DRIVE_CDROM:
       return true;
-    case DRIVE_FIXED:
-    case DRIVE_REMOTE:
-    case DRIVE_RAMDISK:
+    case DRIVE_FIXED: case DRIVE_REMOTE: case DRIVE_RAMDISK:
       return false;
-    case DRIVE_UNKNOWN:
-    case DRIVE_NO_ROOT_DIR:
+    case DRIVE_UNKNOWN: case DRIVE_NO_ROOT_DIR:
       fs_print_error(path, std::make_error_code(std::errc::no_such_device));
       return false;
     default:

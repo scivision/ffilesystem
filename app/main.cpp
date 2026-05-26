@@ -6,7 +6,6 @@
 #include <string_view>
 #include <vector>
 #include <functional>
-#include <map>
 #include <ctime>
 #include <system_error>
 #include <variant>
@@ -37,12 +36,11 @@ namespace Filesystem = std::filesystem;
 
 static bool no_arg(std::string_view fun){
 
-  std::map<std::string_view, std::function<bool()>> mbool =
+  static const std::unordered_map<std::string_view, std::function<bool()>> mbool =
   {
     {"optimized", fs_is_optimized},
     {"is_admin", fs_is_admin},
     {"is_android", fs_is_android},
-    {"is_wsl", fs_is_wsl},
     {"is_bsd", fs_is_bsd},
     {"is_linux", fs_is_linux},
     {"is_macos", fs_is_macos},
@@ -57,7 +55,7 @@ static bool no_arg(std::string_view fun){
 
 using fs_function = std::function<std::variant<std::string, bool, int, char, long, unsigned long long>()>;
 
-std::unordered_map<std::string_view, fs_function> fs_function_map = {
+static const std::unordered_map<std::string_view, fs_function> fs_function_map = {
   {"backend", []() { return fs_backend(); }},
   {"is_wsl", []() { return fs_is_wsl(); }},
   {"pathsep", []() { return fs_pathsep(); }},
@@ -104,8 +102,8 @@ std::unordered_map<std::string_view, fs_function> fs_function_map = {
     else
       ok = false;
 
-  } else if (mbool.find(fun) != mbool.end())
-    std::cout << mbool[fun]();
+  } else if (const auto bit = mbool.find(fun); bit != mbool.end())
+    std::cout << bit->second();
   else if (fun == "pid")
     std::cout << fs_getpid();
   else
@@ -120,13 +118,10 @@ std::unordered_map<std::string_view, fs_function> fs_function_map = {
 
 static bool one_arg(std::string_view fun, std::string_view a1)
 {
-
-  std::error_code ec;
-
   // each possible return type for the function
   using fs_one_arg_function = std::function<std::variant<std::string, bool, int, std::uintmax_t>(std::string_view)>;
 
-  std::unordered_map<std::string_view, fs_one_arg_function> fs_one_arg_function_map = {
+  static const std::unordered_map<std::string_view, fs_one_arg_function> fs_one_arg_function_map = {
     {"lexically_normal", [](std::string_view a1) { return fs_lexically_normal(a1); }},
     {"make_preferred", [](std::string_view a1) { return fs_make_preferred(a1); }},
     {"parent", [](std::string_view a1) { return fs_parent(a1); }},
@@ -189,7 +184,7 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     {"which_all", [](std::string_view a1) { return fs_which(a1, "", true); }},
   };
 
-  std::map<std::string_view, std::function<std::uintmax_t(std::string_view)>> m1uintm =
+  static const std::unordered_map<std::string_view, std::function<std::uintmax_t(std::string_view)>> m1uintm =
   {
     {"file_size", [](std::string_view a1) { return fs_file_size(a1); }},
     {"space_available", [](std::string_view a1) { return fs_space_available(a1); }},
@@ -214,8 +209,8 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     else
       ok = false;
 
-  } else if (m1uintm.find(fun) != m1uintm.end()) {
-    if(auto r = m1uintm[fun](a1); r != fs_unknown_size)
+  } else if (const auto mit = m1uintm.find(fun); mit != m1uintm.end()) {
+    if(auto r = mit->second(a1); r != fs_unknown_size)
       std::cout << r;
   } else if (fun == "modtime"){
 
@@ -298,7 +293,7 @@ static bool two_arg(std::string_view fun, std::string_view a1, std::string_view 
 {
   using fs_two_arg_function = std::function<std::variant<std::string, bool>(std::string_view, std::string_view)>;
 
-  std::unordered_map<std::string_view, fs_two_arg_function> fs_two_arg_function_map = {
+  static const std::unordered_map<std::string_view, fs_two_arg_function> fs_two_arg_function_map = {
     {"which", [](std::string_view a1, std::string_view a2) { return fs_which(a1, a2, false); }},
     {"which_all", [](std::string_view a1, std::string_view a2) { return fs_which(a1, a2, true); }},
     {"same", [](std::string_view a1, std::string_view a2) { return fs_equivalent(a1, a2); }},

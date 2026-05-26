@@ -60,19 +60,11 @@ std::string fs_cpu_arch()
     SYSTEM_INFO si;
     GetNativeSystemInfo(&si);
     switch (si.wProcessorArchitecture) {
-    case PROCESSOR_ARCHITECTURE_AMD64:
-        return "x86_64";
-    case PROCESSOR_ARCHITECTURE_ARM:
-        return "arm";
-    case PROCESSOR_ARCHITECTURE_ARM64:
-        return "arm64";
-    case PROCESSOR_ARCHITECTURE_IA64:
-        return "ia64";
-    case PROCESSOR_ARCHITECTURE_INTEL:
-        return "x86";
-    case PROCESSOR_ARCHITECTURE_UNKNOWN:
-    default:
-        return "unknown";
+    case PROCESSOR_ARCHITECTURE_AMD64: return "x86_64";
+    case PROCESSOR_ARCHITECTURE_ARM64: return "arm64";
+    case PROCESSOR_ARCHITECTURE_ARM: return "arm";
+    case PROCESSOR_ARCHITECTURE_INTEL: return "x86";
+    default: return "unknown";
     }
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
