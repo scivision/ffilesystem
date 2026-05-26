@@ -3,6 +3,7 @@
 #include <boost/ut.hpp>
 
 #include "ffilesystem.h"
+#include "ffilesystem_test.hpp"
 
 int main() {
 using namespace boost::ut;
@@ -29,7 +30,7 @@ else
 expect(!fs_is_dir(ref));
 
 const auto size = fs_file_size(ref);
-expect(size == 0UL || size == fs_unknown_size);
+expect(any_of{0UL, fs_unknown_size} == size);
 
 // omitted fs_space_available() since some systems don't handle NUL /dev/null well
 // e.g. Windows, macOS GCC, etc.
