@@ -19,7 +19,7 @@ std::string fs_parent(std::string_view path)
   std::string p(path);
 
 #if defined(HAVE_CXX_FILESYSTEM)
-  p = fs_drop_trailing_slash(p);
+  fs_drop_trailing_slash(p);
   // have to drop trailing slash to get expected parent path -- necessary for AppleClang
   p = Filesystem::path(p).parent_path().string();
 
@@ -30,14 +30,17 @@ std::string fs_parent(std::string_view path)
 // is an unspecified string which does not appear in any pathnames.
 
 #elif defined(_WIN32)
-  p = fs_drop_trailing_slash(p);
+  fs_drop_trailing_slash(p);
   std::string dir, drive;
   dir.resize(_MAX_DIR);
   drive.resize(_MAX_DRIVE);
   if(_splitpath_s(p.c_str(), drive.data(), _MAX_DRIVE, dir.data(), _MAX_DIR, nullptr, 0, nullptr, 0) != 0)
     return {};
 
-  p = fs_drop_trailing_slash(fs_trim(drive) + fs_trim(dir));
+  fs_trim(drive);
+  fs_trim(dir);
+  p = drive + dir;
+  fs_drop_trailing_slash(p);
 #else
   // https://linux.die.net/man/3/dirname
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dirname.3.html
