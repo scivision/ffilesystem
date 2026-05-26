@@ -13,7 +13,9 @@ bool fs_is_case_sensitive(std::string_view path)
   if(path.empty())
     return false;
 
-  const std::string rname = fs_generate_random_alphanumeric_string(16);
+  constexpr std::string::size_type N = 16; // arbitrary
+
+  const std::string rname = fs_generate_random_alphanumeric_string(N);
   if (rname.empty())
     return false;
 
