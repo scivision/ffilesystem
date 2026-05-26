@@ -315,6 +315,8 @@ std::string fs_win32_final_path(std::string_view path)
 
       return r;
     }
+  } else {
+    CloseHandle(h);
   }
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
