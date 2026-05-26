@@ -252,45 +252,7 @@ add_library(ffilesystem::filesystem ALIAS ffilesystem)
 # --- CLI
 
 if(ffilesystem_cli)
-  add_executable(ffilesystem_bench app/benchmark.cpp)
-  target_link_libraries(ffilesystem_bench PRIVATE ffilesystem)
-
-  add_executable(fs_cli app/main.cpp)
-  target_link_libraries(fs_cli PRIVATE ffilesystem)
-  target_compile_definitions(fs_cli PRIVATE
-  "$<$<BOOL:${HAVE_CXX_FILESYSTEM}>:HAVE_CXX_FILESYSTEM>"
-  "$<$<BOOL:${ffilesystem_extra}>:ffilesystem_extra>"
-  )
-  install(TARGETS fs_cli EXPORT ${PROJECT_NAME}-targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
-  )
-  if(WIN32)
-    target_sources(fs_cli PRIVATE windows_long_paths.manifest)
-  endif()
-
-  if(CMAKE_CXX_STANDARD LESS 20 AND "cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-    target_compile_features(fs_cli PRIVATE cxx_std_20)
-    target_compile_features(ffilesystem_bench PRIVATE cxx_std_20)
-  endif()
-
-  add_executable(libc_version app/libc.cpp)
-  add_executable(libcpp_version app/libcxx.cpp)
-
-  if(ffilesystem_fortran)
-  add_executable(filesystem_cli app/fortran/main.f90)
-  target_link_libraries(filesystem_cli PRIVATE ffilesystem)
-  set_property(TARGET filesystem_cli PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-  set_property(TARGET filesystem_cli PROPERTY LINKER_LANGUAGE ${ffilesystem_linker_lang})
-
-  install(TARGETS filesystem_cli EXPORT ${PROJECT_NAME}-targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
-  )
-  if(WIN32)
-    target_sources(filesystem_cli PRIVATE windows_long_paths.manifest)
-  endif()
-  endif()
+  add_subdirectory(app)
 endif()
 
 # --- Tests

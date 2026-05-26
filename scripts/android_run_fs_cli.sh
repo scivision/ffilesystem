@@ -33,7 +33,7 @@ export PATH="$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$ANDROI
 
 SERIAL=""
 BUILD_DIR="build-android"
-REMOTE_BIN="/data/local/tmp/fs_cli"
+REMOTE_BIN="/data/local/tmp/app/fs_cli"
 SKIP_BUILD=0
 
 while [[ $# -gt 0 ]]; do
@@ -86,10 +86,10 @@ if [[ "$SKIP_BUILD" -eq 0 ]]; then
   cmake --build "$BUILD_DIR" --target fs_cli
 fi
 
-LOCAL_BIN="$BUILD_DIR/fs_cli"
+LOCAL_BIN="$BUILD_DIR/app/fs_cli"
 if [[ ! -x "$LOCAL_BIN" ]]; then
-  if [[ -x "$BUILD_DIR/bin/fs_cli" ]]; then
-    LOCAL_BIN="$BUILD_DIR/bin/fs_cli"
+  if [[ -x "$BUILD_DIR/bin/app/fs_cli" ]]; then
+    LOCAL_BIN="$BUILD_DIR/bin/app/fs_cli"
   else
     echo "Could not find built fs_cli in $BUILD_DIR." >&2
     exit 1

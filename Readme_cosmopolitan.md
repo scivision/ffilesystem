@@ -37,7 +37,7 @@ cmake --workflow cosmo
 Run the universal binary
 
 ```sh
-build-cosmo/fs_cli
+build-cosmo/app/fs_cli
 ```
 
 The self-tests all error like "Unknown system error -8" from CTest, but can be run correctly individually from the command line.

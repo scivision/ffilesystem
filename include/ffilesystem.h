@@ -309,6 +309,9 @@ size_t fs_strncpy(const char*, char*, const size_t);
 #endif
 
 long fs_cpp_lang();
+long fs_cpp_format();
+long fs_cpp_ranges();
+
 long fs_c_lang();
 
 long libcxx_release();

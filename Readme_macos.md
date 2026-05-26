@@ -13,7 +13,7 @@ cmake --build build -t fs_cli
 To force the universal binary to run in x86_64 mode from an arm64 Mac and verify Rosetta 2 is being used:
 
 ```sh
-arch -x86_64 build/fs_cli
+arch -x86_64 build/app/fs_cli
 
 Ffs> is_rosetta
 1
@@ -25,7 +25,7 @@ x86_64
 Whereas using the default native mode on an arm64 Mac:
 
 ```sh
-build/fs_cli
+build/app/fs_cli
 
 Ffs> is_rosetta
 0

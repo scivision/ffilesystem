@@ -400,14 +400,18 @@ int main()
 const std::string cwd = fs_get_cwd();
 
 std::cout << "Ffilesystem. Backend: " << fs_backend() << "\n";
+std::cout << fs_compiler() << "\n";
+std::cout << "Ffilesystem C++ standard " << fs_cpp_lang() << "  CLI C++ standard " << __cplusplus << "\n";
+std::cout << "Ffilesystem C++ <format> support: " << fs_cpp_format() << "\n";
+std::cout << "Ffilesystem C++ <ranges> support: " << fs_cpp_ranges() << "\n";
+std::cout << "Ffilesystem C standard " << fs_c_lang() << "\n";
+std::cout << "libcpp: " << fs_libcxx() << "\n";
+std::cout << "libc: " << fs_libc() << "\n";
 std::cout << "maximum path length: " << fs_get_max_path() << "\n";
 std::cout << "current working directory (CWD): " << cwd << "\n";
 std::cout << "Compiler: " << fs_compiler() << "\n";
 std::cout << "Optimized: " << fs_is_optimized() << " Trace: " << fs_trace << "\n";
-std::cout << "C++ standard " << fs_cpp_lang() << "\n";
-std::cout << "C standard " << fs_c_lang() << "\n";
-std::cout << "libcpp: " << fs_libcxx() << "\n";
-std::cout << "libc: " << fs_libc() << "\n";
+
 std::cout << "Username: " << fs_get_username() << "\n";
 std::cout << "Homedir: " << fs_get_homedir() << "\n";
 

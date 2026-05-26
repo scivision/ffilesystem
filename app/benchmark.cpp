@@ -7,8 +7,13 @@
 #include <vector>
 #include <array>
 #include <numeric>
-#include <iomanip>
-#include <sstream>
+
+// unconditional includes for benchmark output formatting
+#include <iomanip> // for std::setw, std::setprecision
+#include <sstream> // for std::ostringstream
+#if __has_include(<format>)
+#include <format>
+#endif
 
 #include <variant>
 #include <unordered_map>
@@ -47,6 +52,18 @@ void print_cpp(std::chrono::duration<double> avg_t,
     prec = 3;
   }
 
+#ifdef __cpp_lib_format
+  const auto avg_cell = std::format("{:.{}f} {}", avg_v, prec, unit);
+  const auto med_cell = std::format("{:.{}f} {}", med_v, prec, unit);
+  const auto result = w.empty() ? std::string(b ? "1" : "0") : std::string(w);
+
+  std::cout << std::format("{:>12}{:>12}  {}({}) = {}\n",
+                           avg_cell,
+                           med_cell,
+                           func,
+                           path,
+                           result);
+#else
   const auto old_flags = std::cout.flags();
   const auto old_prec = std::cout.precision();
 
@@ -56,8 +73,7 @@ void print_cpp(std::chrono::duration<double> avg_t,
   std::ostringstream med_cell;
   med_cell << std::fixed << std::setprecision(prec) << med_v << ' ' << unit;
 
-  std::cout << std::left << std::setw(14) << fs_backend()
-            << std::right << std::setw(12) << avg_cell.str()
+  std::cout << std::right << std::setw(12) << avg_cell.str()
             << std::setw(12) << med_cell.str()
             << "  " << func << "(" << path << ") = ";
   if (w.empty())
@@ -68,6 +84,7 @@ void print_cpp(std::chrono::duration<double> avg_t,
 
   std::cout.flags(old_flags);
   std::cout.precision(old_prec);
+#endif
 }
 
 
@@ -172,8 +189,17 @@ if(argc > 1)
 std::string_view path;
 
 std::cout << fs_compiler() << "\n";
-std::cout << "backend            avg      median\n";
-std::cout << "(n=" << n << ", batches=" << kBenchBatches << ")\n";
+std::cout << "Ffilesystem backend: " << fs_backend() << "  C++ standard: " << fs_cpp_lang() << "  C standard: " << fs_c_lang() << "\n";
+std::cout << "Benchmark C++ standard " << __cplusplus << "\n";
+std::cout << "Optimized: " << fs_is_optimized() << "\n";
+std::cout << "C++20 <format> support: " << fs_cpp_format() << "\n";
+std::cout << "Benchmark parameters: n=" << n << ", batches=" << kBenchBatches << "\n";
+
+#ifdef __cpp_lib_format
+std::cout << std::format("{:>12}{:>12}\n", "avg", "median");
+#else
+std::cout << "         avg          median\n";
+#endif
 
 std::vector<std::string_view> funcs;
 if(argc > 3)

@@ -56,7 +56,7 @@ e.g. "adb devices" should show a device.
 
 Assuming Android SDK is installed on Linux or macOS, in a separate terminal:
 
-1. "source android.sh" from this directory
+1. "source test/android.sh" from this directory
 2. list available emulators with "emulator -list-avds"
 3. start the emulator (e.g. "emulator -avd Medium_Phone_API_35")
 4. "adb devices" should show a device
