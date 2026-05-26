@@ -103,7 +103,7 @@ std::string fs_expanduser(std::string_view path)
   if(path.length() > 1 && !(path[1] == '/' || path[1] == fs_filesep()))
     return std::string(path);
 
-  std::string home = fs_get_homedir();
+  const std::string home = fs_get_homedir();
   if(home.empty())
     return {};
 
