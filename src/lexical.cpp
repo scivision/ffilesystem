@@ -34,7 +34,21 @@ std::string fs_as_windows(std::string_view path)
 }
 
 
-void to_upper_inplace(std::string& s)
+void fs_ascii_lower(std::string& s)
+{
+  // for ASCII characters, not locale-aware.
+  auto to_lower = [](char c) -> char {
+    return static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+  };
+#if defined(__cpp_lib_ranges)
+  std::ranges::transform(s, s.begin(), to_lower);
+#else
+  std::transform(s.begin(), s.end(), s.begin(), to_lower);
+#endif
+}
+
+
+void fs_ascii_upper(std::string& s)
 {
   // for ASCII characters, not locale-aware.
   auto to_upper = [](char c) -> char {
@@ -85,7 +99,7 @@ fs_is_reserved(std::string_view path)
     "NUL", "PRN"
   };
 
-  to_upper_inplace(s);
+  fs_ascii_upper(s);
 
 #if defined(__cpp_lib_ranges_contains) // C++23
   return std::ranges::contains(r, s);

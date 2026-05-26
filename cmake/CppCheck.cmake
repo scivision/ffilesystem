@@ -58,6 +58,7 @@ if(ffilesystem_trace)
   set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
   check_cxx_symbol_exists(__cpp_lib_format "" cpp20_format)
+  check_cxx_symbol_exists(__cpp_lib_ranges "" cpp20_ranges)
 
   check_cxx_symbol_exists(__cpp_lib_starts_ends_with "string" cpp20_string_ends_with)
   check_cxx_symbol_exists(__cpp_using_enum "" cpp20_using_enum)

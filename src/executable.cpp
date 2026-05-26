@@ -1,9 +1,6 @@
 #include <string_view>
 #include <string>
-#include <cstdint>
-
-#include <algorithm> // std::transform
-#include <cctype>    // std::tolower
+#include <cstdint> // for uint8_t
 
 #include <iostream>
 
@@ -118,10 +115,10 @@ bool fs_is_exe(std::string_view path)
   std::string pathext = ".com;.exe;.bat;.cmd";
   if(auto e = fs_getenv("PATHEXT"); e) {
     pathext = e.value();
-    std::transform(pathext.begin(), pathext.end(), pathext.begin(), ::tolower);
+    fs_ascii_lower(pathext);
   }
 
-  std::transform(suffix.begin(), suffix.end(), suffix.begin(), ::tolower);
+  fs_ascii_lower(suffix);
   if(fs_trace) std::cout << "TRACE: is_exe(" << path << "):  suffix: " << suffix << " length " << suffix.length() << " pathext: " << pathext << "\n";
 
 #if defined(__cpp_lib_string_contains) // C++23
