@@ -279,10 +279,11 @@ bool fs_is_writable(std::string_view path)
   // or other platform-specific permissions, and they don't check writability of parent directories
   // for creating new files.
 
-  const std::string cpath(path);
+  std::string cpath(path);
 
 #if defined(_WIN32)
   // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
+  fs_as_windows(cpath);
   return _access_s(cpath.c_str(), 2) == 0;
 #else
   return access(cpath.c_str(), W_OK) == 0;
