@@ -127,6 +127,8 @@ main : do
     print '(i0)', hard_link_count(arg1)
   case ("as_posix")
     print '(a)', as_posix(arg1)
+  case ("as_windows")
+    print '(a)', as_windows(arg1)
   case ('modtime')
     print '(i0)', get_modtime(arg1)
   case ("expanduser")

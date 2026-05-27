@@ -23,14 +23,10 @@ std::string fs_as_posix(std::string_view path)
   return s;
 }
 
-std::string fs_as_windows(std::string_view path)
+void fs_as_windows(std::string& path)
 {
-  std::string s(path);
-
   if(fs_is_windows())
-    std::replace(s.begin(), s.end(), '/', '\\');
-
-  return s;
+    std::replace(path.begin(), path.end(), '/', '\\');
 }
 
 

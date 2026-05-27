@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
 
     if (fs_is_windows()) {
       if (fs_win32_long_paths_enabled()) {
-        std::string s = fs_as_windows(R"(\\?\)" + fs_canonical(ctx.self));
+        std::string s = R"(\\?\)" + ctx.self;
         expect(fs_is_writable(s)) << s;
       }
     } else if (!fs_is_admin() && !fs_is_cygwin()) {

@@ -10,7 +10,7 @@ public :: get_homedir, get_profile_dir, get_username, hostname, &
  get_owner_name, get_owner_group, &
  canonical, resolve, realpath, fs_getpid, &
  get_cwd, set_cwd, which
-public :: normal, expanduser, as_posix, &
+public :: normal, expanduser, as_posix, as_windows, &
 has_filename, &
 is_absolute, is_char_device, is_fifo, is_case_sensitive, is_dir, is_file, &
 is_exe, is_executable_binary, is_other, &
@@ -157,13 +157,6 @@ character(kind=C_CHAR), intent(in) :: path(*)
 end function
 integer(C_LONG) function fs_get_max_open_files() bind(C)
 import
-end function
-
-integer (C_SIZE_T) function fs_as_posix(path, result, buffer_size) bind(C)
-import
-character(kind=C_CHAR), intent(in) :: path(*)
-character(kind=C_CHAR), intent(out) :: result(*)
-integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
 
 logical(C_BOOL) function fs_is_empty(path) bind(C)
@@ -681,9 +674,34 @@ end function
 function as_posix(path) result(r)
 !! force Posix file separator "/"
 character(*), intent(in) :: path
-include "ifc0a.inc"
-N = fs_as_posix(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+character(len(path)) :: r
+
+integer :: i
+
+r = path
+if(.not. is_windows()) return
+
+do
+  i = index(r, achar(92))
+  if (i == 0) exit
+  r(i:i) = "/"
+end do
+end function
+
+
+function as_windows(path) result(r)
+character(*), intent(in) :: path
+character(len(path)) :: r
+integer :: i
+
+r = path
+if (.not. is_windows()) return
+
+do
+  i = index(r, "/")
+  if (i == 0) exit
+  r(i:i) = achar(92)
+end do
 end function
 
 

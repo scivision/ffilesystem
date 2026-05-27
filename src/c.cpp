@@ -194,9 +194,11 @@ size_t fs_as_posix(const char* path, char* result, const size_t buffer_size)
   return fs_str2char(fs_as_posix(path), result, buffer_size);
 }
 
-size_t fs_as_windows(const char* path, char* result, const size_t buffer_size)
+size_t fs_as_windows(char* path, const size_t buffer_size)
 {
-  return fs_str2char(fs_as_windows(path), result, buffer_size);
+  std::string s(path);
+  fs_as_windows(s);
+  return fs_str2char(s, path, buffer_size);
 }
 
 size_t fs_realpath(const char* path, char* result, const size_t buffer_size)
