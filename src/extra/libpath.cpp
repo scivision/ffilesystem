@@ -6,7 +6,7 @@
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // GetModuleFileNameA
-#elif defined(HAVE_DLADDR)
+#elif defined(ffilesystem_HAVE_DLADDR)
 #include <dlfcn.h> // dladdr
 static void dl_dummy_func() {}
 #endif
@@ -31,7 +31,7 @@ std::string fs_lib_path()
     path.resize(L);
     return path;
   }
-#elif defined(HAVE_DLADDR)
+#elif defined(ffilesystem_HAVE_DLADDR)
   if(Dl_info info; dladdr(reinterpret_cast<void*>(&dl_dummy_func), &info))  FFS_LIKELY
     return info.dli_fname;
 #endif

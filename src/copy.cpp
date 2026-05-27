@@ -168,7 +168,7 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
   off_t ret = 0;
   int cfr_errno = 0;
 
-#if defined(HAVE_COPY_FILE_RANGE)
+#if defined(ffilesystem_HAVE_COPY_FILE_RANGE)
     // https://man.freebsd.org/cgi/man.cgi?copy_file_range(2)
     // https://man7.org/linux/man-pages/man2/copy_file_range.2.html
 
