@@ -13,7 +13,10 @@ int main() {
   "empty_input"_test = [] {
     constexpr std::string_view e = "";
 
-    expect(fs_as_posix(e).empty());
+    std::string s = "";
+    fs_as_posix(s);
+    expect(s.empty());
+
     expect(fs_file_name(e).empty());
     expect(fs_stem(e).empty());
     expect(fs_join(e, e).empty());

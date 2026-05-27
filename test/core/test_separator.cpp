@@ -7,11 +7,14 @@ using namespace boost::ut;
 
 "as_posix"_test = [] {
 
-expect(fs_as_posix("").empty());
-
 if(fs_is_windows()){
-expect(eq(fs_as_posix(R"(a\b)"), std::string{"a/b"}));
-expect(eq(fs_as_posix(R"(C:\my\path)"), std::string{"C:/my/path"}));
+  std::string s = R"(a\b)";
+  fs_as_posix(s);
+  expect(s == "a/b");
+
+  std::string t = R"(C:\my\path)";
+  fs_as_posix(t);
+  expect(t == "C:/my/path");
 }
 
 };

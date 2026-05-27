@@ -72,7 +72,9 @@ std::optional<std::filesystem::file_time_type> fs_get_modtime_fs(std::string_vie
 std::string fs_absolute(std::string_view);
 std::string fs_absolute(std::string_view, std::string_view);
 
+void fs_as_posix(std::string&);
 std::string fs_as_posix(std::string_view);
+
 void fs_as_windows(std::string&);
 
 std::string fs_backend();
@@ -352,7 +354,7 @@ bool fs_is_empty(const char*);
 bool fs_is_safe_name(const char*);
 bool fs_is_appexec_alias(const char*);
 
-size_t fs_as_posix(const char*, char*, const size_t);
+size_t fs_as_posix(char*, const size_t);
 size_t fs_as_windows(char*, const size_t);
 
 size_t fs_normal(const char*, char*, const size_t);

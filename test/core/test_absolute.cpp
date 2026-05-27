@@ -65,8 +65,10 @@ int main() {
       expect(!ctx.sys_drive.empty());
       expect(eq(fs_absolute(ctx.sys_drive + "/"), ctx.sys_drive + "/"));
 
-      // NOTE: no, as MYS interprets "/" totally differently depending on backend and vs MSVC
-      // EXPECT_EQ(fs_drop_slash(fs_as_posix(fs_absolute("/"))), cwd);
+      // NOTE: no, as MSYS interprets "/" totally differently depending on backend and vs MSVC
+      // std::string s = fs_absolute("/");
+      // fs_as_posix(s);
+      // expect(eq(fs_drop_slash(s), cwd));
 
       if (fs_win32_long_paths_enabled()) {
         expect(eq(fs_absolute(R"(\\?\X:\anybody)"), std::string{R"(\\?\X:\anybody)"}));

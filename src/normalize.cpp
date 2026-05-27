@@ -131,7 +131,7 @@ fs_drop_slash(std::string_view in)
   std::string s(in);
 
   if (!winPrefix)
-    s = fs_as_posix(s);
+    fs_as_posix(s);
 
   fs_drop_trailing_slash(s);
 

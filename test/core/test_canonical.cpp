@@ -23,7 +23,8 @@ auto make_ctx() {
   expect(!ctx.cwd.empty() >> fatal);
   ctx.cwd = fs_realpath(ctx.cwd);
   // realpath for symlinks (macOS), Dev Drive or short name on CI (Windows), network drives, etc.
-  ctx.cwd = fs_drop_slash(fs_as_posix(ctx.cwd));
+  fs_as_posix(ctx.cwd);
+  ctx.cwd = fs_drop_slash(ctx.cwd);
   expect(!ctx.cwd.empty() >> fatal);
 
   if (ctx.cwd.empty() || ctx.cwd == fs_root(fs_absolute("/"))) {
@@ -60,11 +61,13 @@ int main() {
 
     std::string r = fs_canonical("..", true);
     expect(!r.empty() >> fatal);
-    expect(eq(fs_as_posix(r), ctx->cwdp));
+    fs_as_posix(r);
+    expect(eq(r, ctx->cwdp));
 
     r = fs_canonical("..", false);
     expect(!r.empty() >> fatal);
-    expect(eq(fs_as_posix(r), ctx->cwdp));
+    fs_as_posix(r);
+    expect(eq(r, ctx->cwdp));
 
     if (fs_is_windows()) {
       const auto sys_drive = system_drive();
@@ -92,11 +95,13 @@ int main() {
 
     std::string r = fs_resolve("..", true);
     expect(!r.empty() >> fatal);
-    expect(eq(fs_as_posix(r), ctx->cwdp));
+    fs_as_posix(r);
+    expect(eq(r, ctx->cwdp));
 
     r = fs_resolve("..", false);
     expect(!r.empty() >> fatal);
-    expect(eq(fs_as_posix(r), ctx->cwdp));
+    fs_as_posix(r);
+    expect(eq(r, ctx->cwdp));
 
     if (fs_is_windows()) {
       const auto sys_drive = system_drive();
@@ -164,8 +169,9 @@ int main() {
       return;
     }
 
-    const std::string r = fs_realpath(".");
+    std::string r = fs_realpath(".");
     expect(!r.empty() >> fatal);
-    expect(eq(fs_as_posix(r), ctx->cwd));
+    fs_as_posix(r);
+    expect(eq(r, ctx->cwd));
   };
 }

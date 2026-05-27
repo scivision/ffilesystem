@@ -13,15 +13,19 @@
 #include "ffilesystem.h"
 
 
+void fs_as_posix(std::string& path)
+{
+  if(fs_is_windows())
+    std::replace(path.begin(), path.end(), '\\', '/');
+}
+
 std::string fs_as_posix(std::string_view path)
 {
   std::string s(path);
-
-  if(fs_is_windows())
-    std::replace(s.begin(), s.end(), '\\', '/');
-
+  fs_as_posix(s);
   return s;
 }
+
 
 void fs_as_windows(std::string& path)
 {
