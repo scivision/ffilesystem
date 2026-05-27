@@ -32,8 +32,10 @@ std::string fs_hostname()
 
     WSACleanup();
 
-    if (r == 0)
-      return fs_trim(name);
+    if (r == 0) {
+      fs_trim(name);
+      return name;
+    }
   }
 
 #elif defined(HAVE_UTSNAME)

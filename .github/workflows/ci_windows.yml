@@ -77,8 +77,8 @@ jobs:
 
     # both work, save CI time
 
-    # - name: no std::filesystem workflow
-    #   run: cmake --workflow nostdfs
+    - name: no std::filesystem workflow
+      run: cmake --workflow nostdfs
 
     # - name: C++23 workflow
     #   run: cmake --workflow cpp23 --fresh

@@ -261,7 +261,7 @@ std::string fs_to_cygpath(std::string_view);
 
 std::string fs_to_winpath(std::string_view);
 
-std::string fs_trim(std::string_view r);
+void fs_trim(std::string&);
 
 std::string fs_which(std::string_view, std::string_view = {}, const bool = false);
 

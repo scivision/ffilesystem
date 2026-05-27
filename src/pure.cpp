@@ -157,9 +157,12 @@ std::string fs_root_name([[maybe_unused]] std::string_view path)
 #elif defined(_WIN32)
   char drive[_MAX_DRIVE];
 // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/splitpath-s-wsplitpath-s
-  if(std::string cpath(path);
-      _splitpath_s(cpath.c_str(), drive, _MAX_DRIVE, nullptr, 0, nullptr, 0, nullptr, 0) == 0)
-    return fs_trim(drive);
+  std::string cpath(path);
+  if(_splitpath_s(cpath.c_str(), drive, _MAX_DRIVE, nullptr, 0, nullptr, 0, nullptr, 0) == 0) {
+    cpath = drive;
+    fs_trim(cpath);
+    return cpath;
+  }
 #endif
   return {};
 }

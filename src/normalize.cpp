@@ -156,15 +156,12 @@ fs_drop_slash(std::string_view in)
 }
 
 
-std::string
-fs_trim(std::string_view s)
+void
+fs_trim(std::string& s)
 {
   // remove all content after the first null character
-  std::string r(s);
-  if(auto i = r.find('\0'); i != std::string::npos)
-    r.resize(i);
-
-  return r;
+  if(auto i = s.find('\0'); i != std::string::npos)
+    s.resize(i);
 }
 
 
