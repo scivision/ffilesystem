@@ -10,6 +10,7 @@ namespace {
 
 struct which_ctx {
   std::string name;
+  std::string dir;
   std::string rel;
   std::string testExe;
 };
@@ -23,6 +24,7 @@ auto setup_which(which_ctx& ctx, std::string_view arg0) {
   expect(fs_is_exe(self) >> fatal);
 
   ctx.name = fs_file_name(self);
+  ctx.dir = fs_parent(self);
   ctx.rel = std::string("./") + ctx.name;
   expect(fs_is_file(ctx.rel) >> fatal) << ctx.rel << " does not exist";
 }
@@ -45,7 +47,7 @@ int main(int argc, char** argv) {
 
     expect(fs_is_absolute(fs_which(ctx.testExe)));
     expect(eq(fs_file_name(fs_which(ctx.testExe)), ctx.testExe));
-    expect(fs_which(ctx.testExe, "nowhere").empty());
+    expect(fs_which(ctx.testExe, "nowhere").empty()) << ctx.testExe << " should not be found in 'nowhere'";
 
     expect(fs_which("/not/a/path").empty());
     expect(fs_which("").empty());
@@ -68,17 +70,7 @@ int main(int argc, char** argv) {
       expect(fs_which(ctx.name).empty());
     }
 
-    auto opath = fs_getenv("PATH");
-    if (!opath) {
-      return;
-    }
-
-    std::vector<std::string> paths = fs_split_pathsep(opath.value());
-    if (std::find(paths.begin(), paths.end(), ".") == paths.end()) {
-      expect(!fs_which(ctx.name, ".").empty());
-    } else {
-      expect(fs_which(ctx.name, ".").empty());
-    }
+    expect(!fs_which(ctx.name, ctx.dir).empty());
   };
 
   "which_no_path"_test = [] {
