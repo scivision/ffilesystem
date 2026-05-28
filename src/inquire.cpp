@@ -35,7 +35,7 @@ namespace Filesystem = std::filesystem;
 
 
 #if defined(_WIN32)
-static bool fs_win32_is_type(std::string_view path, const DWORD type){
+static DWORD fs_win32_file_type(std::string_view path){
 
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
   HANDLE h = CreateFileW(fs_win32_to_wide(path).c_str(),
@@ -47,21 +47,17 @@ static bool fs_win32_is_type(std::string_view path, const DWORD type){
     DWORD err = GetLastError();
     switch (err) {
       case ERROR_CANT_ACCESS_FILE: case ERROR_FILE_NOT_FOUND: case ERROR_PATH_NOT_FOUND: case ERROR_SUCCESS:
-        return false;
+        return FILE_TYPE_UNKNOWN;
       default:
         fs_print_error(path);
-        return false;
+        return FILE_TYPE_UNKNOWN;
     }
   }
 
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
   DWORD t = GetFileType(h);
   CloseHandle(h);
-  if (t != FILE_TYPE_UNKNOWN)
-    return t == type;
-
-  fs_print_error(path);
-  return false;
+  return t;
 }
 #endif
 
@@ -191,7 +187,7 @@ fs_is_file(std::string_view path)
   ok = (Filesystem::is_regular_file(path, ec) && !ec) ||
         (fs_is_msvc() && fs_is_appexec_alias(path));
 #elif defined(_WIN32)
-  ok = fs_win32_is_type(path, FILE_TYPE_DISK) || fs_is_appexec_alias(path);
+  ok = fs_win32_file_type(path) == FILE_TYPE_DISK || fs_is_appexec_alias(path);
 #else
   ok = S_ISREG(fs_st_mode(path));
 #endif
@@ -207,7 +203,7 @@ fs_is_fifo(std::string_view path)
   bool ok;
 
 #if defined(_WIN32)
-  ok = fs_win32_is_type(path, FILE_TYPE_PIPE);
+  ok = fs_win32_file_type(path) == FILE_TYPE_PIPE;
 #elif defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
   ok = Filesystem::is_fifo(path, ec) && !ec;
@@ -226,7 +222,7 @@ bool fs_is_char_device(std::string_view path)
   bool ok;
 #if defined(_WIN32)
 // currently broken in MSVC STL and MinGW Clang ARM for <filesystem>
-  ok = fs_win32_is_type(path, FILE_TYPE_CHAR);
+  ok = fs_win32_file_type(path) == FILE_TYPE_CHAR;
 #elif defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
   ok = Filesystem::is_character_file(path, ec) && !ec;
