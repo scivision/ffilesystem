@@ -42,12 +42,10 @@ struct fifo_ctx {
             }
 };
 
-auto setup(fifo_ctx& ctx) -> bool {
+void setup(fifo_ctx& ctx) {
       using namespace boost::ut;
 
-#if defined(__ANDROID__)
-                  return false;
-#elif defined(_WIN32)
+#if defined(_WIN32)
       // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createnamedpipea
 
       // must have this path prefix or INVALID_HANDLE_VALUE results
@@ -73,7 +71,6 @@ auto setup(fifo_ctx& ctx) -> bool {
 
                   expect(mkfifo(ctx.name.c_str(), 0666) != -1 >> fatal);
 #endif
-      return true;
 }
 
 } // namespace
@@ -81,38 +78,40 @@ auto setup(fifo_ctx& ctx) -> bool {
 int main() {
       using namespace boost::ut;
 
-      "is_fifo"_test = [] {
-            fifo_ctx ctx;
-            if (!setup(ctx)) {
-                  return;
-            }
+#if defined(__ANDROID__)
+  skip / "is_fifo"_test = [] {};
+  skip / "is_file"_test = [] {};
+  skip / "exists"_test = [] {};
+#else
 
-            expect(fs_is_fifo(ctx.name));
-      };
+  "is_fifo"_test = [] {
+    fifo_ctx ctx;
+    setup(ctx);
 
-      "is_file"_test = [] {
-            fifo_ctx ctx;
-            if (!setup(ctx)) {
-                  return;
-            }
+    expect(fs_is_fifo(ctx.name));
+  };
 
-            if (fs_is_windows() && fs_backend() == "<filesystem>" &&
-                        (fs_is_msvc() || (fs_is_mingw() && fs_compiler().substr(0, 5) == "Clang"))) {
-                  return;
-            }
-            expect(!fs_is_file(ctx.name));
-      };
+if (fs_is_windows() && fs_backend() == "<filesystem>" &&
+      (fs_is_msvc() || (fs_is_mingw() && fs_compiler().substr(0, 5) == "Clang"))) {
+        skip / "is_file"_test = [] {};
+} else {
+  "is_file"_test = [] {
+    fifo_ctx ctx;
+    setup(ctx);
 
-      "exists"_test = [] {
-            fifo_ctx ctx;
-            if (!setup(ctx)) {
-                  return;
-            }
+    expect(!fs_is_file(ctx.name));
+  };
+}
 
-            if (fs_is_mingw() && fs_backend() == "<filesystem>") {
-                  return;
-            }
+if (fs_is_mingw() && fs_backend() == "<filesystem>") {
+        skip / "exists"_test = [] {};
+} else {
+  "exists"_test = [] {
+    fifo_ctx ctx;
+    setup(ctx);
 
-            expect(fs_exists(ctx.name));
-      };
+    expect(fs_exists(ctx.name));
+  };
+}
+#endif
 }

@@ -20,12 +20,8 @@ struct filesize_ctx {
   }
 };
 
-auto setup(filesize_ctx& ctx) -> bool {
+void setup(filesize_ctx& ctx) {
   using namespace boost::ut;
-
-  if (!fs_is_writable(".")) {
-    return false;
-  }
 
   ctx.file = "ffs_filesize_5bytes.txt";
   std::ofstream ofs(ctx.file);
@@ -34,8 +30,6 @@ auto setup(filesize_ctx& ctx) -> bool {
   ctx.in_file = ctx.file + "-read_past_the_end_of_buffer";
   ctx.nonnull_file = std::string_view(ctx.in_file.data(), ctx.file.size());
   expect(ctx.nonnull_file.back() != '\0' >> fatal);
-
-  return true;
 }
 
 } // namespace
@@ -43,18 +37,22 @@ auto setup(filesize_ctx& ctx) -> bool {
 int main() {
   using namespace boost::ut;
 
+if (!fs_is_writable(".")) {
+  skip / "file_size"_test = [] {};
+} else {
   "file_size"_test = [] {
     filesize_ctx ctx;
-    if (!setup(ctx)) {
-      return;
-    }
+    setup(ctx);
 
-    expect(eq(fs_file_size(ctx.file), static_cast<std::size_t>(5)));
+    constexpr std::uintmax_t fsize = 5;
+
+    expect(eq(fs_file_size(ctx.file), fsize)) << "backend " << fs_backend() << " file " << ctx.file;
 
     expect(eq(fs_file_size("."), fs_unknown_size)) << "backend " << fs_backend();
     expect(eq(fs_file_size("not-exist-file"), fs_unknown_size)) << "backend " << fs_backend();
 
-    expect(eq(fs_file_size(ctx.nonnull_file), static_cast<std::size_t>(5)))
-        << "fs_file_size() non-null-terminated path";
+    expect(eq(fs_file_size(ctx.nonnull_file), fsize)) << "backend " << fs_backend()
+            << "fs_file_size() non-null-terminated path " << ctx.nonnull_file;
   };
+}
 }
