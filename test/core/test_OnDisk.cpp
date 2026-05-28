@@ -19,15 +19,11 @@ struct ondisk_ctx {
   std::string_view nonnull_sys_drive;
 };
 
-auto setup(ondisk_ctx& ctx, std::string_view arg0) -> bool {
+void setup(ondisk_ctx& ctx, std::string_view arg0) {
   using namespace boost::ut;
 
   ctx.cwd = fs_get_cwd();
   expect(!ctx.cwd.empty() >> fatal);
-
-  if (!fs_is_writable(ctx.cwd)) {
-    return false;
-  }
 
   if (fs_is_windows()) {
     auto d = fs_getenv("SystemDrive");
@@ -47,8 +43,6 @@ auto setup(ondisk_ctx& ctx, std::string_view arg0) -> bool {
   ctx.in_sys_dir = ctx.sys_drive + "/invalid-memory-trailing-non-null-terminated-string_view";
   ctx.nonnull_sys_drive = std::string_view(ctx.sys_drive.data(), ctx.sys_drive.size());
   expect(ctx.nonnull_sys_drive.back() != '\0' >> fatal) << "nonnull_sys_drive should not be null-terminated\n";
-
-  return true;
 }
 
 } // namespace
@@ -56,11 +50,24 @@ auto setup(ondisk_ctx& ctx, std::string_view arg0) -> bool {
 int main(int argc, char** argv) {
   using namespace boost::ut;
 
+  if (!fs_is_writable(".")) {
+    skip / "exists"_test = [] {};
+    skip / "is_dir"_test = [] {};
+    skip / "is_file"_test = [] {};
+    skip / "is_readable"_test = [] {};
+    skip / "is_writable"_test = [] {};
+    skip / "is_other"_test = [] {};
+    skip / "stat_mode"_test = [] {};
+    skip / "realpath"_test = [] {};
+    skip / "get_mod_time"_test = [] {};
+    skip / "touch"_test = [] {};
+    skip / "filesystem_type"_test = [] {};
+    skip / "removable"_test = [] {};
+  } else {
+
   "exists"_test = [argv] {
     ondisk_ctx ctx;
-    if (!setup(ctx, argv[0])) {
-      return;
-    }
+    setup(ctx, argv[0]);
 
     for (const auto& s : {std::string("."), std::string(".."), std::string("/"), ctx.self, ctx.self_name, ctx.cwd}) {
       expect(fs_exists(s)) << "Expected to exist: " << s;
@@ -75,9 +82,7 @@ int main(int argc, char** argv) {
 
   "is_dir"_test = [argv] {
     ondisk_ctx ctx;
-    if (!setup(ctx, argv[0])) {
-      return;
-    }
+    setup(ctx, argv[0]);
 
     expect(!fs_is_dir(""));
     expect(fs_is_dir("."));
@@ -88,9 +93,7 @@ int main(int argc, char** argv) {
 
   "is_file"_test = [argv] {
     ondisk_ctx ctx;
-    if (!setup(ctx, argv[0])) {
-      return;
-    }
+    setup(ctx, argv[0]);
 
     expect(fs_is_file(ctx.self));
     expect(!fs_is_file("ffs_is_file_not-exist-file"));
@@ -101,9 +104,7 @@ int main(int argc, char** argv) {
 
   "is_readable"_test = [argv] {
     ondisk_ctx ctx;
-    if (!setup(ctx, argv[0])) {
-      return;
-    }
+    setup(ctx, argv[0]);
 
     expect(fs_is_readable("."));
     expect(fs_is_readable(ctx.self));
@@ -123,9 +124,7 @@ int main(int argc, char** argv) {
 
   "is_writable"_test = [argv] {
     ondisk_ctx ctx;
-    if (!setup(ctx, argv[0])) {
-      return;
-    }
+    setup(ctx, argv[0]);
 
     if (!fs_is_cygwin()) {
       expect(fs_is_writable(ctx.self));
@@ -147,9 +146,7 @@ int main(int argc, char** argv) {
 
   "is_other"_test = [argv] {
     ondisk_ctx ctx;
-    if (!setup(ctx, argv[0])) {
-      return;
-    }
+    setup(ctx, argv[0]);
 
     expect(!fs_is_other(""));
     expect(!fs_is_other("."));
@@ -160,9 +157,7 @@ int main(int argc, char** argv) {
 
   "stat_mode"_test = [argv] {
     ondisk_ctx ctx;
-    if (!setup(ctx, argv[0])) {
-      return;
-    }
+    setup(ctx, argv[0]);
 
     expect(neq(fs_st_mode(ctx.self), 0));
     expect(neq(fs_st_mode(ctx.cwd), 0));
@@ -173,9 +168,7 @@ int main(int argc, char** argv) {
 
   "realpath"_test = [argv] {
     ondisk_ctx ctx;
-    if (!setup(ctx, argv[0])) {
-      return;
-    }
+    setup(ctx, argv[0]);
 
     std::string expected = fs_realpath(ctx.cwd);
     expect(!expected.empty() >> fatal);
@@ -196,9 +189,7 @@ int main(int argc, char** argv) {
 
   "get_mod_time"_test = [argv] {
     ondisk_ctx ctx;
-    if (!setup(ctx, argv[0])) {
-      return;
-    }
+    setup(ctx, argv[0]);
 
     expect(fs_get_modtime(ctx.cwd) > 0);
     expect(fs_get_modtime(ctx.nonnull_dir) > 0)
@@ -207,9 +198,7 @@ int main(int argc, char** argv) {
 
   "touch"_test = [argv] {
     ondisk_ctx ctx;
-    if (!setup(ctx, argv[0])) {
-      return;
-    }
+    setup(ctx, argv[0]);
 
     std::string_view file = "ffs_touch_test_file";
     expect(fs_touch(file));
@@ -233,9 +222,7 @@ int main(int argc, char** argv) {
 
   "filesystem_type"_test = [argv] {
     ondisk_ctx ctx;
-    if (!setup(ctx, argv[0])) {
-      return;
-    }
+    setup(ctx, argv[0]);
 
     std::string t = fs_filesystem_type(ctx.sys_drive);
     if (t.empty()) {
@@ -248,19 +235,17 @@ int main(int argc, char** argv) {
 
   "removable"_test = [argv] {
     ondisk_ctx ctx;
-    if (!setup(ctx, argv[0])) {
-      return;
-    }
+    setup(ctx, argv[0]);
 
     expect(!fs_is_removable(ctx.sys_drive))
         << "we assume that a CI system's system drive would not be removable";
   };
+}
 
+#ifndef _WIN32
+  skip /
+#endif
   "short_long"_test = [] {
-    if (!fs_is_windows()) {
-      return;
-    }
-
     auto e = fs_getenv("PROGRAMFILES");
     expect(e.has_value() >> fatal) << "Failed to get PROGRAMFILES environment variable";
     std::string long_path = e.value();
