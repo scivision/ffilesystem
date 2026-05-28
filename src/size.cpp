@@ -51,21 +51,6 @@ std::uintmax_t fs_file_size(std::string_view path)
 
   return s;
 
-#elif defined(_WIN32)
-  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfilesizeex
-
-  HANDLE h = CreateFileW(fs_win32_to_wide(path).c_str(),
-                             GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-
-  if (h != INVALID_HANDLE_VALUE) {
-    LARGE_INTEGER size;
-    BOOL ok = GetFileSizeEx(h, &size);
-    CloseHandle(h);
-    if (ok)
-      return size.QuadPart;
-  }
-
-  ec = std::make_error_code(std::errc::no_such_file_or_directory);
 #else
 
   int r = 0;
