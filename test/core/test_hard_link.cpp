@@ -10,15 +10,15 @@
 namespace {
 
 struct device_ctx {
-  std::string in2;
+  std::string in2, cwd;
   std::string_view nonnull2;
 };
 
 auto setup(device_ctx& ctx) {
   using namespace boost::ut;
-
-  ctx.in2 = "./invalid-memory-trailing-non-null-terminated-string_view";
-  ctx.nonnull2 = std::string_view(ctx.in2.data(), 2);
+  ctx.cwd = fs_get_cwd();
+  ctx.in2 = ctx.cwd +"/invalid-memory-trailing-non-null-terminated-string_view";
+  ctx.nonnull2 = std::string_view(ctx.in2.data(), ctx.cwd.size());
   expect(ctx.nonnull2.back() != '\0' >> fatal) << "nonnull2 should not be null-terminated\n";
 }
 
@@ -49,11 +49,7 @@ int main() {
     auto b1 = fs_get_blksize(fs_get_tempdir());
     expect(b1 > 0U);
 
-    if (fs_is_windows()) {
-      return;
-    }
-
-    b1 = fs_get_blksize(".");
+    b1 = fs_get_blksize(ctx.cwd);
     expect(b1 > 0U);
     expect(eq(fs_get_blksize(ctx.nonnull2), b1))
         << "fs_get_blksize(" << ctx.nonnull2 << ") should be the same as fs_get_blksize(" << fs_get_tempdir() << ")";

@@ -225,9 +225,7 @@ int main(int argc, char** argv) {
     setup(ctx, argv[0]);
 
     std::string t = fs_filesystem_type(ctx.sys_drive);
-    if (t.empty()) {
-      return;
-    }
+    expect(!t.empty() >> fatal) << "Failed to get filesystem type for " << ctx.sys_drive;
 
     t = fs_filesystem_type(ctx.nonnull_sys_drive);
     expect(!t.empty()) << "problem with non null-terminated path " << ctx.nonnull_sys_drive;

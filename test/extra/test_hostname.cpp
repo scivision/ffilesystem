@@ -23,19 +23,14 @@ using namespace boost::ut;
 
 "Shell"_test = [] {
   std::string s = fs_get_shell();
-  if (s.empty())
-    return;
-
-  expect(s.length() != fs_get_max_path()) << "shell has blank space";
+  if (!s.empty())
+    expect(s.length() != fs_get_max_path()) << "shell has blank space";
 };
 
 
 "Terminal"_test = [] {
   std::string s = fs_get_terminal();
-
-  if (s.empty())
-    return;
-
-  expect(s.length() != fs_get_max_path()) << "terminal has blank space";
+  if (!s.empty())
+    expect(s.length() != fs_get_max_path()) << "terminal has blank space";
 };
 }
