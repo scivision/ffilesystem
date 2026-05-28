@@ -16,7 +16,6 @@ struct symlink_ctx {
   std::string in_file;
   std::string in2;
   std::string_view nonnull_file;
-  bool skip = false;
 
   void cleanup() const {
     for (const auto& link : {tgt, link_file, link_dir, broken_link, in_file, in2}) {
@@ -37,12 +36,6 @@ auto setup(symlink_ctx& ctx, std::string_view name) {
 
   ctx.tgt = ctx.cwd + fs_filesep() + "test_" + n + "_cpp.txt";
   ctx.not_exist_tgt = ctx.cwd + fs_filesep() + "test_" + n + "_cpp.notexist";
-
-  if (!fs_is_writable(ctx.cwd)) {
-    std::cout << "Skipping test because current directory is not writable: " << ctx.cwd << "\n";
-    ctx.skip = true;
-    return;
-  }
 
   expect(fs_touch(ctx.tgt) >> fatal);
   expect(fs_is_file(ctx.tgt) >> fatal) << "is_file(" << ctx.tgt << ") should be true for existing regular file";
@@ -82,12 +75,14 @@ auto setup(symlink_ctx& ctx, std::string_view name) {
 int main() {
   using namespace boost::ut;
 
+if (!fs_is_writable(".")) {
+  skip / "create_symlink"_test = [] {};
+  skip / "exists"_test = [] {};
+  skip / "lexists"_test = [] {};
+} else {
   "create_symlink"_test = [] {
     symlink_ctx ctx;
     setup(ctx, "CreateSymlink");
-    if (ctx.skip) {
-      return;
-    }
 
     expect(!fs_create_symlink(ctx.tgt, "")) << "create_symlink() should fail with empty link";
     expect(!fs_is_symlink(ctx.tgt) >> fatal) << "is_symlink() should be false for non-symlink file: " << ctx.tgt;
@@ -124,9 +119,6 @@ int main() {
   "exists"_test = [] {
     symlink_ctx ctx;
     setup(ctx, "Exists");
-    if (ctx.skip) {
-      return;
-    }
 
     expect(fs_exists(ctx.tgt)) << "exists() should be true for existing file: " << ctx.tgt;
     expect(fs_exists(ctx.link_file)) << "exists() should be true for existing symlink: " << ctx.link_file;
@@ -141,9 +133,6 @@ int main() {
   "lexists"_test = [] {
     symlink_ctx ctx;
     setup(ctx, "Lexists");
-    if (ctx.skip) {
-      return;
-    }
 
     expect(!fs_lexists(ctx.not_exist_tgt)) << "lexists() should be false for non-existent target: " << ctx.not_exist_tgt;
     expect(!fs_lexists("")) << "lexists() should be false for empty path";
@@ -152,4 +141,5 @@ int main() {
     expect(fs_lexists(ctx.link_dir)) << "lexists() should be true for existing symlink: " << ctx.link_dir;
     expect(fs_lexists(ctx.broken_link)) << "lexists() should be true for broken symlink: " << ctx.broken_link;
   };
+}
 }

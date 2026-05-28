@@ -45,10 +45,11 @@ expect(!fs_is_symlink(ref));
 
 };
 
+#ifdef _WIN32
+skip /
+#endif
 "reserved_posix"_test = [] {
   std::string ref = fs_devnull();
-  if(fs_is_windows())
-    return;
 
 expect(!fs_is_exe(ref));
 
@@ -67,6 +68,5 @@ expect(fs_exists(ref));
 expect(!fs_is_file(ref));
 
 expect(!fs_canonical(ref, false).empty());
-
 };
 }
