@@ -28,11 +28,13 @@ namespace Filesystem = std::filesystem;
 
 
 #if !defined(HAVE_CXX_FILESYSTEM) && defined(_WIN32)
-static bool fs_win32_equiv(std::string_view path1, std::string_view path2, std::error_code& ec)
+static bool fs_win32_equiv(std::string_view path1, std::string_view path2)
 {
 // GetFileInformationByName in Windows >= 24H2
 // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getfileinformationbyname
 // https://github.com/rust-lang/rust/issues/130169
+
+std::error_code ec;
 
 #if defined(HAVE_GETFILEINFORMATIONBYNAME)
   // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-file_stat_basic_information
@@ -46,37 +48,7 @@ static bool fs_win32_equiv(std::string_view path1, std::string_view path2, std::
   // .FileID and .VolumeSerialNumber are LARGE_INTEGER
 
 #else
-
-// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileinformationbyhandle#remarks
-// FILE_FLAG_BACKUP_SEMANTICS to allow opening directories
-
-  HANDLE h1 = CreateFileW(fs_win32_to_wide(path1).c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, nullptr,
-    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
-  if(h1 == INVALID_HANDLE_VALUE) {
-    fs_print_error(path1);
-    return false;
-  }
-
-  HANDLE h2 = CreateFileW(fs_win32_to_wide(path2).c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, nullptr,
-    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
-  if(h2 == INVALID_HANDLE_VALUE) {
-    fs_print_error(path2);
-    CloseHandle(h1);
-    return false;
-  }
-
-  BY_HANDLE_FILE_INFORMATION f1, f2;
-  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/ns-fileapi-by_handle_file_information
-  BOOL ok1 = GetFileInformationByHandle(h1, &f1);
-  BOOL ok2 = GetFileInformationByHandle(h2, &f2);
-  CloseHandle(h1);
-  CloseHandle(h2);
-  if(ok1 && ok2) {
-    return f1.dwVolumeSerialNumber == f2.dwVolumeSerialNumber &&
-           f1.nFileIndexHigh == f2.nFileIndexHigh &&
-           f1.nFileIndexLow == f2.nFileIndexLow;
-  }
-
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
   fs_print_error(path1, path2, ec);
@@ -100,7 +72,7 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
 
 #if defined(_WIN32)
 
-  return fs_win32_equiv(path1, path2, ec);
+  return fs_win32_equiv(path1, path2);
 
 #else
   int r1 = 0;
