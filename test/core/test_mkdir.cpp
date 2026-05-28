@@ -17,21 +17,16 @@ struct mkdir_ctx {
   }
 };
 
-auto setup(mkdir_ctx& ctx, std::string_view test_name) -> bool {
+void setup(mkdir_ctx& ctx, std::string_view test_name) {
   using namespace boost::ut;
 
   ctx.cwd = fs_get_cwd();
-  if (!fs_is_writable(ctx.cwd)) {
-    return false;
-  }
 
   ctx.dir = ctx.cwd + "/ffs_test_" + std::string{test_name} + "_dir";
 
   ctx.in_dir = "./invalid-memory-trailing-non-null-terminated-string_view";
   ctx.nonnull_dir = std::string_view(ctx.in_dir.data(), 2);
   expect(ctx.nonnull_dir.back() != '\0' >> fatal) << "nonnull_dir should not be null-terminated\n";
-
-  return true;
 }
 
 } // namespace
@@ -39,11 +34,12 @@ auto setup(mkdir_ctx& ctx, std::string_view test_name) -> bool {
 int main() {
   using namespace boost::ut;
 
+  if (!fs_is_writable(".")) {
+    skip / "mkdir"_test = [] {};
+  } else {
   "mkdir"_test = [] {
     mkdir_ctx ctx;
-    if (!setup(ctx, "mkdir")) {
-      return;
-    }
+    setup(ctx, "mkdir");
 
     expect(!fs_mkdir(""));
 
@@ -59,4 +55,5 @@ int main() {
     expect(fs_mkdir(ctx.nonnull_dir) >> fatal);
     expect(!fs_is_dir(ctx.in_dir));
   };
+}
 }

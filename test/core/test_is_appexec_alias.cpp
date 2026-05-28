@@ -10,12 +10,8 @@ struct app_exec_ctx {
   std::string path;
 };
 
-auto setup(app_exec_ctx& ctx) -> bool {
+void setup(app_exec_ctx& ctx) {
   using namespace boost::ut;
-
-  if (!fs_is_windows()) {
-    return false;
-  }
 
   const std::string appdir = fs_getenv("LOCALAPPDATA").value_or("") + "/Microsoft/WindowsApps";
   expect(fs_is_dir(appdir) >> fatal);
@@ -27,7 +23,8 @@ auto setup(app_exec_ctx& ctx) -> bool {
     }
   }
 
-  return !ctx.path.empty();
+  expect(!ctx.path.empty() >> fatal)
+    << "Failed to find app execution alias. Please make sure at least one of wt.exe, winget.exe, wsl.exe or bash.exe is installed and enabled as an app execution alias.";
 }
 
 } // namespace
@@ -35,11 +32,12 @@ auto setup(app_exec_ctx& ctx) -> bool {
 int main() {
   using namespace boost::ut;
 
+#ifndef _WIN32
+  skip /
+#endif
   "app_exec_alias"_test = [] {
     app_exec_ctx ctx;
-    if (!setup(ctx)) {
-      return;
-    }
+    setup(ctx);
 
     expect(fs_is_appexec_alias(ctx.path));
   };

@@ -26,16 +26,17 @@ int main() {
     }
   };
 
+if (fs_backend() == "<filesystem>" && fs_is_mingw() && fs_compiler().substr(0, 5) == "Clang")
+  {
+    skip / "exists"_test = [] {};
+  } else {
   "exists"_test = [] {
     if (fs_is_windows()) {
-      if (fs_backend() == "<filesystem>" && fs_is_mingw() && fs_compiler().substr(0, 5) == "Clang") {
-        return;
-      }
-
       expect(fs_exists("NUL"));
       expect(fs_exists("CONIN$"));
     } else {
       expect(fs_exists("/dev/null"));
     }
   };
+}
 }
