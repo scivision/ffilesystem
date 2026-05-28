@@ -54,10 +54,7 @@ int main() {
 
   "canonical_parent_dir"_test = [] {
     const auto ctx = make_ctx();
-    expect(static_cast<bool>(ctx));
-    if (!ctx) {
-      return;
-    }
+    expect(ctx.has_value() >> fatal);
 
     std::string r = fs_canonical("..", true);
     expect(!r.empty() >> fatal);
@@ -68,30 +65,27 @@ int main() {
     expect(!r.empty() >> fatal);
     fs_as_posix(r);
     expect(eq(r, ctx->cwdp));
+  };
 
-    if (fs_is_windows()) {
-      const auto sys_drive = system_drive();
-      expect(static_cast<bool>(sys_drive) >> fatal);
-      if (!sys_drive) {
-        return;
-      }
+#ifndef _WIN32
+  skip /
+#endif
+  "canonical_parent_dir_windows"_test = [] {
+    const auto sys_drive = system_drive();
+    expect(sys_drive.has_value() >> fatal);
 
-      expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_resolve(*sys_drive + "/", true));
-      expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_resolve(*sys_drive + "/", false));
+    expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_resolve(*sys_drive + "/", true));
+    expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_resolve(*sys_drive + "/", false));
 
-      if (fs_backend() != "<filesystem>") {
-        expect(any_of{R"(\\?\)" + *sys_drive + "\\", R"(\\?\)" + *sys_drive + "/"} ==
-          fs_resolve(R"(\\?\)" + *sys_drive + "\\", true));
-      }
+    if (fs_backend() != "<filesystem>") {
+      expect(any_of{R"(\\?\)" + *sys_drive + "\\", R"(\\?\)" + *sys_drive + "/"} ==
+        fs_resolve(R"(\\?\)" + *sys_drive + "\\", true));
     }
   };
 
   "resolve_parent_dir"_test = [] {
     const auto ctx = make_ctx();
-    expect(static_cast<bool>(ctx));
-    if (!ctx) {
-      return;
-    }
+    expect(ctx.has_value() >> fatal);
 
     std::string r = fs_resolve("..", true);
     expect(!r.empty() >> fatal);
@@ -102,30 +96,27 @@ int main() {
     expect(!r.empty() >> fatal);
     fs_as_posix(r);
     expect(eq(r, ctx->cwdp));
+};
 
-    if (fs_is_windows()) {
-      const auto sys_drive = system_drive();
-      expect(static_cast<bool>(sys_drive) >> fatal);
-      if (!sys_drive) {
-        return;
-      }
+#ifndef _WIN32
+    skip /
+#endif
+  "resolve_system_drive"_test = [] {
+    const auto sys_drive = system_drive();
+    expect(sys_drive.has_value() >> fatal);
 
-      expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_canonical(*sys_drive + "/", true));
-      expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_canonical(*sys_drive + "/", false));
-      expect(any_of{"M:\\", "M:/"} == fs_canonical("M:/", false));
+    expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_canonical(*sys_drive + "/", true));
+    expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_canonical(*sys_drive + "/", false));
+    expect(any_of{"M:\\", "M:/"} == fs_canonical("M:/", false));
 
-      if (fs_backend() != "<filesystem>") {
-        expect(any_of{R"(\\?\)" + *sys_drive + "\\", R"(\\?\)" + *sys_drive + "/"} == fs_canonical(R"(\\?\)" + *sys_drive + "\\", true));
-      }
+    if (fs_backend() != "<filesystem>") {
+      expect(any_of{R"(\\?\)" + *sys_drive + "\\", R"(\\?\)" + *sys_drive + "/"} == fs_canonical(R"(\\?\)" + *sys_drive + "\\", true));
     }
-  };
+};
 
   "canonical_parent_rel"_test = [] {
     const auto ctx = make_ctx();
-    expect(static_cast<bool>(ctx));
-    if (!ctx) {
-      return;
-    }
+    expect(ctx.has_value() >> fatal);
 
     expect(any_of{"../not-exist", ctx->cwdp + "/not-exist"} == fs_canonical("../not-exist", false));
     expect(any_of{"not-exist", ctx->cwd + "/not-exist"} == fs_canonical("./not-exist", false));
@@ -134,22 +125,19 @@ int main() {
 
   "resolve_parent_rel"_test = [] {
     const auto ctx = make_ctx();
-    expect(static_cast<bool>(ctx));
-    if (!ctx) {
-      return;
-    }
+    expect(ctx.has_value() >> fatal);
 
     expect(eq(fs_resolve("../not-exist", false), ctx->cwdp + "/not-exist"));
     expect(eq(fs_resolve("./not-exist", false), ctx->cwd + "/not-exist"));
     expect(eq(fs_resolve("a/b/../c", false), ctx->cwd + "/a/c"));
   };
 
+#ifdef __CYGWIN__
+  skip /
+#endif
   "relative_file"_test = [] {
     const auto ctx = make_ctx();
-    expect(static_cast<bool>(ctx));
-    if (!ctx || fs_is_cygwin()) {
-      return;
-    }
+    expect(ctx.has_value() >> fatal);
 
     const std::string name = "ffs_not-exist_cpp.txt";
     std::string h = fs_canonical("../" + name, false);
@@ -164,10 +152,7 @@ int main() {
 
   "realpath"_test = [] {
     const auto ctx = make_ctx();
-    expect(static_cast<bool>(ctx));
-    if (!ctx) {
-      return;
-    }
+    expect(ctx.has_value() >> fatal);
 
     std::string r = fs_realpath(".");
     expect(!r.empty() >> fatal);
