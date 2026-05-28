@@ -21,7 +21,7 @@ struct permissions_ctx {
   }
 };
 
-auto setup(permissions_ctx& ctx, std::string_view test_name) -> bool {
+void setup(permissions_ctx& ctx, std::string_view test_name) {
   using namespace boost::ut;
 
   const std::string n = std::string{test_name};
@@ -29,10 +29,6 @@ auto setup(permissions_ctx& ctx, std::string_view test_name) -> bool {
   ctx.read = n + "readable.txt";
   ctx.noread = n + "nonreadable.txt";
   ctx.nowrite = n + "nonwritable.txt";
-
-  if (!fs_is_writable(".")) {
-    return false;
-  }
 
   expect(fs_touch(ctx.read) >> fatal);
   expect(fs_is_file(ctx.read) >> fatal);
@@ -49,8 +45,6 @@ auto setup(permissions_ctx& ctx, std::string_view test_name) -> bool {
   ctx.in_file = ctx.read + "-read_past_the_end_of_buffer";
   ctx.nonnull_file = std::string_view(ctx.in_file.data(), ctx.read.size());
   expect(ctx.nonnull_file.back() != '\0' >> fatal);
-
-  return true;
 }
 
 } // namespace
@@ -58,11 +52,18 @@ auto setup(permissions_ctx& ctx, std::string_view test_name) -> bool {
 int main() {
   using namespace boost::ut;
 
+if (!fs_is_writable("."))
+  {
+    skip / "permissions_empty"_test = [] {};
+    skip / "permissions_is_readable"_test = [] {};
+    skip / "permissions_not_readable"_test = [] {};
+    skip / "permissions_read"_test = [] {};
+    skip / "permissions_writable"_test = [] {};
+  } else {
+
   "permissions_empty"_test = [] {
     permissions_ctx ctx;
-    if (!setup(ctx, "permissions_empty")) {
-      return;
-    }
+    setup(ctx, "permissions_empty");
 
     expect(fs_get_permissions("").empty());
     expect(fs_get_permissions("nonexistent.txt").empty());
@@ -71,18 +72,14 @@ int main() {
 
   "permissions_is_readable"_test = [] {
     permissions_ctx ctx;
-    if (!setup(ctx, "permissions_is_readable")) {
-      return;
-    }
+    setup(ctx, "permissions_is_readable");
 
     expect(fs_is_readable(ctx.read)) << ctx.read << " should be readable";
   };
 
   "permissions_not_readable"_test = [] {
     permissions_ctx ctx;
-    if (!setup(ctx, "permissions_not_readable")) {
-      return;
-    }
+    setup(ctx, "permissions_not_readable");
 
     // for Ffilesystem, even non-readable files "exist" and are "is_file"
     expect(fs_set_permissions(ctx.noread, -1, 0, 0) >> fatal);
@@ -97,9 +94,7 @@ int main() {
 
   "permissions_read"_test = [] {
     permissions_ctx ctx;
-    if (!setup(ctx, "permissions_read")) {
-      return;
-    }
+    setup(ctx, "permissions_read");
 
     expect(fs_set_permissions(ctx.read, 1, 0, 0));
     expect(fs_is_readable(ctx.read));
@@ -108,9 +103,7 @@ int main() {
 
   "permissions_writable"_test = [] {
     permissions_ctx ctx;
-    if (!setup(ctx, "permissions_writable")) {
-      return;
-    }
+    setup(ctx, "permissions_writable");
 
     // writable
     expect(fs_set_permissions(ctx.nowrite, 0, -1, 0) >> fatal);
@@ -126,4 +119,5 @@ int main() {
       }
     }
   };
+}
 }

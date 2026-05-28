@@ -34,14 +34,13 @@ int main() {
 
   "parent"_test = [cases] {
     for (const auto& test_case : cases) {
-      if (fs_backend() == "<filesystem>" && fs_win32_is_ext_path(test_case.inp)) {
-        return;
-      }
       expect(eq(fs_parent(test_case.inp), test_case.exp));
     }
   };
 
-if (fs_is_windows()) {
+if (!fs_is_windows()) {
+  skip / "parent_windows"_test = [] {};
+} else {
   const std::array<case_t, 4> windows_cases{{
       {"c:\\a\\b/../.parent.txt", "c:\\a\\b/.."},
       {"x:/", "x:/"},
