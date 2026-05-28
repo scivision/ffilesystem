@@ -60,10 +60,7 @@ int main() {
 
   "copyfile"_test = [] {
     const auto ctx = make_ctx();
-    expect(static_cast<bool>(ctx));
-    if (!ctx) {
-      return;
-    }
+    expect(ctx.has_value() >> fatal);
 
     std::string t2;
 

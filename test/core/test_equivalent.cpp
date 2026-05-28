@@ -35,16 +35,12 @@ auto make_ctx(std::string_view arg0) {
 int main(int argc, char** argv) {
   using namespace boost::ut;
 
+if (!fs_equivalent(".", fs_parent(argv[0]))) {
+  skip / "equivalent_filename"_test = [] {};
+} else {
   "equivalent_filename"_test = [argv] {
     const auto ctx = make_ctx(argv[0]);
-    expect(static_cast<bool>(ctx) >> fatal);
-    if (!ctx) {
-      return;
-    }
-
-    if (!fs_equivalent(".", fs_parent(ctx->self))) {
-      return;
-    }
+    expect(ctx.has_value() >> fatal);
 
     expect(fs_is_file(ctx->self_name) >> fatal) << "Test executable name not found in CWD: " << ctx->self_name;
 
@@ -70,20 +66,15 @@ int main(int argc, char** argv) {
     // NOTE: This can be false on networked drive or Windows Dev Drive
     // fs_equivalent(".", fs_realpath("."));
   };
+}
 
+if(fs_is_windows() || fs_is_cygwin() || fs_is_admin() || !fs_is_writable(".")) {
+    skip / "equivalent_inaccessible_directory"_test = [] {};
+} else {
   "equivalent_inaccessible_directory"_test = [] {
-    if (fs_is_windows() || fs_is_cygwin()) {
-      return;
-    }
-    if (fs_is_admin()) {
-      return;
-    }
-    if (!fs_is_writable(".")) {
-      return;
-    }
 
-    std::string base = "ffs_equiv_inaccessible_dir";
-    std::string secret = base + "/secret";
+    const std::string base = "ffs_equiv_inaccessible_dir";
+    const std::string secret = base + "/secret";
 
     // Clean up stale state from prior interrupted runs.
     if (fs_exists(secret)) {
@@ -108,4 +99,5 @@ int main(int argc, char** argv) {
     expect(fs_remove(secret));
     expect(fs_remove(base));
   };
+}
 }
