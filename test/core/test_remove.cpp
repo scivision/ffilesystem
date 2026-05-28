@@ -16,11 +16,8 @@ struct remove_ctx {
   }
 };
 
-auto setup(remove_ctx& ctx) -> bool {
+void setup(remove_ctx& ctx) {
   using namespace boost::ut;
-  if (!fs_is_writable(".")) {
-    return false;
-  }
 
   ctx.file = "ffs_remove_test.txt";
   expect(fs_touch(ctx.file) >> fatal);
@@ -28,7 +25,6 @@ auto setup(remove_ctx& ctx) -> bool {
   ctx.in2 = "./" + ctx.file;
   ctx.nonnull2 = std::string_view(ctx.in2.data(), 2);
   expect(ctx.nonnull2.back() != '\0' >> fatal) << "nonnull2 should not be null-terminated\n";
-  return true;
 }
 
 } // namespace
@@ -36,13 +32,15 @@ auto setup(remove_ctx& ctx) -> bool {
 int main() {
   using namespace boost::ut;
 
+if (!fs_is_writable(".")) {
+  skip / "remove"_test = [] {};
+} else {
   "remove"_test = [] {
     remove_ctx ctx;
-    if (!setup(ctx)) {
-      return;
-    }
+    setup(ctx);
 
     expect(!fs_remove(ctx.nonnull2)) << "Failed with input not null-terminated\n";
     expect(fs_remove(ctx.file));
   };
+}
 }

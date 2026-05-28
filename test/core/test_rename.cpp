@@ -18,15 +18,11 @@ struct rename_ctx {
   }
 };
 
-auto setup(rename_ctx& ctx) -> bool {
+void setup(rename_ctx& ctx) {
   using namespace boost::ut;
 
   ctx.f1 = "test_Ffs_rename.txt";
   ctx.f2 = "test_Ffs_rename2.txt";
-
-  if (!fs_is_writable(".")) {
-    return false;
-  }
 
   expect(fs_touch(ctx.f1) >> fatal);
   expect(fs_is_file(ctx.f1) >> fatal);
@@ -37,7 +33,6 @@ auto setup(rename_ctx& ctx) -> bool {
   ctx.in_file = ctx.f1 + "-invalid-memory-trailing-non-null-terminated-string_view";
   ctx.nonnull_file = std::string_view(ctx.in_file.data(), ctx.f1.size());
   expect(ctx.nonnull_file.back() != '\0' >> fatal) << "nonnull_file should not be null-terminated\n";
-  return true;
 }
 
 } // namespace
@@ -45,11 +40,12 @@ auto setup(rename_ctx& ctx) -> bool {
 int main() {
   using namespace boost::ut;
 
+if (!fs_is_writable(".")) {
+  skip / "rename"_test = [] {};
+} else {
   "rename"_test = [] {
     rename_ctx ctx;
-    if (!setup(ctx)) {
-      return;
-    }
+    setup(ctx);
 
     expect(fs_rename(ctx.f1, ctx.f2));
     expect(fs_is_file(ctx.f2));
@@ -58,4 +54,5 @@ int main() {
     expect(!fs_is_file(ctx.in_file)) << ctx.in_file << " should have been renamed to " << ctx.f1;
     expect(fs_is_file(ctx.f1));
   };
+}
 }
