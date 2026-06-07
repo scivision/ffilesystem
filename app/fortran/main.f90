@@ -6,14 +6,10 @@ use filesystem
 
 implicit none
 
-!! make a parser for space delimited input
-integer, parameter :: Lcmd = 40
+character(len=:), allocatable :: cmd, inp, arg1, arg2
+character(1024) :: buf  !< arbitrary length
 
-character(1000) :: inp
-character(Lcmd) :: cmd
-character(1000) :: arg1, arg2
-
-integer :: i, i0, i1
+integer :: i, i0, i1, L
 logical :: ok, done
 
 character, parameter :: delim = " "
@@ -21,6 +17,7 @@ character, parameter :: delim = " "
 ! avoid garbage init values
 arg1 = ""
 arg2 = ""
+inp = ""
 
 if(is_admin()) write(stderr, '(a)') "WARNING: running as admin / sudo"
 
@@ -29,19 +26,30 @@ print '(a)', "Backend: " // backend()
 main : do
   write(stdout, "(a)", advance="no") "Ffs> "
 
-  read(stdin, '(A)', iostat=i) inp
-  if (i /= 0) exit
-  if (is_iostat_end(i)) exit
-  if (len_trim(inp) == 1 .and. (inp(1:1) == "q" .or. iachar(inp(1:1)) == 4)) exit
-  if (len_trim(inp) == 0) cycle
+  read(stdin, '(A)', iostat=i, size=L) buf
+  if (is_iostat_eor(i) .or. is_iostat_end(i)) exit
 
+  if (i /= 0) then
+    write(stderr, "(a)") "ERROR: filesystem_cli: failed to read input"
+    cycle
+  end if
+
+  if (L == 0) cycle
+
+  if (L == 1 .and. (buf(1:1) == "q" .or. iachar(buf(1:1)) == 4)) exit
+
+  inp = buf(:L)
+
+  print '(a)', "input: " // inp
 
   i1 = index(inp, delim)
   if (i1 == 0) then
-    cmd = inp(:Lcmd)
+    cmd = inp
   else
     cmd = inp(:i1-1)
   end if
+
+  print '(a)', "cmd: " // cmd
 
   done = .true.
   select case (cmd)
@@ -108,13 +116,25 @@ main : do
   if (done) cycle
 
   i0 = i1 + 1
+  ! first argument is from i0 to next delim, or end of string
+  i = index(inp(i0:), delim)
+  if (i == 0) then
+    arg1 = inp(i0:)
+  else
+    arg1 = inp(i0:i1-1)
+    i0 = i1
+    ! print '(a,i0)', "arg2 starts at: ", i0
 
-  i1 = i0 + index(inp(i0:), delim)
-  if(i1 /= 0) arg1 = inp(i0:i1-1)
-  i0 = i1
+    i1 = i0 + index(inp(i0:), delim)
+    if(i1 == 0) then
+      arg2 = inp(i0:)
+    else
+      arg2 = inp(i0:i1-1)
+    end if
+    ! print '(a)', "arg2: " // arg2
+  endif
 
-  i1 = i0 + index(inp(i0:), delim)
-  if(i1 /= 0) arg2 = inp(i0:i1-1)
+  ! print '(a)', "arg1: " // arg1
 
 
   done = .true.
