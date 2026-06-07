@@ -37,5 +37,5 @@ endif()
 
 # libc++ hardening
 if(ffilesystem_stdcpp_version MATCHES "^LLVM")
-  add_compile_definitions(_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST)
+  add_compile_definitions("$<$<COMPILE_LANGUAGE:CXX>:_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST>")
 endif()
