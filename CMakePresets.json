@@ -33,6 +33,13 @@
     "ffilesystem_cpp": false
   }
 },
+{ "name": "isofortran", "inherits": "default",
+  "displayName": "Use ISO_Fortran_binding.h",
+  "description": "Build with ISO_Fortran_binding.h for Cpp-Fortran interfaces.",
+  "cacheVariables": {
+    "ffilesystem_iso_fortran_binding": true
+  }
+},
 {
   "name": "cpp17", "inherits": "default",
   "displayName": "C++17",
@@ -157,19 +164,20 @@
 ],
 "buildPresets": [
   { "name": "default", "configurePreset": "default" },
-  { "name": "build", "configurePreset": "build", "inherits": "default" },
-  { "name": "linux", "configurePreset": "linux", "inherits": "default" },
-  { "name" : "nostdfs", "configurePreset": "nostdfs", "inherits": "default" },
-  { "name": "cpp17", "configurePreset": "cpp17", "inherits": "default" },
-  { "name": "cpp23", "configurePreset": "cpp23", "inherits": "default" },
-  { "name": "cpp26", "configurePreset": "cpp26", "inherits": "default" },
-  { "name": "shared", "configurePreset": "shared", "inherits": "default" },
-  { "name": "android", "configurePreset": "android", "inherits": "default" },
-  { "name": "android-tests", "configurePreset": "android-tests", "inherits": "default" },
-  { "name": "cosmo", "configurePreset": "cosmo", "inherits": "default" },
-  { "name": "ios", "configurePreset": "ios", "inherits": "default" },
-  { "name": "ios-sim", "configurePreset": "ios-sim", "inherits": "default" },
-  { "name": "msvc", "configurePreset": "msvc", "configuration": "Release", "inherits": "default", "jobs": 8 },
+  { "name": "isofortran", "configurePreset": "isofortran" },
+  { "name": "build", "configurePreset": "build" },
+  { "name": "linux", "configurePreset": "linux" },
+  { "name" : "nostdfs", "configurePreset": "nostdfs" },
+  { "name": "cpp17", "configurePreset": "cpp17" },
+  { "name": "cpp23", "configurePreset": "cpp23" },
+  { "name": "cpp26", "configurePreset": "cpp26" },
+  { "name": "shared", "configurePreset": "shared" },
+  { "name": "android", "configurePreset": "android" },
+  { "name": "android-tests", "configurePreset": "android-tests"},
+  { "name": "cosmo", "configurePreset": "cosmo" },
+  { "name": "ios", "configurePreset": "ios" },
+  { "name": "ios-sim", "configurePreset": "ios-sim" },
+  { "name": "msvc", "configurePreset": "msvc", "configuration": "Release", "jobs": 8 },
   { "name": "msvc-nostdfs", "configurePreset": "msvc-nostdfs", "inherits": "msvc" },
   {
     "name": "explain",
@@ -223,6 +231,7 @@
   }
 },
 { "name": "shared", "configurePreset": "shared", "inherits": "default" },
+{ "name": "isofortran", "configurePreset": "isofortran", "inherits": "default" },
 { "name": "linux", "configurePreset": "linux", "inherits": "default" },
 { "name": "nostdfs", "configurePreset": "nostdfs", "inherits": "default" },
 { "name": "cpp17", "configurePreset": "cpp17", "inherits": "default" },
@@ -257,6 +266,15 @@
     "steps": [
       { "type": "configure", "name": "build" },
       { "type": "build", "name": "build" }
+    ]
+  },
+  {
+    "name": "isofortran",
+    "displayName": "Build with ISO_Fortran_binding.h",
+    "steps": [
+      { "type": "configure", "name": "isofortran" },
+      { "type": "build", "name": "isofortran" },
+      { "type": "test", "name": "isofortran" }
     ]
   },
   {

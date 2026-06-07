@@ -12,6 +12,7 @@ VERSION 6.4.2
 
 include(GNUInstallDirs)
 include(CheckSourceCompiles)
+include(CheckIncludeFile)
 
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 # This project isn't using C++ modules; avoid bugs in module scanning CMake 3.28, 3.29 with GCC >= 14.
@@ -26,7 +27,11 @@ if(DEFINED ENV{CONDA_PREFIX})
 endif()
 
 if(ffilesystem_fortran)
-    enable_language(Fortran)
+  enable_language(Fortran)
+
+  if(ffilesystem_iso_fortran_binding)
+    check_include_file("ISO_Fortran_binding.h" ffilesystem_HAVE_ISO_FORTRAN_BINDING)
+  endif()
 endif()
 
 # --- RPATH handling for transitive dependencies
@@ -161,6 +166,7 @@ if(ffilesystem_fortran)
 
   target_compile_definitions(ffilesystem_Fortran PRIVATE
   $<$<NOT:$<BOOL:${HAVE_F03TYPE}>>:NO_F03TYPE>
+  $<$<BOOL:${ffilesystem_HAVE_ISO_FORTRAN_BINDING}>:HAVE_ISO_FORTRAN_BINDING>
   )
   set_property(TARGET ffilesystem_Fortran PROPERTY
   Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include
@@ -174,6 +180,7 @@ target_include_directories(ffilesystem PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 target_compile_definitions(ffilesystem PUBLIC
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${HAVE_CXX_FILESYSTEM}>>:HAVE_CXX_FILESYSTEM>"
+"$<$<BOOL:${ffilesystem_HAVE_ISO_FORTRAN_BINDING}>:HAVE_ISO_FORTRAN_BINDING>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_CLOCK_CAST}>>:HAVE_CLOCK_CAST>"
 "$<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<BOOL:${ffilesystem_trace}>>:FS_TRACE>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_DLADDR}>>:ffilesystem_HAVE_DLADDR>"
