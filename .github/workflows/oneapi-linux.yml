@@ -63,6 +63,9 @@ jobs:
     - name: workflow without std::filesystem
       run: cmake --workflow nostdfs
 
+    - name: ISO_Fortran_binding.h workflow
+      run: cmake --workflow isofortran
+
     - name: Release workflow
       run: cmake --workflow default --fresh
 

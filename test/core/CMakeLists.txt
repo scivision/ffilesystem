@@ -59,6 +59,19 @@ endforeach()
 
 set_tests_properties(Fortran_relative Fortran_proximate PROPERTIES DISABLED $<NOT:$<BOOL:${HAVE_CXX_FILESYSTEM}>>)
 
+if(ffilesystem_HAVE_ISO_FORTRAN_BINDING)
+  add_executable(test_realpath_cfi_fortran test_realpath_cfi.f90)
+  target_link_libraries(test_realpath_cfi_fortran PRIVATE ffilesystem)
+  target_compile_options(test_realpath_cfi_fortran PRIVATE ${ffilesystem_fortran_test_flags})
+  set_property(TARGET test_realpath_cfi_fortran PROPERTY LINKER_LANGUAGE ${ffilesystem_linker_lang})
+
+  add_test(NAME Fortran_realpath_cfi COMMAND test_realpath_cfi_fortran)
+  set_tests_properties(Fortran_realpath_cfi PROPERTIES
+    LABELS "Fortran;CFI"
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:test_realpath_cfi_fortran>
+  )
+endif()
+
 endif()
 
 

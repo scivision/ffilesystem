@@ -44,7 +44,10 @@ jobs:
 
     - name: C++23 workflow
       if: matrix.gcc-version == 14
-      run: cmake --workflow cpp23 --fresh
+      run: cmake --workflow cpp23
+
+    - name: ISO_Fortran_binding.h workflow
+      run: cmake --workflow isofortran
 
     - name: Debug workflow
       if: matrix.gcc-version == 14
@@ -100,7 +103,7 @@ jobs:
     - uses: ./.github/workflows/composite-build
 
     - name: C++23 workflow
-      run: cmake --workflow cpp23 --fresh
+      run: cmake --workflow cpp23
 
     - name: Debug workflow
       run: cmake --workflow debug --fresh
@@ -131,7 +134,7 @@ jobs:
 
     - name: C++17 workflow
       if: matrix.gcc-version == 9
-      run: cmake --workflow cpp17 --fresh
+      run: cmake --workflow cpp17
 
 # works, save CI time
 

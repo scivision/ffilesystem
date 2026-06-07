@@ -164,7 +164,10 @@
 ],
 "buildPresets": [
   { "name": "default", "configurePreset": "default" },
-  { "name": "isofortran", "configurePreset": "isofortran" },
+  { "name": "isofortran", "configurePreset": "isofortran" ,
+    "description": "Build with ISO_Fortran_binding.h for Cpp-Fortran interfaces.",
+    "targets": ["filesystem_cli", "test_realpath_fortran", "test_realpath_cfi_fortran"]
+  },
   { "name": "build", "configurePreset": "build" },
   { "name": "linux", "configurePreset": "linux" },
   { "name" : "nostdfs", "configurePreset": "nostdfs" },
@@ -218,6 +221,7 @@
   "name": "default",
   "configurePreset": "default",
   "configuration": "Release",
+  "description": "Don't use jobs=0 as this causes ulimit crashes due too many open files",
   "output": {
     "outputOnFailure": true,
     "verbosity": "verbose"
@@ -226,21 +230,24 @@
     "noTestsAction": "error",
     "scheduleRandom": true,
     "stopOnFailure": false,
-    "jobs": 8,
-    "$comment": "don't put 0 or ulimit too many open files failures result"
+    "jobs": 8
   }
 },
 { "name": "shared", "configurePreset": "shared", "inherits": "default" },
-{ "name": "isofortran", "configurePreset": "isofortran", "inherits": "default" },
+{ "name": "isofortran", "configurePreset": "isofortran", "inherits": "default",
+  "filter": {
+    "include": {"name": "realpath"}
+  }
+},
 { "name": "linux", "configurePreset": "linux", "inherits": "default" },
 { "name": "nostdfs", "configurePreset": "nostdfs", "inherits": "default" },
 { "name": "cpp17", "configurePreset": "cpp17", "inherits": "default" },
 { "name": "cpp23", "configurePreset": "cpp23", "inherits": "default" },
 { "name": "cpp26", "configurePreset": "cpp26", "inherits": "default" },
 { "name": "android-tests", "configurePreset": "android-tests", "inherits": "default",
+  "description": "adb push clashes with multiple tests using same executable, so do jobs=1",
   "execution": {
-    "jobs": 1,
-    "$comment": "adb push clashes with multiple tests using same executable"
+    "jobs": 1
   }
 },
 { "name": "msvc", "configurePreset": "msvc", "inherits": "default" },

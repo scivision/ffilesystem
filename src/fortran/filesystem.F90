@@ -12,6 +12,7 @@ public :: get_homedir, get_profile_dir, get_username, hostname, &
  get_cwd, set_cwd, which
 public :: normal, expanduser, as_posix, as_windows, &
 has_filename, &
+fs_has_cfi, &
 is_absolute, is_char_device, is_fifo, is_case_sensitive, is_dir, is_file, &
 is_exe, is_executable_binary, is_other, &
 is_prefix, is_subdir, &
@@ -47,6 +48,18 @@ to_cygpath, to_winpath, &
 stdin_tty
 
 
+!> CFI related enum and functions
+
+enum, bind(C)
+  enumerator :: cfi_ok = 0
+  enumerator :: cfi_not_found = 0
+  enumerator :: cfi_null_desc = -1
+  enumerator :: cfi_bad_rank = -2
+  enumerator :: cfi_bad_type = -3
+  enumerator :: cfi_bad_out_len = -4
+  enumerator :: cfi_truncated = -5
+end enum
+
 !> legacy function name make_absolute() is actually absolute()
 interface make_absolute
   module procedure absolute
@@ -64,7 +77,6 @@ logical(C_BOOL) function long_paths_enabled() bind(C, name="fs_win32_long_paths_
 !! long paths enabled on Windows
 import C_BOOL
 end function
-
 
 logical(C_BOOL) function stdin_tty() bind(C)
 !! stdin is a terminal
@@ -172,12 +184,20 @@ character(kind=C_CHAR), intent(out) :: result(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
 
+#if defined HAVE_ISO_FORTRAN_BINDING
+integer(C_INT) function realpath_cfi(path, result) bind(C, name="realpath_cfi")
+import C_INT
+character(*), intent(in)  :: path
+character(*), intent(out) :: result
+end function
+#else
 integer(C_SIZE_T) function fs_realpath(path, result, buffer_size) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 character(kind=C_CHAR), intent(out) :: result(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
+#endif
 
 integer(C_SIZE_T) function fs_resolve(path, strict, result, buffer_size) bind(C)
 import
@@ -637,6 +657,46 @@ include "path_type.inc"
 
 contains
 
+
+logical function fs_has_cfi() result(r)
+#if defined HAVE_ISO_FORTRAN_BINDING
+r = .true.
+#else
+r = .false.
+#endif
+end function
+
+
+subroutine print_cfi_error(code, func_name, path)
+integer(C_INT), intent(in) :: code
+character(*), intent(in) :: func_name,path
+
+character(:), allocatable :: msg
+
+msg = "Ffilesystem:cfi: " // func_name // "( " // path // " )"
+
+select case (code)
+case (cfi_ok)
+  write(stderr, '(a)') msg // ": empty input path and / or null output path"
+case (cfi_null_desc)
+  write(stderr, '(a)') msg // ": null descriptor or base address"
+case (cfi_bad_rank)
+  write(stderr, '(a)') msg // ": descriptor rank must be scalar character"
+case (cfi_bad_type)
+  write(stderr, '(a)') msg // ": descriptor type must be character"
+case (cfi_bad_out_len)
+  write(stderr, '(a)') msg // ": output descriptor length is zero"
+case (cfi_truncated)
+  write(stderr, '(a)') msg // ": output truncated (buffer too small)"
+case default
+  if(code > 0) then
+    write(stderr, '(a,1x,i0)') msg // ": success length", code
+  else
+    write(stderr, '(a,1x,i0)') msg // ": unknown status", code
+  end if
+end select
+end subroutine
+
 !> non-functional API
 
 integer function max_path()
@@ -711,13 +771,31 @@ N = fs_canonical(trim(path) // C_NULL_CHAR, s, cbuf, N)
 include "ifc0b.inc"
 end function
 
+#if defined HAVE_ISO_FORTRAN_BINDING
+function realpath(path) result (r)
+character(*), intent(in) :: path
+character(:), allocatable :: r
+integer(C_INT) :: rc
 
+allocate(character(max_path()) :: r)
+rc = realpath_cfi(path, r)
+if(rc <= 0) then
+  r = ""
+  call print_cfi_error(rc, "realpath_cfi", path)
+elseif(rc < len(r)) then
+  r = r(:rc)
+else
+  write(stderr, '(a,1x,i0)') "Ffilesystem:realpath_cfi(" // path // ") output truncated (buffer too small)", rc
+end if
+end function
+#else
 function realpath(path) result (r)
 character(*), intent(in) :: path
 include "ifc0a.inc"
-N = fs_realpath(trim(path) // C_NULL_CHAR, cbuf, N)
+N = fs_realpath(path // C_NULL_CHAR, cbuf, N)
 include "ifc0b.inc"
 end function
+#endif
 
 
 function resolve(path, strict) result(r)

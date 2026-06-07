@@ -80,8 +80,12 @@ jobs:
     - name: no std::filesystem workflow
       run: cmake --workflow nostdfs
 
+    # works, save CI time
     # - name: C++23 workflow
     #   run: cmake --workflow cpp23 --fresh
+
+    - name: ISO_Fortran_binding.h workflow
+      run: cmake --workflow isofortran
 
     - name: Release workflow
       run: cmake --workflow default --fresh

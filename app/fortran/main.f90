@@ -1,6 +1,6 @@
 program repl
 
-use, intrinsic :: iso_fortran_env, only: stdout=>output_unit, stderr=>error_unit, stdin=>input_unit
+use, intrinsic :: iso_fortran_env
 
 use filesystem
 
@@ -19,28 +19,38 @@ arg1 = ""
 arg2 = ""
 inp = ""
 
-if(is_admin()) write(stderr, '(a)') "WARNING: running as admin / sudo"
+if(is_admin()) write(error_unit, '(a)') "WARNING: running as admin / sudo"
 
 print '(a)', "Backend: " // backend()
 
 main : do
-  write(stdout, "(a)", advance="no") "Ffs> "
+  write(output_unit, "(a)", advance="no") "Ffs> "
 
-  read(stdin, '(A)', iostat=i, size=L) buf
-  if (is_iostat_eor(i) .or. is_iostat_end(i)) exit
+  read(input_unit, '(A)', iostat=i, size=L, advance='no') buf
 
-  if (i /= 0) then
-    write(stderr, "(a)") "ERROR: filesystem_cli: failed to read input"
+  select case (i)
+  case (iostat_end)
+    write(error_unit, "(a)") "EOF: exiting"
+    exit
+  case (iostat_eor)
+     ! end of record is not an error for us, just means we got complete input ending in newline with advance='no'
+     ! and there may be more input to read on the next loop iteration
+  case (0)
+    ! pass
+
+  case default
+    write(error_unit, "(a)") "ERROR: filesystem_cli: failed to read input"
     cycle
+  end select
+
+  if (L == 1 .and. (buf(1:1) == "q" .or. iachar(buf(1:1)) == 4)) then
+    print '(a)', "exiting per user request"
+    exit
   end if
-
-  if (L == 0) cycle
-
-  if (L == 1 .and. (buf(1:1) == "q" .or. iachar(buf(1:1)) == 4)) exit
 
   inp = buf(:L)
 
-  print '(a)', "input: " // inp
+  ! print '(a)', "input: " // inp
 
   i1 = index(inp, delim)
   if (i1 == 0) then
@@ -49,7 +59,7 @@ main : do
     cmd = inp(:i1-1)
   end if
 
-  print '(a)', "cmd: " // cmd
+  ! print '(a)', "cmd: " // cmd
 
   done = .true.
   select case (cmd)
@@ -83,6 +93,8 @@ main : do
     print '(A)', get_cwd()
   case ("tempdir")
     print '(A)', get_tempdir()
+  case ('has_cfi')
+    print '(L1)', fs_has_cfi()
   case ("is_admin")
     print '(L1)', is_admin()
   case ("is_bsd")
@@ -232,7 +244,7 @@ main : do
     if (ok) then
       print '(a)', "created directory " // trim(arg1)
     else
-      write(stderr, "(a)") "ERROR: failed to create directory " // trim(arg1)
+      write(error_unit, "(a)") "ERROR: failed to create directory " // trim(arg1)
     end if
   case ("chdir")
     print '(l1)', set_cwd(arg1)
@@ -269,7 +281,7 @@ main : do
     if (ok) then
       print '(a)', "set environment variable " // trim(arg1) // " = " // trim(arg2)
     else
-      write(stderr, "(a)") "ERROR: failed to set environment variable " // trim(arg1) // " = " // trim(arg2)
+      write(error_unit, "(a)") "ERROR: failed to set environment variable " // trim(arg1) // " = " // trim(arg2)
     end if
   case ("join")
     print '(A)', join(arg1, arg2)
@@ -284,19 +296,19 @@ main : do
     if (ok) then
       print '(a)', "created symlink " // trim(arg1) // " -> " // trim(arg2)
     else
-      write(stderr, "(a)") "ERROR: failed to create symlink " // trim(arg1) // " -> " // trim(arg2)
+      write(error_unit, "(a)") "ERROR: failed to create symlink " // trim(arg1) // " -> " // trim(arg2)
     end if
   case ("copy")
     print '(a)', "copying " // trim(arg1) // " -> " // trim(arg2)
     call copy_file(arg1, arg2, ok=ok)
-    if (.not. ok) write(stderr, "(a)") "ERROR: failed to copy " // trim(arg1) // " -> " // trim(arg2)
+    if (.not. ok) write(error_unit, "(a)") "ERROR: failed to copy " // trim(arg1) // " -> " // trim(arg2)
   case default
     done = .false.
   end select
 
   if (done) cycle
 
-  write(stderr, "(a)") "unknown command: " // trim(cmd)
+  write(error_unit, "(a)") "unknown command: " // trim(cmd)
 end do main
 
 end program repl

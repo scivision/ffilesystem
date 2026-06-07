@@ -104,6 +104,13 @@ fs_backend()
 
 ---
 
+Ffilesystem has `ISO_Fortran_binding.h` available and using it for at least some functions
+
+```fortran
+fs_has_cfi()
+```
+
+
 Logical: ffilesystem was compiled with optimizations:
 
 ```fortran

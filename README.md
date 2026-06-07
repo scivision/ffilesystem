@@ -5,7 +5,6 @@
 [![ci_windows](https://github.com/scivision/ffilesystem/actions/workflows/ci_windows.yml/badge.svg)](https://github.com/scivision/ffilesystem/actions/workflows/ci_windows.yml)
 [![oneapi-linux](https://github.com/scivision/ffilesystem/actions/workflows/oneapi-linux.yml/badge.svg)](https://github.com/scivision/ffilesystem/actions/workflows/oneapi-linux.yml)
 [![ci_fpm](https://github.com/scivision/ffilesystem/actions/workflows/ci_fpm.yml/badge.svg)](https://github.com/scivision/ffilesystem/actions/workflows/ci_fpm.yml)
-[![ci_meson](https://github.com/scivision/ffilesystem/actions/workflows/ci_meson.yml/badge.svg)](https://github.com/scivision/ffilesystem/actions/workflows/ci_meson.yml)
 
 Platform independent (Linux, macOS, Windows, Android, Cygwin, WSL, BSD, ...) and compiler-agnostic Ffilesystem path manipulation library.
 Simplicity and efficiency are focuses of Ffilesystem.
@@ -43,8 +42,6 @@ Disable Fortran by
 
 ```sh
 cmake -Dffilesystem_fortran=false -Bbuild
-# or
-meson setup -Dfortran=false build
 ```
 
 Ffilesystem brings full, fast filesystem functionality to Fortran.
@@ -139,7 +136,7 @@ scl enable gcc-toolset-10 "which g++"
 
 ## Build
 
-Ffilesystem can be built with CMake, Meson, or Fortran Package Manager (FPM).
+Ffilesystem can be built with CMake or Fortran Package Manager (FPM).
 
 "libffilesystem.a" is the library binary built that contains the Fortran "filesystem" module--it is the only binary you need to use in your project.
 
@@ -172,30 +169,7 @@ cmake -B build -DBUILD_SHARED_LIBS=on
 ...
 ```
 
-### Meson
-
-```sh
-meson setup build
-meson compile -C build
-```
-
-Optionally, build and run the self-tests:
-
-```sh
-meson setup -Dtest=true build --reconfigure
-meson test -C build
-```
-
-The default library with Meson is shared; to build static library:
-
-```sh
-meson setup -Ddefault_library=static build
-meson compile -C build
-```
-
----
-
-Fortran Package Manager (FPM):
+### Fortran Package Manager (FPM):
 
 ```sh
 fpm --cxx-flag=-std=c++17 build
@@ -214,6 +188,18 @@ We provide Fortran REPL "filesystem_cli" and C++ REPL "fs_cli" for interactive t
 
 ### Build options
 
+We have begun to implement Fortran standard
+[ISO_Fortran_binding.h (see section 18.5)](https://j3-fortran.org/doc/year/18/18-007r1.pdf)
+Fortran bindings for C++ functions.
+This is by default OFF and can be enabled with CMake option `cmake -Dffilesystem_iso_fortran_binding=on`.
+A CMake workflow that tests the ISO_Fortran_binding.h Fortran bindings is:
+
+```sh
+cmake --workflow isofortran
+```
+
+---
+
 Fortran "filesystem" module contains OPTIONAL (enabled by default) Fortran type "path_t" that contains properties and methods.
 The "path_t" type uses getter and setter procedure to access the path as a string `character(:), allocatable`.
 
@@ -227,7 +213,7 @@ p = path_t("my/path")  !< setter
 print *, "path: ", p%path() !< getter
 ```
 
-The CMake and Meson scripts detect if Fortran 2003 `type` is available and enable `path_t` by default.
+CMake detects if Fortran 2003 `type` is available and enables `path_t` by default.
 To manually enable / disable `path_t` with CMake set command option `cmake -DHAVE_F03TYPE=1` or `cmake -DHAVE_F03TYPE=0` respectively.
 
 ---
@@ -241,7 +227,7 @@ systems to get file information.
 Like
 [Python](https://github.com/python/cpython/pulls?q=is%3Apr+statx+)
 [os.statx()](https://docs.python.org/3.15/library/os.html#os.statx),
-we check for `statx()` availability at compile time on Linux and Android.
+we check for `statx()` availability at compile time on Linux and Android and fall back at runtime to `stat()`.
 
 ## Self test
 

@@ -30,7 +30,11 @@ if(ffilesystem_fortran)
   enable_language(Fortran)
 
   if(ffilesystem_iso_fortran_binding)
-    check_include_file("ISO_Fortran_binding.h" ffilesystem_HAVE_ISO_FORTRAN_BINDING)
+    if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" AND CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 12)
+      message(WARNING "ISO_Fortran_binding.h requires Gfortran 12 or later to work with strings")
+    else()
+      check_include_file("ISO_Fortran_binding.h" ffilesystem_HAVE_ISO_FORTRAN_BINDING)
+    endif()
   endif()
 endif()
 

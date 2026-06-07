@@ -6,8 +6,14 @@
 #include <iostream>
 #include <system_error>
 
+#include <cstring>
+
 #include <string>
 #include <string_view>
+
+#if defined(HAVE_ISO_FORTRAN_BINDING)
+#include <ISO_Fortran_binding.h>
+#endif
 
 #include "ffilesystem.h"
 
@@ -201,10 +207,58 @@ size_t fs_as_windows(char* path, const size_t buffer_size)
   return fs_str2char(s, path, buffer_size);
 }
 
+
 size_t fs_realpath(const char* path, char* result, const size_t buffer_size)
 {
   return fs_str2char(fs_realpath(path), result, buffer_size);
 }
+
+#if defined(HAVE_ISO_FORTRAN_BINDING)
+extern "C" {
+int realpath_cfi(const CFI_cdesc_t *in_desc, CFI_cdesc_t *out_desc) {
+    if(!in_desc || !out_desc || !in_desc->base_addr || !out_desc->base_addr)
+      return -1;
+
+    if(in_desc->rank != 0 || out_desc->rank != 0)
+      return -2;
+
+    if(in_desc->type != CFI_type_char || out_desc->type != CFI_type_char)
+      return -3;
+
+    std::string::size_type Lin = in_desc->elem_len;
+    const std::string::size_type Lout = out_desc->elem_len;
+    if(Lout == 0)
+      return -4;
+
+    const char *in_ptr = static_cast<const char *>(in_desc->base_addr);
+    char *out_ptr = static_cast<char *>(out_desc->base_addr);
+
+    // Trim trailing spaces from the input string, if any
+    while(Lin > 0 && in_ptr[Lin - 1] == ' ')
+      --Lin;
+
+    std::memset(out_ptr, ' ', Lout);
+
+    if(Lin == 0)
+      return 0;
+
+    // Fortran character data is fixed-width and not null-terminated.
+    const std::string in_value(in_ptr, Lin);
+    const std::string out_value = fs_realpath(in_value);
+    if(out_value.empty())
+      return 0;
+
+    if(out_value.size() > Lout)
+      return -5;
+
+    out_value.copy(out_ptr, out_value.size());
+
+    return static_cast<int>(out_value.size());
+}
+}
+#endif
+
+
 
 size_t fs_root(const char* path, char* result, const size_t buffer_size)
 {

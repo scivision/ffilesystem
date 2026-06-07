@@ -55,7 +55,10 @@ jobs:
     - uses: ./.github/workflows/composite-build
 
     - name: C++23 workflow
-      run: cmake --workflow cpp23 --fresh
+      run: cmake --workflow cpp23
+
+    - name: ISO_Fortran_binding.h workflow
+      run: cmake --workflow isofortran
 
 
   shared:
