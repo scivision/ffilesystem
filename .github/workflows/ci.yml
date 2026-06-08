@@ -136,6 +136,9 @@ jobs:
       if: matrix.gcc-version == 9
       run: cmake --workflow cpp17
 
+    - name: ISO_Fortran_binding.h workflow
+      run: cmake --workflow isofortran
+
 # works, save CI time
 
   # gcc-7-8:

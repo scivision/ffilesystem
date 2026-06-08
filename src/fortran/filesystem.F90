@@ -185,7 +185,7 @@ integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
 
 #if defined HAVE_ISO_FORTRAN_BINDING
-integer(C_INT) function realpath_cfi(path, result) bind(C, name="realpath_cfi")
+integer(C_INT) function realpath_cfi(path, result) bind(C)
 import C_INT
 character(*), intent(in)  :: path
 character(*), intent(out) :: result

@@ -29,13 +29,7 @@ endif()
 if(ffilesystem_fortran)
   enable_language(Fortran)
 
-  if(ffilesystem_iso_fortran_binding)
-    if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" AND CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 12)
-      message(WARNING "ISO_Fortran_binding.h requires Gfortran 12 or later to work with strings")
-    else()
-      check_include_file("ISO_Fortran_binding.h" ffilesystem_HAVE_ISO_FORTRAN_BINDING)
-    endif()
-  endif()
+  include(cmake/iso_fortran_binding.cmake)
 endif()
 
 # --- RPATH handling for transitive dependencies
@@ -175,6 +169,9 @@ if(ffilesystem_fortran)
   set_property(TARGET ffilesystem_Fortran PROPERTY
   Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include
   )
+
+  target_include_directories(ffilesystem PRIVATE
+    $<$<BOOL:${ffilesystem_ISO_Fortran_binding_path}>:${ffilesystem_ISO_Fortran_binding_path}>)
 
   target_sources(ffilesystem PRIVATE $<TARGET_OBJECTS:ffilesystem_Fortran>)
 

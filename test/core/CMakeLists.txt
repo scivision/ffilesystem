@@ -70,6 +70,10 @@ if(ffilesystem_HAVE_ISO_FORTRAN_BINDING)
     LABELS "Fortran;CFI"
     WORKING_DIRECTORY $<TARGET_FILE_DIR:test_realpath_cfi_fortran>
   )
+else()
+  add_custom_target(test_realpath_cfi_fortran
+    COMMAND ${CMAKE_COMMAND} -E echo "Skipping test_realpath_cfi_fortran: ISO_Fortran_binding.h not found or working"
+  )
 endif()
 
 endif()
