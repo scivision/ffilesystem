@@ -42,8 +42,6 @@ if(ffilesystem_trace)
   # this is not on by default because it gave a false negative on some Cray systems
   # while bypassing it let all of Ffilesystem work.
   include(${CMAKE_CURRENT_LIST_DIR}/FScheck.cmake)
-  fs_check()
-
 endif()
 
 elseif(LINUX OR ANDROID)

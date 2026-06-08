@@ -16,19 +16,33 @@ if(ffilesystem_iso_fortran_binding)
 
   check_include_file("ISO_Fortran_binding.h" ffilesystem_ifb_ok)
   if(ffilesystem_ifb_ok)
-    check_source_compiles(Fortran
-"program test
-use, intrinsic :: iso_c_binding
+    if(NOT DEFINED ffilesystem_HAVE_ISO_FORTRAN_BINDING)
 
-interface
-integer(C_INT) function t_cfi(a, r) bind(C)
-import C_INT
-character(*), intent(in)  :: a
-character(*), intent(out) :: r
-end function t_cfi
-end interface
+      message(CHECK_START "checking that ISO_Fortran_binding.h is usable for <string> interoperability")
 
-end program"
-    ffilesystem_HAVE_ISO_FORTRAN_BINDING)
+      try_run(ffilesystem_ifb_run ffilesystem_ifb_build
+      SOURCES ${CMAKE_CURRENT_LIST_DIR}/ifb.c ${CMAKE_CURRENT_LIST_DIR}/ifb.f90
+      CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${CMAKE_REQUIRED_INCLUDES}
+      COMPILE_OUTPUT_VARIABLE _ifb_build
+      RUN_OUTPUT_STDOUT_VARIABLE _ifb_code
+      RUN_OUTPUT_STDERR_VARIABLE _ifb_error
+      )
+
+      string(STRIP "${_ifb_code}" _ifb_code)
+      string(STRIP "${_ifb_error}" _ifb_error)
+
+      if(NOT ffilesystem_ifb_build)
+        message(CHECK_FAIL "failed to compile ISO_Fortran_binding.h ${ffilesystem_ifb_build}
+        ${_ifb_build}")
+      elseif(NOT ffilesystem_ifb_run EQUAL 0)
+        message(CHECK_FAIL "failed to test ISO_Fortran_binding.h ${ffilesystem_ifb_run}
+        ${_ifb_code}
+         ${_ifb_error}")
+      else()
+        set(ffilesystem_HAVE_ISO_FORTRAN_BINDING true CACHE STRING "ISO_Fortran_binding.h test code")
+        message(CHECK_PASS "OK: ${_ifb_code}")
+      endif()
+
+    endif()
   endif()
 endif()

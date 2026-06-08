@@ -5,11 +5,14 @@ message(CHECK_START "Checking C++ standard library version")
 try_run(ffilesystem_stdcpp_run ffilesystem_stdcpp_build_ok
   ${CMAKE_CURRENT_BINARY_DIR}/libstdcpp_version
   SOURCES ${CMAKE_CURRENT_LIST_DIR}/libstdcpp_version.cpp
-  RUN_OUTPUT_VARIABLE _stdcpp_version
+  RUN_OUTPUT_STDOUT_VARIABLE _stdcpp_version
+  RUN_OUTPUT_STDERR_VARIABLE _stdcpp_error
 )
 
 if(NOT ffilesystem_stdcpp_run EQUAL 0)
-  message(CHECK_FAIL "Could not determine C++ STL version ${ffilesystem_stdcpp_build_ok} ${ffilesystem_stdcpp_run} ${_stdcpp_version}")
+  message(CHECK_FAIL "Could not determine C++ STL version ${ffilesystem_stdcpp_build_ok} ${ffilesystem_stdcpp_run}
+  ${_stdcpp_version}
+  ${_stdcpp_error}")
 else()
   string(STRIP "${_stdcpp_version}" _stdcpp_version)
   set(ffilesystem_stdcpp_version "${_stdcpp_version}" CACHE STRING "C++ standard library version")

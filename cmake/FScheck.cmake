@@ -1,4 +1,4 @@
-function(fs_check)
+block()
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE EXECUTABLE)
 
@@ -25,4 +25,4 @@ endif()
 
 endif()
 
-endfunction()
+endblock()
