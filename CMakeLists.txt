@@ -29,7 +29,9 @@ endif()
 if(ffilesystem_fortran)
   enable_language(Fortran)
 
-  include(cmake/iso_fortran_binding.cmake)
+  if(ffilesystem_iso_fortran_binding)
+    include(cmake/iso_fortran_binding.cmake)
+  endif()
 endif()
 
 # --- RPATH handling for transitive dependencies
