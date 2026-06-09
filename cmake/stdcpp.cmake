@@ -29,7 +29,7 @@ if(ffilesystem_stdcpp_run EQUAL 0)
       message(VERBOSE "GNU libstdc++ ${ffilesystem_stdcpp_version} is new enough to not need -lstdc++")
     endif()
   else()
-    message(VERBOSE "Did not determine GNU libstdc++ version ${ffilesystem_stdcpp_version}")
+    message(VERBOSE "Non-GNU libstdc++ version ${ffilesystem_stdcpp_version}")
   endif()
 endif()
 
