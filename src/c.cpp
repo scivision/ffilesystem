@@ -426,7 +426,7 @@ std::string::size_type fs_with_suffix(const char* path, const char* new_suffix,
     return {};
   }
 
-  std::string fs_generate_random_alphanumeric_string(const std::string::size_type n){
+  std::string fs_generate_random_alphanumeric_string(const std::string::size_type){
     fs_print_error("", std::make_error_code(std::errc::function_not_supported));
     return {};
   }
