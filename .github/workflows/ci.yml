@@ -21,14 +21,13 @@ concurrency:
 
 jobs:
 
-  linux-new:
-
-    runs-on: ubuntu-24.04
+  ubuntu26-gcc:
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
 
     strategy:
       matrix:
-        gcc-version: [12, 13, 14]
+        gcc-version: [15]
 
     env: &gcc-env
       CC: gcc-${{ matrix.gcc-version }}
@@ -42,20 +41,38 @@ jobs:
 
     - uses: ./.github/workflows/composite-build
 
-    - name: C++23 workflow
-      if: matrix.gcc-version == 14
+    - &cpp23
+      name: C++23 workflow
       run: cmake --workflow cpp23
 
-    - name: ISO_Fortran_binding.h workflow
+    - &iso_fortran_binding
+      name: ISO_Fortran_binding.h workflow
       run: cmake --workflow isofortran
 
     - name: Debug workflow
-      if: matrix.gcc-version == 14
       run: cmake --workflow debug --fresh
 
 
-  shared:
+  ubuntu24-gcc:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
+    strategy:
+      matrix:
+        gcc-version: [12, 13, 14]
+
+    env: *gcc-env
+
+    steps:
+
+    - *checkout
+
+    - uses: ./.github/workflows/composite-build
+
+    - *iso_fortran_binding
+
+
+  shared:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -74,13 +91,13 @@ jobs:
       run: cmake --workflow shared
 
 
-  linux-flang:
-    runs-on: ubuntu-latest
+  ubuntu26-flang:
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
 
     strategy:
       matrix:
-        llvm-version: [20]
+        llvm-version: [22]
 
     env:
       CC: clang-${{ matrix.llvm-version }}
@@ -88,28 +105,27 @@ jobs:
       FC: flang-${{ matrix.llvm-version }}
 
     steps:
-    - name: Apt LLVM
-      run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh ${{ matrix.llvm-version }}
-          sudo apt-get update
+    # - name: Apt LLVM
+    #   run: |
+    #       wget https://apt.llvm.org/llvm.sh
+    #       chmod +x llvm.sh
+    #       sudo ./llvm.sh ${{ matrix.llvm-version }}
+    #       sudo apt-get update
 
     - name: install Flang
-      run: sudo apt install --no-install-recommends clang-${{ matrix.llvm-version }} flang-${{ matrix.llvm-version }}
+      run: sudo apt install --no-install-recommends flang-${{ matrix.llvm-version }}
 
     - *checkout
 
     - uses: ./.github/workflows/composite-build
 
-    - name: C++23 workflow
-      run: cmake --workflow cpp23
+    - *cpp23
 
     - name: Debug workflow
       run: cmake --workflow debug --fresh
 
 
-  gcc-9-10-11:
+  ubuntu22-gcc:
 
     runs-on: ubuntu-22.04
     timeout-minutes: 15
@@ -136,8 +152,8 @@ jobs:
       if: matrix.gcc-version == 9
       run: cmake --workflow cpp17
 
-    - name: ISO_Fortran_binding.h workflow
-      run: cmake --workflow isofortran
+    - *iso_fortran_binding
+
 
 # works, save CI time
 
