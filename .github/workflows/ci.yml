@@ -59,17 +59,26 @@ jobs:
 
     strategy:
       matrix:
-        gcc-version: [12, 13, 14]
+        gcc-version: [10, 11, 12, 13, 14]
 
     env: *gcc-env
 
     steps:
+    - name: GCC APT
+      if: matrix.gcc-version < 12
+      run: |
+        sudo apt update -y
+        sudo apt install -y --no-install-recommends gcc-${{ matrix.gcc-version }} g++-${{ matrix.gcc-version }} gfortran-${{ matrix.gcc-version }}
 
     - *checkout
 
     - uses: ./.github/workflows/composite-build
 
     - *iso_fortran_binding
+
+    - name: C++17 workflow
+      if: matrix.gcc-version == 10
+      run: cmake --workflow cpp17
 
 
   shared:
@@ -123,36 +132,6 @@ jobs:
 
     - name: Debug workflow
       run: cmake --workflow debug --fresh
-
-
-  ubuntu22-gcc:
-
-    runs-on: ubuntu-22.04
-    timeout-minutes: 15
-
-    strategy:
-      fail-fast: false
-      matrix:
-        gcc-version: [9, 10, 11]
-
-    env: *gcc-env
-
-    steps:
-    - *checkout
-
-    - name: GCC APT
-      if: matrix.gcc-version < 10
-      run: |
-        sudo apt update -y
-        sudo apt install -y --no-install-recommends gcc-${{ matrix.gcc-version }} g++-${{ matrix.gcc-version }} gfortran-${{ matrix.gcc-version }}
-
-    - uses: ./.github/workflows/composite-build
-
-    - name: C++17 workflow
-      if: matrix.gcc-version == 9
-      run: cmake --workflow cpp17
-
-    - *iso_fortran_binding
 
 
 # works, save CI time
