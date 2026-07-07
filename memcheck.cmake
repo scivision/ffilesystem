@@ -81,10 +81,6 @@ if(NOT (ret EQUAL 0 AND err EQUAL 0))
 endif()
 
 ctest_memcheck(
-INCLUDE ${include}
-INCLUDE_LABEL ${include_label}
-EXCLUDE ${exclude}
-EXCLUDE_LABEL ${exclude_label}
 RETURN_VALUE ret
 CAPTURE_CMAKE_ERROR err
 DEFECT_COUNT count
