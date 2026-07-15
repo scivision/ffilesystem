@@ -1,7 +1,8 @@
 #ifndef FFILESYSTEM_H
 #define FFILESYSTEM_H
 
-#include <sys/types.h> // for pid_t
+#include <sys/types.h> // for pid_t, ino_t, dev_t, mode_t, ...
+// https://www.man7.org/linux/man-pages/man3/stat.3type.html
 
 #ifdef _MSC_VER
 
@@ -448,6 +449,9 @@ uintmax_t fs_file_size(const char*);
 uintmax_t fs_space_available(const char*);
 uintmax_t fs_space_capacity(const char*);
 size_t fs_get_blksize(const char*);
+
+ino_t fs_inode(const char*);
+dev_t fs_st_dev(const char*);
 
 uintmax_t fs_hard_link_count(const char*);
 

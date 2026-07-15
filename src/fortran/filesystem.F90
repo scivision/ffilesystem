@@ -563,6 +563,16 @@ character(kind=C_CHAR), intent(out) :: result(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
 
+integer(C_LONG_LONG) function cfs_inode(path) bind(C, name="fs_inode")
+import
+character(kind=C_CHAR), intent(in) :: path(*)
+end function
+
+integer(C_LONG_LONG) function fs_st_dev(path) bind(C)
+import
+character(kind=C_CHAR), intent(in) :: path(*)
+end function
+
 logical(C_BOOL) function fs_touch(path) bind(C)
 import
 character(kind=c_char), intent(in) :: path(*)
@@ -1267,6 +1277,22 @@ character(*), intent(in) :: path
 include "ifc0a.inc"
 N = fs_suffix(trim(path) // C_NULL_CHAR, cbuf, N)
 include "ifc0b.inc"
+end function
+
+
+integer(C_LONG_LONG) function fs_inode(path) result(r)
+!! get inode number
+character(*), intent(in) :: path
+
+r = cfs_inode(trim(path) // C_NULL_CHAR)
+end function
+
+
+integer(C_LONG_LONG) function fs_device(path) result(r)
+!! get device number
+character(*), intent(in) :: path
+
+r = fs_st_dev(trim(path) // C_NULL_CHAR)
 end function
 
 
