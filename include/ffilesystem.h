@@ -27,6 +27,9 @@ typedef unsigned int mode_t;
 #if !defined(__APPLE__) && (defined(BSD) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__))
 #define FFS_BSD 1
 #endif
+#if defined(__APPLE__) && defined(__MACH__)
+#define FFS_DARWIN 1
+#endif
 
 
 #ifdef __cplusplus

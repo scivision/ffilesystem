@@ -42,7 +42,7 @@ namespace Filesystem = std::filesystem;
 
 #endif
 
-#if defined(__APPLE__) && defined(__MACH__) && __has_include(<copyfile.h>)
+#if defined(FFS_DARWIN) && __has_include(<copyfile.h>)
 // macOS 10.12 or later
 #define HAVE_MACOS_COPYFILE
 #include <copyfile.h>

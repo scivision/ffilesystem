@@ -13,7 +13,7 @@
 #include <sys/vfs.h> // IWYU pragma: keep
 #include <linux/magic.h>
 // https://github.com/torvalds/linux/blob/master/include/uapi/linux/magic.h
-#elif defined(__APPLE__) || defined(FFS_BSD)
+#elif defined(FFS_DARWIN) || defined(FFS_BSD)
 #include <sys/param.h>
 #include <sys/mount.h>
 #elif defined(_WIN32) || defined(__CYGWIN__)
@@ -135,7 +135,7 @@ std::string fs_filesystem_type(std::string_view path)
 # else
   ec = std::make_error_code(std::errc::function_not_supported);
 # endif
-#elif defined(__APPLE__) || defined(FFS_BSD)
+#elif defined(FFS_DARWIN) || defined(FFS_BSD)
   struct statfs s;
   const std::string cpath(path);
 

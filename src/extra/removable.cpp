@@ -1,5 +1,7 @@
 #include <string>
 
+#include "ffilesystem.h"
+
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -17,12 +19,11 @@
 #include <sys/sysmacros.h> // for minor, major
 #endif
 
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(FFS_DARWIN)
 #include <CoreFoundation/CoreFoundation.h>
 #include <DiskArbitration/DiskArbitration.h>
 #endif
 
-#include "ffilesystem.h"
 
 bool
 fs_is_removable(std::string_view path)
@@ -84,7 +85,7 @@ fs_is_removable(std::string_view path)
   fs_print_error(dev);
   return false;
 
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(FFS_DARWIN)
   // macOS DiskArbitration framework
   // requires linking with -framework DiskArbitration -framework CoreFoundation
 

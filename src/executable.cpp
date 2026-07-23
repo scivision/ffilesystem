@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include "ffilesystem.h"
+
 // include even if <filesystem> is available
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
@@ -17,7 +19,7 @@
 #include <array>
 #endif
 
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(FFS_DARWIN)
 #include <mach-o/loader.h>
 #include <mach-o/fat.h>
 
@@ -29,7 +31,6 @@
 
 #endif
 
-#include "ffilesystem.h"
 
 
 bool fs_is_executable_binary(std::string_view path)
@@ -58,7 +59,7 @@ bool fs_is_executable_binary(std::string_view path)
     return false;
   }
 
-#if defined(__APPLE__)
+#if defined(FFS_DARWIN)
   // https://ss64.com/mac/file.html
     // Mach-O magic numbers
     // https://stackoverflow.com/q/27669766

@@ -1,6 +1,6 @@
 #include "ffilesystem.h"
 
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(FFS_DARWIN)
 #include <cerrno>
 #include <sys/sysctl.h>
 #endif
@@ -8,7 +8,7 @@
 bool
 fs_is_rosetta()
 {
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(FFS_DARWIN)
 // https://developer.apple.com/documentation/apple-silicon/about-the-rosetta-translation-environment
     int ret = 0;
     std::size_t size = sizeof(ret);

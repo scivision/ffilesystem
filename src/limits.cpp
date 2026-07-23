@@ -4,7 +4,9 @@
 #endif
 #endif
 
-#if defined(__APPLE__) && defined(__MACH__)
+#include "ffilesystem.h"
+
+#if defined(FFS_DARWIN)
 #include <sys/syslimits.h>
 #elif defined(_WIN32)
 #include <cstdlib> // for _MAX_PATH
@@ -14,7 +16,6 @@
 #include <limits.h>
 #endif
 
-#include "ffilesystem.h"
 
 
 constexpr std::size_t DEFAULT_MAX_PATH = 256;

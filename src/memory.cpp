@@ -1,28 +1,31 @@
-#if defined(_WIN32) || defined(__CYGWIN__)
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <windows.h>
-#elif defined(__APPLE__) || defined(__MACH__)
-#include <mach/mach.h>
-#include <sys/sysctl.h>
-#elif defined(__linux__)
-#include <sys/sysinfo.h>
-#endif
+#include "ffilesystem.h"
 
-#if !defined(_WIN32)
-#include <unistd.h> // for sysconf
+#if defined(_WIN32) || defined(__CYGWIN__)
+# define WIN32_LEAN_AND_MEAN
+# ifndef NOMINMAX
+#  define NOMINMAX
+# endif
+# include <windows.h>
+#else
+# include <unistd.h> // for sysconf
+
+# if defined(FFS_DARWIN)
+#  include <mach/mach.h>
+#  include <sys/sysctl.h>
+# elif defined(__linux__)
+#  include <sys/sysinfo.h>
+# endif
 #endif
 
 #include <limits>
 
-#include "ffilesystem.h"
 
 
 unsigned long long fs_total_sys_memory()
 {
 // https://stackoverflow.com/a/2513561
 
-#if defined(WIN32_LEAN_AND_MEAN)
+#if defined(_WIN32) || defined(__CYGWIN__)
 
   MEMORYSTATUSEX status;
   status.dwLength = sizeof(status);
@@ -54,7 +57,7 @@ unsigned long long fs_get_free_memory()
 {
   // https://github.com/ninja-build/ninja/pull/2605
 
-#if defined(WIN32_LEAN_AND_MEAN)
+#if defined(_WIN32) || defined(__CYGWIN__)
   thread_local static unsigned long long committed_idle = std::numeric_limits<unsigned long long>::max();
   MEMORYSTATUSEX status;
   status.dwLength = sizeof(status);
@@ -72,7 +75,7 @@ unsigned long long fs_get_free_memory()
     ? status.ullAvailPhys - (committed - committed_idle)
     : std::numeric_limits<unsigned long long>::max();
 
-#elif defined(__APPLE__)
+#elif defined(FFS_DARWIN)
   thread_local static unsigned long long swapped_idle = std::numeric_limits<unsigned long long>::max();
   vm_size_t page_size;
   vm_statistics64_data_t vm_stats;

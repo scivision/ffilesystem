@@ -13,7 +13,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // GetModuleFileName
 #include <cstddef> // for size_t
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(FFS_DARWIN)
 #include <cstdint> // for uint32_t
 #include <mach-o/dyld.h> // _NSGetExecutablePath
 #elif defined(__linux__) || defined(__CYGWIN__)
@@ -51,7 +51,7 @@ std::string fs_exe_path()
     p.resize(L);
     return p;
   }
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(FFS_DARWIN)
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dyld.3.html
   // get buffer size first. Need L=0 to avoid intermittent segfault.
   std::uint32_t L = 0;

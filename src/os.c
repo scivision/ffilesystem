@@ -20,9 +20,9 @@ bool fs_is_android(){
 }
 
 bool fs_is_macos(){
-// we don't use TargetConditionals.h because on macOS SDK updates sometimes including this header
+// we don't use the much more specific TargetConditionals.h because on macOS SDK updates sometimes including this header
 // breaks compile until Homebrew / GCC updates.
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(FFS_DARWIN)
   return true;
 #else
   return false;
