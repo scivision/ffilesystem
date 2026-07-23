@@ -14,6 +14,9 @@
 #  include <sys/sysctl.h>
 # elif defined(__linux__)
 #  include <sys/sysinfo.h>
+# elif defined(FFS_BSD)
+#  include <sys/types.h>
+#  include <sys/sysctl.h>
 # endif
 #endif
 
@@ -93,8 +96,9 @@ unsigned long long fs_get_free_memory()
   result |= ::sysctl(ctl, 2, &swap_stats, &swap_stats_size, nullptr, 0);
 
   if (KERN_SUCCESS != result)
-    // information not available
     return std::numeric_limits<unsigned long long>::max();
+
+  // information not available
 
   // inactive memory that is marked to be moved to swap or is fs cache and should be considered as free
   unsigned long long free_memory = (vm_stats.free_count + vm_stats.inactive_count ) * page_size;
@@ -106,16 +110,30 @@ unsigned long long fs_get_free_memory()
   thread_local static unsigned long long swapped_idle = std::numeric_limits<unsigned long long>::max();
   struct sysinfo infos;
 
-  if(::sysinfo(&infos) != 0) {
-    fs_print_error("", "sysinfo");
-    return std::numeric_limits<unsigned long long>::max();
+  if(::sysinfo(&infos) == 0 ) {
+    const unsigned long long swapped = (infos.totalswap - infos.freeswap);
+    // since system use committed memory normally, store the smallest amount we have seen
+    swapped_idle = (swapped_idle < swapped) ? swapped_idle : swapped;
+    return infos.freeram - (swapped < swapped_idle ? 0 : (swapped - swapped_idle));
   }
+#elif defined(FFS_BSD)
+  // free + inactive + cache (like Linux MemAvailable / "usable")
+  unsigned int free_count = 0, inactive_count = 0, cache_count = 0;
+  std::size_t len = sizeof(free_count);
+  long pagesize = sysconf(_SC_PAGESIZE);
 
-  const unsigned long long swapped = (infos.totalswap - infos.freeswap);
-  // since system use committed memory normally, store the smallest amount we have seen
-  swapped_idle = (swapped_idle < swapped) ? swapped_idle : swapped;
-  return infos.freeram - (swapped < swapped_idle ? 0 : (swapped - swapped_idle));
-#else
-  return std::numeric_limits<unsigned long long>::max();
+  // https://man.freebsd.org/cgi/man.cgi?query=sysctlbyname
+  if (sysctlbyname("vm.stats.vm.v_free_count", &free_count, &len, nullptr, 0) == 0) {
+    len = sizeof(inactive_count);
+    sysctlbyname("vm.stats.vm.v_inactive_count", &inactive_count, &len, nullptr, 0);
+
+    len = sizeof(cache_count);
+    sysctlbyname("vm.stats.vm.v_cache_count", &cache_count, &len, nullptr, 0);
+
+    return static_cast<unsigned long long>(free_count + inactive_count + cache_count) * pagesize;
+  }
 #endif
+
+  return std::numeric_limits<unsigned long long>::max();
+
 }
