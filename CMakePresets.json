@@ -33,6 +33,13 @@
     "ffilesystem_cpp": false
   }
 },
+{ "name": "nofortran", "inherits": "default",
+  "displayName": "Build without Fortran",
+  "description": "Build with C++ but without Fortran to test C fallback code.",
+  "cacheVariables": {
+    "ffilesystem_fortran": false
+  }
+},
 { "name": "isofortran", "inherits": "default",
   "displayName": "Use ISO_Fortran_binding.h",
   "description": "Build with ISO_Fortran_binding.h for Cpp-Fortran interfaces.",
@@ -69,11 +76,14 @@
     "CMAKE_BUILD_TYPE": "Debug"
   }
 },
-{ "name": "msvc", "inherits": "default",
+{ "name": "msvc", "inherits": "nofortran",
+  "displayName": "Visual Studio without Fortran",
   "binaryDir": "build-${presetName}",
   "generator": "Visual Studio 18 2026",
-  "cacheVariables": {
-    "ffilesystem_fortran": false
+  "condition": {
+    "type": "equals",
+    "lhs": "${hostSystemName}",
+    "rhs": "Windows"
   }
 },
 { "name": "msvc-nostdfs", "inherits": "msvc",
@@ -88,13 +98,17 @@
   "displayName": "Linux build (for WSL on GHA)",
   "generator": "Ninja",
   "binaryDir": "/tmp/build",
-  "installDir": "/tmp/build/local"
+  "installDir": "/tmp/build/local",
+  "condition": {
+    "type": "notEquals",
+    "lhs": "${hostSystemName}",
+    "rhs": "Windows"
+  }
 },
-{ "name": "android", "inherits": "default",
+{ "name": "android", "inherits": "nofortran",
   "toolchainFile": "${sourceDir}/android.cmake",
   "binaryDir": "build-${presetName}",
   "cacheVariables": {
-    "ffilesystem_fortran": false,
     "ffilesystem_BUILD_TESTING": false
   }
 },
@@ -106,23 +120,28 @@
     "CMAKE_CROSSCOMPILING_EMULATOR": "${sourceDir}/test/adb_run.sh"
   }
 },
-{ "name": "cosmo", "inherits": "default",
+{ "name": "cosmo", "inherits": "nofortran",
+  "displayName": "Cosmopolitan platform-independent framework",
   "toolchainFile": "${sourceDir}/cosmopolitan.cmake",
   "binaryDir": "build-${presetName}",
   "cacheVariables": {
-    "ffilesystem_fortran": false,
     "ffilesystem_BUILD_TESTING": false
   }
 },
-{ "name": "ios", "inherits": "default",
+{ "name": "ios", "inherits": "nofortran",
+  "displayName": "iPhone",
   "toolchainFile": "${sourceDir}/ios.cmake",
   "binaryDir": "build-${presetName}",
   "cacheVariables": {
-    "ffilesystem_fortran": false,
     "ffilesystem_extra": false,
     "ffilesystem_BUILD_TESTING": false,
     "CMAKE_OSX_SYSROOT": "iphoneos",
     "CMAKE_OSX_ARCHITECTURES": "arm64"
+  },
+  "condition": {
+    "type": "equals",
+    "lhs": "${hostSystemName}",
+    "rhs": "Darwin"
   }
 },
 { "name": "ios-sim", "inherits": "ios",
@@ -169,6 +188,7 @@
     "targets": ["filesystem_cli", "test_realpath_fortran", "test_realpath_cfi_fortran"]
   },
   { "name": "build", "configurePreset": "build" },
+  { "name": "nofortran", "configurePreset": "nofortran" },
   { "name": "linux", "configurePreset": "linux" },
   { "name" : "nostdfs", "configurePreset": "nostdfs" },
   { "name": "cpp17", "configurePreset": "cpp17" },
@@ -239,6 +259,7 @@
     "include": {"name": "realpath"}
   }
 },
+{ "name": "nofortran", "configurePreset": "nofortran", "inherits": "default" },
 { "name": "linux", "configurePreset": "linux", "inherits": "default" },
 { "name": "nostdfs", "configurePreset": "nostdfs", "inherits": "default" },
 { "name": "cpp17", "configurePreset": "cpp17", "inherits": "default" },
@@ -259,8 +280,7 @@
 }
 ],
 "workflowPresets": [
-  {
-    "name": "default",
+  { "name": "default",
     "displayName": "Build and test with C++20 standard",
     "steps": [
       { "type": "configure", "name": "default" },
@@ -268,11 +288,18 @@
       { "type": "test", "name": "default" }
     ]
   },
-  {
-    "name": "build",
+  { "name": "build",
     "steps": [
       { "type": "configure", "name": "build" },
       { "type": "build", "name": "build" }
+    ]
+  },
+  { "name": "nofortran",
+    "displayName": "Build & test without Fortran",
+    "steps": [
+      { "type": "configure", "name": "nofortran" },
+      { "type": "build", "name": "nofortran" },
+      { "type": "test", "name": "nofortran" }
     ]
   },
   {
@@ -286,7 +313,7 @@
   },
   {
     "name": "linux",
-    "displayName": "Linux build (for WSL on GHA)",
+    "displayName": "Linux build & test (for WSL on GHA)",
     "steps": [
       { "type": "configure", "name": "linux" },
       { "type": "build", "name": "linux" },
