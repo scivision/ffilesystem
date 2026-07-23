@@ -21,6 +21,6 @@ jobs:
     - name: Test in FreeBSD
       uses: vmactions/freebsd-vm@v1
       with:
-        prepare: pkg install -y cmake gcc13
+        prepare: pkg install -y cmake ninja
 
         run: cmake --workflow default
