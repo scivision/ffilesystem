@@ -32,12 +32,12 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     # - name: cache install oneAPI
     #   timeout-minutes: 5
     #   id: cache-install
-    #   uses: actions/cache@v3
+    #   uses: actions/cache@v6
     #   with:
     #     path: |
     #       C:\Program Files (x86)\Intel\oneAPI\setvars.bat

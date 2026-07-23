@@ -29,13 +29,13 @@ jobs:
         sudo apt update
         sudo apt install --no-install-recommends valgrind
 
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v7
 
     - run: ctest -Dopts="-Dffilesystem_cpp:BOOL=${{ matrix.cpp }} -Dffilesystem_BUILD_TESTING:BOOL=on" -S memcheck.cmake -E "overflow|reserved|CLI" -V
 
     - name: upload Valgrind log
       if: ${{ failure() }}
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: valgrind-log-${{ matrix.cpp }}
         path: build-Valgrind/Testing/Temporary/MemoryChecker.*.log
@@ -52,7 +52,7 @@ jobs:
         cpp: [false,true]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - run: >-
        cmake --preset tidy
@@ -69,7 +69,7 @@ jobs:
   #   timeout-minutes: 10
 
   #   steps:
-  #   - uses: actions/checkout@v4
+  #   - uses: actions/checkout@v7
   #   - uses: actions/setup-python@v5
   #     with:
   #       python-version: '3.9'
@@ -83,7 +83,7 @@ jobs:
   #   - name: Code coverage
   #     run: cmake --build --preset run-coverage
 
-  #   - uses: actions/upload-artifact@v6
+  #   - uses: actions/upload-artifact@v7
   #     with:
   #       name: coverage-report-html
   #       path: build-coverage/coverage/

@@ -50,7 +50,7 @@ jobs:
 # https://github.com/Homebrew/homebrew-core/issues/228131
 
     - &checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - uses: ./.github/workflows/composite-build
 
