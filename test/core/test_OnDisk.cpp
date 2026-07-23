@@ -126,8 +126,8 @@ int main(int argc, char** argv) {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
 
-    if (!fs_is_cygwin()) {
-      expect(fs_is_writable(ctx.self));
+    if (!fs_is_cygwin() && !fs_is_bsd()) {
+      expect(fs_is_writable(ctx.self)) << "not every platform can detect writability of the current executable, but most can";
     }
 
     expect(fs_is_writable(ctx.cwd));
