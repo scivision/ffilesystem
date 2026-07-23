@@ -93,7 +93,7 @@ if (len_trim(p) == 0) error stop "get_permissions('"//trim(nowrite)//"') should 
 
 if (p(2:2) == "w") then
     write(stderr, '(a)') "get_permissions: " //trim(nowrite)//" should not be writable"
-    if(.not. is_windows()) error stop
+    if(.not. (is_windows() .or. is_cygwin())) error stop
 end if
 
 if(index(p, "w") == 0 .and. .not. is_admin() .and. is_writable(nowrite)) &
@@ -140,10 +140,10 @@ print '(a)', "permissions after set_permissions(exe=true): " // perm
 
 if (.not. is_exe(exe)) then
     write(stderr,'(a)') "ERROR: is_exe() did not detect executable file " // trim(exe)
-    if(.not. is_windows()) error stop
+    if(.not. (is_windows() .or. is_cygwin())) error stop
 end if
 
-if(.not. is_windows()) then
+if(.not. (is_windows() .or. is_cygwin())) then
 if(perm(3:3) /= "x") then
     write(stderr,'(a)') "ERROR: get_permissions() " // trim(exe) // " is not executable"
     error stop
@@ -164,7 +164,7 @@ print '(a)', "permissions: " // trim(noexe) // " = " // perm
 call set_permissions(noexe, executable=.false., ok=ok)
 if (.not. ok) error stop "ERROR: set_permissions(exe=.false.) failed"
 
-if(.not. is_windows()) then
+if(.not. (is_windows() .or. is_cygwin())) then
 !~ Windows file system is always executable to stdlib.
 
     if (is_exe(noexe)) error stop "ERROR:t did not detect non-executable file."

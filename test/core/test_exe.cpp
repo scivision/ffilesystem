@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
     expect(eq(p[2], 'x'));
   };
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
   skip /
 #endif
   "is_not_exe_perms"_test = [argv] {
@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
     expect(eq(p[2], 'x'));
   };
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
   skip /
 #endif
   "chmod_noexe"_test = [argv] {
