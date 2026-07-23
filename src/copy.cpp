@@ -1,9 +1,6 @@
 #if defined(__linux__)
-#if !defined(_GNU_SOURCE)
-#define _GNU_SOURCE
-#endif
-#if !defined(_POSIX_C_SOURCE)
-#define _POSIX_C_SOURCE
+#if !defined(_DEFAULT_SOURCE)
+#define _DEFAULT_SOURCE
 #endif
 #if !defined(_FILE_OFFSET_BITS)
 #define _FILE_OFFSET_BITS 64

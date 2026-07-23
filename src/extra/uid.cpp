@@ -3,6 +3,11 @@
 # include <windows.h>  // GetTokenInformation
 # include <io.h> // _isatty
 #else
+#if defined(__linux__) || defined(__CYGWIN__)
+#if !defined(_DEFAULT_SOURCE)
+#define _DEFAULT_SOURCE
+#endif
+#endif
 # include <unistd.h>  // geteuid, getpid, isatty
 # include <sys/types.h>  // IWYU pragma: keep
 // geteuid, pid_t

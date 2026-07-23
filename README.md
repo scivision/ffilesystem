@@ -62,9 +62,9 @@ Ffilesystem works with popular C++ STL and C standard library implementations in
 BSD libc,
 [Microsoft CRT](https://en.wikipedia.org/wiki/Microsoft_Windows_library_files#CRT),
 among others.
-On Linux, symbol
+On Linux and Cygwin, symbol
 [_DEFAULT_SOURCE](https://man7.org/linux/man-pages/man7/feature_test_macros.7.html)
-is defined if needed to enable C standard library functions.
+is defined if needed to enable POSIX functions that may not be defined in the C standard library if ANSI `-std=c++*` is used instead of `-std=gnu++*`.
 RAII std::string buffers are used for all string representations of paths including for C API and system calls, and are automatically freed.
 Ffilesystem
 [std::string buffers](https://learn.microsoft.com/en-us/archive/msdn-magazine/2015/july/c-using-stl-strings-at-win32-api-boundaries)

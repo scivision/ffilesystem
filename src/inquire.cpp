@@ -1,8 +1,10 @@
 // IWYU pragma: no_include <bits/statx-generic.h>
 // IWYU pragma: no_include <linux/stat.h>
 
-#if defined(__linux__) && !defined(_DEFAULT_SOURCE)
+#if defined(__linux__) || defined(__CYGWIN__)
+#if !defined(_DEFAULT_SOURCE)
 #define _DEFAULT_SOURCE
+#endif
 #endif
 
 #include "ffilesystem.h"
