@@ -207,7 +207,10 @@ if(argc > 3)
 else
   funcs = {"absolute", "canonical", "resolve", "which", "expanduser", "normal", "cwd",
            "homedir", "parent", "file_name", "reserved", "drop_slash",
-           "exists", "is_dir", "is_char", "is_file", "is_symlink", "read_symlink"};
+           "exists", "is_dir", "is_file", "is_symlink"};
+
+// only use reliable calls e.g. not to non-existent paths to avoid avalanche of error messages
+// not doing read_symlink because it generates errors without a test symlink
 
 for (std::string_view func : funcs)
   {
