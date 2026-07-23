@@ -22,7 +22,13 @@ typedef unsigned int mode_t;
 #endif
 #endif
 
+#endif // _MSC_VER
+
+#if !defined(__APPLE__) && (defined(BSD) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__))
+#define FFS_BSD 1
 #endif
+
+
 #ifdef __cplusplus
 
 #include <cstdint> // for uintmax_t

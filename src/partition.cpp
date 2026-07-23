@@ -4,6 +4,8 @@
 #include <iostream>
 #include <system_error>
 
+#include "ffilesystem.h"
+
 #if defined(__linux__) && (__has_include(<linux/magic.h>) || __has_include("linux/magic.h"))
 // GCC < 10 doesn't detect <linux/magic.h>
 // IWYU pragma: no_include <sys/statfs.h>
@@ -11,7 +13,7 @@
 #include <sys/vfs.h> // IWYU pragma: keep
 #include <linux/magic.h>
 // https://github.com/torvalds/linux/blob/master/include/uapi/linux/magic.h
-#elif defined(__APPLE__) || defined(BSD)
+#elif defined(__APPLE__) || defined(FFS_BSD)
 #include <sys/param.h>
 #include <sys/mount.h>
 #elif defined(_WIN32) || defined(__CYGWIN__)
@@ -19,7 +21,6 @@
 #include <windows.h>
 #endif
 
-#include "ffilesystem.h"
 
 
 #ifdef HAVE_LINUX_MAGIC_H
@@ -134,7 +135,7 @@ std::string fs_filesystem_type(std::string_view path)
 # else
   ec = std::make_error_code(std::errc::function_not_supported);
 # endif
-#elif defined(__APPLE__) || defined(BSD)
+#elif defined(__APPLE__) || defined(FFS_BSD)
   struct statfs s;
   const std::string cpath(path);
 

@@ -46,8 +46,8 @@ bool fs_is_unix() {
 }
 
 bool fs_is_bsd() {
-#if defined(BSD)
-  return !fs_is_macos();
+#if defined(FFS_BSD)
+  return true;
 #else
   return false;
 #endif

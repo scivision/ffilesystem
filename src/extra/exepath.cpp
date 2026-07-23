@@ -19,7 +19,7 @@
 #elif defined(__linux__) || defined(__CYGWIN__)
 #include <unistd.h> // for readlink
 #include <sys/types.h> // for ssize_t
-#elif defined(BSD)
+#elif defined(FFS_BSD)
 #include <sys/sysctl.h> // for sysctl
 #include <cstddef> // for size_t
 #endif
@@ -64,7 +64,7 @@ std::string fs_exe_path()
       return path;
     }
   }
-#elif defined(BSD)
+#elif defined(FFS_BSD)
   // https://man.freebsd.org/cgi/man.cgi?sysctl(3)
   auto L = fs_get_max_path();
   std::string path;
