@@ -78,7 +78,6 @@
 },
 { "name": "msvc", "inherits": "nofortran",
   "displayName": "Visual Studio without Fortran",
-  "binaryDir": "build-${presetName}",
   "generator": "Visual Studio 18 2026",
   "condition": {
     "type": "equals",
@@ -160,6 +159,25 @@
     "ffilesystem_ENABLE_RPATH": true
   }
 },
+{ "name": "shared-build", "inherits": ["shared", "build"], "displayName": "Build Shared Library",
+  "cacheVariables": {
+    "ffilesystem_BUILD_TESTING": false
+  }
+},
+{ "name": "shared-nofortran", "inherits": ["shared", "nofortran"], "displayName": "Shared Library without Fortran" },
+{ "name": "shared-nofortran-build", "inherits": ["shared-build", "nofortran"], "displayName": "Build Shared Library without Fortran" },
+{ "name": "matlab", "inherits": "shared-build",
+  "binaryDir": "build-matlab",
+  "displayName": "Matlab",
+  "cacheVariables": { "ffilesystem_BUILD_TESTING": false }
+},
+{ "name": "matlab-msvc", "inherits": ["msvc", "matlab"],
+  "binaryDir": "build-matlab",
+  "displayName": "Matlab with MSVC",
+  "description": "Build with Matlab x64 support using MSVC. Update in the future if Matlab natively supports ARM64.",
+  "architecture": "x64",
+  "cacheVariables": { "ffilesystem_BUILD_TESTING": false }
+},
 {
   "name": "coverage",
   "binaryDir": "build-coverage",
@@ -195,6 +213,9 @@
   { "name": "cpp23", "configurePreset": "cpp23" },
   { "name": "cpp26", "configurePreset": "cpp26" },
   { "name": "shared", "configurePreset": "shared" },
+  { "name": "shared-build", "configurePreset": "shared-build" },
+  { "name": "shared-nofortran", "configurePreset": "shared-nofortran" },
+  { "name": "shared-nofortran-build", "configurePreset": "shared-nofortran-build" },
   { "name": "android", "configurePreset": "android" },
   { "name": "android-tests", "configurePreset": "android-tests"},
   { "name": "cosmo", "configurePreset": "cosmo" },
@@ -202,6 +223,8 @@
   { "name": "ios-sim", "configurePreset": "ios-sim" },
   { "name": "msvc", "configurePreset": "msvc", "configuration": "Release", "jobs": 8 },
   { "name": "msvc-nostdfs", "configurePreset": "msvc-nostdfs", "inherits": "msvc" },
+  { "name": "matlab", "configurePreset": "matlab", "targets": ["ffilesystem", "fs_cli"] },
+  { "name": "matlab-msvc", "configurePreset": "matlab-msvc", "inherits": ["matlab", "msvc"] },
   {
     "name": "explain",
     "configurePreset": "default",
@@ -217,24 +240,10 @@
     "configurePreset": "default",
     "nativeToolOptions": ["-d", "stats"]
   },
-  {
-    "name": "debug", "inherits": "default",
-    "configurePreset": "debug",
-    "configuration": "Debug"
-  },
-  {
-    "name": "tidy",
-    "configurePreset": "tidy"
-  },
-  {
-    "name": "coverage",
-    "configurePreset": "coverage"
-  },
-  {
-    "name": "run-coverage",
-    "configurePreset": "coverage",
-    "targets": "coverage"
-  }
+  { "name": "debug", "inherits": "default", "configurePreset": "debug", "configuration": "Debug" },
+  { "name": "tidy", "configurePreset": "tidy" },
+  { "name": "coverage", "configurePreset": "coverage" },
+  { "name": "run-coverage", "configurePreset": "coverage", "targets": "coverage" }
 ],
 "testPresets": [
 {
@@ -254,6 +263,7 @@
   }
 },
 { "name": "shared", "configurePreset": "shared", "inherits": "default" },
+{ "name": "shared-nofortran", "configurePreset": "shared-nofortran", "inherits": "default" },
 { "name": "isofortran", "configurePreset": "isofortran", "inherits": "default",
   "filter": {
     "include": {"name": "realpath"}
@@ -358,10 +368,36 @@
   },
   {
     "name": "shared",
+    "displayName": "Build & test with shared library",
     "steps": [
       { "type": "configure", "name": "shared" },
       { "type": "build", "name": "shared" },
       { "type": "test", "name": "shared" }
+    ]
+  },
+  {
+    "name": "shared-build",
+    "displayName": "Build with shared library",
+    "steps": [
+      { "type": "configure", "name": "shared-build" },
+      { "type": "build", "name": "shared-build" }
+    ]
+  },
+  {
+    "name": "shared-nofortran",
+    "displayName": "Build & test with shared library without Fortran",
+    "steps": [
+      { "type": "configure", "name": "shared-nofortran" },
+      { "type": "build", "name": "shared-nofortran" },
+      { "type": "test", "name": "shared-nofortran" }
+    ]
+  },
+  {
+    "name": "shared-nofortran-build",
+    "displayName": "Build with shared library without Fortran",
+    "steps": [
+      { "type": "configure", "name": "shared-nofortran-build" },
+      { "type": "build", "name": "shared-nofortran-build" }
     ]
   },
   {
@@ -403,28 +439,32 @@
       { "type": "build", "name": "ios-sim" }
     ]
   },
-  {
-    "name": "msvc",
+  { "name": "msvc",
     "steps": [
       { "type": "configure", "name": "msvc" },
       { "type": "build", "name": "msvc" },
       { "type": "test", "name": "msvc" }
-    ]
-  },
-  {
-    "name": "msvc-nostdfs",
+    ]},
+  { "name": "msvc-nostdfs",
     "steps": [
       { "type": "configure", "name": "msvc-nostdfs" },
       { "type": "build", "name": "msvc-nostdfs" },
       { "type": "test", "name": "msvc-nostdfs" }
-    ]
-  },
-  {
-    "name": "tidy",
+    ]},
+  { "name": "matlab",
+    "steps": [
+      { "type": "configure", "name": "matlab" },
+      { "type": "build", "name": "matlab" }
+    ]},
+  { "name": "matlab-msvc",
+    "steps": [
+      { "type": "configure", "name": "matlab-msvc" },
+      { "type": "build", "name": "matlab-msvc" }
+    ]},
+  { "name": "tidy",
     "steps": [
       { "type": "configure", "name": "tidy" },
       { "type": "build", "name": "tidy" }
-    ]
-  }
+    ]}
 ]
 }
