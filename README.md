@@ -35,7 +35,7 @@ Ffilesystem header
 can be used from C and C++ project code--see
 [example](./example).
 The C interface allows reuse of Ffilesystem functions in other code languages such as
-[Matlab](./example/matlab_ffilesystem.m) 
+[Matlab](./matlab/Readme.md)
 via FFI.
 
 The optional Fortran interface is built by default.
