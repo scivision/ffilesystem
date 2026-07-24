@@ -156,6 +156,7 @@
   "description": "Build shared library instead of static.",
   "cacheVariables": {
     "BUILD_SHARED_LIBS": true,
+    "ffilesystem_pic": true,
     "ffilesystem_ENABLE_RPATH": true
   }
 },

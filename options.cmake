@@ -6,6 +6,7 @@ option(ffilesystem_trace "debug trace output" off)
 option(ffilesystem_locale "enable locale-based functions")
 option(ffilesystem_extra "enable extra functions not strictly filesystem-based" on)
 option(ffilesystem_unicode "Windows Unicode support" on)
+option(ffilesystem_pic "Build position-independent code")
 
 option(BUILD_SHARED_LIBS "Build shared libraries")
 option(ffilesystem_tidy "Run clang-tidy on the code")

@@ -159,6 +159,12 @@ add_library(ffilesystem ${_src})
 
 include(cmake/compilers.cmake)
 
+if(ffilesystem_pic)
+  include(CheckPIESupported)
+  check_pie_supported()
+  set(CMAKE_POSITION_INDEPENDENT_CODE true)
+endif()
+
 # use separate object for Fortran to work with Visual Studio generator
 if(ffilesystem_fortran)
 
@@ -189,7 +195,6 @@ target_compile_definitions(ffilesystem PUBLIC
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_DLADDR}>>:ffilesystem_HAVE_DLADDR>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_COPY_FILE_RANGE}>>:ffilesystem_HAVE_COPY_FILE_RANGE>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_STATX}>>:HAVE_STATX>"
-"$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_locale}>>:ffilesystem_locale>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_extra}>>:ffilesystem_extra>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_GetFileInformationByName}>>:HAVE_GETFILEINFORMATIONBYNAME>"
 )
