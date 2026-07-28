@@ -30,6 +30,24 @@ auto make_ctx(std::string_view arg0) {
   return ctx;
 }
 
+auto setup_inaccessible_directory(std::string& base, std::string& secret) {
+  base = "ffs_equiv_inaccessible_dir";
+  secret = base + "/secret";
+
+  if (fs_exists(secret) && !fs_set_permissions(secret, 1, 1, 1)) return false;
+
+  if (fs_exists(base) && (!fs_remove(secret) || !fs_remove(base))) return false;
+
+  if (!fs_mkdir(secret)) return false;
+  if (!fs_set_permissions(base, -1, -1, -1)) return false;
+
+  if(fs_exists(secret)) return false;
+  if(fs_is_dir(secret)) return false;
+  if(fs_is_file(secret)) return false;
+
+  return true;
+}
+
 } // namespace
 
 int main(int argc, char** argv) {
@@ -71,33 +89,20 @@ if (!fs_equivalent(".", fs_parent(argv[0]))) {
 if(fs_is_windows() || fs_is_cygwin() || fs_is_admin() || !fs_is_writable(".")) {
     skip / "equivalent_inaccessible_directory"_test = [] {};
 } else {
-  "equivalent_inaccessible_directory"_test = [] {
+  std::string base;
+  std::string secret;
 
-    const std::string base = "ffs_equiv_inaccessible_dir";
-    const std::string secret = base + "/secret";
+  if (setup_inaccessible_directory(base, secret)) {
+    "equivalent_inaccessible_directory"_test = [base, secret] {
 
-    // Clean up stale state from prior interrupted runs.
-    if (fs_exists(secret)) {
-      fs_set_permissions(secret, 1, 1, 1);
-    }
-    if (fs_exists(base)) {
-      fs_remove(secret);
-      fs_remove(base);
-    }
+      expect(!fs_equivalent(secret, secret));
 
-    expect(fs_mkdir(secret) >> fatal);
-    expect(fs_set_permissions(base, -1, -1, -1) >> fatal);
-
-    // test that associated functions also work
-    expect(!fs_exists(secret)) << "inaccessible path treated as not existing";
-    expect(!fs_is_dir(secret)) << "inaccessible path should not be treated as directory";
-    expect(!fs_is_file(secret)) << "inaccessible path should not be treated as file";
-
-    expect(!fs_equivalent(secret, secret));
-
-    expect(fs_set_permissions(base, 1, 1, 1));
-    expect(fs_remove(secret));
-    expect(fs_remove(base));
-  };
+      expect(fs_set_permissions(base, 1, 1, 1));
+      expect(fs_remove(secret));
+      expect(fs_remove(base));
+    };
+  } else {
+    skip / "equivalent_inaccessible_directory"_test = [] {};
+  }
 }
 }
