@@ -19,10 +19,14 @@ endif()
 
 
 set(ffilesystem_fortran_test_flags)
+set(ffilesystem_cpp_test_flags)
 if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" AND CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 13)
-  set(ffilesystem_fortran_test_flags -Wno-maybe-uninitialized)
+  set(ffilesystem_fortran_test_flags "$<$<COMPILE_LANGUAGE:Fortran>:-Wno-maybe-uninitialized>")
+elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
+  set(ffilesystem_cpp_test_flags "$<$<COMPILE_LANGUAGE:CXX>:--diag_suppress=nodiscard_doesnt_apply>")
 endif()
 message(VERBOSE "${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}: Fortran test flags: ${ffilesystem_fortran_test_flags}")
+message(VERBOSE "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}: C++ test flags: ${ffilesystem_cpp_test_flags}")
 
 set(test_dirs core symlink)
 if(ffilesystem_extra)
