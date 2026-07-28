@@ -77,6 +77,10 @@ if (!fs_is_writable("."))
     expect(fs_is_readable(ctx.read)) << ctx.read << " should be readable";
   };
 
+  if(fs_is_windows() || fs_is_cygwin() || (fs_is_wsl() > 0 && fs_filesystem_type(fs_absolute(".")) == "v9fs")) {
+    skip / "permissions_not_readable"_test = [] {};
+  } else {
+
   "permissions_not_readable"_test = [] {
     permissions_ctx ctx;
     setup(ctx, "permissions_not_readable");
@@ -87,10 +91,9 @@ if (!fs_is_writable("."))
 
     std::cout << "Permissions: " << ctx.noread << " " << p << "\n";
 
-    if (!(fs_is_windows() || fs_is_cygwin())) {
-      expect(eq(p[0], '-'));
-    }
+    expect(eq(p[0], '-'));
   };
+  }
 
   "permissions_read"_test = [] {
     permissions_ctx ctx;
@@ -100,6 +103,10 @@ if (!fs_is_writable("."))
     expect(fs_is_readable(ctx.read));
     expect(fs_set_permissions(ctx.nonnull_file, 1, 0, 0));
   };
+
+  if(fs_is_windows() || fs_is_cygwin() || (fs_is_wsl() > 0 && fs_filesystem_type(fs_absolute(".")) == "v9fs")) {
+    skip / "permissions_writable"_test = [] {};
+  } else {
 
   "permissions_writable"_test = [] {
     permissions_ctx ctx;
@@ -119,5 +126,6 @@ if (!fs_is_writable("."))
       }
     }
   };
+  }
 }
 }
