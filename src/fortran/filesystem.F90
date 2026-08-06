@@ -39,7 +39,7 @@ set_permissions, get_permissions, &
 backend, cpp_lang, c_lang, &
 fs_lang, &
 fs_is_optimized, filesep, pathsep, is_safe_name, &
-is_admin, is_bsd, is_macos, is_rosetta, is_windows, is_cygwin, is_wsl, is_mingw, is_msvc, is_linux, is_unix, &
+is_admin, is_bsd, is_macos, is_rosetta, is_windows, is_cygwin, is_wsl, is_mingw, is_clangcl, is_msvc, is_linux, is_unix, &
 max_path, max_component, get_max_open_files, &
 exe_path, lib_path, compiler, compiler_c, get_shell, get_terminal, &
 longname, shortname, getenv, setenv, getarg, &
@@ -140,6 +140,11 @@ end function
 
 logical(C_BOOL) function is_mingw() bind(C, name="fs_is_mingw")
 !! operating system platform is MinGW
+import C_BOOL
+end function
+
+logical(C_BOOL) function is_clangcl() bind(C, name="fs_is_clangcl")
+!! compiler is Clang-CL
 import C_BOOL
 end function
 

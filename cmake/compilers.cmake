@@ -75,7 +75,7 @@ endif()
 
 
 # --- C / C++ compile flags
-if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU|^Intel")
+if(NOT MSVC AND CMAKE_C_COMPILER_ID MATCHES "Clang|GNU|^Intel")
   target_compile_options(ffilesystem PRIVATE
   "$<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<CONFIG:Debug,RelWithDebInfo>>:-Wall;-Wextra>"
   "$<$<COMPILE_LANGUAGE:C>:-Werror=implicit-function-declaration>"

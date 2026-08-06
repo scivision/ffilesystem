@@ -85,6 +85,14 @@ bool fs_is_appleclang(){
 #endif
 }
 
+bool fs_is_clangcl(){
+#if defined(__clang__) && defined(_MSC_VER)
+  return true;
+#else
+  return false;
+#endif
+}
+
 bool fs_is_msvc(){
 #ifdef _MSC_VER
   return true;
