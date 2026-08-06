@@ -105,7 +105,7 @@ if (!ok || (fs_is_windows() && fs_backend() == "<filesystem>" &&
   };
 }
 
-if (!ok || fs_is_clangcl() || (fs_is_mingw() && fs_backend() == "<filesystem>")) {
+if (!ok || fs_is_windows()) {
         skip / "exists"_test = [] {};
 } else {
   "exists"_test = [&ctx] {
