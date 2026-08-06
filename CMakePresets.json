@@ -92,6 +92,16 @@
     "ffilesystem_cpp": false
   }
 },
+{ "name": "clangcl", "inherits": "msvc",
+  "displayName": "Clang-cl with MSVC",
+  "description": "Build with Clang-cl using MSVC toolchain.",
+  "generator": "Ninja",
+  "cacheVariables": {
+    "CMAKE_CXX_COMPILER": "clang-cl",
+    "CMAKE_C_COMPILER": "clang-cl",
+    "ffilesystem_fortran": true
+  }
+},
 {
   "name": "linux", "inherits": "default",
   "displayName": "Linux build (for WSL on GHA)",
@@ -224,6 +234,7 @@
   { "name": "ios-sim", "configurePreset": "ios-sim" },
   { "name": "msvc", "configurePreset": "msvc", "configuration": "Release", "jobs": 8 },
   { "name": "msvc-nostdfs", "configurePreset": "msvc-nostdfs", "inherits": "msvc" },
+  { "name": "clangcl", "configurePreset": "clangcl", "inherits": "msvc" },
   { "name": "matlab", "configurePreset": "matlab", "targets": ["ffilesystem", "fs_cli"] },
   { "name": "matlab-msvc", "configurePreset": "matlab-msvc", "inherits": ["matlab", "msvc"] },
   {
@@ -284,6 +295,7 @@
 },
 { "name": "msvc", "configurePreset": "msvc", "inherits": "default" },
 { "name": "msvc-nostdfs", "configurePreset": "msvc-nostdfs", "inherits": "msvc" },
+{ "name": "clangcl", "configurePreset": "clangcl", "inherits": "msvc" },
 {
   "name": "debug", "inherits": "default",
   "configurePreset": "debug",
@@ -451,6 +463,12 @@
       { "type": "configure", "name": "msvc-nostdfs" },
       { "type": "build", "name": "msvc-nostdfs" },
       { "type": "test", "name": "msvc-nostdfs" }
+    ]},
+  { "name": "clangcl",
+    "steps": [
+      { "type": "configure", "name": "clangcl" },
+      { "type": "build", "name": "clangcl" },
+      { "type": "test", "name": "clangcl" }
     ]},
   { "name": "matlab",
     "steps": [

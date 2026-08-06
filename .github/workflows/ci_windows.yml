@@ -44,6 +44,9 @@ jobs:
       run: cmake --workflow msvc
       working-directory: example
 
+    - name: ClangCL workflow
+      run: cmake --workflow clangcl --fresh
+
 
   msys2:
     runs-on: windows-latest
