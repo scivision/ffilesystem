@@ -38,7 +38,7 @@ jobs:
       run: cmake --workflow msvc --fresh
 
     - name: Install Release
-      run: cmake --install build-msvc --config Release
+      run: cmake --install build --config Release
 
     - name: example configure
       run: cmake --workflow msvc
