@@ -94,13 +94,8 @@
 },
 { "name": "clangcl", "inherits": "msvc",
   "displayName": "Clang-cl with MSVC",
-  "description": "Build with Clang-cl using MSVC toolchain.",
-  "generator": "Ninja",
-  "cacheVariables": {
-    "CMAKE_CXX_COMPILER": "clang-cl",
-    "CMAKE_C_COMPILER": "clang-cl",
-    "ffilesystem_fortran": true
-  }
+  "description": "Build with Clang-cl using MSVC toolchain. FlangCL isn't yet ready as iso_c_binding is missing and CMake itself needs fixing.",
+  "toolset": "ClangCL"
 },
 {
   "name": "linux", "inherits": "default",

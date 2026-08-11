@@ -29,18 +29,12 @@ endif()
 if(ffilesystem_fortran)
   enable_language(Fortran)
 
-  check_source_compiles(Fortran
-  "program test; use iso_c_binding; end program"
-  HAVE_ISO_C_BINDING)
-  # this test is needed for e.g. Clang-CL with Flang
-  if(NOT HAVE_ISO_C_BINDING)
-    set(ffilesystem_fortran OFF CACHE BOOL "Fortran missing ISO C bindings" FORCE)
+  if(ffilesystem_iso_fortran_binding)
+    include(cmake/iso_fortran_binding.cmake)
   endif()
 endif()
 
-if(ffilesystem_fortran)
-  include(cmake/iso_fortran_binding.cmake)
-endif()
+
 
 # --- RPATH handling for transitive dependencies
 if(ffilesystem_ENABLE_RPATH AND BUILD_SHARED_LIBS AND NOT WIN32)

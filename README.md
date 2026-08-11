@@ -265,6 +265,13 @@ of the class as a best practice--for example `std::string::size_type` where appr
 We use `size_t` at the C interfaces for clarity and also certain internal library calls.
 `ssize_t` is used in certain non-Windows internal-only function calls.
 
+For those desiring to use Windows compiler ClangCL that comes with Visual Studio, this is enabled by CMake preset or workflow "clangcl".
+Fortran FlangCL compiler isn't yet working as iso_c_binding is missing and CMake may need support added.
+The computer needs Visual Studio Installer "Individual Components":
+
+* "C++ Clang Compiler for Windows"
+* "MSBuild support for LLVM (clang-cl) toolset"
+
 ### Possible future features
 
 * inquire if a file is encrypted or compressed, etc.
