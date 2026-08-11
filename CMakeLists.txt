@@ -200,6 +200,9 @@ target_compile_definitions(ffilesystem PUBLIC
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_extra}>>:ffilesystem_extra>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_GetFileInformationByName}>>:HAVE_GETFILEINFORMATIONBYNAME>"
 )
+if(WIN32 OR CYGWIN)
+  target_compile_definitions(ffilesystem PRIVATE $<$<COMPILE_LANGUAGE:CXX>:FS_DLL_NAME="$<TARGET_FILE_NAME:ffilesystem>">)
+endif()
 
 target_compile_options(ffilesystem PRIVATE ${ffilesystem_cxxflags})
 
@@ -221,9 +224,6 @@ if(ffilesystem_warning_as_error)
   endif()
 endif()
 
-if(WIN32 OR CYGWIN)
-  target_compile_definitions(ffilesystem PRIVATE $<$<COMPILE_LANGUAGE:CXX>:FS_DLL_NAME="$<TARGET_FILE_NAME:ffilesystem>">)
-endif()
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 

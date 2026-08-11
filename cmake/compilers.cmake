@@ -82,15 +82,16 @@ if(NOT MSVC AND CMAKE_C_COMPILER_ID MATCHES "Clang|GNU|^Intel")
   )
 endif()
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-  set(ffilesystem_cxxflags "$<$<COMPILE_LANGUAGE:CXX>:-Wno-unused-label>")
-endif()
+if(MSVC OR CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
+  # the CMAKE_CXX_SIMULATE_ID catches when frontend is GNU but MSVC runtime headers are used
+  target_compile_definitions(ffilesystem PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:_CRT_SECURE_NO_WARNINGS>")
 
-if(MSVC)
   # if, not elseif, because IntelLLVM uses MSVC flags
   # /wd4996 quiets warning: 'GetVersionExA' is deprecated
-  target_compile_options(ffilesystem PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:/W3;/wd4996>")
-
+  target_compile_options(ffilesystem PRIVATE
+  "$<$<COMPILE_LANGUAGE:C,CXX>:/W3;/wd4996>"
+  "$<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<CXX_COMPILER_ID:Clang>>:-Wno-deprecated-declarations>"
+  )
   if(ffilesystem_unicode)
     add_compile_definitions("$<$<COMPILE_LANGUAGE:C,CXX>:_UNICODE>")
   endif()
