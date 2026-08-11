@@ -44,8 +44,23 @@ jobs:
       run: cmake --workflow msvc
       working-directory: example
 
-    - name: ClangCL workflow
+
+  clang-cl:
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 15
+
+    steps:
+    - *checkout
+
+    - name: Build and Test
       run: cmake --workflow clangcl --fresh
+
+    - name: Install Release
+      run: cmake --install build --config Release
+
+    - name: example configure
+      run: cmake --workflow clangcl
+      working-directory: example
 
 
   msys2:
