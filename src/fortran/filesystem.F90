@@ -783,7 +783,7 @@ end function
 function canonical(path, strict) result (r)
 include "ifc1a.inc"
 N = fs_canonical(trim(path) // C_NULL_CHAR, s, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 #if defined HAVE_ISO_FORTRAN_BINDING
@@ -808,7 +808,7 @@ function realpath(path) result (r)
 character(*), intent(in) :: path
 include "ifc0a.inc"
 N = fs_realpath(path // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 #endif
 
@@ -816,7 +816,7 @@ end function
 function resolve(path, strict) result(r)
 include "ifc1a.inc"
 N = fs_resolve(trim(path) // C_NULL_CHAR, s, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -914,7 +914,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_read_symlink(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -961,7 +961,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_expanduser(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -971,7 +971,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_file_name(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1171,7 +1171,7 @@ character(*), intent(in) :: path, other
 
 include "ifc0a.inc"
 N = fs_join(trim(path) // C_NULL_CHAR, trim(other) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1197,7 +1197,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_parent(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1207,7 +1207,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_normal(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1221,7 +1221,7 @@ character(*), intent(in) :: base, other
 
 include "ifc0a.inc"
 N = fs_relative_to(trim(base) // C_NULL_CHAR, trim(other) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1235,7 +1235,7 @@ character(*), intent(in) :: base, other
 
 include "ifc0a.inc"
 N = fs_proximate_to(trim(base) // C_NULL_CHAR, trim(other) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1245,7 +1245,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_root(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1255,7 +1255,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_root_name(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1271,7 +1271,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_stem(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1281,7 +1281,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_suffix(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1340,7 +1340,7 @@ character(*), intent(in) :: path,new
 
 include "ifc0a.inc"
 N = fs_with_suffix(trim(path) // C_NULL_CHAR, trim(new) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1350,7 +1350,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_shortname(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1360,7 +1360,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_longname(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1370,7 +1370,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_to_cygpath(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1380,7 +1380,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_to_winpath(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1444,7 +1444,7 @@ function backend() result(r)
 !! Ffilesystem backend
 include "ifc0a.inc"
 N = fs_backend(cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1453,7 +1453,7 @@ function exe_path() result (r)
 
 include "ifc0a.inc"
 N = fs_exe_path(cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 !> one-liner methods calling actual procedures
 
@@ -1496,7 +1496,7 @@ else
   N = fs_which(trim(name) // C_NULL_CHAR, C_NULL_CHAR, a, cbuf, N)
 end if
 
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1541,7 +1541,7 @@ function compiler_c() result(r)
 !! get C/C++ compiler name and version
 include "ifc0a.inc"
 N = fs_compiler(cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1549,7 +1549,7 @@ function get_shell() result(r)
 !! get shell name
 include "ifc0a.inc"
 N = fs_get_shell(cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1557,7 +1557,7 @@ function get_terminal() result(r)
 !! get terminal name
 include "ifc0a.inc"
 N = fs_get_terminal(cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1595,7 +1595,7 @@ function lib_path() result (r)
 !! get full path of shared library. Empty if not shared library.
 include "ifc0a.inc"
 N = fs_lib_path(cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1604,7 +1604,7 @@ function get_cwd() result (r)
 
 include "ifc0a.inc"
 N = fs_get_cwd(cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1623,7 +1623,7 @@ function get_homedir() result (r)
 
 include "ifc0a.inc"
 N = fs_get_homedir(cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1633,7 +1633,7 @@ function get_profile_dir() result (r)
 
 include "ifc0a.inc"
 N = fs_get_profile_dir(cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1642,7 +1642,7 @@ function hostname() result (r)
 
 include "ifc0a.inc"
 N = fs_hostname(cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1651,7 +1651,7 @@ function get_username() result (r)
 
 include "ifc0a.inc"
 N = fs_get_username(cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1661,7 +1661,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_get_owner_name(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1671,7 +1671,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_get_owner_group(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1680,7 +1680,7 @@ function get_tempdir() result (r)
 
 include "ifc0a.inc"
 N = fs_get_tempdir(cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1694,7 +1694,7 @@ character(*), intent(in) :: path, base
 include "ifc0a.inc"
 
 N = fs_absolute(trim(path) // C_NULL_CHAR, trim(base) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1705,7 +1705,7 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_filesystem_type(trim(path) // C_NULL_CHAR, cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 end function
 
 
@@ -1726,7 +1726,7 @@ function cpu_arch() result(r)
 
 include "ifc0a.inc"
 N = fs_cpu_arch(cbuf, N)
-include "ifc0b.inc"
+r = cbuf(:N)
 
 end function
 
