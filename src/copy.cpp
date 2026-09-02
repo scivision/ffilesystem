@@ -130,6 +130,28 @@ static bool fs_copy_loop(int const rid, int const wid, off_t const len)
 }
 
 
+#if defined(ffilesystem_HAVE_COPY_FILE_RANGE)
+static bool fs_copy_range(int const rid, int const wid, off_t len)
+{
+  if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using copy_file_range\n";
+
+  while (len > 0) {
+    ssize_t ret;
+    do {
+      ret = ::copy_file_range(rid, nullptr, wid, nullptr, len, 0);
+    } while (ret < 0 && errno == EINTR);
+
+    if (ret <= 0)
+      return false;
+
+    len -= ret;
+  }
+
+  return len == 0;
+}
+#endif
+
+
 bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, bool overwrite)
 {
   // copy a file in chunks
@@ -145,7 +167,7 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
 
   const off_t len = s.st_size;
 
-  auto opt = O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC;
+  auto opt = O_CREAT | O_WRONLY | O_CLOEXEC;
   if(!overwrite)
     opt |= O_EXCL;
 
@@ -155,9 +177,16 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
   if (!wid)
     return false;
 
-  off_t r = len;
-  off_t ret = 0;
+  struct stat d;
+  if (::fstat(wid.get(), &d) == -1 ||
+      (s.st_dev == d.st_dev && s.st_ino == d.st_ino))
+    return false;
+
+  if (::ftruncate(wid.get(), 0) == -1)
+    return false;
+
   errno = 0;
+  bool ok = false;
 
 #if defined(ffilesystem_HAVE_COPY_FILE_RANGE)
     // https://man.freebsd.org/cgi/man.cgi?copy_file_range(2)
@@ -170,30 +199,22 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
                  fst == "sysfs" ||
                  fst == "tracefs";
 
-  if (!useloop) {
-    if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using copy_file_range\n";
-
-    while (r > 0) {
-      ssize_t cfr;
-      do {
-        cfr = ::copy_file_range(rid.get(), nullptr, wid.get(), nullptr, r, 0);
-      } while (cfr < 0 && errno == EINTR);
-
-      ret = cfr;
-      if (cfr <= 0) break;
-
-      r -= cfr;
-    }
-  }
-#endif
-
-  bool ok = r == 0;
+  if (useloop)
+    ok = fs_copy_loop(rid.get(), wid.get(), len);
+  else
+    ok = fs_copy_range(rid.get(), wid.get(), len);
 
   // https://github.com/boostorg/filesystem/issues/184
   if (!ok && (errno == ENOSYS || errno == EOPNOTSUPP)) {
-    if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: falling back to fs_copy_loop (r=" << r << ", errno=" << errno << ")\n";
-    ok = fs_copy_loop(rid.get(), wid.get(), r);
+    if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: falling back to fs_copy_loop (errno=" << errno << ")\n";
+    ::lseek(rid.get(), 0, SEEK_SET);
+    ::lseek(wid.get(), 0, SEEK_SET);
+    ok = fs_copy_loop(rid.get(), wid.get(), len);
   }
+
+#else
+  ok = fs_copy_loop(rid.get(), wid.get(), len);
+#endif
 
   int wc = wid.close();
   int rc = rid.close();
@@ -208,13 +229,18 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
 
   std::error_code ec;
 
+  const bool source_is_file = fs_is_file(source);
+  const bool destination_is_file = fs_is_file(dest);
+  if (overwrite && source_is_file && destination_is_file && fs_equivalent(source, dest))
+    return false;
+
 #ifdef HAVE_CXX_FILESYSTEM
   auto opt = Filesystem::copy_options::none;
   if (overwrite)
     opt = Filesystem::copy_options::overwrite_existing;
 // WORKAROUND: Windows MinGW GCC 11..13, Intel oneAPI Linux: bug with overwrite_existing failing on overwrite
 
-  if(overwrite && fs_is_file(dest) && !fs_remove(dest))
+  if(overwrite && source_is_file && destination_is_file && !fs_remove(dest))
     fs_print_error(dest, std::make_error_code(std::errc::io_error));
 
   if(Filesystem::copy_file(source, dest, opt, ec) && !ec)

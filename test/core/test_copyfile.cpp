@@ -74,8 +74,18 @@ int main() {
     // Read from the copied file
     std::ifstream ifs(ctx->s2);
     std::getline(ifs, t2);
+    ifs.close();
 
     expect(eq(ctx->t1, t2));
+    expect(!fs_copy_file(ctx->s1, ctx->s1, true));
+    expect(eq(fs_file_size(ctx->s1), ctx->iref));
+
+    expect(fs_copy_file(ctx->s3, ctx->s2, true));
+    expect(eq(fs_file_size(ctx->s2), static_cast<std::uintmax_t>(0)));
+
+    const std::string missing = ctx->s1 + ".missing";
+    expect(!fs_copy_file(missing, ctx->s2, true));
+    expect(eq(fs_file_size(ctx->s2), static_cast<std::uintmax_t>(0)));
 
     expect(fs_copy_file(ctx->s3, ctx->s4, true));
     expect(fs_is_file(ctx->s4));
