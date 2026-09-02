@@ -91,7 +91,7 @@ struct fd_handle {
 };
 
 
-static off_t fs_copy_loop(int const rid, int const wid, off_t const len)
+static bool fs_copy_loop(int const rid, int const wid, off_t const len)
 {
   // copy a file in chunks
   off_t r = len;
@@ -109,8 +109,7 @@ static off_t fs_copy_loop(int const rid, int const wid, off_t const len)
       ret = ::read(rid, buf.get(), to_read);
     } while (ret < 0 && errno == EINTR);
 
-    if (ret <= 0)
-      break;
+    if (ret <= 0) return false;
 
     ssize_t written = 0;
     while (written < ret) {
@@ -119,20 +118,15 @@ static off_t fs_copy_loop(int const rid, int const wid, off_t const len)
         w = ::write(wid, buf.get() + written, static_cast<size_t>(ret - written));
       } while (w < 0 && errno == EINTR);
 
-      if (w <= 0) {
-        ret = -1;
-        break;
-      }
+      if (w <= 0) return false;
+
       written += w;
     }
-
-    if (ret < 0)
-      break;
 
     r -= written;
   }
 
-  return r;
+  return r == 0;
 }
 
 
@@ -163,7 +157,7 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
 
   off_t r = len;
   off_t ret = 0;
-  int cfr_errno = 0;
+  errno = 0;
 
 #if defined(ffilesystem_HAVE_COPY_FILE_RANGE)
     // https://man.freebsd.org/cgi/man.cgi?copy_file_range(2)
@@ -186,25 +180,24 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
       } while (cfr < 0 && errno == EINTR);
 
       ret = cfr;
-      if (cfr <= 0) {
-        if (cfr < 0) cfr_errno = errno;
-        break;
-      }
+      if (cfr <= 0) break;
 
       r -= cfr;
     }
   }
 #endif
 
+  bool ok = r == 0;
+
   // https://github.com/boostorg/filesystem/issues/184
-  if (r != 0 || (ret < 0 && (cfr_errno == EINVAL || cfr_errno == EOPNOTSUPP))) {
-    if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: falling back to fs_copy_loop (r=" << r << ", errno=" << (cfr_errno ? cfr_errno : errno) << ")\n";
-    r = fs_copy_loop(rid.get(), wid.get(), r);
+  if (!ok && (errno == ENOSYS || errno == EOPNOTSUPP)) {
+    if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: falling back to fs_copy_loop (r=" << r << ", errno=" << errno << ")\n";
+    ok = fs_copy_loop(rid.get(), wid.get(), r);
   }
 
   int wc = wid.close();
   int rc = rid.close();
-  return r == 0 && wc == 0 && rc == 0;
+  return ok && wc == 0 && rc == 0;
 }
 #endif
 
