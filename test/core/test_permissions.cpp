@@ -24,7 +24,7 @@ struct permissions_ctx {
 void setup(permissions_ctx& ctx, std::string_view test_name) {
   using namespace boost::ut;
 
-  const std::string n = std::string{test_name};
+  const std::string n{test_name};
 
   ctx.read = n + "readable.txt";
   ctx.noread = n + "nonreadable.txt";

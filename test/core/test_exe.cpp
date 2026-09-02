@@ -28,7 +28,7 @@ struct exe_ctx {
 void setup_ctx(exe_ctx& ctx, std::string_view test_name, std::string_view arg0) {
   using namespace boost::ut;
 
-  const std::string n = std::string{"TestExe-"} + std::string{test_name};
+  const std::string n = "TestExe-" + std::string{test_name};
   ctx.exe = "test_" + n + ".exe";
   ctx.noexe = "test_" + n + "_noexe.exe";
 

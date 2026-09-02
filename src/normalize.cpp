@@ -114,7 +114,7 @@ fs_drop_slash(std::string_view in)
     return {};
 
   bool winPrefix = false;
-  std::string::size_type i = std::string_view::npos;
+  std::string::size_type i{std::string_view::npos};
 
   if(fs_is_windows()){
     // Extended-length or device path

@@ -29,7 +29,7 @@ struct symlink_ctx {
 auto setup(symlink_ctx& ctx, std::string_view name) {
   using namespace boost::ut;
 
-  const std::string n = std::string{"TestSymlink-"} + std::string{name};
+  const std::string n = "TestSymlink-" + std::string{name};
   ctx.cwd = fs_realpath(fs_get_cwd());
   // realpath is for Windows Dev Drive and Networked drives
   expect(!ctx.cwd.empty() >> fatal) << "get_cwd() should not return empty string";
