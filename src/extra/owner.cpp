@@ -80,40 +80,35 @@ static std::string fs_win32_owner(std::string_view path, bool group)
 
 static std::optional<uid_t> fs_stat_uid(std::string_view path)
 {
-  int r = 0;
   const std::string cpath(path);
 
 #if defined(HAVE_STATX)
-  struct statx sx;
-  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_UID, &sx);
-  if (r == 0)
+  if(struct statx sx; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_UID, &sx) == 0)
     return sx.stx_uid;
+  else if (errno != ENOSYS)
+    return {};
 #endif
 
-  if(r == 0 || errno == ENOSYS){
-    if(struct stat s; !::stat(cpath.c_str(), &s))
-      return s.st_uid;
-  }
+  if(struct stat s; ::stat(cpath.c_str(), &s) == 0)
+    return s.st_uid;
 
   return {};
 }
 
+
 static std::optional<gid_t> fs_stat_gid(std::string_view path)
 {
-  int r = 0;
   const std::string cpath(path);
 
 #if defined(HAVE_STATX)
-  struct statx sx;
-  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_GID, &sx);
-  if (r == 0)
+  if(struct statx sx; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_GID, &sx) == 0)
     return sx.stx_gid;
+  else if (errno != ENOSYS)
+    return {};
 #endif
 
-if(r == 0 || errno == ENOSYS){
-  if(struct stat s; !::stat(cpath.c_str(), &s))
+  if(struct stat s; ::stat(cpath.c_str(), &s) == 0)
     return s.st_gid;
-}
 
   return {};
 }

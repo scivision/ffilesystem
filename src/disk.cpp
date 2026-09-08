@@ -34,7 +34,7 @@ std::size_t fs_get_blksize(std::string_view path)
 
   auto handle_error = [&]() {
     fs_print_error(path);
-    return std::size_t(0);
+    return std::size_t{};
   };
 
 #if defined(_WIN32)
@@ -67,9 +67,8 @@ std::size_t fs_get_blksize(std::string_view path)
   const std::string cpath{path};
 
 #if defined(HAVE_STATX)
-  struct statx sx;
-  if(::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &sx) == 0)
-    return sx.stx_blksize;
+  if(struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &x) == 0)
+    return x.stx_blksize;
   else if (errno != ENOSYS)
     return handle_error();
 #endif
@@ -89,17 +88,15 @@ dev_t fs_st_dev(std::string_view path)
 
   auto handle_error = [&]() {
     fs_print_error(path);
-    return dev_t(0);
+    return dev_t{};
   };
 
   const std::string cpath{path};
 
 #if defined(HAVE_STATX)
 
-  struct statx x;
-
   // don't call as ::makedev because some platforms e.g. Android have makedev as a macro
-  if (::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &x) == 0)
+  if (struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &x) == 0)
     return makedev(x.stx_dev_major, x.stx_dev_minor);
   else if (errno != ENOSYS)
     return handle_error();
@@ -125,7 +122,7 @@ ino_t fs_inode(std::string_view path)
 
   auto handle_error = [&]() {
     fs_print_error(path, ec);
-    return ino_t(0);
+    return ino_t{};
   };
 
 #if defined(_WIN32)
@@ -147,8 +144,7 @@ ino_t fs_inode(std::string_view path)
 
 #if defined(HAVE_STATX)
 
-  struct statx x;
-  if(::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &x) == 0)
+  if(struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &x) == 0)
     return x.stx_ino;
   else if (errno != ENOSYS)
     return handle_error();

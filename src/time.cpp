@@ -44,6 +44,10 @@ namespace Filesystem = std::filesystem;
 
 std::time_t fs_get_modtime(std::string_view path)
 {
+  auto handle_error = [&]() {
+    fs_print_error(path);
+    return std::time_t{};
+  };
 
 #if defined(HAVE_CLOCK_CAST) && defined(HAVE_CXX_FILESYSTEM)
   if(const auto &t_fs = fs_get_modtime_fs(path); t_fs){
@@ -52,24 +56,21 @@ std::time_t fs_get_modtime(std::string_view path)
   }
 #else
 
-  int r = 0;
-  const std::string cpath(path);
+  const std::string cpath{path};
 
 #if defined(HAVE_STATX)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
-  struct statx sx;
-  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_MTIME, &sx);
-  if (r == 0)
-    return sx.stx_mtime.tv_sec;
-#endif
-  if (r == 0 || errno == ENOSYS){
-    if (struct stat s; !::stat(cpath.c_str(), &s))
-      return s.st_mtime;
-  }
+  if(struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_MTIME, &x) == 0)
+    return x.stx_mtime.tv_sec;
+  else if (errno != ENOSYS)
+    return handle_error();
 #endif
 
-  fs_print_error(path);
-  return {};
+  if (struct stat s; ::stat(cpath.c_str(), &s) == 0)
+    return s.st_mtime;
+#endif
+
+  return handle_error();
 }
 
 

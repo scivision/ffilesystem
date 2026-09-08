@@ -39,12 +39,14 @@ std::uintmax_t fs_file_size(std::string_view path)
 {
   // fs_file_size() like std::filesystem::file_size() is only for files, not directories, which are considered to have no size.
   // Returns (uintmax_t)(-1) on error, and sets errno or std::error_code.
-  // different platforms treat non-file's size differently, so we need the fs_is_file() for consistency.
+  // different platforms treat non-file size differently, so we need the fs_is_file() for consistency.
 
   std::error_code ec;
 
-  if(!fs_is_file(path))
+  if(!fs_is_file(path)) {
+    fs_print_error(path, "not a regular file");
     return fs_unknown_size;
+  }
 
 #if defined(HAVE_CXX_FILESYSTEM)
 
@@ -56,24 +58,27 @@ std::uintmax_t fs_file_size(std::string_view path)
 
 #else
 
-  int r = 0;
-  const std::string cpath(path);
+  auto handle_error = [&]() {
+    fs_print_error(path, ec);
+    return fs_unknown_size;
+  };
+
+  const std::string cpath{path};
+
 #if defined(HAVE_STATX)
-  struct statx sx;
-  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_SIZE, &sx);
-  if (r == 0)
-    return sx.stx_size;
+  if(struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_SIZE, &x) == 0)
+    return x.stx_size;
+  else if (errno != ENOSYS)
+    return handle_error();
 #endif
 
-  if (r == 0 || errno == ENOSYS){
-    if (struct stat s; !::stat(cpath.c_str(), &s))
-      return s.st_size;
-  }
+  if (struct stat s; ::stat(cpath.c_str(), &s) == 0)
+    return s.st_size;
+
+  return handle_error();
 
 #endif
 
-  fs_print_error(path, ec);
-  return fs_unknown_size;
 }
 
 

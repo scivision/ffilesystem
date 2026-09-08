@@ -56,21 +56,18 @@ std::string_view::size_type fs_symlink_length([[maybe_unused]] std::string_view 
   std::string_view::size_type L = 0;
 
 #if !defined(_WIN32)
-  int r = 0;
-  const std::string cpath(path);
+  const std::string cpath{path};
 
 #if defined(HAVE_STATX)
-  struct statx sx;
-  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_SIZE, &sx);
-  if (r == 0)
-    L = sx.stx_size;
+  if(struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_SIZE, &x) == 0)
+    L = x.stx_size;
+  else if (errno != ENOSYS)
+    return fs_get_max_path();
 #endif
 // https://linux.die.net/man/2/lstat
 
-  if(r == 0 || errno == ENOSYS){
-    if(struct stat s; ::lstat(cpath.c_str(), &s) == 0)
-      L = s.st_size;
-  }
+  if(struct stat s; ::lstat(cpath.c_str(), &s) == 0)
+    L = s.st_size;
 #endif
 
   return (L > 0) ? L + 1 : fs_get_max_path();
@@ -81,6 +78,11 @@ bool fs_is_symlink(std::string_view path)
 {
   std::error_code ec;
 
+  auto handle_error = [&]() {
+    fs_print_error(path, ec);
+    return false;
+  };
+
 #if FS_USE_WIN32_SYMLINK
   return fs_win32_is_symlink(path);
 #elif defined(HAVE_CXX_FILESYSTEM)
@@ -88,30 +90,26 @@ bool fs_is_symlink(std::string_view path)
     return is_sym;
 #else
 
-  int r = 0;
-  const std::string cpath(path);
+  const std::string cpath{path};
 
 #if defined(HAVE_STATX)
 // Linux Glibc only
 // https://www.gnu.org/software/gnulib/manual/html_node/statx.html
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
 
-  struct statx sx;
-  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_MODE, &sx);
-  if (r == 0)
-    return S_ISLNK(sx.stx_mode);
+  if(struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_MODE, &x) == 0)
+    return S_ISLNK(x.stx_mode);
+  else if (errno != ENOSYS)
+    return handle_error();
 #endif
 // https://linux.die.net/man/2/lstat
 
-  if(r == 0 || errno == ENOSYS){
-    if(struct stat s; ::lstat(cpath.c_str(), &s) == 0)
-      return S_ISLNK(s.st_mode);
-  }
+  if(struct stat s; ::lstat(cpath.c_str(), &s) == 0)
+    return S_ISLNK(s.st_mode);
 
 #endif
 
-  fs_print_error(path, ec);
-  return false;
+  return handle_error();
 }
 
 

@@ -108,8 +108,7 @@ fs_st_mode(std::string_view path)
 // https://www.gnu.org/software/gnulib/manual/html_node/statx.html
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
 
-  struct statx x;
-  if (::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_MODE, &x) == 0) {
+  if (struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_MODE, &x) == 0) {
     return x.stx_mode;
   } else if (errno != ENOSYS) {
     return 0;
@@ -342,9 +341,9 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 
 #if defined(HAVE_STATX)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
-  struct statx sx;
-  if (::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_NLINK, &sx) == 0)
-    return sx.stx_nlink;
+
+  if (struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_NLINK, &x) == 0)
+    return x.stx_nlink;
   else if (errno != ENOSYS)
     return handle_error();
 #endif

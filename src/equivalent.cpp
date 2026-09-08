@@ -72,14 +72,12 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
 // https://www.man7.org/linux/man-pages/man7/inode.7.html
 #if defined(HAVE_STATX)
 
-  struct statx x1, x2;
-
   auto statx_call = [](std::string_view p, struct statx& x) {
     const std::string ps{p};
     return ::statx(AT_FDCWD, ps.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &x) == 0;
   };
 
-  if(statx_call(path1, x1) && statx_call(path2, x2))
+  if(struct statx x1, x2; statx_call(path1, x1) && statx_call(path2, x2))
     return x1.stx_dev_major == x2.stx_dev_major && x1.stx_dev_minor == x2.stx_dev_minor && x1.stx_ino == x2.stx_ino;
   else if (errno != ENOSYS)
     return handle_error();
