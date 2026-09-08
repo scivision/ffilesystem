@@ -31,8 +31,9 @@ namespace Filesystem = std::filesystem;
 
 #endif
 
-// MinGW GCC <filesystem> symlink functions don't work at least through GCC 15.2.0
-#if (defined(__MINGW32__) && !defined(__clang__) && defined(__GNUC__)) || (defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM))
+// MinGW GCC <filesystem> symlink functions don't work until GCC 17
+// https://gcc.gnu.org/gcc-17/changes.html#libstdcxx
+#if (defined(__MINGW32__) && !defined(__clang__) && (defined(__GNUC__) && (__GNUC__ < 17))) || (defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM))
 #define FS_USE_WIN32_SYMLINK 1
 #else
 #define FS_USE_WIN32_SYMLINK 0

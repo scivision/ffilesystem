@@ -102,7 +102,7 @@ mode_t
 fs_st_mode(std::string_view path)
 {
 
-  const std::string cpath(path);
+  const std::string cpath{path};
 #if defined(HAVE_STATX)
 // Linux Glibc only
 // https://www.gnu.org/software/gnulib/manual/html_node/statx.html
@@ -333,18 +333,18 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 
 #else
 
-  int r = 0;
-  const std::string cpath(path);
+  bool statx_ok{false};
+  const std::string cpath{path};
 
 #if defined(HAVE_STATX)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
   struct statx sx;
-  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_NLINK, &sx);
-  if (r == 0)
+  statx_ok = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_NLINK, &sx) == 0;
+  if (statx_ok)
     return sx.stx_nlink;
 #endif
 
-  if (r == 0 || errno == ENOSYS){
+  if (!statx_ok || errno == ENOSYS){
     if (struct stat s; !::stat(cpath.c_str(), &s))
       return s.st_nlink;
   }
