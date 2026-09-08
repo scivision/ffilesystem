@@ -59,9 +59,7 @@ void setup_ctx(exe_ctx& ctx, std::string_view test_name, std::string_view arg0) 
 int main(int argc, char** argv) {
   using namespace boost::ut;
 
-  bool skipall = (fs_is_wsl() > 0 && fs_filesystem_type(fs_absolute(".")) == "v9fs") || !fs_is_writable(".");
-
-  if (skipall){
+  if ((fs_is_wsl() > 0 && fs_filesystem_type(fs_absolute(".")) == "v9fs") || !fs_is_writable(".")){
     skip / "is_exe"_test = [] {};
     skip / "is_exe_bin"_test = [] {};
     skip / "perms_self"_test = [] {};
@@ -69,7 +67,8 @@ int main(int argc, char** argv) {
     skip / "is_not_exe_perms"_test = [] {};
     skip / "chmod_exe"_test = [] {};
     skip / "chmod_noexe"_test = [] {};
-  } else {
+    return 77;
+  }
 
   "is_exe"_test = [argv] {
     exe_ctx ctx;
@@ -172,5 +171,5 @@ int main(int argc, char** argv) {
     expect(p.size() >= 3U >> fatal);
     expect(eq(p[2], '-'));
   };
-}
+
 }
