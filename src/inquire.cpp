@@ -13,6 +13,7 @@
 #include <system_error>
 #include <iostream>  // IWYU pragma: keep
 #include <cstdint> // uintmax_t
+#include <cerrno>
 
 // include even if <filesystem> is available
 #if defined(_WIN32)
@@ -34,6 +35,28 @@ namespace Filesystem = std::filesystem;
 #if __has_include(<fcntl.h>)
 #include <fcntl.h>   // AT_* constants for statx
 #endif
+
+
+static bool fs_check_access(std::string_view path, const int mode){
+
+  std::string cpath(path);
+  bool ok;
+
+#if defined(_WIN32)
+  // to use GetFileAttributesExW would need more advanced techniques like
+  // https://gitlab.kitware.com/cmake/cmake/-/blob/master/Source/kwsys/SystemTools.cxx#L1408
+  //
+  // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
+  fs_as_windows(cpath);  // needed for _access_s to correctly interpret the path on Windows
+  ok = _access_s(cpath.c_str(), mode) == 0;
+#else
+  ok = access(cpath.c_str(), mode) == 0;
+#endif
+  if (!ok && errno != ENOENT)
+    fs_print_error(path);
+
+  return ok;
+}
 
 
 #if defined(_WIN32)
@@ -109,39 +132,30 @@ fs_exists(std::string_view path)
   // unlike kwSys:SystemTools:FileExists which uses R_OK instead of F_OK like this project.
 
   bool ok;
-#if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
-  ok = (Filesystem::exists(path, ec) && !ec) ||
-        (fs_is_msvc() && (fs_is_appexec_alias(path) || fs_is_char_device(path)));
-  if (ec && ec != std::errc::no_such_file_or_directory)
-    fs_print_error(path, ec);
+
+#if defined(HAVE_CXX_FILESYSTEM)
+
+  ok = (Filesystem::exists(path, ec) && !ec) || (fs_is_msvc() && fs_is_appexec_alias(path));
+
 #else
 
-  const std::string cpath(path);
-
+  ok = fs_check_access(path,
 #if defined(_WIN32)
-// https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
-  ok = _access_s(cpath.c_str(), 0) == 0 || fs_is_char_device(path);
-
-  // to use the approach below, need more advanced techniques like
-  // https://gitlab.kitware.com/cmake/cmake/-/blob/master/Source/kwsys/SystemTools.cxx#L1408
-
-  // WIN32_FILE_ATTRIBUTE_DATA fad;
-
-  // ok = GetFileAttributesExW(fs_win32_to_wide(path).c_str(), GetFileExInfoStandard, &fad);
-  // if (!ok){
-  //   DWORD err = GetLastError();
-  //   if (err != ERROR_FILE_NOT_FOUND && err != ERROR_PATH_NOT_FOUND)
-  //     fs_print_error(path);
-  // }
+    0
 #else
-  // https://www.man7.org/linux/man-pages/man2/access.2.html
-  ok = access(cpath.c_str(), F_OK) == 0;
-  if (!ok && errno != ENOENT && errno != ENOTDIR)
-    fs_print_error(path);
+    F_OK
+#endif
+  );
+
+  ec = std::make_error_code(std::errc(errno));
 #endif
 
-#endif
+  if (fs_is_windows())
+    ok |= fs_is_char_device(path);
+
+  if (!ok && ec && ec != std::errc::no_such_file_or_directory)
+    fs_print_error(path);
 
   return ok;
 }
@@ -250,18 +264,19 @@ bool fs_is_readable(std::string_view path)
 {
   // is path readable by the user
   // does not guarantee that the path can be opened (for example, it may be locked)
-  const std::string cpath(path);
-
-#if defined(_WIN32)
+  //
   // MSVC / MinGW ::perms doesn't detect App Execution Aliases readability
   // like Python os.access(path, os.R_OK) or uv_is_readable().
   // same reasons as our fs_is_writable().
-  // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
 
-  return _access_s(cpath.c_str(), 4) == 0;
+  return fs_check_access(path,
+#if defined(_WIN32)
+    4
 #else
-  return access(cpath.c_str(), R_OK) == 0;
+    R_OK
 #endif
+  );
+
 }
 
 
@@ -277,15 +292,13 @@ bool fs_is_writable(std::string_view path)
   // or other platform-specific permissions, and they don't check writability of parent directories
   // for creating new files.
 
-  std::string cpath(path);
-
+  return fs_check_access(path,
 #if defined(_WIN32)
-  // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
-  fs_as_windows(cpath);
-  return _access_s(cpath.c_str(), 2) == 0;
+    2
 #else
-  return access(cpath.c_str(), W_OK) == 0;
+    W_OK
 #endif
+  );
 }
 
 

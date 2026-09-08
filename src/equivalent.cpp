@@ -29,36 +29,6 @@ namespace Filesystem = std::filesystem;
 #endif
 
 
-#if !defined(HAVE_CXX_FILESYSTEM) && defined(_WIN32)
-static bool fs_win32_equiv(std::string_view path1, std::string_view path2)
-{
-// GetFileInformationByName in Windows >= 24H2
-// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getfileinformationbyname
-// https://github.com/rust-lang/rust/issues/130169
-
-std::error_code ec;
-
-#if defined(HAVE_GETFILEINFORMATIONBYNAME)
-  // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-file_stat_basic_information
-  FILE_STAT_BASIC_INFORMATION f1, f2;
-
- if ( GetFileInformationByName(fs_win32_to_wide(path1).c_str(), FileStatBasicByNameInfo, &f1, sizeof(f1)) &&
-      GetFileInformationByName(fs_win32_to_wide(path2).c_str(), FileStatBasicByNameInfo, &f2, sizeof(f2))) {
-        return f1.VolumeSerialNumber.QuadPart == f2.VolumeSerialNumber.QuadPart &&
-               f1.FileId.QuadPart == f2.FileId.QuadPart;
-  }
-  // .FileID and .VolumeSerialNumber are LARGE_INTEGER
-
-#else
-  ec = std::make_error_code(std::errc::function_not_supported);
-#endif
-
-  fs_print_error(path1, path2, ec);
-  return false;
-}
-#endif
-
-
 bool fs_equivalent(std::string_view path1, std::string_view path2)
 {
   // non-existent paths are not equivalent
@@ -74,7 +44,22 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
 
 #if defined(_WIN32)
 
-  return fs_win32_equiv(path1, path2);
+#if defined(HAVE_GETFILEINFORMATIONBYNAME)
+  // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-file_stat_basic_information
+  // GetFileInformationByName in Windows >= 24H2
+  // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getfileinformationbyname
+  // https://github.com/rust-lang/rust/issues/130169
+  FILE_STAT_BASIC_INFORMATION f1, f2;
+
+  if ( GetFileInformationByName(fs_win32_to_wide(path1).c_str(), FileStatBasicByNameInfo, &f1, sizeof(f1)) &&
+      GetFileInformationByName(fs_win32_to_wide(path2).c_str(), FileStatBasicByNameInfo, &f2, sizeof(f2))) {
+        return f1.VolumeSerialNumber.QuadPart == f2.VolumeSerialNumber.QuadPart &&
+               f1.FileId.QuadPart == f2.FileId.QuadPart;
+  }
+  // .FileID and .VolumeSerialNumber are LARGE_INTEGER
+#else
+  ec = std::make_error_code(std::errc::not_supported);
+#endif
 
 #else
   int r1 = 0;
