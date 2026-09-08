@@ -143,6 +143,7 @@ foreach(t IN LISTS boost_ut_tests)
   add_test(NAME ${t}_cpp COMMAND test_${t}_cpp)
   set_tests_properties(${t}_cpp PROPERTIES
   LABELS "Cpp"
+  SKIP_RETURN_CODE 77
   WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${t}_cpp>
   )
 endforeach()

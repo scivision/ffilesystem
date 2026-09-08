@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
       expect(fs_which(ctx.name).empty());
     }
 
-    expect(!fs_which(ctx.name, ctx.dir).empty());
+    expect(!fs_which(ctx.name, ctx.dir).empty()) << ctx.name << " should be found in " << ctx.dir;
   };
 
   "which_no_path"_test = [] {
