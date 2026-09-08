@@ -59,16 +59,16 @@ std::size_t fs_get_blksize(std::string_view path)
 #else
 
   const std::string cpath(path);
-  int r = 0;
+  bool statx_ok{false};
 
 #if defined(HAVE_STATX)
   struct statx sx;
-  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_BASIC_STATS, &sx);
-  if (r == 0)
+  statx_ok = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &sx) == 0;
+  if (statx_ok)
     return sx.stx_blksize;
 #endif
 
-  if (r == 0 || errno == ENOSYS){
+  if (!statx_ok || errno == ENOSYS){
     if (struct stat s; !::stat(cpath.c_str(), &s))
       return s.st_blksize;
   }
