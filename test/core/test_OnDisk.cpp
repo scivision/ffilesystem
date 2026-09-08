@@ -244,11 +244,15 @@ int main(int argc, char** argv) {
   skip /
 #endif
   "short_long"_test = [] {
+    // the path must exist
     auto e = fs_getenv("PROGRAMFILES");
     expect(e.has_value() >> fatal) << "Failed to get PROGRAMFILES environment variable";
     std::string long_path = e.value();
     expect(!long_path.empty() >> fatal);
 
-    expect(eq(fs_longname(fs_shortname(long_path)), long_path));
+    std::string short_path = fs_shortname(long_path);
+
+    expect(neq(short_path, long_path));
+    expect(eq(fs_longname(short_path), long_path));
   };
 }
