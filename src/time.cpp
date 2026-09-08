@@ -12,6 +12,8 @@
 
 #include <iostream>
 #include <optional>
+
+#include <cerrno>
 #include <system_error>
 
 #ifdef HAVE_CLOCK_CAST

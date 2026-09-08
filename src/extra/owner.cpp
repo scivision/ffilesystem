@@ -23,6 +23,7 @@
 #include <fcntl.h>   // AT_* constants for statx
 #endif
 
+#include <cerrno>
 #include <string>
 #include <string_view>
 

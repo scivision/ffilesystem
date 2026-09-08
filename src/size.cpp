@@ -8,6 +8,7 @@
 
 #include <string_view>
 #include <system_error>
+#include <cerrno>
 
 #include <cstdint>  // uintmax_t
 

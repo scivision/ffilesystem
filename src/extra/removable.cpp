@@ -1,4 +1,5 @@
 #include <string>
+#include <cerrno>
 
 #include "ffilesystem.h"
 

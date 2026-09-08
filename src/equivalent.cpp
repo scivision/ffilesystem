@@ -8,6 +8,7 @@
 
 #include <string_view>
 #include <system_error>
+#include <cerrno>
 #include <iostream>  // IWYU pragma: keep
 
 #if defined(HAVE_CXX_FILESYSTEM)

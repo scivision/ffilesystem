@@ -17,6 +17,7 @@
 #include <string_view>
 
 #include <system_error>
+#include <cerrno>
 
 
 #if defined(HAVE_CXX_FILESYSTEM)
