@@ -98,7 +98,7 @@ bool fs_is_symlink(std::string_view path)
 
   struct statx sx;
   r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_MODE, &sx);
-  if (r == 0) FFS_LIKELY
+  if (r == 0)
     return S_ISLNK(sx.stx_mode);
 #endif
 // https://linux.die.net/man/2/lstat
@@ -139,7 +139,7 @@ std::string fs_read_symlink(std::string_view path)
   if(fs_is_symlink(path))
     return fs_win32_final_path(path);
 #elif defined(HAVE_CXX_FILESYSTEM)
-  if(auto p = Filesystem::read_symlink(path, ec); !ec) FFS_LIKELY
+  if(auto p = Filesystem::read_symlink(path, ec); !ec)
     return p.string();
 #else
 
@@ -174,7 +174,7 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
   // confusing program errors if target is "" -- we'd never make such a symlink in real use.
   // macOS needs empty check to avoid SIGABRT
 
-  if(target.empty() || link.empty()) FFS_UNLIKELY
+  if(target.empty() || link.empty())
     ec = std::make_error_code(std::errc::invalid_argument);
   else {
 #if FS_USE_WIN32_SYMLINK
@@ -194,8 +194,8 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
 #else
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/symlink.2.html
   // https://linux.die.net/man/3/symlink
-  const std::string tgt(target);
-  const std::string clink(link);
+  const std::string tgt{target};
+  const std::string clink{link};
   if(::symlink(tgt.c_str(), clink.c_str()) == 0)
     return true;
 #endif

@@ -58,7 +58,7 @@ std::size_t fs_get_blksize(std::string_view path)
 
 #else
 
-  const std::string cpath(path);
+  const std::string cpath{path};
   bool statx_ok{false};
 
 #if defined(HAVE_STATX)
@@ -84,7 +84,7 @@ dev_t fs_st_dev(std::string_view path)
   // device number of the file or directory
   // in general dev_t may be unsigned.
 
-  const std::string cpath(path);
+  const std::string cpath{path};
   int r = 0;
 
 #if defined(HAVE_STATX)
@@ -133,7 +133,7 @@ ino_t fs_inode(std::string_view path)
 
 #else
 
-  const std::string cpath(path);
+  const std::string cpath{path};
   int r = 0;
 
 #if defined(HAVE_STATX)
