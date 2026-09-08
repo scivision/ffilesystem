@@ -59,7 +59,7 @@ jobs:
 
     strategy:
       matrix:
-        gcc-version: [10, 11, 12, 13, 14]
+        gcc-version: [9, 10, 11, 12, 13, 14]
 
     env: *gcc-env
 
@@ -77,7 +77,7 @@ jobs:
     - *iso_fortran_binding
 
     - name: C++17 workflow
-      if: matrix.gcc-version == 10
+      if: matrix.gcc-version == 9
       run: cmake --workflow cpp17
 
 
