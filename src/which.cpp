@@ -96,21 +96,19 @@ std::string fs_which(std::string_view name, std::string_view path, const bool fi
   // use SearchPathA, even though the generic method works.
   // This is because SearchPathA uses registry preferences that the generic method ignores.
 
-  if(find_all)
-    return fs_which_generic(name, path, true);
+  if(find_all) return fs_which_generic(name, path, true);
 
-  std::wstring const wn = fs_win32_to_wide(name);
-  std::wstring wr;
-  wr.resize(fs_get_max_path());
-  DWORD L;
+  std::wstring wr(fs_get_max_path(), L'\0');
 
   // https://learn.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-searchpathw
-  if (path.empty())
-    L = SearchPathW(nullptr, wn.c_str(),
-                    L".exe", static_cast<DWORD>(wr.length()), wr.data(), nullptr);
-  else
-    L = SearchPathW(fs_win32_to_wide(path).c_str(), wn.c_str(),
-                    L".exe", static_cast<DWORD>(wr.length()), wr.data(), nullptr);
+  DWORD const L = SearchPathW(
+    path.empty() ? nullptr : fs_win32_to_wide(path).c_str(),
+    fs_win32_to_wide(name).c_str(),
+    L".exe",
+    static_cast<DWORD>(wr.length()),
+    wr.data(),
+    nullptr
+  );
 
   if(L == 0 && GetLastError() == ERROR_FILE_NOT_FOUND)
     return {};

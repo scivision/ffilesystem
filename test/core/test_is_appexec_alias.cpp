@@ -13,11 +13,12 @@ struct app_exec_ctx {
 void setup(app_exec_ctx& ctx) {
   using namespace boost::ut;
 
-  const std::string appdir = fs_getenv("LOCALAPPDATA").value_or("") + "/Microsoft/WindowsApps";
-  expect(fs_is_dir(appdir) >> fatal);
+  const std::string appdir = fs_getenv("LOCALAPPDATA").value_or("") + "\\Microsoft\\WindowsApps";
+  expect(fs_is_dir(appdir) >> fatal) << "app execution alias directory not found " << appdir;
 
   for (const auto& exe : {"wt.exe", "winget.exe", "wsl.exe", "bash.exe"}) {
     ctx.path = fs_which(exe, appdir);
+    std::cout << "Checking for app execution alias: " << exe << " in " << appdir << std::endl;
     if (!ctx.path.empty()) {
       break;
     }
@@ -39,6 +40,6 @@ int main() {
     app_exec_ctx ctx;
     setup(ctx);
 
-    expect(fs_is_appexec_alias(ctx.path));
+    expect(fs_is_appexec_alias(ctx.path))  << "failed on " << ctx.path;
   };
 }
