@@ -31,6 +31,12 @@
 std::size_t fs_get_blksize(std::string_view path)
 {
   // block size in bytes
+
+  auto handle_error = [&]() {
+    fs_print_error(path);
+    return std::size_t(0);
+  };
+
 #if defined(_WIN32)
 
   const std::string root = fs_root_name(path);
@@ -59,23 +65,20 @@ std::size_t fs_get_blksize(std::string_view path)
 #else
 
   const std::string cpath{path};
-  bool statx_ok{false};
 
 #if defined(HAVE_STATX)
   struct statx sx;
-  statx_ok = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &sx) == 0;
-  if (statx_ok)
+  if(::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &sx) == 0)
     return sx.stx_blksize;
+  else if (errno != ENOSYS)
+    return handle_error();
 #endif
 
-  if (!statx_ok || errno == ENOSYS){
-    if (struct stat s; !::stat(cpath.c_str(), &s))
-      return s.st_blksize;
-  }
+  if (struct stat s; ::stat(cpath.c_str(), &s) == 0)
+    return s.st_blksize;
 #endif
 
-  fs_print_error(path);
-  return {};
+  return handle_error();
 }
 
 
@@ -84,27 +87,29 @@ dev_t fs_st_dev(std::string_view path)
   // device number of the file or directory
   // in general dev_t may be unsigned.
 
+  auto handle_error = [&]() {
+    fs_print_error(path);
+    return dev_t(0);
+  };
+
   const std::string cpath{path};
-  int r = 0;
 
 #if defined(HAVE_STATX)
 
   struct statx x;
-  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &x);
 
-  if (r == 0)
-    return makedev(x.stx_dev_major, x.stx_dev_minor);
   // don't call as ::makedev because some platforms e.g. Android have makedev as a macro
+  if (::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &x) == 0)
+    return makedev(x.stx_dev_major, x.stx_dev_minor);
+  else if (errno != ENOSYS)
+    return handle_error();
 
 #endif
 
-  if (r == 0 || errno == ENOSYS){
-    if(struct stat s; ::stat(cpath.c_str(), &s) == 0)
-      return s.st_dev;
-  }
+  if(struct stat s; ::stat(cpath.c_str(), &s) == 0)
+    return s.st_dev;
 
-  fs_print_error(path);
-  return {};
+  return handle_error();
 }
 
 
@@ -117,6 +122,11 @@ ino_t fs_inode(std::string_view path)
   // with GetFileInformationByHandle().
 
   std::error_code ec;
+
+  auto handle_error = [&]() {
+    fs_print_error(path, ec);
+    return ino_t(0);
+  };
 
 #if defined(_WIN32)
 
@@ -134,25 +144,22 @@ ino_t fs_inode(std::string_view path)
 #else
 
   const std::string cpath{path};
-  int r = 0;
 
 #if defined(HAVE_STATX)
 
   struct statx x;
-  r = ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &x);
-  if (r == 0)
+  if(::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &x) == 0)
     return x.stx_ino;
+  else if (errno != ENOSYS)
+    return handle_error();
 
 #endif
 
-  if (r == 0 || errno == ENOSYS) {
-    if(struct stat s; ::stat(cpath.c_str(), &s) == 0)
-      return s.st_ino;
-  }
+  if(struct stat s; ::stat(cpath.c_str(), &s) == 0)
+    return s.st_ino;
 
 #endif // _WIN32
 
-  fs_print_error(path, ec);
-  return 0;
+  return handle_error();
 
 }

@@ -36,6 +36,11 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
 
   std::error_code ec;
 
+  auto handle_error = [&]() {
+    fs_print_error(path1, path2, ec);
+    return false;
+  };
+
 #ifdef HAVE_CXX_FILESYSTEM
 
   if(bool e = Filesystem::equivalent(path1, path2, ec); !ec)
@@ -63,7 +68,6 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
 #endif
 
 #else
-  bool statx_ok{false};
 
 // https://www.man7.org/linux/man-pages/man7/inode.7.html
 #if defined(HAVE_STATX)
@@ -75,29 +79,27 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
     return ::statx(AT_FDCWD, ps.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &x) == 0;
   };
 
-  statx_ok = statx_call(path1, x1) && statx_call(path2, x2);
-  if(statx_ok)
+  if(statx_call(path1, x1) && statx_call(path2, x2))
     return x1.stx_dev_major == x2.stx_dev_major && x1.stx_dev_minor == x2.stx_dev_minor && x1.stx_ino == x2.stx_ino;
+  else if (errno != ENOSYS)
+    return handle_error();
 
 #endif
 
-  if(!statx_ok || errno == ENOSYS){
-    struct stat s1, s2;
+  struct stat s1, s2;
 
-    // https://www.boost.org/doc/libs/1_86_0/libs/filesystem/doc/reference.html#equivalent
-    auto stat_call = [](std::string_view p, struct stat& s) {
-      const std::string ps{p};
-      return ::stat(ps.c_str(), &s) == 0;
-    };
+  // https://www.boost.org/doc/libs/1_86_0/libs/filesystem/doc/reference.html#equivalent
+  auto stat_call = [](std::string_view p, struct stat& s) {
+    const std::string ps{p};
+    return ::stat(ps.c_str(), &s) == 0;
+  };
 
-    if(stat_call(path1, s1) && stat_call(path2, s2))
-      return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
-  }
+  if(stat_call(path1, s1) && stat_call(path2, s2))
+    return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
 
 #endif
 
 #endif // HAVE_CXX_FILESYSTEM
 
-  fs_print_error(path1, path2, ec);
-  return false;
+  return handle_error();
 }
