@@ -167,13 +167,16 @@ fs_is_dir(std::string_view path)
   // is path a directory or a symlink to a directory
 
   bool ok;
-#if defined(HAVE_CXX_FILESYSTEM)
-// NOTE: Windows top-level drive "C:" needs a trailing slash "C:/"
   std::error_code ec;
+
+#if defined(HAVE_CXX_FILESYSTEM)
+// NOTE: Windows drive "C:" needs a trailing slash "C:/"
+
   ok = Filesystem::is_directory(path, ec);
-  if (ec && ec != std::errc::no_such_file_or_directory)
-    fs_print_error(path, ec);
-#elif defined(_WIN32)
+
+#else
+
+#if defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesexa
 // this also works for Symlinks to directories
   WIN32_FILE_ATTRIBUTE_DATA fad;
@@ -184,6 +187,12 @@ fs_is_dir(std::string_view path)
   ok = S_ISDIR(fs_st_mode(path));
 #endif
 
+  ec = std::make_error_code(std::errc(errno));
+#endif
+
+  if (!ok && ec && ec != std::errc::no_such_file_or_directory)
+    fs_print_error(path);
+
   return ok;
 }
 
@@ -191,22 +200,30 @@ fs_is_dir(std::string_view path)
 bool
 fs_is_file(std::string_view path)
 {
-  // is path a regular file or a symlink to a regular file.
-  // not a directory, device, or symlink to a directory.
+  // is path a regular file or a symlink to a regular file - not a directory, device, or symlink to a directory.
   // stat() doesn't detect App Execution Aliases
   // AppExec Alias have FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_ARCHIVE
   // but need to check the reparse point data for IO_REPARSE_TAG_APPEXECLINK
 
   bool ok;
-#if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
+
+#if defined(HAVE_CXX_FILESYSTEM)
   ok = (Filesystem::is_regular_file(path, ec) && !ec) ||
         (fs_is_msvc() && fs_is_appexec_alias(path));
-#elif defined(_WIN32)
+#else
+
+#if defined(_WIN32)
   ok = fs_win32_file_type(path) == FILE_TYPE_DISK || fs_is_appexec_alias(path);
 #else
   ok = S_ISREG(fs_st_mode(path));
 #endif
+
+  ec = std::make_error_code(std::errc(errno));
+#endif
+
+  if (!ok && ec && ec != std::errc::no_such_file_or_directory)
+    fs_print_error(path);
 
   return ok;
 }
