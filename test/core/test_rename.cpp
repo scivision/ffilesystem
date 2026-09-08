@@ -47,8 +47,8 @@ if (!fs_is_writable(".")) {
     rename_ctx ctx;
     setup(ctx);
 
-    expect(fs_rename(ctx.f1, ctx.f2));
-    expect(fs_is_file(ctx.f2));
+    expect(fs_rename(ctx.f1, ctx.f2) >> fatal);
+    expect(fs_is_file(ctx.f2) >> fatal);
 
     expect(fs_rename(ctx.f2, ctx.nonnull_file) >> fatal);
     expect(!fs_is_file(ctx.in_file)) << ctx.in_file << " should have been renamed to " << ctx.f1;
