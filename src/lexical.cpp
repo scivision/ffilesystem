@@ -16,12 +16,14 @@
 void fs_as_posix(std::string& path)
 {
   if(fs_is_windows())
-    std::replace(path.begin(), path.end(), '\\', '/');
+    std::replace(path.begin(), path.end(), fs_filesep(), '/');
 }
 
 std::string fs_as_posix(std::string_view path)
 {
-  std::string s(path);
+  // based on Python pathlib.Path.posix()
+  // https://github.com/python/cpython/blob/4de00a42661a1c280e06d2d5d71c4f69eda41562/Lib/pathlib/__init__.py#L328
+  std::string s{path};
   fs_as_posix(s);
   return s;
 }

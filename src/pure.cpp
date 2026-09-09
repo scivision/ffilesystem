@@ -226,8 +226,7 @@ std::string fs_join(std::string_view path, std::string_view other)
   if(p.back() != '/')
     p.push_back('/');
 
-  p += other;
-  return p;
+  return p.append(other);
 #endif
 }
 
@@ -255,9 +254,7 @@ std::string fs_with_suffix(std::string_view path, std::string_view new_suffix)
     r += stem;
   }
 
-  r += new_suffix;
-  return r;
-
+  return r.append(new_suffix);
 #endif
 }
 

@@ -38,8 +38,7 @@ std::string fs_absolute(std::string_view path)
     return {};
 
   a.push_back(fs_filesep());
-  a += path;
-  return a;
+  return a.append(path);
   // NOT normalized to be consistent with <filesystem>
 #endif
 }

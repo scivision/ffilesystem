@@ -123,9 +123,7 @@ std::string fs_expanduser(std::string_view path)
   if (e.back() != '/' && e.back() != fs_filesep())
     e.push_back('/');
 
-  e += path.substr(i);
-
-  return e;
+  return e.append(path.substr(i));
 }
 
 
