@@ -63,10 +63,11 @@ static bool fs_check_access(std::string_view path, const int mode){
 static DWORD fs_win32_file_type(std::string_view path){
 
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
+  // FILE_FLAG_BACKUP_SEMANTICS is required to open a handle to a directory, else ERROR_ACCESS_DENIED
   HANDLE h = CreateFileW(fs_win32_to_wide(path).c_str(),
                          0,
                          FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                         nullptr, OPEN_EXISTING, 0, nullptr);
+                         nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
   if(h == INVALID_HANDLE_VALUE){
     DWORD err = GetLastError();
@@ -178,11 +179,12 @@ fs_is_dir(std::string_view path)
 
 #if defined(_WIN32)
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesexa
+// https://learn.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
 // this also works for Symlinks to directories
   WIN32_FILE_ATTRIBUTE_DATA fad;
 
   ok = GetFileAttributesExW(fs_win32_to_wide(path).c_str(), GetFileExInfoStandard, &fad) &&
-       (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+         (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 #else
   ok = S_ISDIR(fs_st_mode(path));
 #endif
@@ -215,7 +217,10 @@ fs_is_file(std::string_view path)
 #else
 
 #if defined(_WIN32)
-  ok = fs_win32_file_type(path) == FILE_TYPE_DISK || fs_is_appexec_alias(path);
+  WIN32_FILE_ATTRIBUTE_DATA fad;
+  // https://learn.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
+  ok = GetFileAttributesExW(fs_win32_to_wide(path).c_str(), GetFileExInfoStandard, &fad) &&
+         (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
 #else
   ok = S_ISREG(fs_st_mode(path));
 #endif
