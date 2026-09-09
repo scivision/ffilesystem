@@ -24,7 +24,65 @@
 
 
 #ifdef HAVE_LINUX_MAGIC_H
-static inline std::string fs_type_linux(std::string_view path)
+namespace {
+
+#ifdef BTRFS_SUPER_MAGIC
+constexpr auto kBtrfsSuperMagic = BTRFS_SUPER_MAGIC;
+#else
+constexpr unsigned long kBtrfsSuperMagic = 0x9123683EUL;
+#endif
+#ifdef DEBUGFS_MAGIC
+constexpr auto kDebugfsMagic = DEBUGFS_MAGIC;
+#else
+constexpr unsigned long kDebugfsMagic = 0x64626720UL;
+#endif
+#ifdef FUSE_SUPER_MAGIC
+constexpr auto kFuseSuperMagic = FUSE_SUPER_MAGIC;
+#else
+constexpr unsigned long kFuseSuperMagic = 0x65735546UL;
+#endif
+#ifdef EXFAT_SUPER_MAGIC
+constexpr auto kExfatSuperMagic = EXFAT_SUPER_MAGIC;
+#else
+constexpr unsigned long kExfatSuperMagic = 0x2011BAB0UL;
+#endif
+#ifdef EROFS_SUPER_MAGIC_V1
+constexpr auto kErofsSuperMagicV1 = EROFS_SUPER_MAGIC_V1;
+#else
+constexpr unsigned long kErofsSuperMagicV1 = 0xE0F5E1E2UL;
+#endif
+#ifdef F2FS_SUPER_MAGIC
+constexpr auto kF2fsSuperMagic = F2FS_SUPER_MAGIC;
+#else
+constexpr unsigned long kF2fsSuperMagic = 0xF2F52010UL;
+#endif
+#ifdef PROC_SUPER_MAGIC
+constexpr auto kProcSuperMagic = PROC_SUPER_MAGIC;
+#else
+constexpr unsigned long kProcSuperMagic = 0x9FA0UL;
+#endif
+#ifdef SYSFS_MAGIC
+constexpr auto kSysfsMagic = SYSFS_MAGIC;
+#else
+constexpr unsigned long kSysfsMagic = 0x62656572UL;
+#endif
+#ifdef TRACEFS_MAGIC
+constexpr auto kTracefsMagic = TRACEFS_MAGIC;
+#else
+constexpr unsigned long kTracefsMagic = 0x74726163UL;
+#endif
+#ifdef UDF_SUPER_MAGIC
+constexpr auto kUdfSuperMagic = UDF_SUPER_MAGIC;
+#else
+constexpr unsigned long kUdfSuperMagic = 0x15013346UL;
+#endif
+#ifdef XFS_SUPER_MAGIC
+constexpr auto kXfsSuperMagic = XFS_SUPER_MAGIC;
+#else
+constexpr unsigned long kXfsSuperMagic = 0x58465342UL;
+#endif
+
+std::string fs_type_linux(std::string_view path)
 {
   struct statfs s;
 
@@ -35,64 +93,32 @@ static inline std::string fs_type_linux(std::string_view path)
     return {};
   }
 
-#ifndef BTRFS_SUPER_MAGIC
-#define BTRFS_SUPER_MAGIC 0x9123683E
-#endif
-#ifndef DEBUGFS_MAGIC
-#define DEBUGFS_MAGIC 0x64626720
-#endif
-#ifndef FUSE_SUPER_MAGIC
-#define FUSE_SUPER_MAGIC 0x65735546
-#endif
-#ifndef EXFAT_SUPER_MAGIC
-#define EXFAT_SUPER_MAGIC 0x2011BAB0
-#endif
-#ifndef EROFS_SUPER_MAGIC_V1
-#define EROFS_SUPER_MAGIC_V1 0xE0F5E1E2
-#endif
-#ifndef F2FS_SUPER_MAGIC
-#define F2FS_SUPER_MAGIC 0xF2F52010
-#endif
-#ifndef PROC_SUPER_MAGIC
-#define PROC_SUPER_MAGIC 0x9FA0
-#endif
-#ifndef SYSFS_MAGIC
-#define SYSFS_MAGIC 0x62656572
-#endif
-#ifndef TRACEFS_MAGIC
-#define TRACEFS_MAGIC 0x74726163
-#endif
-#ifndef UDF_SUPER_MAGIC
-#define UDF_SUPER_MAGIC 0x15013346
-#endif
-#ifndef XFS_SUPER_MAGIC
-#define XFS_SUPER_MAGIC 0x58465342
-#endif
-
   switch (s.f_type) {
-    case BTRFS_SUPER_MAGIC: return "btrfs";
-    case DEBUGFS_MAGIC: return "debugfs";
+    case kBtrfsSuperMagic: return "btrfs";
+    case kDebugfsMagic: return "debugfs";
     case EXT4_SUPER_MAGIC: return "ext4";
-    case EXFAT_SUPER_MAGIC: return "exfat";
-    case EROFS_SUPER_MAGIC_V1: return "erofs";
-    case F2FS_SUPER_MAGIC: return "f2fs";
-    case FUSE_SUPER_MAGIC: return "fuse";
+    case kExfatSuperMagic: return "exfat";
+    case kErofsSuperMagicV1: return "erofs";
+    case kF2fsSuperMagic: return "f2fs";
+    case kFuseSuperMagic: return "fuse";
     case NFS_SUPER_MAGIC: return "nfs";
-    case PROC_SUPER_MAGIC: return "procfs";
+    case kProcSuperMagic: return "procfs";
     case SQUASHFS_MAGIC: return "squashfs";
-    case SYSFS_MAGIC: return "sysfs";
+    case kSysfsMagic: return "sysfs";
     case TMPFS_MAGIC: return "tmpfs";
-    case TRACEFS_MAGIC: return "tracefs";
-    case UDF_SUPER_MAGIC: return "udf";
+    case kTracefsMagic: return "tracefs";
+    case kUdfSuperMagic: return "udf";
     case V9FS_MAGIC: return "v9fs";
     // used for WSL
     // https://devblogs.microsoft.com/commandline/whats-new-for-wsl-in-windows-10-version-1903/
-    case XFS_SUPER_MAGIC: return "xfs";
+    case kXfsSuperMagic: return "xfs";
 
     default:
-      std::cerr << "ERROR:fs_filesystem_type " << path << " unknown type ID: " << s.f_type << "\n";
+      fs_print_error(path,"unknown type ID: " + std::to_string(s.f_type));
       return {};
   }
+}
+
 }
 #endif
 
