@@ -43,7 +43,7 @@ static std::string fs_which_generic(std::string_view name, std::string_view path
   std::string::size_type start = 0;
   std::string::size_type end;
 
-  while (true) {
+do {
     end = paths.find(fs_pathsep(), start);
 
     // avoid empty path
@@ -67,11 +67,8 @@ static std::string fs_which_generic(std::string_view name, std::string_view path
         return r;
     }
 
-    if(end == std::string::npos)
-      break;
-
     start = end + 1;
-  }
+} while (end != std::string::npos);
 
   if(find_all && !t.empty()){
     t.pop_back();

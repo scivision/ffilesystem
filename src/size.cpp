@@ -144,6 +144,8 @@ bool fs_is_empty(std::string_view path)
     // RAII for closedir
     struct DirCloser { DIR* d; ~DirCloser(){ if(d) ::closedir(d); } } _dc{d};
     struct dirent *entry;
+  // need extra () to avoid
+  // error: using the result of an assignment as a condition without parentheses [-Werror,-Wparentheses]
   while ((entry = ::readdir(d)))
   {
 #ifdef _DIRENT_HAVE_D_TYPE
