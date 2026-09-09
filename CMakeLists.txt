@@ -198,6 +198,7 @@ target_compile_definitions(ffilesystem PUBLIC
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_COPY_FILE_RANGE}>>:ffilesystem_HAVE_COPY_FILE_RANGE>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_STATX}>>:HAVE_STATX>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_RANGES}>>:HAVE_CPP_RANGES>"
+"$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_RANGES_SPLIT_STRING_VIEW}>>:HAVE_CPP_RANGES_SPLIT_STRING_VIEW>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_extra}>>:ffilesystem_extra>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_GetFileInformationByName}>>:HAVE_GETFILEINFORMATIONBYNAME>"
 )

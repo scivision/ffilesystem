@@ -237,10 +237,6 @@ static bool one_arg(std::string_view fun, std::string_view a1)
     std::vector<std::string> v = fs_split(a1);
     for (const auto &s : v)
       std::cout << s << "\n";
-  } else if (fun == "normal_vector"){
-    std::vector<std::string> v = fs_normal_vector(a1);
-    for (const auto &s : v)
-      std::cout << s << "\n";
   } else if (fun == "chdir" || fun == "set_cwd") {
     auto cwd = fs_get_cwd();
     if(!cwd.empty()){

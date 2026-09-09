@@ -105,6 +105,11 @@ std::unordered_map<std::string_view, fs_function> fs_function_map = {
   {"file_name", [](std::string_view p) { return fs_file_name(p); }},
   {"suffix", [](std::string_view p) { return fs_suffix(p); }},
   {"normal", [](std::string_view p) { return fs_normal(p); }},
+  {"split", [](std::string_view p) {
+    std::string s;
+    for (const auto& part : fs_split(p)) { s += part; s += '|'; }
+    return s;
+  }},
   {"reserved", [](std::string_view p) { return fs_is_reserved(p); }},
   {"exists", [](std::string_view p) { return fs_exists(p); }},
   {"is_dir", [](std::string_view p) { return fs_is_dir(p); }},
@@ -205,7 +210,7 @@ std::vector<std::string_view> funcs;
 if(argc > 3)
   funcs = {argv[3]};
 else
-  funcs = {"absolute", "canonical", "resolve", "which", "expanduser", "normal", "cwd",
+  funcs = {"absolute", "canonical", "resolve", "which", "expanduser", "normal", "split", "cwd",
            "homedir", "parent", "file_name", "reserved", "drop_slash",
            "exists", "is_dir", "is_file", "is_symlink"};
 
@@ -215,8 +220,8 @@ else
 for (std::string_view func : funcs)
   {
   // in sorted ascending order for binary search
-  constexpr std::array<std::string_view, 8> tf = {
-    "canonical", "drop_slash", "expanduser", "file_name", "normal", "parent", "resolve"
+  constexpr std::array<std::string_view, 9> tf = {
+    "canonical", "drop_slash", "expanduser", "file_name", "normal", "parent", "resolve", "split"
   };
 
   if (argc > 2)

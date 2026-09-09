@@ -10,6 +10,10 @@ namespace Filesystem = std::filesystem;
 #include <Shlwapi.h> // for PathIsUNC
 #endif
 
+#if defined(HAVE_CPP_RANGES_SPLIT_STRING_VIEW)
+#include <ranges>
+#endif
+
 
 #include <algorithm> // std::unique
 #include <string>
@@ -19,34 +23,44 @@ namespace Filesystem = std::filesystem;
 #include <iostream>
 
 
-std::vector<std::string>
-fs_normal_vector(std::string_view path)
+namespace {
+
+#if !defined(HAVE_CXX_FILESYSTEM)
+// split posix-converted "p" (backed by path) into non-empty components, dropping "." and resolving ".."
+// views reference "p", so "p" must outlive the returned vector
+std::vector<std::string_view>
+fs_normal_split(std::string_view path, const std::string& p)
 {
-  if(path.empty())
-    return {};
+  std::vector<std::string_view> parts;
 
-  const std::vector<std::string> parts = fs_split(path);
+  std::string_view::size_type start{0};
+  while (start < p.length()) {
+    auto end = p.find('/', start);
+    if (end == std::string_view::npos)
+      end = p.length();
 
-  std::vector<std::string> n;
+    const std::string_view part(p.data() + start, end - start);
+    start = end + 1;
 
-  // drop repeated slashes, "." and ".."
-  for (const auto& p : parts) {
-    if (p.empty() || p == ".")
+    if (part.empty() || part == ".")
       continue;
 
-    if (p == "..") {
-      if (!n.empty() && n.back() != "..")
-        n.pop_back();
+    if (part == "..") {
+      if (!parts.empty() && parts.back() != "..")
+        parts.pop_back();
       else if (path.front() != '/')
-        n.push_back(p);
+        parts.push_back(part);
       continue;
     }
 
-    n.push_back(p);
+    parts.push_back(part);
   }
 
-  return n;
+  return parts;
 }
+#endif
+
+} // namespace
 
 
 std::string
@@ -62,14 +76,17 @@ fs_normal(std::string_view path)
   if (path.empty())
     return ".";
 
-  const std::vector<std::string> parts = fs_normal_vector(path);
+  const std::string p{fs_as_posix(path)};
+  const std::vector<std::string_view> parts = fs_normal_split(path, p);
 
   // rebuild path
+  r.reserve(p.length() + 1);  // avoid reallocation while appending below
+
    if (fs_slash_first(path))
      r.push_back('/');
 
-  for (const auto& p : parts){
-    r += p;
+  for (const auto& part : parts){
+    r.append(part);
     r.push_back('/');
   }
 
@@ -171,33 +188,42 @@ fs_split(std::string_view path)
   if(path.empty())
     return {};
 
+  std::string const p{fs_as_posix(path)};
+
   // break paths into non-empty components
   std::vector<std::string> parts;
 
+#if defined(HAVE_CPP_RANGES_SPLIT_STRING_VIEW)
+  for (const auto& sub : p | std::views::split('/')) {
+    std::string_view part(sub.begin(), sub.end());
+    if (!part.empty())
+      parts.emplace_back(part);
+  }
+  if (fs_trace) std::cout << "TRACE:fs_split(" << path << "): used C++20 range adapter\n";
+#else
   // split path, including last component
   std::string_view::size_type start{0};
   std::string_view::size_type end;
 
-  while (start < path.length()) {
+  while (start < p.length()) {
 
-    end = fs_is_windows()
-      ? path.find_first_of( R"(/\)", start)
-      : path.find('/', start);
+    end = p.find('/', start);
 
-    if(fs_trace) std::cout << "TRACE:split(" << path << "): " << start << " " << end << " " << path.substr(start, end-start) << "\n";
+    if(fs_trace) std::cout << "TRACE:split(" << p << "): " << start << " " << end << " " << p.substr(start, end-start) << "\n";
 
     // last component
     if (end == std::string_view::npos){
-      parts.push_back(std::string(path.substr(start)));
+      parts.push_back(p.substr(start));
       break;
     }
 
     // do not add empty parts
     if (end != start)
-      parts.push_back(std::string(path.substr(start, end - start)));
+      parts.push_back(p.substr(start, end - start));
 
     start = end + 1;
   }
+#endif
 
   if (fs_trace) std::cout << "TRACE:split(" << path << "): number of parts: " << parts.size() << "\n";
 

@@ -194,7 +194,6 @@ bool fs_mkdir(std::string_view);
 bool fs_non_ascii(std::string_view);
 
 std::string fs_normal(std::string_view);
-std::vector<std::string> fs_normal_vector(std::string_view);
 
 std::string fs_os_version();
 std::string fs_parent(std::string_view);
