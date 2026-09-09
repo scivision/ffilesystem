@@ -27,8 +27,7 @@ std::string fs_hostname()
   // https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-gethostname
 
   if(WSADATA wsaData; !WSAStartup(MAKEWORD(2, 0), &wsaData)){
-    std::string name;
-    name.resize(256);
+    std::string name(256, '\0');
 
     int r = gethostname(name.data(), static_cast<int>(name.size()));
 

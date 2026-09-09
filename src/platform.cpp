@@ -44,7 +44,7 @@ bool fs_set_cwd(std::string_view path)
     return true;
 #else
   // unistd.h https://www.man7.org/linux/man-pages/man2/chdir.2.html
-  if(std::string cpath(path); ::chdir(cpath.c_str()) == 0)
+  if(std::string cpath{path}; ::chdir(cpath.c_str()) == 0)
     return true;
 #endif
 
@@ -64,8 +64,7 @@ std::string fs_get_cwd()
 #elif defined(_WIN32)
 // windows.h https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcurrentdirectory
   if(DWORD L = GetCurrentDirectoryW(0, nullptr); L > 0) {
-    std::wstring w;
-    w.resize(L);
+    std::wstring w(L, '\0');
     if(GetCurrentDirectoryW(L, w.data()) == L-1) {
       w.resize(L-1);
       return fs_win32_to_narrow(w);

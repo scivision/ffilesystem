@@ -31,9 +31,8 @@ std::string fs_parent(std::string_view path)
 
 #elif defined(_WIN32)
   fs_drop_trailing_slash(p);
-  std::string dir, drive;
-  dir.resize(_MAX_DIR);
-  drive.resize(_MAX_DRIVE);
+  std::string dir(_MAX_DIR, '\0');
+  std::string drive(_MAX_DRIVE, '\0');
   if(_splitpath_s(p.c_str(), drive.data(), _MAX_DRIVE, dir.data(), _MAX_DIR, nullptr, 0, nullptr, 0) != 0)
     return {};
 

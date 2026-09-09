@@ -14,11 +14,10 @@ constexpr int CCP_POSIX_TO_WIN_A = 0;
 static std::string fs_convert_path(std::string_view path, [[maybe_unused]] int const what)
 {
 #ifdef __CYGWIN__
-  const std::string cpath(path);
+  const std::string cpath{path};
   const auto L = cygwin_conv_path(what, cpath.c_str(), nullptr, 0);
   if(L > 0){
-    std::string r;
-    r.resize(L);
+    std::string r(L, '\0');
 
     if (!cygwin_conv_path(what, cpath.c_str(), r.data(), L))
       return r;

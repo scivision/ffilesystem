@@ -20,7 +20,7 @@
 # endif
 #endif
 
-#include <limits>
+#include <limits> // for std::numeric_limits
 
 
 
@@ -60,13 +60,15 @@ unsigned long long fs_get_free_memory()
 {
   // https://github.com/ninja-build/ninja/pull/2605
 
+  unsigned long long const ull_max{std::numeric_limits<unsigned long long>::max()};
+
 #if defined(_WIN32) || defined(__CYGWIN__)
-  thread_local static unsigned long long committed_idle = std::numeric_limits<unsigned long long>::max();
+  thread_local static unsigned long long committed_idle = ull_max;
   MEMORYSTATUSEX status;
   status.dwLength = sizeof(status);
   if (!GlobalMemoryStatusEx(&status)) {
     fs_print_error("", "GlobalMemoryStatusEx");
-    return std::numeric_limits<unsigned long long>::max();
+    return ull_max;
   }
   const unsigned long long committed = (status.ullTotalPageFile - status.ullAvailPageFile);
   // since system use committed memory normally, store the smallest amount we have seen to guess how much
@@ -76,14 +78,14 @@ unsigned long long fs_get_free_memory()
   // this checks for wraparound
   return (status.ullAvailPhys > (committed - committed_idle))
     ? status.ullAvailPhys - (committed - committed_idle)
-    : std::numeric_limits<unsigned long long>::max();
+    : ull_max;
 
 #elif defined(FFS_DARWIN)
-  thread_local static unsigned long long swapped_idle = std::numeric_limits<unsigned long long>::max();
+  thread_local static unsigned long long swapped_idle{ull_max};
   vm_size_t page_size;
   vm_statistics64_data_t vm_stats;
 
-  mach_port_t port = ::mach_host_self();
+  mach_port_t const port = ::mach_host_self();
   mach_msg_type_number_t count = sizeof(vm_stats) / sizeof(natural_t);
 
   size_t swap_stats_size = sizeof(struct xsw_usage);
@@ -96,31 +98,31 @@ unsigned long long fs_get_free_memory()
   result |= ::sysctl(ctl, 2, &swap_stats, &swap_stats_size, nullptr, 0);
 
   if (KERN_SUCCESS != result)
-    return std::numeric_limits<unsigned long long>::max();
+    return ull_max;
 
   // information not available
 
   // inactive memory that is marked to be moved to swap or is fs cache and should be considered as free
-  unsigned long long free_memory = (vm_stats.free_count + vm_stats.inactive_count ) * page_size;
+  unsigned long long const free_memory = (vm_stats.free_count + vm_stats.inactive_count ) * page_size;
   // since inactive memory can be moved to the swap this value will be inexact.
   unsigned long long used_swap = swap_stats.xsu_used;
   swapped_idle = (used_swap < swapped_idle) ? used_swap : swapped_idle;
   return free_memory - (used_swap < swapped_idle ? 0 : (used_swap - swapped_idle));
 #elif defined(__linux__)
-  thread_local static unsigned long long swapped_idle = std::numeric_limits<unsigned long long>::max();
+  thread_local static unsigned long long swapped_idle{ull_max};
   struct sysinfo infos;
 
   if(::sysinfo(&infos) == 0 ) {
-    const unsigned long long swapped = (infos.totalswap - infos.freeswap);
+    unsigned long long const swapped = (infos.totalswap - infos.freeswap);
     // since system use committed memory normally, store the smallest amount we have seen
     swapped_idle = (swapped_idle < swapped) ? swapped_idle : swapped;
     return infos.freeram - (swapped < swapped_idle ? 0 : (swapped - swapped_idle));
   }
 #elif defined(FFS_BSD)
   // free + inactive + cache (like Linux MemAvailable / "usable")
-  unsigned int free_count = 0, inactive_count = 0, cache_count = 0;
+  unsigned int free_count{0}, inactive_count{0}, cache_count{0};
   std::size_t len = sizeof(free_count);
-  long pagesize = sysconf(_SC_PAGESIZE);
+  long const pagesize = sysconf(_SC_PAGESIZE);
 
   // https://man.freebsd.org/cgi/man.cgi?query=sysctlbyname
   if (sysctlbyname("vm.stats.vm.v_free_count", &free_count, &len, nullptr, 0) == 0) {
@@ -134,6 +136,6 @@ unsigned long long fs_get_free_memory()
   }
 #endif
 
-  return std::numeric_limits<unsigned long long>::max();
+  return ull_max;
 
 }

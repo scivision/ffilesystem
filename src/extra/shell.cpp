@@ -34,8 +34,7 @@ fs_get_shell()
   HMODULE hMod;
   DWORD cbNeeded;
 
-  std::string name;
-  name.resize(fs_get_max_path());
+  std::string name(fs_get_max_path(), '\0');
 
   if( Process32First(h, &pe)) {
     const DWORD pid = GetCurrentProcessId();

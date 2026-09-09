@@ -139,8 +139,7 @@ std::string fs_get_username()
 // https://learn.microsoft.com/en-us/windows/win32/api/secext/ne-secext-extended_name_format
   ULONG L = 0;
   if (GetUserNameExW(NameSamCompatible, nullptr, &L) == 0 && L > 0) {
-    std::wstring w;
-    w.resize(L);
+    std::wstring w(L, L'\0');
     if (GetUserNameExW(NameSamCompatible, w.data(), &L) != 0)
       return fs_win32_to_narrow(w);
   }

@@ -34,15 +34,14 @@
 
 static std::string fs_win32_get_owner(PSID pSid)
 {
-  DWORD L1 = 0;
-  DWORD L2 = 0;
-  SID_NAME_USE eUse = SidTypeUnknown;
+  DWORD L1{0};
+  DWORD L2{0};
+  SID_NAME_USE eUse{SidTypeUnknown};
 
   if(!LookupAccountSidA(nullptr, pSid, nullptr, &L1, nullptr, &L2, &eUse) && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
     return {};
 
-  std::string s;
-  s.resize(L1);
+  std::string s(L1, '\0');
 
   if (!LookupAccountSidA(nullptr, pSid, s.data(), &L1, nullptr, &L2, &eUse))
     return {};
@@ -56,10 +55,10 @@ static std::string fs_win32_owner(std::string_view path, bool group)
 {
 // https://learn.microsoft.com/en-us/windows/win32/secauthz/finding-the-owner-of-a-file-object-in-c--
 
-  PSECURITY_DESCRIPTOR pSD = nullptr;
-  PSID pSid = nullptr;
+  PSECURITY_DESCRIPTOR pSD{nullptr};
+  PSID pSid{nullptr};
   DWORD r;
-  const std::string cpath(path);
+  const std::string cpath{path};
   // https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-getnamedsecurityinfoa
   if (group)
     r = GetNamedSecurityInfoA(cpath.c_str(), SE_FILE_OBJECT, GROUP_SECURITY_INFORMATION, nullptr, &pSid, nullptr, nullptr, &pSD);
@@ -80,7 +79,7 @@ static std::string fs_win32_owner(std::string_view path, bool group)
 
 static std::optional<uid_t> fs_stat_uid(std::string_view path)
 {
-  const std::string cpath(path);
+  const std::string cpath{path};
 
 #if defined(HAVE_STATX)
   if(struct statx sx; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_UID, &sx) == 0)
@@ -98,7 +97,7 @@ static std::optional<uid_t> fs_stat_uid(std::string_view path)
 
 static std::optional<gid_t> fs_stat_gid(std::string_view path)
 {
-  const std::string cpath(path);
+  const std::string cpath{path};
 
 #if defined(HAVE_STATX)
   if(struct statx sx; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_GID, &sx) == 0)

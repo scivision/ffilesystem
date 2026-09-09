@@ -106,17 +106,19 @@ bool fs_is_exe(std::string_view path)
     return false;
 
 #if defined(_WIN32)
-  std::string suffix = fs_suffix(path);
+  std::string suffix{fs_suffix(path)};
   if (suffix.empty())
     return fs_is_executable_binary(path);
 
   if(!fs_is_readable(path))
     return false;
 
-  std::string pathext = ".com;.exe;.bat;.cmd";
+  std::string pathext;
   if(auto e = fs_getenv("PATHEXT"); e) {
     pathext = e.value();
     fs_ascii_lower(pathext);
+  } else {
+    pathext = ".com;.exe;.bat;.cmd";
   }
 
   fs_ascii_lower(suffix);
@@ -129,7 +131,7 @@ bool fs_is_exe(std::string_view path)
 #endif
 
 #else
-  const std::string cpath(path);
+  const std::string cpath{path};
   return ::access(cpath.c_str(), X_OK) == 0;
 #endif
 }

@@ -257,8 +257,7 @@ std::string fs_win32_full_name(std::string_view path)
   // this form includes the null terminator
   // weak detection of race condition (cwd change)
   if(L){
-    std::wstring r;
-    r.resize(L);
+    std::wstring r(L, '\0');
     if(GetFullPathNameW(w.c_str(), L, r.data(), nullptr) == L-1)  FFS_LIKELY
     {
       r.resize(L-1);
@@ -340,8 +339,7 @@ std::string fs_longname(std::string_view in)
   DWORD L = GetLongPathNameW(w.c_str(), nullptr, 0);
 
   if(L > 0){
-    std::wstring out;
-    out.resize(L);
+    std::wstring out(L, '\0');
 
     if(GetLongPathNameW(w.c_str(), out.data(), L) == L-1) {
       out.resize(L);
@@ -370,8 +368,7 @@ std::string fs_shortname(std::string_view in)
   DWORD L = GetShortPathNameW(w.c_str(), nullptr, 0);
 
   if(L > 0){
-    std::wstring out;
-    out.resize(L);
+    std::wstring out(L, '\0');
 
     if(GetShortPathNameW(w.c_str(), out.data(), L) == L-1) {
       out.resize(L);
@@ -395,8 +392,7 @@ std::string fs_win32_to_narrow([[maybe_unused]] std::wstring_view w)
   std::wstring ws(w);
   if (int L = WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, nullptr, 0, nullptr, nullptr); L > 0)  FFS_LIKELY
   {
-    std::string n;
-    n.resize(L);
+    std::string n(L, '\0');
 
     if(WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, n.data(), L, nullptr, nullptr) == L) {
       n.resize(L-1);  // discard null terminator
@@ -421,8 +417,7 @@ std::wstring fs_win32_to_wide(std::string_view n)
   std::string ns(n);
   if (int L = MultiByteToWideChar(CP_UTF8, 0, ns.c_str(), -1, nullptr, 0); L > 0)  FFS_LIKELY
   {
-    std::wstring w;
-    w.resize(L);
+    std::wstring w(L, '\0');
 
     if(MultiByteToWideChar(CP_UTF8, 0, ns.c_str(), -1, w.data(), L) == L) {
       w.resize(L-1);  // discard null terminator

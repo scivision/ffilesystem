@@ -40,8 +40,7 @@ std::string fs_generate_random_alphanumeric_string(const std::string::size_type 
   thread_local std::mt19937 rng = fs_random_generator<std::mt19937>();
   auto dist = std::uniform_int_distribution<std::string::size_type>(0, chars.size() - 1);
 
-  std::string result;
-  result.resize(len);
+  std::string result(len, '\0');
 
 #if defined(__cpp_lib_ranges)
   std::ranges::generate(result, [&]() { return chars[dist(rng)]; });

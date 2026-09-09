@@ -34,8 +34,7 @@ std::string fs_get_tempdir()
 #if defined(_WIN32)
   // GetTempPath2 is not in MSYS2. libuv etc. use GetTempPathW
   if(DWORD L = GetTempPathW(0, nullptr); L > 0) {
-    std::wstring w;
-    w.resize(L + 1);
+    std::wstring w(L + 1, '\0');
     if(GetTempPathW(L, w.data()) == L) {
       w.resize(L);
       return fs_win32_to_narrow(w);
@@ -49,8 +48,7 @@ std::string fs_get_tempdir()
 // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/confstr.3.html
   size_t len = ::confstr(_CS_DARWIN_USER_TEMP_DIR, nullptr, 0);
   if (len > 1) {
-    std::string t;
-    t.resize(len);
+    std::string t(len, '\0');
     if(::confstr(_CS_DARWIN_USER_TEMP_DIR, t.data(), len) == len) {
       t.resize(len - 1); // remove trailing null
       if(fs_trace) std::cout << "TRACE: used confstr(_CS_DARWIN_USER_TEMP_DIR) = " << t << "\n";
