@@ -135,7 +135,8 @@ fs_exists(std::string_view path)
 
 #if defined(HAVE_CXX_FILESYSTEM)
 
-  ok = (Filesystem::exists(path, ec) && !ec) || (fs_is_msvc() && fs_is_appexec_alias(path));
+  ok = (Filesystem::exists(path, ec) && !ec) || (fs_is_windows() && fs_is_appexec_alias(path));
+  // MSVC and minGW Clang need fs_is_appexec_alias() due to permissions error
 
 #else
 
@@ -209,7 +210,8 @@ fs_is_file(std::string_view path)
 
 #if defined(HAVE_CXX_FILESYSTEM)
   ok = (Filesystem::is_regular_file(path, ec) && !ec) ||
-        (fs_is_msvc() && fs_is_appexec_alias(path));
+        (fs_is_windows() && fs_is_appexec_alias(path));
+  // MSVC and minGW Clang need fs_is_appexec_alias() due to permissions error
 #else
 
 #if defined(_WIN32)
