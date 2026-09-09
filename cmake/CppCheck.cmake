@@ -38,6 +38,8 @@ if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
 
 if(ffilesystem_ranges)
   check_cxx_symbol_exists(__cpp_lib_ranges "version" ffilesystem_HAVE_RANGES)
+else()
+  unset(ffilesystem_HAVE_RANGES CACHE)
 endif()
 
 if(ffilesystem_HAVE_RANGES)

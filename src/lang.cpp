@@ -23,7 +23,7 @@ long fs_cpp_format() {
 
 
 long fs_cpp_ranges() {
-#ifdef __cpp_lib_ranges
+#if defined(__cpp_lib_ranges) && defined(HAVE_CPP_RANGES)
   return __cpp_lib_ranges;
 #else
   return 0;
@@ -41,10 +41,7 @@ std::string fs_backend() {
 
 
 bool fs_is_optimized() {
-// This is a heuristic, trusting the build system or user to set NDEBUG if optimized.
-// The NDEBUG macro is typically defined when optimizations are enabled to disable debugging code.
-// It is a standard way to indicate that the code should be optimized and not include debug information.
-#if defined(NDEBUG)
+#if defined(__OPTIMIZE__) || defined(FFS_OPTIMIZED)
   return true;
 #else
   return false;

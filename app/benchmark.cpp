@@ -194,9 +194,12 @@ if(argc > 1)
 std::string_view path;
 
 std::cout << fs_compiler() << "\n";
-std::cout << "Ffilesystem backend: " << fs_backend() << "  C++ standard: " << fs_cpp_lang() << "  C standard: " << fs_c_lang() << "\n";
+std::cout << "Ffilesystem backend: " << fs_backend() << "\n";
+std::cout << "C++ standard: " << fs_cpp_lang() << "\n";
+std::cout << "C standard: " << fs_c_lang() << "\n";
 std::cout << "Benchmark C++ standard " << __cplusplus << "\n";
 std::cout << "Optimized: " << fs_is_optimized() << "\n";
+std::cout << "C++20 <ranges> support: " << fs_cpp_ranges() << "\n";
 std::cout << "C++20 <format> support: " << fs_cpp_format() << "\n";
 std::cout << "Benchmark parameters: n=" << n << ", batches=" << kBenchBatches << "\n";
 

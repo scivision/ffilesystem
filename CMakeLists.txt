@@ -191,6 +191,7 @@ target_include_directories(ffilesystem PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 target_compile_definitions(ffilesystem PUBLIC
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${HAVE_CXX_FILESYSTEM}>>:HAVE_CXX_FILESYSTEM>"
+"$<$<NOT:$<CONFIG:Debug>>:FFS_OPTIMIZED>"
 "$<$<BOOL:${ffilesystem_HAVE_ISO_FORTRAN_BINDING}>:HAVE_ISO_FORTRAN_BINDING>"
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${ffilesystem_HAVE_CLOCK_CAST}>>:HAVE_CLOCK_CAST>"
 "$<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<BOOL:${ffilesystem_trace}>>:FS_TRACE>"
