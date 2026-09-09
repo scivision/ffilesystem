@@ -212,7 +212,7 @@ fs_split_pathsep(std::string_view path)
   std::vector<std::string> parts;
 
   // split path, including last component
-  std::string_view::size_type start = 0;
+  std::string_view::size_type start{0};
   std::string_view::size_type end;
 
   while (start < path.length()) {

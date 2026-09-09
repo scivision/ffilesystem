@@ -2,8 +2,8 @@
 #include <string_view>
 #include <iostream>
 
-#if __has_include(<ranges>)
-#include <ranges>  // IWYU pragma: keep
+#if defined(HAVE_CPP_RANGES)
+#include <ranges>
 #endif
 
 #include <algorithm> // for std::transform, std::ranges::contains, std::replace, std::binary_search
@@ -42,7 +42,7 @@ void fs_ascii_lower(std::string& s)
   auto to_lower = [](char c) -> char {
     return static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
   };
-#if defined(__cpp_lib_ranges)
+#if defined(HAVE_CPP_RANGES)
   std::ranges::transform(s, s.begin(), to_lower);
 #else
   std::transform(s.begin(), s.end(), s.begin(), to_lower);
@@ -57,7 +57,7 @@ void fs_ascii_upper(std::string& s)
       return static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
   };
 
-#if defined(__cpp_lib_ranges)
+#if defined(HAVE_CPP_RANGES)
   std::ranges::transform(s, s.begin(), to_upper);
 #else
   std::transform(s.begin(), s.end(), s.begin(), to_upper);
@@ -103,10 +103,12 @@ fs_is_reserved(std::string_view path)
 
   fs_ascii_upper(s);
 
+#if defined(HAVE_CPP_RANGES)
 #if defined(__cpp_lib_ranges_contains) // C++23
   return std::ranges::contains(r, s);
-#elif defined(__cpp_lib_ranges) // C++20
+#else // C++20
   return std::ranges::binary_search(r, s);
+#endif
 #else
   return std::binary_search(r.begin(), r.end(), s);
 #endif
@@ -139,7 +141,7 @@ fs_is_safe_name(std::string_view filename)
   if(fs_is_reserved(filename))
     return false;
 
-#ifdef __cpp_lib_ranges // C++20
+#if defined(HAVE_CPP_RANGES)
   return std::ranges::all_of(filename, fs_is_safe_char);
 #else // C++11
   return std::all_of(filename.begin(), filename.end(), fs_is_safe_char);
@@ -152,7 +154,7 @@ fs_non_ascii(std::string_view name)
 {
   // check if name contains non-ASCII characters
 
-#ifdef __cpp_lib_ranges // C++20
+#if defined(HAVE_CPP_RANGES)
   return !std::ranges::all_of(name, [](int c) { return std::isprint(c); });
 #else // C++11
   return !std::all_of(name.begin(), name.end(), [](int c) { return std::isprint(c); });

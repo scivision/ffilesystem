@@ -4,7 +4,7 @@
 #include <iterator>             // for begin, end
 #include <random>
 
-#if __has_include(<ranges>)
+#if defined(HAVE_CPP_RANGES)
 #include <ranges>
 #endif
 
@@ -20,7 +20,7 @@ static auto fs_random_generator() -> T {
   auto constexpr seed_len = seed_bytes / sizeof(std::seed_seq::result_type);
   auto seed = std::array<std::seed_seq::result_type, seed_len>();
   auto dev = std::random_device();
-#if defined(__cpp_lib_ranges)
+#if defined(HAVE_CPP_RANGES)
   std::ranges::generate(seed, std::ref(dev));
 #else
   std::generate_n(std::begin(seed), seed_len, std::ref(dev));
@@ -42,7 +42,7 @@ std::string fs_generate_random_alphanumeric_string(const std::string::size_type 
 
   std::string result(len, '\0');
 
-#if defined(__cpp_lib_ranges)
+#if defined(HAVE_CPP_RANGES)
   std::ranges::generate(result, [&]() { return chars[dist(rng)]; });
 #else
   std::generate_n(std::begin(result), len, [&]() { return chars[dist(rng)]; });
