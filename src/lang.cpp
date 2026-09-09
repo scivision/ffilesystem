@@ -2,11 +2,8 @@
 
 #include "ffilesystem.h"
 
-#if __has_include(<format>)
-#include <format>
-#endif
-#if __has_include(<ranges>)
-#include <ranges>
+#if __has_include(<version>)
+#include <version>
 #endif
 
 
