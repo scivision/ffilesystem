@@ -94,7 +94,7 @@ bool fs_is_empty(std::string_view path)
     return e;
 #else
 
-  const std::string cpath(path);
+  const std::string cpath{path};
 
   if (!fs_is_dir(path))
     return fs_is_file(path) &&fs_file_size(path) == 0;

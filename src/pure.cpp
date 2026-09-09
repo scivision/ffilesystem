@@ -77,7 +77,7 @@ bool fs_is_absolute(std::string_view path)
     if(fs_win32_is_ext_path(path))
         return true;
 #if defined(_WIN32)
-    if(std::string cpath(path); PathIsUNCA(cpath.c_str()))
+    if(std::string cpath{path}; PathIsUNCA(cpath.c_str()))
       return true;
 #endif
     // Windows drive letter with slash (e.g. C: without slash is relative)
@@ -157,7 +157,7 @@ std::string fs_root_name([[maybe_unused]] std::string_view path)
 #elif defined(_WIN32)
   char drive[_MAX_DRIVE];
 // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/splitpath-s-wsplitpath-s
-  std::string cpath(path);
+  std::string cpath{path};
   if(_splitpath_s(cpath.c_str(), drive, _MAX_DRIVE, nullptr, 0, nullptr, 0, nullptr, 0) == 0) {
     cpath = drive;
     fs_trim(cpath);

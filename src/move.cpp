@@ -30,7 +30,7 @@ fs_remove(std::string_view path)
   if(Filesystem::remove(path, ec) && !ec) FFS_LIKELY
     return true;
 #else
-  const std::string cpath(path);
+  const std::string cpath{path};
   // https://en.cppreference.com/w/cpp/io/c/remove
   if(std::remove(cpath.c_str()) == 0)
     return true;

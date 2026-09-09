@@ -53,7 +53,7 @@ fs_is_removable(std::string_view path)
   // for more general/robust solution, consider libudev.
 
   std::string dev;
-  const std::string cpath(path);
+  const std::string cpath{path};
 
   // https://man7.org/linux/man-pages/man2/stat.2.html
 
@@ -92,7 +92,7 @@ fs_is_removable(std::string_view path)
 
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/stat.2.html
 
-  const std::string cpath(path);
+  const std::string cpath{path};
 
   struct stat s;
   if (::stat(cpath.c_str(), &s) != 0) {

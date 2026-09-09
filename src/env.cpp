@@ -17,7 +17,7 @@ std::optional<std::string> fs_getenv(std::string_view name)
 {
   // convenience function to get environment variable without needing to check for nullptr
   // don't emit error because sometimes we just check if envvar is defined
-  const std::string n(name);
+  const std::string n{name};
   auto buf = std::getenv(n.c_str());
 
   if (buf)
@@ -31,8 +31,7 @@ bool fs_setenv(std::string_view name, std::string_view value)
 {
   // if value is empty, remove the variable from the environment
 
-const std::string n(name);
-const std::string v(value);
+const std::string n{name}, v{value};
 
 #if defined(_WIN32)
   // SetEnvironmentVariable returned OK but set blank values

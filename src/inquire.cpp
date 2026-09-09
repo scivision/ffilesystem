@@ -39,7 +39,7 @@ namespace Filesystem = std::filesystem;
 
 static bool fs_check_access(std::string_view path, const int mode){
 
-  std::string cpath(path);
+  std::string cpath{path};
   bool ok;
 
 #if defined(_WIN32)

@@ -51,7 +51,7 @@ std::uintmax_t fs_space_available(std::string_view path)
   // https://www.man7.org/linux/man-pages/man3/statvfs.3.html
   // https://unix.stackexchange.com/a/703650
   struct statvfs stat;
-  const std::string cpath(path);
+  const std::string cpath{path};
 
   if (!::statvfs(cpath.c_str(), &stat))
     return (stat.f_frsize ? stat.f_frsize : stat.f_bsize) * stat.f_bavail;
@@ -87,7 +87,7 @@ std::uintmax_t fs_space_capacity(std::string_view path)
     return b.QuadPart;
 #elif defined(HAVE_STATVFS)
   struct statvfs stat;
-  const std::string cpath(path);
+  const std::string cpath{path};
 
   if (!::statvfs(cpath.c_str(), &stat))
     return (stat.f_frsize ? stat.f_frsize : stat.f_bsize) * stat.f_blocks;
