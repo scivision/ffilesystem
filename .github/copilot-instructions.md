@@ -9,5 +9,5 @@ applyTo: '**/*.cmake, **/CMakeLists.txt, **/CMakePresets.json, **/*.cpp, **/*.h'
 
 ## Windows
 
-On Windows when wanting to use WSL, the `cmake --workflow linux` preset uses /tmp/build for the build directory.
+On Windows when wanting to use WSL, the `cmake --workflow --preset linux` workflow uses /tmp/build for the build directory, to avoid conflicts with the native Windows build directory and filesystem.
 When testing on a Windows computer, test with both a native Windows compiler as well as WSL to help avoid non-Windows breakage.
