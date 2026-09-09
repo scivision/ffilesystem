@@ -11,7 +11,9 @@ constexpr int CCP_POSIX_TO_WIN_A = 0;
 #endif
 
 
-static std::string fs_convert_path(std::string_view path, [[maybe_unused]] int const what)
+namespace {
+
+std::string fs_convert_path(std::string_view path, [[maybe_unused]] int const what)
 {
 #ifdef __CYGWIN__
   const std::string cpath{path};
@@ -26,6 +28,8 @@ static std::string fs_convert_path(std::string_view path, [[maybe_unused]] int c
 
   fs_print_error(path);
   return {};
+}
+
 }
 
 std::string fs_to_cygpath(std::string_view path) {

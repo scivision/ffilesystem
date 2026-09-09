@@ -30,9 +30,11 @@
 #include "ffilesystem.h"
 
 
+namespace {
+
 #if defined(_WIN32)
 
-static std::string fs_win32_get_owner(PSID pSid)
+std::string fs_win32_get_owner(PSID pSid)
 {
   DWORD L1{0};
   DWORD L2{0};
@@ -51,7 +53,7 @@ static std::string fs_win32_get_owner(PSID pSid)
   return s;
 }
 
-static std::string fs_win32_owner(std::string_view path, bool group)
+std::string fs_win32_owner(std::string_view path, bool group)
 {
 // https://learn.microsoft.com/en-us/windows/win32/secauthz/finding-the-owner-of-a-file-object-in-c--
 
@@ -77,7 +79,7 @@ static std::string fs_win32_owner(std::string_view path, bool group)
 
 #else
 
-static std::optional<uid_t> fs_stat_uid(std::string_view path)
+std::optional<uid_t> fs_stat_uid(std::string_view path)
 {
   const std::string cpath{path};
 
@@ -95,7 +97,7 @@ static std::optional<uid_t> fs_stat_uid(std::string_view path)
 }
 
 
-static std::optional<gid_t> fs_stat_gid(std::string_view path)
+std::optional<gid_t> fs_stat_gid(std::string_view path)
 {
   const std::string cpath{path};
 
@@ -113,6 +115,8 @@ static std::optional<gid_t> fs_stat_gid(std::string_view path)
 }
 
 #endif
+
+} // namespace
 
 
 std::string

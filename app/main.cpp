@@ -34,7 +34,9 @@ namespace Filesystem = std::filesystem;
 #include "ffilesystem.h"
 
 
-static bool no_arg(std::string_view fun){
+namespace {
+
+bool no_arg(std::string_view fun){
 
   static const std::unordered_map<std::string_view, std::function<bool()>> mbool =
   {
@@ -116,7 +118,7 @@ static const std::unordered_map<std::string_view, fs_function> fs_function_map =
 }
 
 
-static bool one_arg(std::string_view fun, std::string_view a1)
+bool one_arg(std::string_view fun, std::string_view a1)
 {
   // each possible return type for the function
   using fs_one_arg_function = std::function<std::variant<std::string, bool, int, std::uintmax_t>(std::string_view)>;
@@ -285,7 +287,7 @@ static bool one_arg(std::string_view fun, std::string_view a1)
 }
 
 
-static bool two_arg(std::string_view fun, std::string_view a1, std::string_view a2)
+bool two_arg(std::string_view fun, std::string_view a1, std::string_view a2)
 {
   using fs_two_arg_function = std::function<std::variant<std::string, bool>(std::string_view, std::string_view)>;
 
@@ -374,6 +376,8 @@ static bool two_arg(std::string_view fun, std::string_view a1, std::string_view 
     std::cout << "\n";
 
   return ok;
+}
+
 }
 
 

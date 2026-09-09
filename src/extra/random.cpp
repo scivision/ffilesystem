@@ -14,8 +14,10 @@
 #include "ffilesystem.h"
 
 
+namespace {
+
 template <typename T = std::mt19937>
-static auto fs_random_generator() -> T {
+auto fs_random_generator() -> T {
   auto constexpr seed_bytes = sizeof(typename T::result_type) * T::state_size;
   auto constexpr seed_len = seed_bytes / sizeof(std::seed_seq::result_type);
   auto seed = std::array<std::seed_seq::result_type, seed_len>();
@@ -27,6 +29,8 @@ static auto fs_random_generator() -> T {
 #endif
   auto seed_seq = std::seed_seq(std::begin(seed), std::end(seed));
   return T{seed_seq};
+}
+
 }
 
 std::string fs_generate_random_alphanumeric_string(const std::string::size_type len)

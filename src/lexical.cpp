@@ -115,7 +115,9 @@ fs_is_reserved(std::string_view path)
 }
 
 
-static bool
+namespace {
+
+bool
 fs_is_safe_char(const char c)
 {
   // unordered_set<char>  8us
@@ -127,6 +129,7 @@ fs_is_safe_char(const char c)
   return std::isalnum(static_cast<unsigned char>(c)) || safe.find(c) != std::string_view::npos;
 }
 
+}
 
 bool
 fs_is_safe_name(std::string_view filename)

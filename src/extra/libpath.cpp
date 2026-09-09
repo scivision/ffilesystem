@@ -6,12 +6,20 @@
 #define _DEFAULT_SOURCE
 #endif
 #include <dlfcn.h> // dladdr
-static void dl_dummy_func() {}
 #endif
 
 #include <string>
 
 #include "ffilesystem.h"
+
+
+namespace {
+
+#if defined(ffilesystem_HAVE_DLADDR)
+void dl_dummy_func() {}
+#endif
+
+}
 
 
 std::string fs_lib_path()

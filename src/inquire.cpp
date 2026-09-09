@@ -37,7 +37,9 @@ namespace Filesystem = std::filesystem;
 #endif
 
 
-static bool fs_check_access(std::string_view path, const int mode){
+namespace {
+
+bool fs_check_access(std::string_view path, const int mode){
 
   std::string cpath{path};
   bool ok;
@@ -60,7 +62,7 @@ static bool fs_check_access(std::string_view path, const int mode){
 
 
 #if defined(_WIN32)
-static DWORD fs_win32_file_type(std::string_view path){
+DWORD fs_win32_file_type(std::string_view path){
 
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
   // FILE_FLAG_BACKUP_SEMANTICS is required to open a handle to a directory, else ERROR_ACCESS_DENIED
@@ -87,6 +89,7 @@ static DWORD fs_win32_file_type(std::string_view path){
 }
 #endif
 
+}
 
 bool fs_has_statx()
 {

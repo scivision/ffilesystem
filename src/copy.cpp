@@ -51,6 +51,8 @@ namespace Filesystem = std::filesystem;
 #endif  // HAVE_CXX_FILESYSTEM
 
 
+namespace {
+
 #if !defined(HAVE_CXX_FILESYSTEM) && !defined(_WIN32)
 
 // for RAII file descriptor management
@@ -91,7 +93,7 @@ struct fd_handle {
 };
 
 
-static bool fs_copy_loop(int const rid, int const wid, off_t const len)
+bool fs_copy_loop(int const rid, int const wid, off_t const len)
 {
   // copy a file in chunks
   off_t r = len;
@@ -131,7 +133,7 @@ static bool fs_copy_loop(int const rid, int const wid, off_t const len)
 
 
 #if defined(ffilesystem_HAVE_COPY_FILE_RANGE)
-static bool fs_copy_range(int const rid, int const wid, off_t len)
+bool fs_copy_range(int const rid, int const wid, off_t len)
 {
   if (fs_trace) std::cout << "TRACE::ffilesystem:copy_file: using copy_file_range\n";
 
@@ -222,6 +224,7 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
 }
 #endif
 
+}
 
 bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite)
 {

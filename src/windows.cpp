@@ -62,8 +62,10 @@ typedef struct _REPARSE_DATA_BUFFER
 #endif
 
 
+namespace {
+
 #if defined(_WIN32) || defined(__CYGWIN__)
-static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer)
+bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer)
 {
 
 // this function is adapted from
@@ -118,6 +120,8 @@ static bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer
   return false;
 }
 #endif
+
+}
 
 
 bool fs_is_appexec_alias(std::string_view path)
