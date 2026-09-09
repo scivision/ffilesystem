@@ -45,8 +45,8 @@ jobs:
       name: C++23 workflow
       run: cmake --workflow cpp23
 
-    - &iso_fortran_binding
-      name: ISO_Fortran_binding.h workflow
+    - name: ISO_Fortran_binding.h workflow
+      if: matrix.gcc-version >= 12
       run: cmake --workflow isofortran
 
     - name: Debug workflow
@@ -74,11 +74,13 @@ jobs:
 
     - uses: ./.github/workflows/composite-build
 
-    - *iso_fortran_binding
+    - name: ISO_Fortran_binding.h workflow
+      if: matrix.gcc-version >= 12
+      run: cmake --workflow isofortran
 
     - name: C++17 workflow
       if: matrix.gcc-version == 9
-      run: cmake --workflow cpp17
+      run: cmake --workflow cpp17 --fresh
 
 
   shared:
