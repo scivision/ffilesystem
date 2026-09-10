@@ -91,7 +91,7 @@ fs_is_removable(std::string_view path)
 
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/stat.2.html
 
-
+ 
   struct stat s;
   if (::stat(std::string{path}.c_str(), &s) != 0) {
     fs_error_callback(path);
