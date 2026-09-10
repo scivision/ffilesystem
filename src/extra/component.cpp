@@ -37,9 +37,7 @@ std::string_view::size_type fs_max_component(std::string_view path)
     return L;
 #elif defined(_PC_NAME_MAX)
   errno = 0;
-  const std::string cpath{path};
-  auto const r = pathconf(cpath.c_str(), _PC_NAME_MAX);
-  if(r != -1)
+  if (auto r = pathconf(std::string{path}.c_str(), _PC_NAME_MAX); r != -1)
     return r;
 
   if(errno == 0)

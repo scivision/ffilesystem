@@ -147,9 +147,7 @@ std::string fs_read_symlink(std::string_view path)
   std::string::size_type L = fs_symlink_length(path);
   std::string p(L, '\0');
 
-  const std::string cpath{path};
-
-  if (ssize_t Lr = ::readlink(cpath.c_str(), p.data(), p.size());
+  if (ssize_t Lr = ::readlink(std::string{path}.c_str(), p.data(), p.size());
       Lr == static_cast<ssize_t>(L-1)){
     // readlink() does not null-terminate the result
     p.resize(Lr);

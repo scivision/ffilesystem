@@ -42,7 +42,7 @@ fs_is_removable(std::string_view path)
     case DRIVE_FIXED: case DRIVE_REMOTE: case DRIVE_RAMDISK:
       return false;
     case DRIVE_UNKNOWN: case DRIVE_NO_ROOT_DIR:
-      fs_print_error(path, std::make_error_code(std::errc::no_such_device));
+      fs_error_callback(path, std::make_error_code(std::errc::no_such_device));
       return false;
     default:
       return false;
@@ -53,11 +53,10 @@ fs_is_removable(std::string_view path)
   // for more general/robust solution, consider libudev.
 
   std::string dev;
-  const std::string cpath{path};
 
   // https://man7.org/linux/man-pages/man2/stat.2.html
 
-  if (struct stat s; ::stat(cpath.c_str(), &s) == 0) {
+  if (struct stat s; ::stat(std::string{path}.c_str(), &s) == 0) {
 
   // don't call as ::major or ::minor because some platforms e.g. Android have them as a macro
 #if defined(__cpp_lib_format)  // C++20
@@ -66,7 +65,7 @@ fs_is_removable(std::string_view path)
     dev = "/sys/dev/block/" + std::to_string(major(s.st_dev)) + ":" + std::to_string(minor(s.st_dev)) + "/removable";
 #endif
   } else {
-    fs_print_error(path);
+    fs_error_callback(path);
     return false;
   }
 
@@ -83,7 +82,7 @@ fs_is_removable(std::string_view path)
     }
   }
 
-  fs_print_error(dev);
+  fs_error_callback(dev);
   return false;
 
 #elif defined(FFS_DARWIN)
@@ -92,11 +91,10 @@ fs_is_removable(std::string_view path)
 
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/stat.2.html
 
-  const std::string cpath{path};
 
   struct stat s;
-  if (::stat(cpath.c_str(), &s) != 0) {
-    fs_print_error(path);
+  if (::stat(std::string{path}.c_str(), &s) != 0) {
+    fs_error_callback(path);
     return false;
   }
 
@@ -113,7 +111,7 @@ fs_is_removable(std::string_view path)
 
   DASessionRef session = DASessionCreate(kCFAllocatorDefault);
   if (!session) {
-    fs_print_error(path);
+    fs_error_callback(path);
     return false;
   }
 
@@ -133,7 +131,7 @@ fs_is_removable(std::string_view path)
   return ok;
 
 #else
-  fs_print_error(path, std::make_error_code(std::errc::function_not_supported));
+  fs_error_callback(path, std::make_error_code(std::errc::function_not_supported));
   return false;
 #endif
 

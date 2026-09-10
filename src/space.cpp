@@ -50,10 +50,7 @@ std::uintmax_t fs_space_available(std::string_view path)
 #elif defined(HAVE_STATVFS)
   // https://www.man7.org/linux/man-pages/man3/statvfs.3.html
   // https://unix.stackexchange.com/a/703650
-  struct statvfs stat;
-  const std::string cpath{path};
-
-  if (!::statvfs(cpath.c_str(), &stat))
+  if (struct statvfs stat; !::statvfs(std::string{path}.c_str(), &stat))
     return (stat.f_frsize ? stat.f_frsize : stat.f_bsize) * stat.f_bavail;
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
@@ -86,10 +83,7 @@ std::uintmax_t fs_space_capacity(std::string_view path)
   if(ULARGE_INTEGER b; GetDiskFreeSpaceExW(fs_win32_to_wide(path).c_str(), nullptr, &b, nullptr) != 0)
     return b.QuadPart;
 #elif defined(HAVE_STATVFS)
-  struct statvfs stat;
-  const std::string cpath{path};
-
-  if (!::statvfs(cpath.c_str(), &stat))
+  if (struct statvfs stat; !::statvfs(std::string{path}.c_str(), &stat))
     return (stat.f_frsize ? stat.f_frsize : stat.f_bsize) * stat.f_blocks;
 #else
   ec = std::make_error_code(std::errc::function_not_supported);

@@ -84,8 +84,8 @@ std::optional<uid_t> fs_stat_uid(std::string_view path)
   const std::string cpath{path};
 
 #if defined(HAVE_STATX)
-  if(struct statx sx; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_UID, &sx) == 0)
-    return sx.stx_uid;
+  if(struct statx s; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_UID, &s) == 0)
+    return s.stx_uid;
   else if (errno != ENOSYS)
     return {};
 #endif
@@ -102,8 +102,8 @@ std::optional<gid_t> fs_stat_gid(std::string_view path)
   const std::string cpath{path};
 
 #if defined(HAVE_STATX)
-  if(struct statx sx; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_GID, &sx) == 0)
-    return sx.stx_gid;
+  if(struct statx s; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_GID, &s) == 0)
+    return s.stx_gid;
   else if (errno != ENOSYS)
     return {};
 #endif

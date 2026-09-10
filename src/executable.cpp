@@ -47,10 +47,9 @@ bool fs_is_executable_binary(std::string_view path)
   fs_print_error(path, "not supported on Cygwin");
 #else
   // https://github.com/jart/cosmopolitan/blob/master/ape/specification.md
-  std::array<std::uint8_t, 4> magic;
-  const std::string cpath{path};
+  std::array<std::uint8_t, 4> magic{};
 
-  if(std::ifstream f{cpath.c_str(), std::ios::binary}){
+  if(std::ifstream f{std::string{path}.c_str(), std::ios::binary}){
     if( !f.read(reinterpret_cast<char*>(magic.data()), magic.size()) ) {
       return false;
     }
@@ -131,7 +130,6 @@ bool fs_is_exe(std::string_view path)
 #endif
 
 #else
-  const std::string cpath{path};
-  return ::access(cpath.c_str(), X_OK) == 0;
+  return ::access(std::string{path}.c_str(), X_OK) == 0;
 #endif
 }

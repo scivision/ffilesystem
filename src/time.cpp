@@ -120,8 +120,7 @@ bool fs_set_modtime(std::string_view path, const bool quiet)
   // utimensat available in macOS >= 10.13
   // https://github.com/python/cpython/issues/75782
   // https://gitlab.kitware.com/cmake/cmake/-/issues/17101
-  const std::string cpath{path};
-  if (::utimensat(AT_FDCWD, cpath.c_str(), nullptr, 0) == 0)
+  if (::utimensat(AT_FDCWD, std::string{path}.c_str(), nullptr, 0) == 0)
     return true;
 #endif
 

@@ -86,9 +86,7 @@ std::string fs_type_linux(std::string_view path)
 {
   struct statfs s;
 
-  const std::string cpath{path};
-
-  if(statfs(cpath.c_str(), &s)) {
+  if(statfs(std::string{path}.c_str(), &s)) {
     fs_print_error(path);
     return {};
   }
@@ -162,9 +160,8 @@ std::string fs_filesystem_type(std::string_view path)
 # endif
 #elif defined(FFS_DARWIN) || defined(FFS_BSD)
   struct statfs s;
-  const std::string cpath{path};
 
-  if(!::statfs(cpath.c_str(), &s))
+  if(!::statfs(std::string{path}.c_str(), &s))
     return s.f_fstypename;
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
