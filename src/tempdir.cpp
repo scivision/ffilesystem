@@ -65,7 +65,7 @@ std::string fs_get_tempdir()
     return "/tmp";
 #endif
 
-  fs_print_error("", ec);
+  fs_error_callback("", ec);
   return {};
 
 }

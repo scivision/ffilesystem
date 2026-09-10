@@ -32,3 +32,7 @@ Generally, the paths are passed in as `std::string_view` and returned as `std::s
 We return `std::string` instead of `std::string_view` because the C API is important and generally the users are not interested in managing the lifetime of the string_view.
 
 * fs_print_error() is polymorphic and grabs GetLastError() on Windows or errno on POSIX systems. Assume all arguments to fs_print_error() are of the correct type.
+
+## Coding style
+
+* C++: where iostream is used, use "\n" instead of std::endl unless a flush is needed - or a human has already put a std::endl.

@@ -76,6 +76,6 @@ std::string fs_exe_path()
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error("", ec);
+  fs_error_callback("", ec);
   return {};
 }

@@ -45,7 +45,7 @@ namespace Filesystem = std::filesystem;
 std::time_t fs_get_modtime(std::string_view path)
 {
   auto handle_error = [&]() {
-    fs_print_error(path);
+    fs_error_callback(path);
     return std::time_t{};
   };
 
@@ -82,7 +82,7 @@ std::optional<Filesystem::file_time_type> fs_get_modtime_fs(std::string_view pat
   if(Filesystem::file_time_type t_fs = Filesystem::last_write_time(path, ec); !ec)
     return t_fs;
 
-  fs_print_error(path, ec);
+  fs_error_callback(path, ec);
   return {};
 }
 #endif
@@ -125,7 +125,7 @@ bool fs_set_modtime(std::string_view path, const bool quiet)
 #endif
 
   if (!quiet)
-    fs_print_error(path, ec);
+    fs_error_callback(path, ec);
 
   return false;
 }

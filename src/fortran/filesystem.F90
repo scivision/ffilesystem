@@ -5,11 +5,13 @@ use, intrinsic:: iso_fortran_env, only: int64, compiler_version, stderr=>error_u
 
 implicit none
 private
+integer(int64), parameter, public :: fs_unknown_size = -1_int64
 !! utility procedures
 public :: get_homedir, get_profile_dir, get_username, hostname, &
  get_owner_name, get_owner_group, &
  canonical, resolve, realpath, fs_getpid, &
  get_cwd, set_cwd, which
+public :: set_error_callback, reset_error_callback
 public :: normal, expanduser, as_posix, as_windows, &
 has_filename, &
 fs_has_cfi, &
@@ -67,6 +69,14 @@ end interface
 
 
 interface
+
+subroutine set_error_callback(callback) bind(C, name="fs_set_error_callback")
+import C_FUNPTR
+type(C_FUNPTR), value :: callback
+end subroutine
+
+subroutine reset_error_callback() bind(C, name="fs_reset_error_callback")
+end subroutine
 
 logical(C_BOOL) function fs_is_optimized() bind(C)
 !! ffilesystem is optimized for speed?

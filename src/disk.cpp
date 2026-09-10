@@ -33,7 +33,7 @@ std::size_t fs_get_blksize(std::string_view path)
   // block size in bytes
 
   auto handle_error = [&]() {
-    fs_print_error(path);
+    fs_error_callback(path);
     return std::size_t{};
   };
 
@@ -87,7 +87,7 @@ dev_t fs_st_dev(std::string_view path)
   // in general dev_t may be unsigned.
 
   auto handle_error = [&]() {
-    fs_print_error(path);
+    fs_error_callback(path);
     return dev_t{};
   };
 
@@ -121,7 +121,7 @@ ino_t fs_inode(std::string_view path)
   std::error_code ec;
 
   auto handle_error = [&]() {
-    fs_print_error(path, ec);
+    fs_error_callback(path, ec);
     return ino_t{};
   };
 

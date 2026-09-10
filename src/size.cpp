@@ -44,7 +44,7 @@ std::uintmax_t fs_file_size(std::string_view path)
   std::error_code ec;
 
   if(!fs_is_file(path)) {
-    fs_print_error(path, "not a regular file");
+    fs_error_callback(path, "not a regular file");
     return fs_unknown_size;
   }
 
@@ -52,14 +52,14 @@ std::uintmax_t fs_file_size(std::string_view path)
 
   auto s = Filesystem::file_size(path, ec);
   if (ec)
-    fs_print_error(path, ec);
+    fs_error_callback(path, ec);
 
   return s;
 
 #else
 
   auto handle_error = [&]() {
-    fs_print_error(path, ec);
+    fs_error_callback(path, ec);
     return fs_unknown_size;
   };
 
@@ -105,7 +105,7 @@ bool fs_is_empty(std::string_view path)
   WIN32_FIND_DATAA ffd;
   HANDLE hFind = FindFirstFileA((cpath + "/*").c_str(), &ffd);
   if (hFind == INVALID_HANDLE_VALUE) {
-    fs_print_error(path);
+    fs_error_callback(path);
     return false;
   }
 
@@ -170,7 +170,7 @@ bool fs_is_empty(std::string_view path)
 
 #endif
 
-  fs_print_error(path, ec);
+  fs_error_callback(path, ec);
   return false;
 
 }

@@ -55,7 +55,7 @@ bool fs_check_access(std::string_view path, const int mode){
   ok = access(cpath.c_str(), mode) == 0;
 #endif
   if (!ok && errno != ENOENT)
-    fs_print_error(path);
+    fs_error_callback(path);
 
   return ok;
 }
@@ -77,7 +77,7 @@ DWORD fs_win32_file_type(std::string_view path){
       case ERROR_CANT_ACCESS_FILE: case ERROR_FILE_NOT_FOUND: case ERROR_PATH_NOT_FOUND: case ERROR_SUCCESS:
         return FILE_TYPE_UNKNOWN;
       default:
-        fs_print_error(path);
+        fs_error_callback(path);
         return FILE_TYPE_UNKNOWN;
     }
   }
@@ -159,7 +159,7 @@ fs_exists(std::string_view path)
     ok |= fs_is_char_device(path);
 
   if (!ok && ec && ec != std::errc::no_such_file_or_directory)
-    fs_print_error(path);
+    fs_error_callback(path);
 
   return ok;
 }
@@ -196,7 +196,7 @@ fs_is_dir(std::string_view path)
 #endif
 
   if (!ok && ec && ec != std::errc::no_such_file_or_directory)
-    fs_print_error(path);
+    fs_error_callback(path);
 
   return ok;
 }
@@ -232,7 +232,7 @@ fs_is_file(std::string_view path)
 #endif
 
   if (!ok && ec && ec != std::errc::no_such_file_or_directory)
-    fs_print_error(path);
+    fs_error_callback(path);
 
   return ok;
 }
@@ -336,7 +336,7 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 
   auto s = Filesystem::hard_link_count(path, ec);
   if(ec)
-    fs_print_error(path, ec);
+    fs_error_callback(path, ec);
 
   return s;
 
@@ -345,7 +345,7 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
   const std::string cpath{path};
 
   auto handle_error = [&]() {
-    fs_print_error(path, ec);
+    fs_error_callback(path, ec);
     return fs_unknown_size;
   };
 

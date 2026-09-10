@@ -39,7 +39,7 @@ bool fs_is_admin(){
   if(ok)
     return elevation.TokenIsElevated;
 
-  fs_print_error("");
+  fs_error_callback("");
   return false;
 #else
   return ::geteuid() == 0;
@@ -104,6 +104,6 @@ std::string fs_get_terminal()
     return t.value();
 #endif
 
-  fs_print_error("");
+  fs_error_callback("");
   return {};
 }

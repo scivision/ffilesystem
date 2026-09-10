@@ -47,6 +47,6 @@ const std::string n{name}, v{value};
     return true;
 #endif
 
-  fs_print_error(name);
+  fs_error_callback(name);
   return false;
 }

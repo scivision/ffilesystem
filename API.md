@@ -5,6 +5,35 @@ Fortran filesystem modules contains numerous procedures and one (optional, defau
 C++ stdlib `<filesystem>` is used extensively within Ffilesystem to implement functions in a platform-agnostic and robust way.
 Fallback to plain C++17 is available for compilers that do not support C++
 [<filesystem>](https://en.cppreference.com/w/cpp/header/filesystem).
+
+## Diagnostics
+
+Ffilesystem reports recoverable filesystem errors through a process-wide callback. By default,
+diagnostics are written to stderr. Install an application callback with
+`fs_set_error_callback()` to redirect diagnostics, or pass `NULL` from C/C++ or
+`c_null_funptr` from Fortran to suppress them. Use `fs_reset_error_callback()` to restore the
+stderr callback. The callback is invoked synchronously with one NUL-terminated formatted message;
+the application must keep it valid while installed and coordinate changes with concurrent library calls.
+
+```c
+// this callback stores the received error message in a global variable
+void report_error(const char *message) { my_logger(message); }
+fs_set_error_callback(report_error);
+```
+
+```fortran
+subroutine report_error(message) bind(C)
+	use, intrinsic :: iso_c_binding
+	character(c_char), intent(in) :: message(*)
+end subroutine
+
+call set_error_callback(c_funloc(report_error))
+```
+
+Filesystem functions continue to indicate failure through their existing return values.
+
+## Passing character strings between code languages
+
 For the interchange of character strings between Fortran and C++ / C, the buffer length is determined at compile time and is available in `fs_get_max_path()` (C, C++) or `max_path()` (Fortran).
 
 ```fortran

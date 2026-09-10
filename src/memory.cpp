@@ -35,7 +35,7 @@ unsigned long long fs_total_sys_memory()
   if(GlobalMemoryStatusEx(&status))
     return status.ullTotalPhys;
 
-  fs_print_error("", "GlobalMemoryStatusEx");
+  fs_error_callback("", "GlobalMemoryStatusEx");
 
 #else
 
@@ -48,7 +48,7 @@ unsigned long long fs_total_sys_memory()
       return static_cast<unsigned long long>(pages) * page_size;
   }
 
-  fs_print_error("", "sysconf");
+  fs_error_callback("", "sysconf");
 
 #endif
 
@@ -67,7 +67,7 @@ unsigned long long fs_get_free_memory()
   MEMORYSTATUSEX status;
   status.dwLength = sizeof(status);
   if (!GlobalMemoryStatusEx(&status)) {
-    fs_print_error("", "GlobalMemoryStatusEx");
+    fs_error_callback("", "GlobalMemoryStatusEx");
     return ull_max;
   }
   const unsigned long long committed = (status.ullTotalPageFile - status.ullAvailPageFile);

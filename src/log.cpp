@@ -1,9 +1,8 @@
-#include <system_error>
+#include "ffilesystem.h"
 
+#include <atomic>
 #include <iostream>
-
-#include <string>
-#include <string_view>
+#include <sstream>
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN
@@ -12,115 +11,107 @@
 #include <cerrno>
 #endif
 
-#if __has_include(<source_location>)
-#include <source_location>
-#endif
+namespace {
 
-#if __has_include(<format>)
-#include <format>
-#endif
+void fs_stderr_error_callback(const char* message)
+{
+  std::cerr << message;
+}
 
-void fs_emit_error()
+std::atomic<fs_error_callback_t> fs_error_handler{fs_stderr_error_callback};
+
+void fs_append_system_error(std::ostringstream& message)
 {
 #if defined(_WIN32) || defined(__CYGWIN__)
   if (DWORD error = GetLastError(); error)
-    std::cerr << "GetLastError: " << std::system_category().message(error) << " ";
+    message << "GetLastError: " << std::system_category().message(error) << " ";
 #else
-  if(errno){
+  if (errno) {
     auto econd = std::generic_category().default_error_condition(errno);
-    std::cerr << "errno: " << econd.message() << "\n";
+    message << "errno: " << econd.message() << "\n";
   }
 #endif
 }
 
-
-void fs_print_error(std::string_view path
-#if defined(__cpp_lib_source_location)
-, const std::source_location& location){
-  std::string s =
-#if defined(__cpp_lib_format)
-    std::format("{}:{}", location.file_name(), location.line());
-#else
-    std::string(location.file_name()) + ":" + std::to_string(location.line());
-#endif
-  std::string_view fname = location.function_name();
-#else
- ){
-  std::string_view s;
-  std::string_view fname;
-#endif
-
-  std::cerr << "ERROR: Ffilesystem: " << fname << "(" << path << ")\n" << s << "\n";
-
-  fs_emit_error();
+void fs_deliver_error(std::ostringstream& message)
+{
+  fs_append_system_error(message);
+  if (auto callback = fs_error_handler.load())
+    callback(message.str().c_str());
 }
 
+} // namespace
 
-void fs_print_error(std::string_view path, const std::error_code& ec
-#if defined(__cpp_lib_source_location)
-, const std::source_location& location){
-  std::string s =
-#if defined(__cpp_lib_format)
-    std::format("{}:{}", location.file_name(), location.line());
-#else
-    std::string(location.file_name()) + ":" + std::to_string(location.line());
-#endif
-  std::string_view fname = location.function_name();
-#else
- ){
-  std::string_view s;
-  std::string_view fname;
-#endif
-
-  std::cerr << "ERROR: Ffilesystem: " << fname << "(" << path << ")\n" << s << "\n";
-  if(ec)
-    std::cerr << ec.message() << " " << ec.value() << "\n";
-
-  fs_emit_error();
+void fs_set_error_callback(fs_error_callback_t callback)
+{
+  fs_error_handler.store(callback);
 }
 
-
-void fs_print_error(std::string_view path1, std::string_view path2
-#if defined(__cpp_lib_source_location)
-, const std::source_location& location){
-  std::string s =
-#if defined(__cpp_lib_format)
-    std::format("{}:{}", location.file_name(), location.line());
-#else
-    std::string(location.file_name()) + ":" + std::to_string(location.line());
-#endif
-  std::string_view fname = location.function_name();
-#else
- ){
-  std::string s;
-  std::string_view fname;
-#endif
-
-  std::cerr << "ERROR: Ffilesystem: " << fname << "(" << path1 <<  ", " << path2 << ")\n" << s << "\n";
-
-  fs_emit_error();
+void fs_reset_error_callback()
+{
+  fs_error_handler.store(fs_stderr_error_callback);
 }
 
-void fs_print_error(std::string_view path1, std::string_view path2, const std::error_code& ec
+void fs_error_callback(std::string_view path
 #if defined(__cpp_lib_source_location)
-, const std::source_location& location){
-  std::string s =
-#if defined(__cpp_lib_format)
-    std::format("{}:{}", location.file_name(), location.line());
+, const std::source_location& location) {
+  const auto source = std::string(location.file_name()) + ":" + std::to_string(location.line());
+  const std::string_view function = location.function_name();
 #else
-    std::string(location.file_name()) + ":" + std::to_string(location.line());
+) {
+  const std::string_view source;
+  const std::string_view function;
 #endif
-  std::string_view fname = location.function_name();
+  std::ostringstream message;
+  message << "ERROR: Ffilesystem: " << function << "(" << path << ")\n" << source << "\n";
+  fs_deliver_error(message);
+}
+
+void fs_error_callback(std::string_view path, const std::error_code& error
+#if defined(__cpp_lib_source_location)
+, const std::source_location& location) {
+  const auto source = std::string(location.file_name()) + ":" + std::to_string(location.line());
+  const std::string_view function = location.function_name();
 #else
- ){
- std::string s;
- std::string_view fname;
+) {
+  const std::string_view source;
+  const std::string_view function;
 #endif
+  std::ostringstream message;
+  message << "ERROR: Ffilesystem: " << function << "(" << path << ")\n" << source << "\n";
+  if (error)
+    message << error.message() << " " << error.value() << "\n";
+  fs_deliver_error(message);
+}
 
-  std::cerr << "ERROR: Ffilesystem: " << fname << "(" << path1 <<  ", " << path2 << ")\n" << s << "\n";
+void fs_error_callback(std::string_view path1, std::string_view path2
+#if defined(__cpp_lib_source_location)
+, const std::source_location& location) {
+  const auto source = std::string(location.file_name()) + ":" + std::to_string(location.line());
+  const std::string_view function = location.function_name();
+#else
+) {
+  const std::string_view source;
+  const std::string_view function;
+#endif
+  std::ostringstream message;
+  message << "ERROR: Ffilesystem: " << function << "(" << path1 << ", " << path2 << ")\n" << source << "\n";
+  fs_deliver_error(message);
+}
 
-  if(ec)
-    std::cerr << "C++ exception: " << ec.message() <<  " " << ec.value() << "\n";
-
-  fs_emit_error();
+void fs_error_callback(std::string_view path1, std::string_view path2, const std::error_code& error
+#if defined(__cpp_lib_source_location)
+, const std::source_location& location) {
+  const auto source = std::string(location.file_name()) + ":" + std::to_string(location.line());
+  const std::string_view function = location.function_name();
+#else
+) {
+  const std::string_view source;
+  const std::string_view function;
+#endif
+  std::ostringstream message;
+  message << "ERROR: Ffilesystem: " << function << "(" << path1 << ", " << path2 << ")\n" << source << "\n";
+  if (error)
+    message << "C++ exception: " << error.message() << " " << error.value() << "\n";
+  fs_deliver_error(message);
 }

@@ -41,6 +41,6 @@ std::string fs_lib_path()
     return info.dli_fname;
 #endif
 
-  fs_print_error("");
+  fs_error_callback("");
   return {};
 }

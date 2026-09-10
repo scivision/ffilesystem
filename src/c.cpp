@@ -24,7 +24,7 @@ std::string::size_type fs_str2char(std::string_view s, char* result, const std::
   {
     if(fs_trace) std::cerr << "ERROR:Ffs:str2char(" << s << ") output buffer " << buffer_size << " too small for string: " << s << " length " << s.length() << "\n";
 
-    fs_print_error(s, std::make_error_code(std::errc::result_out_of_range));
+    fs_error_callback(s, std::make_error_code(std::errc::result_out_of_range));
     return 0;
   }
 
@@ -103,11 +103,6 @@ size_t fs_longname(const char* in, char* result, const size_t buffer_size){
 
 size_t fs_shortname(const char* in, char* result, const size_t buffer_size){
   return fs_str2char(fs_shortname(in), result, buffer_size);
-}
-
-
-void fs_print_error(const char* msg, const char* path){
-  fs_print_error(std::string_view(msg), std::string_view(path));
 }
 
 bool fs_copy_file(const char* source, const char* dest, bool overwrite){
@@ -416,88 +411,88 @@ std::string::size_type fs_with_suffix(const char* path, const char* new_suffix,
 #if !defined(ffilesystem_extra)
 
   std::string fs_cpu_arch(){
-    fs_print_error("", std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   std::string fs_exe_path(){
-    fs_print_error("", std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   std::string fs_filesystem_type(std::string_view path){
-    fs_print_error(path, std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback(path, std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   std::string fs_generate_random_alphanumeric_string(const std::string::size_type){
-    fs_print_error("", std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   pid_t fs_getpid(){
-    fs_print_error("", std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return -1;
   }
 
   std::string fs_get_shell(){
-    fs_print_error("", std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   std::string fs_hostname(){
-    fs_print_error("", std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   bool fs_is_admin(){
-    fs_print_error("", std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return false;
   }
 
   bool fs_is_case_sensitive(std::string_view path){
-    fs_print_error(path, std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback(path, std::make_error_code(std::errc::function_not_supported));
     return false;
   }
 
   bool fs_is_removable(std::string_view path){
-    fs_print_error(path, std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback(path, std::make_error_code(std::errc::function_not_supported));
     return false;
    }
 
 
   bool fs_is_rosetta(){
-    fs_print_error("", std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return false;
   }
 
   int fs_is_wsl(){
-    fs_print_error("", std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return -1;
   }
 
   std::string fs_lib_path(){
-    fs_print_error("", std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   std::string::size_type fs_max_component(std::string_view path){
-    fs_print_error(path, std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback(path, std::make_error_code(std::errc::function_not_supported));
     return 0;
   }
 
   std::string fs_os_version(){
-    fs_print_error("", std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 
   bool fs_stdin_tty(){
-    fs_print_error("", std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return false;
   }
 
   std::string fs_get_terminal(){
-    fs_print_error("", std::make_error_code(std::errc::function_not_supported));
+    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return {};
   }
 #endif

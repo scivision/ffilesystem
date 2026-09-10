@@ -48,6 +48,6 @@ std::string_view::size_type fs_max_component(std::string_view path)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(path, ec);
+  fs_error_callback(path, ec);
   return {};
 }

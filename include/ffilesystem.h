@@ -198,26 +198,25 @@ std::string fs_normal(std::string_view);
 std::string fs_os_version();
 std::string fs_parent(std::string_view);
 
-void fs_emit_error();
-void fs_print_error(std::string_view
+void fs_error_callback(std::string_view
 #if defined(__cpp_lib_source_location)
 , const std::source_location& = std::source_location::current()
 #endif
 );
 
-void fs_print_error(std::string_view, const std::error_code&
+void fs_error_callback(std::string_view, const std::error_code&
 #if defined(__cpp_lib_source_location)
 , const std::source_location& = std::source_location::current()
 #endif
 );
 
-void fs_print_error(std::string_view, std::string_view
+void fs_error_callback(std::string_view, std::string_view
 #if defined(__cpp_lib_source_location)
 , const std::source_location& = std::source_location::current()
 #endif
 );
 
-void fs_print_error(std::string_view, std::string_view, const std::error_code&
+void fs_error_callback(std::string_view, std::string_view, const std::error_code&
 #if defined(__cpp_lib_source_location)
 , const std::source_location& = std::source_location::current()
 #endif
@@ -483,7 +482,11 @@ bool fs_setenv(const char*, const char*);
 
 size_t fs_filesystem_type(const char*, char*, const size_t);
 
-void fs_print_error(const char*, const char*);
+typedef void (*fs_error_callback_t)(const char*);
+
+// Set to NULL to suppress diagnostics. The default callback writes to stderr.
+void fs_set_error_callback(fs_error_callback_t);
+void fs_reset_error_callback();
 
 size_t fs_to_cygpath(const char*, char*, const size_t);
 size_t fs_to_winpath(const char*, char*, const size_t);

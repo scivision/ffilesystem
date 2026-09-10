@@ -12,6 +12,6 @@ bool fs_touch(std::string_view path)
   if(std::ofstream f(path.data()); f)
     return true;
 
-  fs_print_error(path);
+  fs_error_callback(path);
   return false;
 }

@@ -48,7 +48,7 @@ bool fs_set_cwd(std::string_view path)
     return true;
 #endif
 
-  fs_print_error(path, ec);
+  fs_error_callback(path, ec);
   return false;
 }
 
@@ -81,6 +81,6 @@ if (::getcwd(buf.data(), buf.size()))
 
 #endif
 
-  fs_print_error("", ec);
+  fs_error_callback("", ec);
   return {};
 }

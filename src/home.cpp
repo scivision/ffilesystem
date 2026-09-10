@@ -34,7 +34,7 @@ struct passwd* fs_getpwuid()
   if(auto pw = ::getpwuid(eff_uid))
     return pw;
 
-  fs_print_error(
+  fs_error_callback(
 #if defined(__cpp_lib_format)  // C++20
     std::format("uid: {}", eff_uid)
 #else
@@ -85,7 +85,7 @@ std::string fs_get_profile_dir()
     return pw->pw_dir;
 #endif
 
-  fs_print_error("");
+  fs_error_callback("");
   return {};
 }
 
@@ -149,6 +149,6 @@ std::string fs_get_username()
 
 #endif
 
-  fs_print_error("");
+  fs_error_callback("");
   return {};
 }

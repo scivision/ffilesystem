@@ -87,7 +87,7 @@ std::string fs_type_linux(std::string_view path)
   struct statfs s;
 
   if(statfs(std::string{path}.c_str(), &s)) {
-    fs_print_error(path);
+    fs_error_callback(path);
     return {};
   }
 
@@ -112,7 +112,7 @@ std::string fs_type_linux(std::string_view path)
     case kXfsSuperMagic: return "xfs";
 
     default:
-      fs_print_error(path,"unknown type ID: " + std::to_string(s.f_type));
+      fs_error_callback(path,"unknown type ID: " + std::to_string(s.f_type));
       return {};
   }
 }
@@ -167,6 +167,6 @@ std::string fs_filesystem_type(std::string_view path)
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 
-  fs_print_error(path, ec);
+  fs_error_callback(path, ec);
   return {};
 }

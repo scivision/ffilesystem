@@ -37,7 +37,7 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
   std::error_code ec;
 
   auto handle_error = [&]() {
-    fs_print_error(path1, path2, ec);
+    fs_error_callback(path1, path2, ec);
     return false;
   };
 

@@ -44,7 +44,7 @@ bool fs_is_executable_binary(std::string_view path)
   DWORD t;
   ok = (GetBinaryTypeW(fs_win32_to_wide(path).c_str(), &t) != 0) || fs_is_appexec_alias(path);
 #elif defined(__CYGWIN__)
-  fs_print_error(path, "not supported on Cygwin");
+  fs_error_callback(path, "not supported on Cygwin");
 #else
   // https://github.com/jart/cosmopolitan/blob/master/ape/specification.md
   std::array<std::uint8_t, 4> magic{};
@@ -54,7 +54,7 @@ bool fs_is_executable_binary(std::string_view path)
       return false;
     }
   } else {
-    fs_print_error(path, "could not open file");
+    fs_error_callback(path, "could not open file");
     return false;
   }
 

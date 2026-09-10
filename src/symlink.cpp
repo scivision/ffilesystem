@@ -79,7 +79,7 @@ bool fs_is_symlink(std::string_view path)
   std::error_code ec;
 
   auto handle_error = [&]() {
-    fs_print_error(path, ec);
+    fs_error_callback(path, ec);
     return false;
   };
 
@@ -155,7 +155,7 @@ std::string fs_read_symlink(std::string_view path)
   }
 #endif
 
-  fs_print_error(path, ec);
+  fs_error_callback(path, ec);
   return {};
 }
 
@@ -196,6 +196,6 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
 #endif
   }
 
-  fs_print_error(target, link, ec);
+  fs_error_callback(target, link, ec);
   return false;
 }
