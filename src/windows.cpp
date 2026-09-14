@@ -258,15 +258,10 @@ std::string fs_win32_full_name(std::string_view path)
   std::wstring const w = fs_win32_to_wide(path);
 
   auto const L = GetFullPathNameW(w.c_str(), 0, nullptr, nullptr);
-  // this form includes the null terminator
-  // weak detection of race condition (cwd change)
-  if(L){
-    std::wstring r(L, '\0');
-    if(GetFullPathNameW(w.c_str(), L, r.data(), nullptr) == L-1)  FFS_LIKELY
-    {
-      r.resize(L-1);
+  if(L == w.size()){
+    std::wstring r(L+1, '\0');
+    if(GetFullPathNameW(w.c_str(), L+1, r.data(), nullptr) == L)
       return fs_win32_to_narrow(r);
-    }
   }
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
@@ -340,15 +335,12 @@ std::string fs_longname(std::string_view in)
 #if defined(_WIN32) || defined(__CYGWIN__)
 // size includes null terminator on 1st call, but does not include null terminator on 2nd call
   std::wstring const w = fs_win32_to_wide(in);
-  DWORD L = GetLongPathNameW(w.c_str(), nullptr, 0);
+  DWORD const L = GetLongPathNameW(w.c_str(), nullptr, 0);
 
   if(L > 0){
     std::wstring out(L, '\0');
-
-    if(GetLongPathNameW(w.c_str(), out.data(), L) == L-1) {
-      out.resize(L);
+    if(GetLongPathNameW(w.c_str(), out.data(), static_cast<DWORD>(out.size())) == L-1)
       return fs_win32_to_narrow(out);
-    }
   }
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
@@ -369,15 +361,12 @@ std::string fs_shortname(std::string_view in)
 #if defined(_WIN32) || defined(__CYGWIN__)
 // size includes null terminator on 1st call, but does not include null terminator on 2nd call
   std::wstring const w = fs_win32_to_wide(in);
-  DWORD L = GetShortPathNameW(w.c_str(), nullptr, 0);
+  DWORD const L = GetShortPathNameW(w.c_str(), nullptr, 0);
 
-  if(L > 0){
+  if(L > 0) {
     std::wstring out(L, '\0');
-
-    if(GetShortPathNameW(w.c_str(), out.data(), L) == L-1) {
-      out.resize(L);
+    if(GetShortPathNameW(w.c_str(), out.data(), static_cast<DWORD>(out.size())) == L-1)
       return fs_win32_to_narrow(out);
-    }
   }
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
@@ -390,18 +379,18 @@ std::string fs_shortname(std::string_view in)
 
 std::string fs_win32_to_narrow([[maybe_unused]] std::wstring_view w)
 {
+  // https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-widechartomultibyte
   std::error_code ec;
 
 #if defined(_WIN32) || defined(__CYGWIN__)
   std::wstring ws(w);
+  // assuming input is null-terminated and fourth argument is -1, then L includes the null terminator
   if (int L = WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, nullptr, 0, nullptr, nullptr); L > 0)  FFS_LIKELY
   {
     std::string n(L, '\0');
 
-    if(WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, n.data(), L, nullptr, nullptr) == L) {
-      n.resize(L-1);  // discard null terminator
-      return n;
-    }
+    if(WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, n.data(), L, nullptr, nullptr) == L)
+      return n.substr(0, L-1);
   }
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
@@ -417,16 +406,15 @@ std::wstring fs_win32_to_wide(std::string_view n)
   std::error_code ec;
 
 #if defined(_WIN32) || defined(__CYGWIN__)
+  // assuming input is null-terminated and fourth argument is -1, then L includes the null terminator
   // https://docs.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
   std::string ns(n);
   if (int L = MultiByteToWideChar(CP_UTF8, 0, ns.c_str(), -1, nullptr, 0); L > 0)  FFS_LIKELY
   {
     std::wstring w(L, '\0');
 
-    if(MultiByteToWideChar(CP_UTF8, 0, ns.c_str(), -1, w.data(), L) == L) {
-      w.resize(L-1);  // discard null terminator
-      return w;
-    }
+    if(MultiByteToWideChar(CP_UTF8, 0, ns.c_str(), -1, w.data(), L) == L)
+      return w.substr(0, L-1);
   }
 #else
   ec = std::make_error_code(std::errc::function_not_supported);

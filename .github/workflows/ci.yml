@@ -192,7 +192,7 @@ jobs:
       run: $CMAKE --workflow --preset nostdfs
 
     - name: configure
-      run: $CMAKE --workflow --preset default --fresh
+      run: $CMAKE --workflow --preset default
 
     - name: install package
       run: $CMAKE --install build

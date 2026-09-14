@@ -34,25 +34,18 @@ std::string fs_get_tempdir()
 #if defined(_WIN32)
   // GetTempPath2 is not in MSYS2. libuv etc. use GetTempPathW
   if(DWORD L = GetTempPathW(0, nullptr); L > 0) {
-    std::wstring w(L + 1, '\0');
-    if(GetTempPathW(L, w.data()) == L) {
-      w.resize(L);
+    std::wstring w(L, '\0');
+    // null-term'd https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-gettemppathw
+    if(GetTempPathW(L, w.data()) == L-1)
       return fs_win32_to_narrow(w);
-    }
-    if (L > 0) {
-      w.resize(L);
-      return fs_win32_to_narrow(w);
-    }
   }
 #elif defined(FFS_DARWIN)
 // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/confstr.3.html
-  size_t len = ::confstr(_CS_DARWIN_USER_TEMP_DIR, nullptr, 0);
-  if (len > 1) {
-    std::string t(len, '\0');
-    if(::confstr(_CS_DARWIN_USER_TEMP_DIR, t.data(), len) == len) {
-      t.resize(len - 1); // remove trailing null
-      if(fs_trace) std::cout << "TRACE: used confstr(_CS_DARWIN_USER_TEMP_DIR) = " << t << "\n";
-      return t;
+  std::size_t L = ::confstr(_CS_DARWIN_USER_TEMP_DIR, nullptr, 0);
+  if (L > 1) {
+    std::string t(L, '\0');
+    if(::confstr(_CS_DARWIN_USER_TEMP_DIR, t.data(), L) == L) {
+      return t.substr(0, L-1);
     }
   }
 #endif
