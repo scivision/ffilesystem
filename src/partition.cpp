@@ -129,27 +129,29 @@ std::string fs_filesystem_type(std::string_view path)
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 
-  std::string r(path);
+  // UNC paths are intentionally not supported as a general filesystem root here.
+  // Keep the API limited to drive-root volume queries, which are the supported case.
+  if(!fs_is_cygwin() && path.length() >= 2 && path[0] == '\\' && path[1] == '\\')
+    return {};
 
-  // Cygwin: assume user input Cygwin path root directly.
-  if(!fs_is_cygwin()){
+  std::string r = fs_is_cygwin() ? std::string{path} : fs_root(path);
+  if(r.empty())
+    return {};
 
-    r = fs_root_name(r);
-    if(r.empty())
-      return {};
-
-    // GetVolumeInformationA requires a trailing backslash
+  if(!fs_is_cygwin() && r.back() != '/' && r.back() != '\\')
     r.push_back('\\');
-  }
 
   if(fs_trace) std::cout << "TRACE:filesystem_type(" << path << ") root: " << r << "\n";
 
-  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getvolumeinformationa
-  std::string name(MAX_PATH+1, '\0');
+  // Use the wide-character API because the project already routes Windows paths through
+  // fs_win32_to_wide() and this is the consistent, Unicode-safe Windows volume query.
+  std::wstring root_w = fs_win32_to_wide(r);
+  std::wstring name(MAX_PATH + 1, L'\0');
 
-  if(GetVolumeInformationA(r.c_str(), nullptr, 0, nullptr, nullptr, nullptr, name.data(), static_cast<DWORD>(name.size()))) {
-    fs_trim(name);
-    return name;
+  if(GetVolumeInformationW(root_w.c_str(), nullptr, 0, nullptr, nullptr, nullptr, name.data(), static_cast<DWORD>(name.size()))) {
+    const auto end = name.find(L'\0');
+    std::wstring_view v(name.data(), end == std::wstring::npos ? name.size() : end);
+    return fs_win32_to_narrow(v);
   }
 
 #elif defined(__linux__)
