@@ -157,7 +157,7 @@ bool fs_is_appexec_alias(std::string_view path)
 }
 
 
-bool fs_win32_long_paths_enabled() {
+bool fs_win32_long_paths_policy_enabled() {
   // from https://github.com/microsoft/STL/pull/5783/
   // microsoft/STL has Apache 2.0 license
   // https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell
@@ -177,13 +177,13 @@ bool fs_win32_long_paths_enabled() {
   case ERROR_FILE_NOT_FOUND:
       return false; // The registry value doesn't exist, so long paths aren't enabled.
   case ERROR_MORE_DATA:
-      std::cerr << "fs_win32_long_paths_enabled: RegGetValueW() returned ERROR_MORE_DATA; this should not be possible.\n";
+      std::cerr << "fs_win32_long_paths_policy_enabled: RegGetValueW() returned ERROR_MORE_DATA; this should not be possible.\n";
       break;
   case ERROR_UNSUPPORTED_TYPE:
-      std::cerr << "fs_win32_long_paths_enabled: RegGetValueW() returned ERROR_UNSUPPORTED_TYPE; the value exists but has a weird type.\n";
+      std::cerr << "fs_win32_long_paths_policy_enabled: RegGetValueW() returned ERROR_UNSUPPORTED_TYPE; the value exists but has a weird type.\n";
       break;
   default:
-      std::cerr << "fs_win32_long_paths_enabled: RegGetValueW() returned " << status << ".\n";
+      std::cerr << "fs_win32_long_paths_policy_enabled: RegGetValueW() returned " << status << ".\n";
       break;
   }
 

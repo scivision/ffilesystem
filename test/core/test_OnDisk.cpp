@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
     if (fs_is_windows()) {
       expect(fs_is_readable(ctx.sys_drive));
 
-      if (fs_win32_long_paths_enabled()) {
+      if (fs_win32_long_paths_policy_enabled()) {
         expect(fs_is_readable(R"(\\?\)" + ctx.sys_drive + "\\"));
       }
     }
@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
     expect(fs_is_writable(ctx.cwd));
 
     if (fs_is_windows()) {
-      if (fs_win32_long_paths_enabled()) {
+      if (fs_win32_long_paths_policy_enabled()) {
         std::string s = R"(\\?\)" + ctx.self;
         expect(fs_is_writable(s)) << s;
       }

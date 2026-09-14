@@ -24,7 +24,7 @@ is_empty, &
 is_symlink, read_symlink, create_symlink, &
 is_removable, exists, lexists, &
 join, &
-long_paths_enabled, &
+long_paths_policy_enabled, &
 copy_file, mkdir, &
 relative_to, proximate_to, &
 hard_link_count, &
@@ -83,7 +83,7 @@ logical(C_BOOL) function fs_is_optimized() bind(C)
 import C_BOOL
 end function
 
-logical(C_BOOL) function long_paths_enabled() bind(C, name="fs_win32_long_paths_enabled")
+logical(C_BOOL) function long_paths_policy_enabled() bind(C, name="fs_win32_long_paths_policy_enabled")
 !! long paths enabled on Windows
 import C_BOOL
 end function

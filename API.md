@@ -852,7 +852,7 @@ longname("C:/PROGRA~1")  !< "C:/Program Files"
 Are Windows long paths enabled (longer than 260 characters)?
 
 ```fortran
-long_paths_enabled()  !< logical
+long_paths_policy_enabled()  !< logical
 ```
 
 ## relative / proximate paths

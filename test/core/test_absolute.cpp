@@ -70,7 +70,7 @@ int main() {
       // fs_as_posix(s);
       // expect(eq(fs_drop_slash(s), cwd));
 
-      if (fs_win32_long_paths_enabled()) {
+      if (fs_win32_long_paths_policy_enabled()) {
         expect(eq(fs_absolute(R"(\\?\X:\anybody)"), std::string{R"(\\?\X:\anybody)"}));
         expect(eq(fs_absolute(R"(\\?\UNC\server\share)"), std::string{R"(\\?\UNC\server\share)"}));
       }
@@ -96,7 +96,7 @@ int main() {
       expect(!fs_is_absolute("/"));
       expect(!fs_is_absolute("/日本語"));
 
-      if (fs_win32_long_paths_enabled()) {
+      if (fs_win32_long_paths_policy_enabled()) {
         expect(fs_is_absolute(R"(\\?\)"));
         expect(fs_is_absolute(R"(\\.\)"));
 

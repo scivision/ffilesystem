@@ -198,7 +198,7 @@ main : do
   case ("is_appexec")
     print '(L1)', is_appexec_alias(arg1)
   case ("long_paths")
-    print '(L1)', long_paths_enabled()
+    print '(L1)', long_paths_policy_enabled()
   case ("exists")
     print '(L1)', exists(arg1)
   case ("is_case_sensitive")

@@ -30,7 +30,7 @@ if(fs_is_windows()){
 
 expect(eq(fs_stem(R"(C:\a\ball.text)"), std::string{"ball"}));
 
-if(fs_win32_long_paths_enabled()) {
+if(fs_win32_long_paths_policy_enabled()) {
 
 expect(eq(fs_stem(R"(\\?\)"), std::string{""}));
 expect(eq(fs_stem(R"(\\.\)"), std::string{""}));
@@ -69,7 +69,7 @@ expect(eq(fs_suffix("some space.txt"), std::string{".txt"}));
 if(fs_is_windows()){
 expect(eq(fs_suffix(R"(C:\a\ball.text)"), std::string{".text"}));
 
-if(fs_win32_long_paths_enabled()) {
+if(fs_win32_long_paths_policy_enabled()) {
 
 expect(eq(fs_suffix(R"(\\?\)"), std::string{""}));
 expect(eq(fs_suffix(R"(\\.\)"), std::string{""}));

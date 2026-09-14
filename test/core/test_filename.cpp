@@ -33,7 +33,7 @@ if (fs_is_windows()){
     expect(fs_has_filename(R"(C:\ab\asb)"));
     expect(fs_has_filename(R"(\\server\share\some space here.txt)"));
 
-    if(fs_win32_long_paths_enabled()) {
+    if(fs_win32_long_paths_policy_enabled()) {
         expect(!fs_has_filename(R"(\\.\)"));
 
         expect(!fs_has_filename(R"(\\?\C:\)"));
@@ -72,7 +72,7 @@ if (fs_is_windows()){
     expect(fs_file_name("C:/") == "");
     expect(fs_file_name(R"(C:\ab\asb)") == "asb");
 
-if(fs_win32_long_paths_enabled()){
+if(fs_win32_long_paths_policy_enabled()){
     expect(fs_file_name(R"(\\?\)") == "");
     expect(fs_file_name(R"(\\.\)") == "");
 

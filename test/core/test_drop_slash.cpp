@@ -41,7 +41,7 @@ int main() {
 				expect(eq(fs_drop_slash(test_case.input), test_case.expected));
 			}
 
-			if (fs_win32_long_paths_enabled()) {
+			if (fs_win32_long_paths_policy_enabled()) {
 				expect(eq(fs_drop_slash(R"(\\?\C:/)"), std::string_view{R"(\\?\C:/)"}));
 			}
 		}

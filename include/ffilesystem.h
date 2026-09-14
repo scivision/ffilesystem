@@ -352,7 +352,7 @@ bool fs_is_clangcl();
 bool fs_is_msvc();
 bool fs_is_appleclang();
 
-bool fs_win32_long_paths_enabled();
+bool fs_win32_long_paths_policy_enabled();
 bool fs_is_cygwin();
 bool fs_is_rosetta();
 
