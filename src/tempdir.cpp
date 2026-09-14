@@ -51,11 +51,11 @@ std::string fs_get_tempdir()
 #endif
 
 #if !defined(_WIN32)
-  if(auto t = fs_getenv("TMPDIR"); t.has_value() && !t.value().empty())
-    return t.value();
+  auto t = fs_getenv("TMPDIR");
+  std::string tempdir{t.value_or("/tmp")};
 
-  if (fs_is_dir("/tmp"))
-    return "/tmp";
+  if (fs_is_dir(tempdir))
+    return tempdir;
 #endif
 
   fs_error_callback("", ec);
