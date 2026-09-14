@@ -28,6 +28,23 @@ int main(void){
   int i=0;
   size_t L;
 
+  if(fs_normal("hello", buf, 5) != 0){
+    fprintf(stderr, "ERROR: exact-fit buffer was accepted without room for null terminator\n");
+    i++;
+  }
+
+  char exact_fit[6];
+  if(fs_normal("hello", exact_fit, sizeof(exact_fit)) != 5 || exact_fit[5] != '\0'){
+    fprintf(stderr, "ERROR: buffer with room for null terminator was rejected or not terminated\n");
+    i++;
+  }
+
+  char empty[1] = {'x'};
+  if(fs_suffix("filename", empty, sizeof(empty)) != 0 || empty[0] != '\0'){
+    fprintf(stderr, "ERROR: empty result was not written to a one-byte buffer\n");
+    i++;
+  }
+
   if(fs_normal("abcedf", buf, N) != 0){
     fprintf(stderr, "ERROR: fs_normal(abcdef) did not handle overflow properly\n");
     fprintf(stderr, "       buf = %s\n", buf);

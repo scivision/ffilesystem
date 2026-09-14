@@ -76,4 +76,18 @@ using namespace boost::ut;
     expect(n.size() == 5);
     expect(n == "hello");
   };
+
+  "PathQueries"_test = [] {
+    const std::string full = fs_win32_full_name(".");
+    const std::string final = fs_win32_final_path(".");
+
+    expect(!full.empty() >> fatal);
+    expect(!final.empty() >> fatal);
+    expect(fs_exists(full));
+    expect(fs_exists(final));
+    expect(full.find('\0') == std::string::npos);
+    expect(final.find('\0') == std::string::npos);
+    expect(full.back() != '\0');
+    expect(final.back() != '\0');
+  };
 }
