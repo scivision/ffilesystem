@@ -19,12 +19,14 @@ namespace Filesystem = std::filesystem;
 #include "ffilesystem.h"
 
 
-char fs_filesep(){
+char
+fs_filesep(){
   return fs_is_windows() ? '\\' : '/';
 }
 
 
-char fs_pathsep(){
+char
+fs_pathsep(){
   return fs_is_windows() ? ';' : ':';
 }
 
@@ -41,7 +43,8 @@ fs_slash_first(std::string_view path)
 }
 
 
-std::string::size_type fs_strncpy(const char* path, char* result, const std::string::size_type buffer_size)
+std::string::size_type
+fs_strncpy(const char* path, char* result, const std::string::size_type buffer_size)
 {
 // check size before copy
   const auto L = std::strlen(path);
@@ -61,7 +64,8 @@ std::string::size_type fs_strncpy(const char* path, char* result, const std::str
 }
 
 
-bool fs_is_absolute(std::string_view path)
+bool
+fs_is_absolute(std::string_view path)
 {
   // is path absolute?
 
@@ -89,7 +93,8 @@ bool fs_is_absolute(std::string_view path)
 }
 
 
-bool fs_has_filename(std::string_view path)
+bool
+fs_has_filename(std::string_view path)
 {
   // does path have a filename component?
 #if defined(HAVE_CXX_FILESYSTEM)
@@ -107,7 +112,8 @@ bool fs_has_filename(std::string_view path)
 }
 
 
-std::string fs_file_name(std::string_view path)
+std::string
+fs_file_name(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).filename().string();
@@ -124,7 +130,8 @@ std::string fs_file_name(std::string_view path)
 }
 
 
-std::string fs_root(std::string_view path)
+std::string
+fs_root(std::string_view path)
 {
   // root_path = root_name / root_directory
 
@@ -149,26 +156,27 @@ std::string fs_root(std::string_view path)
 }
 
 
-std::string fs_root_name([[maybe_unused]] std::string_view path)
+std::string
+fs_root_name([[maybe_unused]] std::string_view path)
 {
 
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).root_name().string();
 #elif defined(_WIN32)
-  char drive[_MAX_DRIVE];
+  std::string drive(_MAX_DRIVE, '\0');
 // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/splitpath-s-wsplitpath-s
-  std::string cpath{path};
-  if(_splitpath_s(cpath.c_str(), drive, _MAX_DRIVE, nullptr, 0, nullptr, 0, nullptr, 0) == 0) {
-    cpath = drive;
-    fs_trim(cpath);
-    return cpath;
+  std::string const cpath{path};
+  if(_splitpath_s(cpath.c_str(), drive.data(), _MAX_DRIVE, nullptr, 0, nullptr, 0, nullptr, 0) == 0) {
+    fs_trim(drive);
+    return drive;
   }
 #endif
   return {};
 }
 
 
-std::string fs_stem(std::string_view path)
+std::string
+fs_stem(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).filename().stem().string();
@@ -188,7 +196,8 @@ std::string fs_stem(std::string_view path)
 }
 
 
-std::string fs_suffix(std::string_view path)
+std::string
+fs_suffix(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).filename().extension().string();
@@ -204,7 +213,8 @@ std::string fs_suffix(std::string_view path)
 }
 
 
-std::string fs_join(std::string_view path, std::string_view other)
+std::string
+fs_join(std::string_view path, std::string_view other)
 {
   // does not normalize to preserve possible symlinks
   if(path.empty() && other.empty())
@@ -230,7 +240,8 @@ std::string fs_join(std::string_view path, std::string_view other)
 }
 
 
-std::string fs_with_suffix(std::string_view path, std::string_view new_suffix)
+std::string
+fs_with_suffix(std::string_view path, std::string_view new_suffix)
 {
   std::string const stem = fs_stem(path);
   // handle directory case: stem is empty
@@ -258,7 +269,9 @@ std::string fs_with_suffix(std::string_view path, std::string_view new_suffix)
 }
 
 
-std::string fs_lexically_normal(std::string_view path){
+std::string
+fs_lexically_normal(std::string_view path)
+{
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).lexically_normal().generic_string();
 #else
@@ -268,7 +281,9 @@ std::string fs_lexically_normal(std::string_view path){
 }
 
 
-std::string fs_make_preferred(std::string_view path){
+std::string
+fs_make_preferred(std::string_view path)
+{
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).make_preferred().string();
 #else

@@ -72,8 +72,7 @@ fs_is_removable(std::string_view path)
   {
     std::ifstream ifs(dev);
     if (ifs) {
-      char c;
-      if (ifs.get(c))
+      if (char c; ifs.get(c))
         return c == '1';
     } else if (errno == EACCES || errno == ENOENT) {
       // Android / SELinux may deny access to sysfs; virtual / network filesystems
@@ -91,7 +90,7 @@ fs_is_removable(std::string_view path)
 
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/stat.2.html
 
- 
+
   struct stat s;
   if (::stat(std::string{path}.c_str(), &s) != 0) {
     fs_error_callback(path);
