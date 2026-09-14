@@ -25,6 +25,14 @@ if (rc <= 0) then
   write(stderr, '(a,1x,i0)') "FAILED: realpath_cfi('.') expected > 0 rc, got", rc
   error stop
 end if
+if (len_trim(out) /= rc) then
+  write(stderr, '(a,2(1x,i0))') "FAILED: realpath_cfi('.') output length mismatch", len_trim(out), rc
+  error stop
+end if
+if (len_trim(out) == 0) then
+  write(stderr, '(a)') "FAILED: realpath_cfi('.') returned only blanks"
+  error stop
+end if
 
 rc = realpath_cfi(".   ", out)
 if (rc <= 0) then
