@@ -13,6 +13,7 @@ COMMAND ${CMAKE_COMMAND} -Dexe:FILEPATH=$<TARGET_FILE:filesystem_cli> -P ${CMAKE
 set_tests_properties(Fortran_CLI PROPERTIES
 LABELS "Fortran"
 PASS_REGULAR_EXPRESSION ${cli_regex}
+WORKING_DIRECTORY ${ffilesystem_BINARY_DIR}
 )
 
 endif()
@@ -25,7 +26,6 @@ COMMAND ${CMAKE_COMMAND} -Dexe:FILEPATH=$<TARGET_FILE:fs_cli> -P ${CMAKE_CURRENT
 )
 
 set_tests_properties(Cpp_CLI PROPERTIES
-LABELS "Cpp"
 PASS_REGULAR_EXPRESSION ${cli_regex}
 )
 
@@ -35,6 +35,10 @@ COMMAND ${CMAKE_COMMAND} -Dexe:FILEPATH=$<TARGET_FILE:fs_cli> -P ${CMAKE_CURRENT
 
 set_tests_properties(CppCLInoLeak PROPERTIES
 DISABLED $<AND:$<BOOL:${LINUX}>,$<NOT:$<BOOL:${ffilesystem_HAVE_LINUX_MAGIC}>>>
+)
+
+set_tests_properties(Cpp_CLI CppCLInoLeak PROPERTIES
+WORKING_DIRECTORY ${ffilesystem_BINARY_DIR}
 LABELS "Cpp"
 )
 
