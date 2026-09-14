@@ -27,6 +27,7 @@
   }
 },
 { "name": "nostdfs", "inherits": "default",
+  "binaryDir": "build-${presetName}",
   "displayName": "Build without std::filesystem",
   "description": "Build with C++ but without std::filesystem to test C fallback code.",
   "cacheVariables": {
@@ -86,6 +87,7 @@
   }
 },
 { "name": "msvc-nostdfs", "inherits": "msvc",
+  "binaryDir": "build-${presetName}",
   "displayName": "MSVC without std::filesystem",
   "description": "Build with MSVC but without std::filesystem to test C fallback code.",
   "cacheVariables": {
