@@ -37,29 +37,24 @@ std::string fs_exe_path()
   std::wstring w(fs_get_max_path(), '\0');
 
   if (DWORD L = GetModuleFileNameW(nullptr, w.data(), static_cast<DWORD>(w.size())); L > 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
-    w.resize(L);
-    return fs_win32_to_narrow(w);
+    return fs_win32_to_narrow(w.substr(0, L));
   }
 #elif defined(__linux__) || defined(__CYGWIN__)
   // https://man7.org/linux/man-pages/man2/readlink.2.html
   const std::string exe = "/proc/self/exe";
   std::string p(fs_symlink_length(exe), '\0');
 
-  if(ssize_t L = ::readlink(exe.c_str(), p.data(), p.size()); L > 0) {
-    p.resize(L);
-    return p;
-  }
+  if(ssize_t L = ::readlink(exe.c_str(), p.data(), p.size()); L > 0)
+    return p.substr(0, L);
 #elif defined(FFS_DARWIN)
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dyld.3.html
   // get buffer size first. Need L=0 to avoid intermittent segfault.
-  std::uint32_t L = 0;
+  std::uint32_t L{0};
 
   if(_NSGetExecutablePath(nullptr, &L) == -1) {
     std::string path(L, '\0');
-    if(_NSGetExecutablePath(path.data(), &L) == 0){
-      path.resize(L-1);
-      return path;
-    }
+    if(_NSGetExecutablePath(path.data(), &L) == 0)
+      return path.substr(0, L-1);
   }
 #elif defined(FFS_BSD)
   // https://man.freebsd.org/cgi/man.cgi?sysctl(3)
@@ -68,10 +63,8 @@ std::string fs_exe_path()
 
   const int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
 
-  if(sysctl(mib, 4, path.data(), &L, nullptr, 0) == 0) {
-    path.resize(L-1);
-    return path;
-  }
+  if(sysctl(mib, 4, path.data(), &L, nullptr, 0) == 0)
+    return path.substr(0, L-1);
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif

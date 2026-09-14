@@ -67,17 +67,17 @@ std::string fs_get_profile_dir()
   if(OpenProcessToken( GetCurrentProcess(), TOKEN_QUERY, &h)) {
     DWORD L = 0;
     GetUserProfileDirectoryW(h, nullptr, &L);
-    BOOL ok = false;
-    std::wstring w;
-
-    if(L > 0) {
-      w.resize(L);
-      ok = GetUserProfileDirectoryW(h, w.data(), &L);
+    if (L <= 0){
+      fs_error_callback("GetUserProfileDirectoryW");
+      return {};
     }
 
+    std::wstring w(L, '\0');
+    DWORD Lr{L};
+    BOOL const ok = GetUserProfileDirectoryW(h, w.data(), &Lr);
     CloseHandle(h);
 
-    if(ok && L > 0)
+    if(ok && Lr == L)
       return fs_win32_to_narrow(w);
   }
 #else
