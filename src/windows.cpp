@@ -97,7 +97,7 @@ bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer)
   // * a file that is a symbolic link.
 
   HANDLE h = CreateFileW(fs_win32_to_wide(path).c_str(),
-                         0, 0, nullptr, OPEN_EXISTING,
+                         0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
                          FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
   if (h == INVALID_HANDLE_VALUE)
