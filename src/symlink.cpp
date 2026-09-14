@@ -144,15 +144,13 @@ std::string fs_read_symlink(std::string_view path)
   // https://www.man7.org/linux/man-pages/man2/readlink.2.html
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/readlink.2.html
 
-  std::string::size_type L = fs_symlink_length(path);
+  std::string::size_type const L = fs_symlink_length(path);
   std::string p(L, '\0');
 
+  // readlink() does not null-terminate the result
   if (ssize_t Lr = ::readlink(std::string{path}.c_str(), p.data(), p.size());
-      Lr == static_cast<ssize_t>(L-1)){
-    // readlink() does not null-terminate the result
-    p.resize(Lr);
-    return p;
-  }
+    Lr == static_cast<ssize_t>(L-1))
+    return p.substr(0, Lr);
 #endif
 
   fs_error_callback(path, ec);

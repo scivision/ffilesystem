@@ -87,16 +87,14 @@ std::string fs_get_terminal()
   // This handle is owned and managed by the system, so calling CloseWindow() on it could
   // disrupt the console window's operation.
 
-  std::string name(fs_get_max_path(), '\0');
+  // max length 256 + null term
+  // https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassa
+  std::string name(257, '\0');
 
   if (HWND h = GetConsoleWindow(); h) {
     // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getclassnamea
-    int L = GetClassNameA(h, name.data(), static_cast<int>(name.size()));
-
-    if (L > 0){
-      name.resize(L);
-      return name;
-    }
+    if(int L = GetClassNameA(h, name.data(), static_cast<int>(name.size())); L > 0)
+      return name.substr(0, L);
   }
 
 #else

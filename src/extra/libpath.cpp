@@ -31,11 +31,8 @@ std::string fs_lib_path()
   std::string path(fs_get_max_path(), '\0');
 
   if(DWORD L = GetModuleFileNameA(GetModuleHandleA(FS_DLL_NAME), path.data(), static_cast<DWORD>(path.size()));
-      L > 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER)  FFS_LIKELY
-  {
-    path.resize(L);
-    return path;
-  }
+      L > 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+    return path.substr(0, L);
 #elif defined(ffilesystem_HAVE_DLADDR)
   if(Dl_info info; dladdr(reinterpret_cast<void*>(&dl_dummy_func), &info))  FFS_LIKELY
     return info.dli_fname;
