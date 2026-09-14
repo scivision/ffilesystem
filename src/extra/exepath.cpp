@@ -33,12 +33,12 @@ std::string fs_exe_path()
   std::error_code ec;
 
 #if defined(_WIN32)
-  // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamea
-  std::wstring w(fs_get_max_path(), '\0');
-
-  if (DWORD L = GetModuleFileNameW(nullptr, w.data(), static_cast<DWORD>(w.size())); L > 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
-    return fs_win32_to_narrow(w.substr(0, L));
-  }
+  // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
+  std::wstring w(fs_get_max_path(), L'\0');
+  const DWORD length = GetModuleFileNameW(nullptr, w.data(),
+                                          static_cast<DWORD>(w.size()));
+  if (length > 0 && length < w.size())
+    return fs_win32_to_narrow(std::wstring_view(w.data(), length));
 #elif defined(__linux__) || defined(__CYGWIN__)
   // https://man7.org/linux/man-pages/man2/readlink.2.html
   const std::string exe = "/proc/self/exe";
