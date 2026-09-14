@@ -297,16 +297,15 @@ std::string fs_win32_final_path(std::string_view path)
   if(h == INVALID_HANDLE_VALUE)
     return {};
 
-  if(DWORD L = GetFinalPathNameByHandleW(h, nullptr, 0, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS); L > 0) {
+  if(DWORD const L = GetFinalPathNameByHandleW(h, nullptr, 0, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS); L > 0) {
     w.resize(L + 1);
 
-    L = GetFinalPathNameByHandleW(h, w.data(), L, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
+    DWORD const Lr = GetFinalPathNameByHandleW(h, w.data(), L, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
 
     CloseHandle(h);
 
-    if(L > 0) {
-      w.resize(L);
-      std::string r(fs_win32_to_narrow(w));
+    if(Lr == L-1) {
+      std::string r(fs_win32_to_narrow(w.substr(0, L)));
 
       if (fs_win32_is_ext_path(r) && !fs_win32_is_ext_path(path))
         r = r.substr(4);
