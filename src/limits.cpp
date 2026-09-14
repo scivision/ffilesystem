@@ -17,14 +17,15 @@
 #endif
 
 
-
-constexpr std::size_t DEFAULT_MAX_PATH = 256;
-
 std::size_t
 fs_get_max_path()
 {
-// Returns the maximum path length supported by the file system.
-  auto m = DEFAULT_MAX_PATH;
+  // inspired by Boost::filesystem
+  constexpr std::size_t default_max_path = 1024u;
+  constexpr std::size_t absolute_max_path = 32u * default_max_path;
+
+  // Returns the maximum path length supported by the file system.
+  auto m = default_max_path;
 #if defined(PATH_MAX)
   // POSIX
   m = PATH_MAX;
@@ -34,7 +35,6 @@ fs_get_max_path()
 #elif defined(_POSIX_PATH_MAX)
   m = _POSIX_PATH_MAX;
 #endif
-  // arbitrary absolute maximum
-  // Ref: https://github.com/gulrak/filesystem/blob/b1982f06c84f08a99fb90bac43c2d03712efe921/include/ghc/filesystem.hpp#L244
-  return (m < 4096) ? m : 4096;
+
+  return (m < absolute_max_path) ? m : absolute_max_path;
 }
