@@ -258,10 +258,11 @@ std::string fs_win32_full_name(std::string_view path)
   std::wstring const w = fs_win32_to_wide(path);
 
   auto const L = GetFullPathNameW(w.c_str(), 0, nullptr, nullptr);
-  if(L == w.size()){
+  if(L > 0){
     std::wstring r(L+1, '\0');
-    if(GetFullPathNameW(w.c_str(), L+1, r.data(), nullptr) == L)
-      return fs_win32_to_narrow(r);
+    if(DWORD const Lr = GetFullPathNameW(w.c_str(), static_cast<DWORD>(r.size()), r.data(), nullptr);
+       Lr > 0 && Lr < r.size())
+      return fs_win32_to_narrow(std::wstring_view(r.data(), Lr));
   }
 #else
   ec = std::make_error_code(std::errc::function_not_supported);
@@ -292,10 +293,17 @@ std::string fs_win32_final_path(std::string_view path)
 
   std::wstring w = fs_win32_to_wide(path);
 
-  HANDLE h = CreateFileW(w.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
-                         OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
-  if(h == INVALID_HANDLE_VALUE)
+  HANDLE h = CreateFileW(w.c_str(),
+    0,
+    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+    nullptr,
+    OPEN_EXISTING,
+    FILE_FLAG_BACKUP_SEMANTICS,
+    nullptr);
+  if(h == INVALID_HANDLE_VALUE) {
+    fs_error_callback(path, "CreateFileW failed");
     return {};
+  }
 
   if(DWORD const L = GetFinalPathNameByHandleW(h, nullptr, 0, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS); L > 0) {
     w.resize(L + 1);
