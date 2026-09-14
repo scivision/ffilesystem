@@ -130,42 +130,21 @@ fs_drop_slash(std::string_view in)
   if(in.empty())
     return {};
 
-  bool winPrefix = false;
-  std::string::size_type i{std::string_view::npos};
-
-  if(fs_is_windows()){
-    // Extended-length or device path
-    if(fs_win32_is_ext_path(in)){
-      i = 4;
+  // Extended and device paths are outside the supported normalization model.
 #if defined(_WIN32)
-    } else if (std::string cin(in); PathIsUNCA(cin.c_str())){
-      i = in.find(R"(\)", 2);
+  if (fs_win32_is_ext_path(in) || PathIsUNCA(std::string{in}.c_str()))
+    return std::string(in);
 #endif
-    }
-    winPrefix = i != std::string_view::npos;
-  }
 
   std::string s(in);
 
-  if (!winPrefix)
-    fs_as_posix(s);
+  fs_as_posix(s);
 
   fs_drop_trailing_slash(s);
 
   if(fs_trace > 1) std::cout << "TRACE:drop_slash(" << in << "): removed trailing slash: " << s << "\n";
 
   s.erase(std::unique(s.begin(), s.end(), [](char a, char b){ return a == '/' && b == '/'; }), s.end());
-
-  if(winPrefix){
-    std::string t = s.substr(i);
-    if(t == fs_root_name(in.substr(i)))
-      t.push_back('/');
-
-    // don't do this in s.erase() to preserve \\?\ prefix
-    t.erase(std::unique(t.begin(), t.end(), [](char a, char b){ return a == fs_filesep() && b == fs_filesep(); }), t.end());
-    s.resize(i);
-    s += t;
-  }
 
   if(fs_trace > 1) std::cout << "TRACE:drop_slash(" << in << "): removed duplicated internal slashes: " << s << "\n";
 
