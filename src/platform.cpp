@@ -9,10 +9,9 @@
 #if defined(HAVE_CXX_FILESYSTEM)
 #include <filesystem>
 namespace Filesystem = std::filesystem;
-#else
-#include <vector>
 #endif
 
+#include <cstring>
 #include <string>
 #include <string_view>
 
@@ -72,10 +71,12 @@ std::string fs_get_cwd()
 // unistd.h https://www.man7.org/linux/man-pages/man3/getcwd.3.html
 // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/getcwd.3.html
 
-std::vector<char> buf(fs_get_max_path());
+std::string buf(fs_get_max_path(), '\0');
 
-if (::getcwd(buf.data(), buf.size()))
-  return buf.data();
+if (::getcwd(buf.data(), buf.size())) {
+  fs_trim(buf);
+  return buf;
+}
 
 #endif
 

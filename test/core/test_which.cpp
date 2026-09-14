@@ -2,7 +2,6 @@
 
 #include <boost/ut.hpp>
 
-#include <vector>
 #include <string>
 #include <algorithm> // for std::find
 

@@ -15,10 +15,6 @@
 namespace Filesystem = std::filesystem;
 #endif
 
-#if !defined(_WIN32)
-#include <vector>
-#endif
-
 
 std::string
 fs_canonical(
@@ -82,10 +78,10 @@ std::string fs_realpath(std::string_view path)
 #if defined(_WIN32)
   return fs_win32_final_path(path);
 #else
-  std::vector<char> buf(fs_get_max_path());
+  std::string buf(fs_get_max_path(), '\0');
 
   if (::realpath(std::string{path}.c_str(), buf.data()))
-    return buf.data();
+    return buf;
 
   return {};
 #endif
