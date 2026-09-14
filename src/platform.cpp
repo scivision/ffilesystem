@@ -65,10 +65,8 @@ std::string fs_get_cwd()
 // windows.h https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcurrentdirectory
   if(DWORD L = GetCurrentDirectoryW(0, nullptr); L > 0) {
     std::wstring w(L, '\0');
-    if(GetCurrentDirectoryW(L, w.data()) == L-1) {
-      w.resize(L-1);
+    if(GetCurrentDirectoryW(L, w.data()) == L-1)
       return fs_win32_to_narrow(w);
-    }
   }
 #else
 // unistd.h https://www.man7.org/linux/man-pages/man3/getcwd.3.html

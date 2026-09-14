@@ -118,8 +118,8 @@ std::string fs_which(std::string_view name, std::string_view path, const bool fi
     fs_error_callback(name);
     return {};
   }
-  wr.resize(L);
-  std::string r = fs_win32_to_narrow(wr);
+
+  std::string r = fs_win32_to_narrow(wr.substr(0, L));
 
   if(fs_trace) std::cout << "TRACE: which: SearchPath: " << r << "  length " << L << "\n";
   if(!fs_is_exe(r))

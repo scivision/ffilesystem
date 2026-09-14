@@ -49,8 +49,7 @@ std::string fs_win32_get_owner(PSID pSid)
     return {};
 
   // it's L1, not L1 - 1
-  s.resize(L1);
-  return s;
+  return s.substr(0, L1);
 }
 
 std::string fs_win32_owner(std::string_view path, bool group)

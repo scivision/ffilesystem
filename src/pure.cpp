@@ -179,9 +179,8 @@ std::string fs_stem(std::string_view path)
     return r;
 
   // find last dot
-  const auto i = r.rfind('.');
-
-  if (i != std::string::npos && i != 0)
+  if (auto i = r.rfind('.');
+      i != std::string::npos && i != 0)
     r.resize(i);
 
   return r;
