@@ -105,7 +105,7 @@ main = $(BUILD_DIR)/$(NAME)
 ifeq ($(OS),Windows_NT)
 	SHELL := pwsh.exe
 	.SHELLFLAGS := -Command
-	LDFLAGS := -lws2_32 -lOle32 -lShell32 -luuid -lUserenv -lSecur32 -lShlwapi
+	LDFLAGS := -lws2_32 -lOle32 -lShell32 -luuid -lUserenv -lSecur32
 	RM := Remove-Item -Recurse
 	MKDIR := New-Item -ItemType Directory -Force -Path
 	MKDIR_QUIET := | Out-Null

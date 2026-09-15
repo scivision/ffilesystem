@@ -238,10 +238,9 @@ ${CMAKE_DL_LIBS}
 )
 # don't put generator expressions in link_libraries, causes error when consuming by FetchContent
 if(WIN32)
-  target_link_libraries(ffilesystem PRIVATE Secur32 Shlwapi Userenv Advapi32 ws2_32)
+  target_link_libraries(ffilesystem PRIVATE Secur32 Userenv Advapi32 ws2_32)
 endif()
 # Secur32: GetUserNameExW
-# Shlwapi: PathIsUNC
 # Userenv: GetUserProfileDirectoryW
 # Advapi32: OpenProcessToken, GetTokenInformation, LookupAccountSidA
 # ws2_32: gethostname

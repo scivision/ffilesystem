@@ -11,11 +11,6 @@ namespace Filesystem = std::filesystem;
 #include <cstdlib> // _splitpath_s, _MAX_DRIVE
 #endif
 
-#if defined(_WIN32)
-#define WIN32_LEAN_AND_MEAN
-#include <Shlwapi.h>
-#endif
-
 #include "ffilesystem.h"
 
 
@@ -70,20 +65,15 @@ fs_is_absolute(std::string_view path)
   // is path absolute?
 
 #if defined(HAVE_CXX_FILESYSTEM) && !(defined(__MINGW32__) && !defined(__clang__) && defined(__GNUC__))
-  // MinGW GCC <filesystem> .is_absolute doesn't handle UNC paths at least through GCC 15.2.0
   return Filesystem::path(path).is_absolute();
 #else
   if(fs_is_windows()) {
     if(path.length() < 3)
       return false;
 
-    // Extended-length or device path
-    if(fs_win32_is_ext_path(path))
-        return true;
-#if defined(_WIN32)
-    if(PathIsUNCA(std::string{path}.c_str()))
+    if (path[0] == '\\' && path[1] == '\\')
       return true;
-#endif
+
     // Windows drive letter with slash (e.g. C: without slash is relative)
     return !(fs_root_name(path).empty()) && (path[2] == '/' || path[2] == fs_filesep());
   } else {

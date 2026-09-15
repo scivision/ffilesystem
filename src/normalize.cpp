@@ -5,11 +5,6 @@
 namespace Filesystem = std::filesystem;
 #endif
 
-#if defined(_WIN32)
-#define WIN32_LEAN_AND_MEAN
-#include <Shlwapi.h> // for PathIsUNC
-#endif
-
 #if defined(HAVE_CPP_RANGES_SPLIT_STRING_VIEW)
 #include <ranges>
 #endif
@@ -130,9 +125,9 @@ fs_drop_slash(std::string_view in)
   if(in.empty())
     return {};
 
-  // Extended and device paths are outside the supported normalization model.
+  // UNC, extended, and device paths are outside the supported normalization model.
 #if defined(_WIN32)
-  if (fs_win32_is_ext_path(in) || PathIsUNCA(std::string{in}.c_str()))
+  if (in.length() >= 2 && in[0] == '\\' && in[1] == '\\')
     return std::string(in);
 #endif
 
