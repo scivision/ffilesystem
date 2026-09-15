@@ -111,6 +111,7 @@ src/env.cpp
 src/executable.cpp
 src/home.cpp
 src/inquire.cpp
+src/internal.cpp
 src/lang.cpp
 src/lexical.cpp
 src/limits.cpp
@@ -227,8 +228,10 @@ endif()
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 
-target_include_directories(ffilesystem PUBLIC
-"$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include;${PROJECT_SOURCE_DIR}/include>"
+target_include_directories(ffilesystem
+PRIVATE ${ffilesystem_SOURCE_DIR}/src
+PUBLIC
+"$<BUILD_INTERFACE:${ffilesystem_BINARY_DIR}/include;${ffilesystem_SOURCE_DIR}/include>"
 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 

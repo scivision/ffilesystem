@@ -14,6 +14,7 @@
 #ifndef SECURITY_WIN32
 #define SECURITY_WIN32
 #endif
+#include "win32_path.h"
 #include <UserEnv.h> // GetUserProfileDirectory
 #include <Security.h> // GetUserNameEx
 #include <Windows.h>

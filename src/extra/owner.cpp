@@ -5,6 +5,9 @@
 #if !defined(_DEFAULT_SOURCE)
 #define _DEFAULT_SOURCE
 #endif
+#if defined(HAVE_STATX)
+#include <fcntl.h>   // AT_* constants for statx
+#endif
 #endif
 
 #ifdef _WIN32
@@ -19,10 +22,6 @@
 #include <optional>
 #endif
 
-#if __has_include(<fcntl.h>)
-#include <fcntl.h>   // AT_* constants for statx
-#endif
-
 #include <cerrno>
 #include <string>
 #include <string_view>
@@ -34,7 +33,7 @@ namespace {
 
 #if defined(_WIN32)
 
-std::string fs_win32_get_owner(PSID pSid)
+std::string fs_win32_get_owner(const PSID pSid)
 {
   DWORD L1{0};
   DWORD L2{0};

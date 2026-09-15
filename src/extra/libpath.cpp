@@ -1,6 +1,7 @@
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h> // GetModuleHandleExW, GetModuleFileNameW
+#include <Windows.h> // for GetModuleHandleExW, GetModuleFileNameW
+#include "win32_path.h"
 #elif defined(ffilesystem_HAVE_DLADDR)
 #if defined(__linux__) && !defined(_DEFAULT_SOURCE)
 #define _DEFAULT_SOURCE

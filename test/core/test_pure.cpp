@@ -82,8 +82,6 @@ expect(eq(fs_suffix(R"(\\?\UNC\server\share\日本語.txt)"), std::string{".txt"
 expect(eq(fs_suffix(R"(\\server\share\some space here.txt)"), std::string{".txt"}));
 expect(eq(fs_suffix(R"(\\?\C:\some space here.txt)"), std::string{".txt"}));
 
-expect(fs_win32_is_ext_path(R"(\\.\C:\)"));
-expect(fs_win32_is_ext_path(R"(\\?\C:\)"));
 }
 }
 

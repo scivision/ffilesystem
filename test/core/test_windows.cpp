@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include "win32_path.h"
+
 #include <boost/ut.hpp>
 
 int main() {

@@ -8,6 +8,7 @@ namespace Filesystem = std::filesystem;
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h> // for DeleteFile
+#include "win32_path.h"
 #endif
 #endif
 

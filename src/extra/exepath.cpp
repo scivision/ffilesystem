@@ -13,6 +13,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // GetModuleFileName
 #include <cstddef> // for size_t
+#include "win32_path.h"
 #elif defined(FFS_DARWIN)
 #include <cstdint> // for uint32_t
 #include <mach-o/dyld.h> // _NSGetExecutablePath

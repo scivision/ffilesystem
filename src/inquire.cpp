@@ -8,6 +8,7 @@
 #endif
 
 #include "ffilesystem.h"
+#include "internal.h"
 
 #include <string_view>
 #include <system_error>
@@ -20,6 +21,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <io.h> // _access_s
+#include "win32_path.h"
 #else
 #include <unistd.h>
 #endif
@@ -29,10 +31,10 @@
 namespace Filesystem = std::filesystem;
 #endif
 
-#include <sys/types.h>  // IWYU pragma: keep
-#include <sys/stat.h>   // IWYU pragma: keep
+#include <sys/types.h>
+#include <sys/stat.h>
 
-#if __has_include(<fcntl.h>)
+#if defined(HAVE_STATX)
 #include <fcntl.h>   // AT_* constants for statx
 #endif
 
@@ -64,12 +66,7 @@ bool fs_check_access(std::string_view path, const int mode){
 #if defined(_WIN32)
 DWORD fs_win32_file_type(std::string_view path){
 
-// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
-  // FILE_FLAG_BACKUP_SEMANTICS is required to open a handle to a directory, else ERROR_ACCESS_DENIED
-  HANDLE h = CreateFileW(fs_win32_to_wide(path).c_str(),
-                         0,
-                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                         nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+  HANDLE h = fs_win32_get_file_handle(path);
 
   if(h == INVALID_HANDLE_VALUE){
     DWORD err = GetLastError();
@@ -99,31 +96,6 @@ bool fs_has_statx()
 #else
   return false;
 #endif
-}
-
-
-mode_t
-fs_st_mode(std::string_view path)
-{
-
-  const std::string cpath{path};
-#if defined(HAVE_STATX)
-// Linux Glibc only
-// https://www.gnu.org/software/gnulib/manual/html_node/statx.html
-// https://www.man7.org/linux/man-pages/man2/statx.2.html
-
-  if (struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_MODE, &x) == 0) {
-    return x.stx_mode;
-  } else if (errno != ENOSYS) {
-    return 0;
-  }
-#endif
-
-// https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions
-  if (struct stat s; ::stat(cpath.c_str(), &s) == 0)
-    return s.st_mode;
-
-  return 0;
 }
 
 
@@ -330,9 +302,9 @@ bool fs_is_writable(std::string_view path)
 
 std::uintmax_t fs_hard_link_count(std::string_view path)
 {
-  std::error_code ec;
 
 #if defined(HAVE_CXX_FILESYSTEM)
+  std::error_code ec;
 
   auto s = Filesystem::hard_link_count(path, ec);
   if(ec)
@@ -345,7 +317,7 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
   const std::string cpath{path};
 
   auto handle_error = [&]() {
-    fs_error_callback(path, ec);
+    fs_error_callback(path);
     return fs_unknown_size;
   };
 

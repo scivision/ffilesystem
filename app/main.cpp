@@ -154,7 +154,6 @@ bool one_arg(std::string_view fun, std::string_view a1)
     {"mkdir", [](std::string_view a1) { return fs_mkdir(a1); }},
     {"owner", [](std::string_view a1) { return fs_get_owner_name(a1) + "\n" + fs_get_owner_group(a1); }},
     {"expanduser", [](std::string_view a1) { return fs_expanduser(a1); }},
-    {"final_path", [](std::string_view a1) { return fs_win32_final_path(a1); }},
     {"root", [](std::string_view a1) { return fs_root(a1); }},
     {"drop_slash", [](std::string_view a1) { return fs_drop_slash(a1); }},
     {"root_name", [](std::string_view a1) { return fs_root_name(a1); }},
@@ -173,7 +172,6 @@ bool one_arg(std::string_view fun, std::string_view a1)
     {"is_readable", [](std::string_view a1) { return fs_is_readable(a1); }},
     {"is_writable", [](std::string_view a1) { return fs_is_writable(a1); }},
     {"device", [](std::string_view a1) { return static_cast<std::uintmax_t>(fs_st_dev(a1)); }},
-    {"mode", [](std::string_view a1) { return static_cast<std::uintmax_t>(fs_st_mode(a1)); }},
     {"inode", [](std::string_view a1) { return static_cast<std::uintmax_t>(fs_inode(a1)); }},
     {"perm", [](std::string_view a1) { return fs_get_permissions(a1); }},
     {"read_symlink", [](std::string_view a1) { return fs_read_symlink(a1); }},
@@ -217,11 +215,6 @@ bool one_arg(std::string_view fun, std::string_view a1)
       std::cout << r;
   } else if (fun == "modtime"){
 
-#if defined(HAVE_CXX_FILESYSTEM) && defined(__cpp_lib_format) // C++20
-    const auto t = fs_get_modtime_fs(a1);
-    if(t)
-      std::cout << std::format("{}\n", t.value());
-#else
     const std::time_t t = fs_get_modtime(a1);
     #if defined(_MSC_VER)
       std::string buf(26, '\0');
@@ -230,7 +223,6 @@ bool one_arg(std::string_view fun, std::string_view a1)
     #else
       std::cout << std::ctime(&t); // NOSONAR
     #endif
-#endif
   } else if (fun == "fs_modtime")
     std::cout << fs_get_modtime(a1);
   else if (fun == "random")

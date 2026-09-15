@@ -18,13 +18,14 @@ namespace Filesystem = std::filesystem;
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if __has_include(<fcntl.h>)
+#if defined(HAVE_STATX)
 #include <fcntl.h>   // AT_* constants for statx
 #endif
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include "win32_path.h"
 #endif
 
 #endif

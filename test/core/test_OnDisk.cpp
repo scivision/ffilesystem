@@ -1,4 +1,5 @@
 #include "ffilesystem.h"
+#include "internal.h"
 
 #include <string>
 #include <string_view>

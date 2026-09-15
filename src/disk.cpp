@@ -11,6 +11,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <winioctl.h> // DeviceIoControl
+#include "win32_path.h"
 #endif
 
 #include <cerrno>
@@ -19,9 +20,6 @@
 
 #if defined(HAVE_STATX)
 #include <sys/sysmacros.h> // for makedev
-#endif
-
-#if __has_include(<fcntl.h>)
 #include <fcntl.h>   // AT_* constants for statx
 #endif
 
@@ -43,10 +41,7 @@ std::size_t fs_get_blksize(std::string_view path)
   if (root.empty())
     return {};
 
-  HANDLE h = CreateFileW(fs_win32_to_wide(R"(\\.\)" + root).c_str(),
-                         0,
-                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                         nullptr, OPEN_EXISTING, 0, nullptr);
+  HANDLE h = fs_win32_get_file_handle(R"(\\.\)" + root);
 
   if (h != INVALID_HANDLE_VALUE) {
     DISK_GEOMETRY_EX diskGeometry = {};

@@ -75,8 +75,6 @@ constexpr std::uintmax_t fs_unknown_size = static_cast<std::uintmax_t>(-1);
 
 #include <filesystem>
 
-std::optional<std::filesystem::file_time_type> fs_get_modtime_fs(std::string_view);
-
 #endif
 
 std::string fs_absolute(std::string_view);
@@ -275,18 +273,9 @@ void fs_trim(std::string&);
 
 std::string fs_which(std::string_view, std::string_view = {}, const bool = false);
 
-std::string fs_win32_final_path(std::string_view);
-std::string fs_win32_full_name(std::string_view);
-std::string fs_win32_to_narrow([[maybe_unused]] std::wstring_view);
-std::wstring fs_win32_to_wide(std::string_view);
-bool fs_win32_is_symlink(std::string_view);
-bool fs_win32_is_ext_path(std::string_view);
-
 std::string fs_with_suffix(std::string_view, std::string_view);
 
 std::string_view::size_type fs_symlink_length([[maybe_unused]] std::string_view);
-
-mode_t fs_st_mode(std::string_view);
 
 dev_t fs_st_dev(std::string_view);
 ino_t fs_inode(std::string_view);

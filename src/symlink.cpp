@@ -10,6 +10,7 @@
 #endif
 
 #include "ffilesystem.h"
+#include "win32_path.h"
 
 #include <iostream>
 
@@ -40,7 +41,7 @@ namespace Filesystem = std::filesystem;
 #endif
 
 
-#if __has_include(<fcntl.h>)
+#if defined(HAVE_STATX)
 #include <fcntl.h>   // AT_* constants for statx
 #endif
 

@@ -27,6 +27,7 @@ namespace Filesystem = std::filesystem;
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include "win32_path.h"
 #else
 // for non-Windows file loop fallback
 #include <sys/types.h>  // for off_t, ssize_t

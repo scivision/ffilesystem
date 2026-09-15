@@ -14,15 +14,16 @@ namespace Filesystem = std::filesystem;
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h> // IWYU pragma: keep
-// GetTempPathA
+#include <windows.h> // IWYU pragma: keep  for GetTempPath
+#include "win32_path.h"
 #elif defined(FFS_DARWIN)
 #include <unistd.h> // for confstr
 #endif
 
 
 
-std::string fs_get_tempdir()
+std::string
+fs_get_tempdir()
 {
   std::error_code ec;
 

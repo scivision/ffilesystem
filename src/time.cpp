@@ -34,13 +34,29 @@ namespace Filesystem = std::filesystem;
 #elif defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include "win32_path.h"
 #endif
 
-// standalone #if
-#if __has_include(<fcntl.h>)
+#if !defined(_WIN32)
 #include <fcntl.h> // utimensat, AT_* constants
 #endif
 
+namespace {
+
+#if defined(HAVE_CXX_FILESYSTEM)
+std::optional<Filesystem::file_time_type> fs_get_modtime_fs(std::string_view path)
+{
+  std::error_code ec;
+
+  if(Filesystem::file_time_type t_fs = Filesystem::last_write_time(path, ec); !ec)
+    return t_fs;
+
+  fs_error_callback(path, ec);
+  return {};
+}
+#endif
+
+}
 
 std::time_t fs_get_modtime(std::string_view path)
 {
@@ -50,8 +66,8 @@ std::time_t fs_get_modtime(std::string_view path)
   };
 
 #if defined(HAVE_CLOCK_CAST) && defined(HAVE_CXX_FILESYSTEM)
-  if(const auto &t_fs = fs_get_modtime_fs(path); t_fs){
-    const auto t_sys = std::chrono::clock_cast<std::chrono::system_clock>(t_fs.value());
+  if(auto t_fs = fs_get_modtime_fs(path); t_fs){
+    auto t_sys = std::chrono::clock_cast<std::chrono::system_clock>(t_fs.value());
     return std::chrono::system_clock::to_time_t(t_sys);
   }
 #else
@@ -72,20 +88,6 @@ std::time_t fs_get_modtime(std::string_view path)
 
   return handle_error();
 }
-
-
-#ifdef HAVE_CXX_FILESYSTEM
-std::optional<Filesystem::file_time_type> fs_get_modtime_fs(std::string_view path)
-{
-  std::error_code ec;
-
-  if(Filesystem::file_time_type t_fs = Filesystem::last_write_time(path, ec); !ec)
-    return t_fs;
-
-  fs_error_callback(path, ec);
-  return {};
-}
-#endif
 
 
 bool fs_set_modtime(std::string_view path, const bool quiet)

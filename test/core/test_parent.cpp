@@ -50,7 +50,8 @@ if (!fs_is_windows()) {
 
   "parent_windows"_test = [windows_cases] {
     for (const auto& test_case : windows_cases) {
-      if (fs_backend() == "<filesystem>" && fs_win32_is_ext_path(test_case.inp)) {
+        if (fs_backend() == "<filesystem>" &&
+          test_case.inp.compare(0, 4, R"(\\?\)") == 0) {
         return;
       }
       expect(eq(fs_parent(test_case.inp), test_case.exp));

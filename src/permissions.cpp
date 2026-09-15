@@ -2,6 +2,7 @@
 #include <string_view>
 
 #include "ffilesystem.h"
+#include "internal.h"
 
 #include <system_error>
 

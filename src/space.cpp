@@ -14,6 +14,7 @@ namespace Filesystem = std::filesystem;
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // GetDiskFreeSpaceEx
+#include "win32_path.h"
 #else
 
 #include <unistd.h>
