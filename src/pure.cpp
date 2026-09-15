@@ -8,7 +8,7 @@
 #include <filesystem>
 namespace Filesystem = std::filesystem;
 #elif defined(_WIN32)
-#include <cstdlib> // _splitpath_s, _MAX_DRIVE
+#include "win32_path.h"
 #endif
 
 #include "ffilesystem.h"
@@ -153,13 +153,8 @@ fs_root_name([[maybe_unused]] std::string_view path)
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).root_name().string();
 #elif defined(_WIN32)
-  std::string drive(_MAX_DRIVE, '\0');
-// https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/splitpath-s-wsplitpath-s
-  std::string const cpath{path};
-  if(_splitpath_s(cpath.c_str(), drive.data(), _MAX_DRIVE, nullptr, 0, nullptr, 0, nullptr, 0) == 0) {
-    fs_trim(drive);
-    return drive;
-  }
+  const auto parts = fs_win32_split_path(path);
+  return parts ? parts->drive : std::string{};
 #endif
   return {};
 }

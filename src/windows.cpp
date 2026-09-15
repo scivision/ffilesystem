@@ -5,6 +5,7 @@
 #endif
 
 #include <cstddef>  // for std::byte
+#include <cstdlib>  // for _splitpath_s, _MAX_*
 #include <iostream>
 
 #include <string>
@@ -13,6 +14,7 @@
 #include <system_error>
 
 #include "ffilesystem.h"
+#include "win32_path.h"
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 // create type PREPARSE_DATA_BUFFER
@@ -122,6 +124,27 @@ bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer)
 #endif
 
 }
+
+#if defined(_WIN32)
+std::optional<fs_win32_path_parts>
+fs_win32_split_path(std::string_view path)
+{
+  fs_win32_path_parts parts{
+    std::string(_MAX_DRIVE, '\0'),
+    std::string(_MAX_DIR, '\0')
+  };
+  const std::string cpath{path};
+
+  if (_splitpath_s(cpath.c_str(), parts.drive.data(), parts.drive.size(),
+                   parts.directory.data(), parts.directory.size(),
+                   nullptr, 0, nullptr, 0) != 0)
+    return std::nullopt;
+
+  fs_trim(parts.drive);
+  fs_trim(parts.directory);
+  return parts;
+}
+#endif
 
 
 bool fs_is_appexec_alias(std::string_view path)

@@ -7,7 +7,7 @@
 #include <filesystem>
 namespace Filesystem = std::filesystem;
 #elif defined(_WIN32)
-#include <cstdlib> // for _splitpath_s, _MAX_*
+#include "win32_path.h"
 #else
 #include <libgen.h> // for dirname
 #endif
@@ -31,14 +31,11 @@ std::string fs_parent(std::string_view path)
 
 #elif defined(_WIN32)
   fs_drop_trailing_slash(p);
-  std::string dir(_MAX_DIR, '\0');
-  std::string drive(_MAX_DRIVE, '\0');
-  if(_splitpath_s(p.c_str(), drive.data(), _MAX_DRIVE, dir.data(), _MAX_DIR, nullptr, 0, nullptr, 0) != 0)
+  const auto parts = fs_win32_split_path(p);
+  if (!parts)
     return {};
 
-  fs_trim(drive);
-  fs_trim(dir);
-  p = drive + dir;
+  p = parts->drive + parts->directory;
   fs_drop_trailing_slash(p);
 #else
   // https://linux.die.net/man/3/dirname
