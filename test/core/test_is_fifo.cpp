@@ -6,6 +6,7 @@
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include "win32_path.h"
 #else
 #include <sys/types.h>
 #include <sys/stat.h>  // mkfifo
@@ -32,7 +33,7 @@ struct fifo_ctx {
       CloseHandle(hPipe);
     }
     if (!name.empty()) {
-      DeleteFileA(name.c_str());
+      DeleteFileW(fs_win32_to_wide(name).c_str());
     }
 #else
     if (!name.empty()) {
