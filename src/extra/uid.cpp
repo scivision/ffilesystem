@@ -2,6 +2,7 @@
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>  // GetTokenInformation
 # include <io.h> // _isatty
+# include "win32_path.h"
 #else
 #if defined(__linux__) || defined(__CYGWIN__)
 #if !defined(_DEFAULT_SOURCE)
@@ -89,12 +90,14 @@ std::string fs_get_terminal()
 
   // max length 256 + null term
   // https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassa
-  std::string name(257, '\0');
+  std::wstring name(257, L'\0');
 
   if (HWND h = GetConsoleWindow(); h) {
-    // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getclassnamea
-    if(int L = GetClassNameA(h, name.data(), static_cast<int>(name.size())); L > 0)
-      return name.substr(0, L);
+    if (int L = GetClassNameW(h, name.data(),
+                                  static_cast<int>(name.size())); L > 0) {
+      return fs_win32_to_narrow(
+        std::wstring_view(name.data(), static_cast<size_t>(L)));
+    }
   }
 
 #else
