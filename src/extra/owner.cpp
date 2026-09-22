@@ -27,6 +27,7 @@
 #include <string_view>
 
 #include "ffilesystem.h"
+#include "win32_path.h"
 
 
 namespace {
@@ -39,16 +40,17 @@ std::string fs_win32_get_owner(const PSID pSid)
   DWORD L2{0};
   SID_NAME_USE eUse{SidTypeUnknown};
 
-  if(!LookupAccountSidA(nullptr, pSid, nullptr, &L1, nullptr, &L2, &eUse) && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+  if(!LookupAccountSidW(nullptr, pSid, nullptr, &L1, nullptr, &L2, &eUse) && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
     return {};
 
-  std::string s(L1, '\0');
+  std::wstring s(L1, L'\0');
+  std::wstring domain(L2, L'\0');
 
-  if (!LookupAccountSidA(nullptr, pSid, s.data(), &L1, nullptr, &L2, &eUse))
+  if (!LookupAccountSidW(nullptr, pSid, s.data(), &L1, domain.data(), &L2, &eUse))
     return {};
 
   // it's L1, not L1 - 1
-  return s.substr(0, L1);
+  return fs_win32_to_narrow(std::wstring_view(s.data(), L1));
 }
 
 std::string fs_win32_owner(std::string_view path, bool group)
@@ -58,12 +60,12 @@ std::string fs_win32_owner(std::string_view path, bool group)
   PSECURITY_DESCRIPTOR pSD{nullptr};
   PSID pSid{nullptr};
   DWORD r;
-  const std::string cpath{path};
-  // https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-getnamedsecurityinfoa
+  const std::wstring cpath{fs_win32_to_wide(path)};
+  // https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-getnamedsecurityinfow
   if (group)
-    r = GetNamedSecurityInfoA(cpath.c_str(), SE_FILE_OBJECT, GROUP_SECURITY_INFORMATION, nullptr, &pSid, nullptr, nullptr, &pSD);
+    r = GetNamedSecurityInfoW(cpath.c_str(), SE_FILE_OBJECT, GROUP_SECURITY_INFORMATION, nullptr, &pSid, nullptr, nullptr, &pSD);
   else
-    r = GetNamedSecurityInfoA(cpath.c_str(), SE_FILE_OBJECT, OWNER_SECURITY_INFORMATION, &pSid, nullptr, nullptr, nullptr, &pSD);
+    r = GetNamedSecurityInfoW(cpath.c_str(), SE_FILE_OBJECT, OWNER_SECURITY_INFORMATION, &pSid, nullptr, nullptr, nullptr, &pSD);
 
   std::string s;
   if(r == ERROR_SUCCESS)
