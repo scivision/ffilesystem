@@ -21,8 +21,8 @@ std::size_t
 fs_get_max_path()
 {
   // inspired by Boost::filesystem
-  constexpr std::size_t default_max_path = 1024u;
-  constexpr std::size_t absolute_max_path = 32u * default_max_path;
+  constexpr std::size_t default_max_path = 4096u;
+  constexpr std::size_t absolute_max_path = 8u * default_max_path;
 
   // Returns the maximum path length supported by the file system.
   auto m = default_max_path;
