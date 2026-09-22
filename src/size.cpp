@@ -24,6 +24,7 @@ namespace Filesystem = std::filesystem;
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include "win32_path.h"
 #else
 #include <dirent.h>  // opendir, readdir, closedir
 #endif
@@ -94,16 +95,14 @@ bool fs_is_empty(std::string_view path)
     return e;
 #else
 
-  const std::string cpath{path};
-
   if (!fs_is_dir(path))
     return fs_is_file(path) &&fs_file_size(path) == 0;
 
   // directory empty
 #if defined(_WIN32)
   // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findfirstfilea
-  WIN32_FIND_DATAA ffd;
-  HANDLE hFind = FindFirstFileA((cpath + "/*").c_str(), &ffd);
+  WIN32_FIND_DATAW ffd;
+  HANDLE hFind = FindFirstFileW((fs_win32_to_wide(path) + L"\\*").c_str(), &ffd);
   if (hFind == INVALID_HANDLE_VALUE) {
     fs_error_callback(path);
     return false;
@@ -117,11 +116,9 @@ bool fs_is_empty(std::string_view path)
 
   do
   {
-      if(fs_trace) std::cout << "TRACE: is_empty: do " << ffd.cFileName << "\n";
-
       if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
         // std::set is much slower than a simple if
-        if (std::string_view n(ffd.cFileName); n == "." || n == "..")
+        if (std::wstring_view n(ffd.cFileName); n == L"." || n == L"..")
           continue;
 
       // directory that is not . or ..
@@ -129,7 +126,7 @@ bool fs_is_empty(std::string_view path)
       }
       // any non-directory
       return false;
-  } while (FindNextFileA(hFind, &ffd));
+  } while (FindNextFileW(hFind, &ffd));
 
   // empty directory
   return true;
@@ -138,6 +135,8 @@ bool fs_is_empty(std::string_view path)
 // https://www.man7.org/linux/man-pages/man3/readdir.3.html
 // https://www.man7.org/linux/man-pages/man3/closedir.3.html
 // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/readdir.3.html
+
+  const std::string cpath{path};
 
   if (DIR *d = ::opendir(cpath.c_str()); d)
   {
