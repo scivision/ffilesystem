@@ -173,8 +173,7 @@ cmake -B build -DBUILD_SHARED_LIBS=on
 ### Fortran Package Manager (FPM):
 
 ```sh
-fpm --cxx-flag=-std=c++17 build
-# c++17 is the minimum, can use newer
+fpm build
 ```
 
 ---

@@ -1,7 +1,17 @@
 name = "ffilesystem"
 description = "Lightweight filesystem and path manipulations"
 categories = "io"
-version = "6.4.2"
+version = "6.5.1"
+
+[features]
+base.cxx-flags = "-std=c++17"
+base.ifx.flags = "-fpscomp:logicals"
+debug.ifx.flags = "-warn"
+base.nvfortran.flags = "-Munixlogical"
+debug.gfortran.flags = "-Wall"
+
+[profiles]
+default = ["base"]
 
 [build]
 auto-examples = false
@@ -11,4 +21,4 @@ auto-tests = false
 library = true
 
 [library]
-include-dir = ["include"]
+include-dir = ["include", "src"]
