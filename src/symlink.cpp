@@ -150,8 +150,10 @@ std::string fs_read_symlink(std::string_view path)
 
   // readlink() does not null-terminate the result
   if (ssize_t Lr = ::readlink(std::string{path}.c_str(), p.data(), p.size());
-    Lr == static_cast<ssize_t>(L-1))
-    return p.substr(0, Lr);
+    Lr == static_cast<ssize_t>(L-1)) {
+    p.resize(static_cast<std::string::size_type>(Lr));
+    return p;
+  }
 #endif
 
   fs_error_callback(path, ec);

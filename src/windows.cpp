@@ -329,10 +329,10 @@ std::string fs_win32_final_path(std::string_view path)
     CloseHandle(h);
 
     if(Lr == L-1) {
-      std::string r(fs_win32_to_narrow(w.substr(0, L)));
+      std::string r(fs_win32_to_narrow(std::wstring_view(w.data(), L)));
 
       if (fs_win32_is_ext_path(r) && !fs_win32_is_ext_path(path))
-        r = r.substr(4);
+        r.erase(0, 4);
 
       return r;
     }
@@ -408,8 +408,10 @@ fs_win32_to_narrow(std::wstring_view w)
   if (int L = WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, nullptr, 0, nullptr, nullptr); L > 0)  FFS_LIKELY
   {
     std::string n(L, '\0');
-    if(WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, n.data(), L, nullptr, nullptr) == L)
-      return n.substr(0, L-1);
+    if(WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, n.data(), L, nullptr, nullptr) == L) {
+      n.pop_back();
+      return n;
+    }
   }
 
   fs_error_callback("");
@@ -426,8 +428,10 @@ fs_win32_to_wide(std::string_view n)
   if (int L = MultiByteToWideChar(CP_UTF8, 0, ns.c_str(), -1, nullptr, 0); L > 0)  FFS_LIKELY
   {
     std::wstring w(L, '\0');
-    if(MultiByteToWideChar(CP_UTF8, 0, ns.c_str(), -1, w.data(), L) == L)
-      return w.substr(0, L-1);
+    if(MultiByteToWideChar(CP_UTF8, 0, ns.c_str(), -1, w.data(), L) == L) {
+      w.pop_back();
+      return w;
+    }
   }
 
   fs_error_callback(n);

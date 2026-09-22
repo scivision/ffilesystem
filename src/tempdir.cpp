@@ -46,7 +46,8 @@ fs_get_tempdir()
   if (L > 1) {
     std::string t(L, '\0');
     if(::confstr(_CS_DARWIN_USER_TEMP_DIR, t.data(), L) == L) {
-      return t.substr(0, L-1);
+      t.resize(L - 1);
+      return t;
     }
   }
 #endif
