@@ -13,10 +13,6 @@
 #include <unistd.h> // getpid
 #endif
 
-#if __has_include(<format>)
-#include <format>
-#endif
-
 #include <boost/ut.hpp>
 
 namespace {
@@ -47,15 +43,12 @@ bool setup(fifo_ctx& ctx) {
   using namespace boost::ut;
 
 #if defined(_WIN32)
-      // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createnamedpipea
+      // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createnamedpipew
 
       // must have this path prefix or INVALID_HANDLE_VALUE results
-#ifdef __cpp_lib_format  // C++20
-  ctx.name = std::format(R"(\\.\pipe\test_pipe_{})", GetCurrentProcessId());
-#else
   ctx.name = R"(\\.\pipe\test_pipe_)" + std::to_string(GetCurrentProcessId());
-#endif
-  ctx.hPipe = CreateNamedPipeA(ctx.name.data(),
+
+  ctx.hPipe = CreateNamedPipeW(fs_win32_to_wide(ctx.name).c_str(),
                 PIPE_ACCESS_DUPLEX,
                 PIPE_TYPE_BYTE,
                 1,

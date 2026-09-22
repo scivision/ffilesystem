@@ -21,7 +21,7 @@ namespace Filesystem = std::filesystem;
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h> // IWYU pragma: keep  for GetTempPathA
+#include <windows.h> // IWYU pragma: keep  for GetTempPathW
 #include "win32_path.h"
 #else
 #include <unistd.h> // IWYU pragma: keep

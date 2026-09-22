@@ -93,7 +93,11 @@ if(MSVC OR CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
   "$<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<CXX_COMPILER_ID:Clang>>:-Wno-deprecated-declarations>"
   )
   if(ffilesystem_unicode)
-    add_compile_definitions("$<$<COMPILE_LANGUAGE:C,CXX>:_UNICODE>")
+    # both _UNICODE (Win32 API alases) and UNICODE (CRT) used to avoid generic calls mismatch to ANSI
+    add_compile_definitions(
+      $<$<COMPILE_LANGUAGE:C,CXX>:_UNICODE>
+      $<$<COMPILE_LANGUAGE:C,CXX>:UNICODE>
+      )
   endif()
 endif()
 

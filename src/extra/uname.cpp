@@ -85,16 +85,34 @@ std::string fs_os_version()
   if (struct utsname buf; ::uname(&buf) == 0)
     return buf.version;
 #elif defined(_WIN32)
+ // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlgetversion
+  using RtlGetVersionFn = LONG(WINAPI*)(PRTL_OSVERSIONINFOW);
 
-  OSVERSIONINFOA osvi;
-  ZeroMemory(&osvi, sizeof(OSVERSIONINFOA));
-  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
+  HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
+  if (!ntdll) {
+    fs_error_callback("ntdll.dll not found");
+    return {};
+  }
+  auto fn = reinterpret_cast<RtlGetVersionFn>(GetProcAddress(ntdll, "RtlGetVersion"));
+  if (!fn) {
+    fs_error_callback("RtlGetVersion not found");
+    return {};
+  }
 
-  if(GetVersionExA(&osvi))
+  RTL_OSVERSIONINFOW vi{};
+  vi.dwOSVersionInfoSize = sizeof(vi);
+  if (fn(&vi) != 0) {
+    fs_error_callback("RtlGetVersion failed");
+    return {};
+  }
+
+  const auto major = vi.dwMajorVersion;
+  const auto minor = vi.dwMinorVersion;
+  const auto build = vi.dwBuildNumber;
 #if defined(__cpp_lib_format)  // C++20
-    return std::format("{}.{}.{}", osvi.dwMajorVersion, osvi.dwMinorVersion, osvi.dwBuildNumber);
+    return std::format("{}.{}.{}", major, minor, build);
 #else
-    return std::to_string(osvi.dwMajorVersion) + '.' + std::to_string(osvi.dwMinorVersion) + '.' + std::to_string(osvi.dwBuildNumber);
+    return std::to_string(major) + '.' + std::to_string(minor) + '.' + std::to_string(build);
 #endif
 
 #else
