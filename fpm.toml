@@ -1,10 +1,10 @@
 name = "ffilesystem"
 description = "Lightweight filesystem and path manipulations"
 categories = "io"
-version = "6.5.1"
+version = "6.5.2"
 
 [features]
-base.cxx-flags = "-std=c++17"
+base.cxx-flags = "-std=c++20"
 base.ifx.flags = "-fpscomp:logicals"
 debug.ifx.flags = "-warn"
 base.nvfortran.flags = "-Munixlogical"
