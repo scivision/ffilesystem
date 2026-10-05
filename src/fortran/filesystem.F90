@@ -29,7 +29,6 @@ copy_file, mkdir, &
 relative_to, proximate_to, &
 hard_link_count, &
 root, root_name, same_file, file_size, &
-free_memory, total_sys_memory, &
 space_available, space_capacity, get_blksize, &
 file_name, parent, stem, suffix, with_suffix, &
 absolute, &
@@ -43,6 +42,7 @@ fs_lang, &
 fs_is_optimized, filesep, pathsep, is_safe_name, &
 is_admin, is_bsd, is_macos, is_rosetta, is_windows, is_cygwin, is_wsl, is_mingw, is_clangcl, is_msvc, is_linux, is_unix, &
 max_path, max_component, get_max_open_files, &
+free_memory, total_sys_memory, &
 exe_path, lib_path, compiler, compiler_c, get_shell, get_terminal, &
 longname, shortname, getenv, setenv, getarg, &
 is_alpha, filesystem_type, devnull, cpu_arch, &
@@ -184,6 +184,14 @@ character(kind=C_CHAR), intent(in) :: path(*)
 end function
 integer(C_LONG) function fs_get_max_open_files() bind(C)
 import
+end function
+
+integer(C_LONG_LONG) function fs_get_free_memory() bind(C)
+import C_LONG_LONG
+end function
+
+integer(C_LONG_LONG) function fs_total_sys_memory() bind(C)
+import C_LONG_LONG
 end function
 
 logical(C_BOOL) function fs_is_empty(path) bind(C)
@@ -339,14 +347,6 @@ end function
 integer(C_INTMAX_T) function fs_hard_link_count(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
-end function
-
-integer(C_LONG_LONG) function fs_get_free_memory() bind(C)
-import
-end function
-
-integer(C_LONG_LONG) function fs_total_sys_memory() bind(C)
-import
 end function
 
 integer(C_INTMAX_T) function fs_space_available(path) bind(C)
@@ -755,6 +755,16 @@ integer(int64) function get_max_open_files() result (r)
 r = fs_get_max_open_files()
 end function
 
+integer(int64) function free_memory() result(r)
+!! returns free memory (bytes), or -1 on failure
+r = fs_get_free_memory()
+end function
+
+integer(int64) function total_sys_memory() result(r)
+!! returns total system memory (bytes), or 0 on failure
+r = fs_total_sys_memory()
+end function
+
 
 function as_posix(path) result(r)
 !! force Posix file separator "/"
@@ -1014,17 +1024,6 @@ integer(int64) function hard_link_count(path) result(r)
 character(*), intent(in) :: path
 
 r = fs_hard_link_count(trim(path) // C_NULL_CHAR)
-end function
-
-
-integer(int64) function free_memory() result(r)
-!! returns free memory (bytes)
-r = fs_get_free_memory()
-end function
-
-integer(int64) function total_sys_memory() result(r)
-!! returns total system memory (bytes)
-r = fs_total_sys_memory()
 end function
 
 

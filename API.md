@@ -32,6 +32,21 @@ call set_error_callback(c_funloc(report_error))
 
 Filesystem functions continue to indicate failure through their existing return values.
 
+## System memory
+
+System memory queries are part of the `filesystem` Fortran module and the
+`ffilesystem.h` C/C++ header. Link only the main filesystem library.
+
+* `free_memory()` / `fs_get_free_memory()` returns available memory in bytes.
+  Failure returns `-1` in Fortran or the maximum `unsigned long long` value in C/C++.
+* `total_sys_memory()` / `fs_total_sys_memory()` returns total physical memory in
+  bytes, or `0` on failure.
+
+The CMake option `ffilesystem_system` defaults to `ON`. When it is `OFF`, these
+functions remain available but report `function_not_supported` through the error
+callback and return their failure values. The CLI commands `free_ram` and
+`total_ram` report unavailability rather than printing a failure value.
+
 ## Passing character strings between code languages
 
 For the interchange of character strings between Fortran and C++ / C, the buffer length is determined at compile time and is available in `fs_get_max_path()` (C, C++) or `max_path()` (Fortran).

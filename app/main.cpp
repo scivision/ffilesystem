@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <sstream>
 #include <optional>
+#include <limits>
 
 #include <chrono> // IWYU pragma: keep
 // needed to std::format() std::filesystem::file_time_type
@@ -37,6 +38,16 @@ namespace Filesystem = std::filesystem;
 namespace {
 
 bool no_arg(std::string_view fun){
+
+  if (fun == "free_ram" || fun == "total_ram") {
+    const auto memory = fun == "free_ram" ? fs_get_free_memory() : fs_total_sys_memory();
+    if ((fun == "free_ram" && memory == std::numeric_limits<unsigned long long>::max()) ||
+        (fun == "total_ram" && memory == 0))
+      std::cerr << "ERROR: " << fun << " unavailable\n";
+    else
+      std::cout << memory << "\n";
+    return true;
+  }
 
   static const std::unordered_map<std::string_view, std::function<bool()>> mbool =
   {
@@ -79,9 +90,7 @@ static const std::unordered_map<std::string_view, fs_function> fs_function_map =
   {"tempdir", []() { return fs_get_tempdir(); }},
   {"max_path", []() { return static_cast<unsigned long long>(fs_get_max_path()); }},
   {"cwd", []() { return fs_get_cwd(); }},
-  {"free_ram", []() { return fs_get_free_memory(); }},
-  {"total_ram", []() { return fs_total_sys_memory(); }},
-  {"max_open_files", []() { return fs_get_max_open_files(); }}
+  {"max_open_files", []() { return fs_get_max_open_files(); }},
 };
 
   bool ok = true;

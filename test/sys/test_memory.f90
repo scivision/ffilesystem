@@ -8,9 +8,18 @@ implicit none
 
 integer(int64) :: f, t
 logical :: ok = .true.
+character(8) :: mode
+
+call get_command_argument(1, mode)
 
 f = free_memory()
 t = total_sys_memory()
+
+if (mode == "disabled") then
+  if (f /= -1_int64 .or. t /= 0_int64) error stop 'disabled memory sentinels incorrect.'
+  print '(a)', 'OK: disabled memory test passed.'
+  stop
+end if
 
 if (f <= 0) then
   write(error_unit, "(a, i0)") 'free_memory() returned non-positive value', f

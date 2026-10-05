@@ -58,7 +58,6 @@ COMM_SRCS = \
 	$(comdir)lexical.cpp \
 	$(comdir)limits.cpp \
 	$(comdir)log.cpp \
-	$(comdir)memory.cpp \
 	$(comdir)mkdir.cpp \
 	$(comdir)move.cpp \
 	$(comdir)normalize.cpp \
@@ -79,9 +78,9 @@ COMM_SRCS = \
 	$(comdir)which.cpp \
 	$(comdir)windows.cpp \
 	$(comdir)extra/case.cpp \
-	$(comdir)extra/compiler.cpp \
+	$(comdir)compiler.cpp \
 	$(comdir)extra/component.cpp \
-	$(comdir)extra/cygwin.cpp \
+	$(comdir)cygwin.cpp \
 	$(comdir)extra/exepath.cpp \
 	$(comdir)extra/libpath.cpp \
 	$(comdir)extra/locale.cpp \

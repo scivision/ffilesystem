@@ -31,7 +31,6 @@ filesize space
 is_dir
 is_empty
 is_subdir join
-memory
 normal parent root
 resolve
 relative proximate
@@ -124,7 +123,6 @@ is_empty
 is_prefix
 is_subdir
 join
-memory
 mkdir
 normal
 OnDisk

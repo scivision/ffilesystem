@@ -309,6 +309,9 @@ long fs_cpp_lang();
 long fs_cpp_format();
 long fs_cpp_ranges();
 
+unsigned long long fs_total_sys_memory();
+unsigned long long fs_get_free_memory();
+
 long fs_c_lang();
 
 long libcxx_release();
@@ -320,9 +323,6 @@ size_t fs_max_component(const char*);
 bool fs_is_optimized();
 
 pid_t fs_getpid();
-
-unsigned long long fs_total_sys_memory();
-unsigned long long fs_get_free_memory();
 
 char fs_filesep();
 char fs_pathsep();

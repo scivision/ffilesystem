@@ -7,7 +7,10 @@ option(ffilesystem_trace "debug trace output" off)
 option(ffilesystem_ranges "if C++20 ranges are available, use them" on)
 
 option(ffilesystem_locale "enable locale-based functions")
+
 option(ffilesystem_extra "enable extra functions not strictly filesystem-based" on)
+option(ffilesystem_system "Enable system-specific functions" on)
+
 option(ffilesystem_unicode "Windows Unicode support" on)
 option(ffilesystem_pic "Build position-independent code")
 

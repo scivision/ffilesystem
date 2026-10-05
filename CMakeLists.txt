@@ -103,8 +103,8 @@ set(_src
 src/c.cpp
 src/absolute.cpp
 src/copy.cpp
-src/extra/compiler.cpp
-src/extra/cygwin.cpp
+src/compiler.cpp
+src/cygwin.cpp
 src/disk.cpp
 src/equivalent.cpp
 src/env.cpp
@@ -117,7 +117,6 @@ src/lexical.cpp
 src/limits.cpp
 src/extra/locale.cpp
 src/log.cpp
-src/memory.cpp
 src/mkdir.cpp
 src/move.cpp
 src/normalize.cpp
@@ -158,7 +157,9 @@ src/extra/winsock.cpp
 endif()
 
 
-add_library(ffilesystem ${_src})
+add_library(ffilesystem ${_src}
+$<IF:$<BOOL:${ffilesystem_system}>,src/sys/memory.cpp,src/sys/disabled.cpp>
+)
 
 include(cmake/compilers.cmake)
 
@@ -177,9 +178,7 @@ if(ffilesystem_fortran)
   $<$<NOT:$<BOOL:${HAVE_F03TYPE}>>:NO_F03TYPE>
   $<$<BOOL:${ffilesystem_HAVE_ISO_FORTRAN_BINDING}>:HAVE_ISO_FORTRAN_BINDING>
   )
-  set_property(TARGET ffilesystem_Fortran PROPERTY
-  Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include
-  )
+  set_property(TARGET ffilesystem_Fortran PROPERTY Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 
   target_include_directories(ffilesystem PRIVATE
     $<$<BOOL:${ffilesystem_ISO_Fortran_binding_path}>:${ffilesystem_ISO_Fortran_binding_path}>)
@@ -187,8 +186,6 @@ if(ffilesystem_fortran)
   target_sources(ffilesystem PRIVATE $<TARGET_OBJECTS:ffilesystem_Fortran>)
 
 endif()
-
-target_include_directories(ffilesystem PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 target_compile_definitions(ffilesystem PUBLIC
 "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<BOOL:${HAVE_CXX_FILESYSTEM}>>:HAVE_CXX_FILESYSTEM>"
