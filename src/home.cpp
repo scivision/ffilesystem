@@ -50,7 +50,7 @@ struct passwd* fs_getpwuid()
 
 std::string fs_get_homedir()
 {
-  if (auto h = fs_getenv(fs_is_windows() ? "USERPROFILE" : "HOME"); h.has_value() && !h.value().empty())
+  if (auto h = fs_getenv(fs_is_windows() ? "USERPROFILE" : "HOME"); h && !h->empty())
     return h.value();
 
   return fs_get_profile_dir();
