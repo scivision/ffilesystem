@@ -87,8 +87,6 @@ COMM_SRCS = \
 	$(comdir)extra/owner.cpp \
 	$(comdir)extra/random.cpp \
 	$(comdir)extra/removable.cpp \
-	$(comdir)extra/shell.cpp \
-	$(comdir)extra/uid.cpp \
 	$(comdir)extra/winsock.cpp \
 	$(comdir)sys/disabled.cpp
 

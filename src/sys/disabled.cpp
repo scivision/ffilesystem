@@ -4,6 +4,8 @@
 #include <string>
 #include <system_error>
 
+# include <sys/types.h> // for pid_t
+
 // uname.cpp
 std::string fs_cpu_arch(){
   fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
@@ -39,4 +41,31 @@ unsigned long long fs_get_free_memory()
 bool fs_is_rosetta(){
   fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
   return false;
+}
+
+// uid.cpp
+bool fs_is_admin(){
+  fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
+  return false;
+}
+
+pid_t fs_getpid(){
+  fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
+  return -1;
+}
+
+std::string fs_get_terminal(){
+  fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
+  return {};
+}
+
+bool fs_stdin_tty(){
+  fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
+  return false;
+}
+
+// shell.cpp
+std::string fs_get_shell(){
+  fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
+  return {};
 }

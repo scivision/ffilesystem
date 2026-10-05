@@ -10,8 +10,7 @@
 #endif
 #endif
 # include <unistd.h>  // geteuid, getpid, isatty
-# include <sys/types.h>  // IWYU pragma: keep
-// geteuid, pid_t
+# include <sys/types.h>  // for pid_t
 #endif
 
 #include <cstdio> // fileno
