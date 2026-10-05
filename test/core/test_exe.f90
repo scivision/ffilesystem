@@ -42,7 +42,7 @@ character(:), allocatable :: exe
 
 logical :: ok
 
-if(is_wsl() > 0 .and. filesystem_type(".") == "v9fs") then
+if(is_wsl() .and. filesystem_type(".") == "v9fs") then
   print '(a)', "XFAIL:test_exe: WSL with VFS does not support permissions."
   stop 77
 end if

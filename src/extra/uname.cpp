@@ -1,6 +1,5 @@
 #include <string>
 #include <string_view>
-#include <cstring> // for std::strcmp
 
 #include <system_error>
 
@@ -22,28 +21,45 @@
 #endif
 
 
-int fs_is_wsl()
+bool fs_is_wsl()
 {
-  // return 0 if not WSL, 1 if WSL1, 2 if WSL2, -1 on error
+  // false: not WSL, or the probe failed
+  // Uses three-step heuristic to detect WSL
+  // 1. Check for WSL-specific environment variables (WSL_DISTRO_NAME, WSL_INTEROP)
+  // 2. Check for the presence of the /run/WSL directory
+  // 3. Check the uname release string for "microsoft" or "wsl"
+  // The first two checks are set by /init, and so don't rely on Microsoft's kernel
+  // However, the user could have cleared the environment variables, so we have
+  // fallbacks.
+#if defined(__linux__)
+  auto env_is_set = [](std::string_view name) {
+    const auto value = fs_getenv(name);
+    return value && !value->empty();
+  };
+  if (env_is_set("WSL_DISTRO_NAME") || env_is_set("WSL_INTEROP"))
+    return true;
+
+  if (fs_is_dir("/run/WSL"))
+    return true;
 
 #ifdef HAVE_UTSNAME
   struct utsname b;
-  if (::uname(&b) != 0)
-    return -1;
+  if (::uname(&b) != 0 || std::string_view(b.sysname) != "Linux")
+    return false;
 
-  if(std::strcmp(b.sysname, "Linux") != 0)
-    return 0;
+  std::string r(b.release);
+  fs_ascii_lower(r);
 
-  std::string_view r(b.release);
+#if defined(__cpp_lib_string_contains) // C++23
+  return r.contains("microsoft") || r.contains("wsl");
+#else
+  return r.find("microsoft") != std::string::npos ||
+         r.find("wsl") != std::string::npos;
+#endif
 
-#ifdef __cpp_lib_starts_ends_with // C++20
-  if (r.ends_with("microsoft-standard-WSL2"))
-    return 2;
-  if (r.ends_with("-Microsoft"))
-    return 1;
 #endif
 #endif
-  return 0;
+  return false;
 }
 
 

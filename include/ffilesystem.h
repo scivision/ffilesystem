@@ -335,7 +335,7 @@ bool fs_is_macos();
 bool fs_is_linux();
 bool fs_is_unix();
 bool fs_is_windows();
-int fs_is_wsl();
+bool fs_is_wsl();
 bool fs_is_mingw();
 bool fs_is_clangcl();
 bool fs_is_msvc();

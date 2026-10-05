@@ -5,7 +5,7 @@ use filesystem
 
 implicit none
 
-if(is_wsl() > 0 .and. filesystem_type(".") == "v9fs") then
+if(is_wsl() .and. filesystem_type(".") == "v9fs") then
   write(stderr, '(a)') "ERROR: WSL with v9fs does not support file permissions"
   stop 77
 end if
@@ -66,7 +66,7 @@ end if
 
 call set_permissions(noread, readable=.false.)
 
-p = get_permissions(noread);
+p = get_permissions(noread)
 print '(a)', "Permissions for " // trim(noread)// ": "// p
 
 if (len_trim(p) == 0) error stop "get_permissions('"//trim(noread)//"') should not be empty"
@@ -87,7 +87,7 @@ call set_permissions(nowrite, writable=.false.)
 
 if (.not. is_writable(".")) error stop ". should be writable"
 
-p = get_permissions(nowrite);
+p = get_permissions(nowrite)
 print '(a)', "Permissions for " // trim(nowrite)// ": "// p
 if (len_trim(p) == 0) error stop "get_permissions('"//trim(nowrite)//"') should not be empty"
 
@@ -96,8 +96,9 @@ if (p(2:2) == "w") then
     if(.not. (is_windows() .or. is_cygwin())) error stop
 end if
 
-if(index(p, "w") == 0 .and. .not. is_admin() .and. is_writable(nowrite)) &
+if(index(p, "w") == 0 .and. .not. is_admin() .and. is_writable(nowrite)) then
   error stop "is_writable: " // trim(nowrite)//" should not be writable"
+end if
 
 if (.not. exists(nowrite)) error stop trim(nowrite)//" should exist"
 

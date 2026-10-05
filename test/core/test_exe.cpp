@@ -59,7 +59,7 @@ void setup_ctx(exe_ctx& ctx, std::string_view test_name, std::string_view arg0) 
 int main(int argc, char** argv) {
   using namespace boost::ut;
 
-  if ((fs_is_wsl() > 0 && fs_filesystem_type(fs_absolute(".")) == "v9fs") || !fs_is_writable(".")){
+  if ((fs_is_wsl() && fs_filesystem_type(fs_absolute(".")) == "v9fs") || !fs_is_writable(".")){
     skip / "is_exe"_test = [] {};
     skip / "is_exe_bin"_test = [] {};
     skip / "perms_self"_test = [] {};

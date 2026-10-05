@@ -466,9 +466,9 @@ std::string::size_type fs_with_suffix(const char* path, const char* new_suffix,
     return false;
   }
 
-  int fs_is_wsl(){
+  bool fs_is_wsl(){
     fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
-    return -1;
+    return false;
   }
 
   std::string fs_lib_path(){

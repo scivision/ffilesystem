@@ -77,7 +77,7 @@ if (!fs_is_writable("."))
     expect(fs_is_readable(ctx.read)) << ctx.read << " should be readable";
   };
 
-  if(fs_is_windows() || fs_is_cygwin() || (fs_is_wsl() > 0 && fs_filesystem_type(fs_absolute(".")) == "v9fs")) {
+  if(fs_is_windows() || fs_is_cygwin() || (fs_is_wsl() && fs_filesystem_type(fs_absolute(".")) == "v9fs")) {
     skip / "permissions_not_readable"_test = [] {};
   } else {
 
@@ -104,7 +104,7 @@ if (!fs_is_writable("."))
     expect(fs_set_permissions(ctx.nonnull_file, 1, 0, 0));
   };
 
-  if(fs_is_windows() || fs_is_cygwin() || (fs_is_wsl() > 0 && fs_filesystem_type(fs_absolute(".")) == "v9fs")) {
+  if(fs_is_windows() || fs_is_cygwin() || (fs_is_wsl() && fs_filesystem_type(fs_absolute(".")) == "v9fs")) {
     skip / "permissions_writable"_test = [] {};
   } else {
 

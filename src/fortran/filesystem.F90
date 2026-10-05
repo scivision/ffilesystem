@@ -110,37 +110,37 @@ end function
 
 logical(C_BOOL) function is_admin() bind(C, name="fs_is_admin")
 !! user running as admin / root / superuser?
-import
+import C_BOOL
 end function
 
 logical(C_BOOL) function is_bsd() bind(C, name="fs_is_bsd")
 !! operating system is BSD-like
-import
+import C_BOOL
 end function
 
 logical(C_BOOL) function is_macos() bind(C, name="fs_is_macos")
 !! operating system is macOS
-import
+import C_BOOL
 end function
 
 logical(C_BOOL) function is_rosetta() bind(C, name="fs_is_rosetta")
 !! running on Apple Silicon with Rosetta 2
-import
+import C_BOOL
 end function
 
 logical(C_BOOL) function is_windows() bind(C, name="fs_is_windows")
 !! operating system is Microsoft Windows
-import
+import C_BOOL
 end function
 
 logical(C_BOOL) function is_cygwin() bind(C, name="fs_is_cygwin")
 !! operating system is Cygwin
-import
+import C_BOOL
 end function
 
-integer(C_INT) function is_wsl() bind(C, name="fs_is_wsl")
-!! Windows Subsystem for Linux (WSL) version (0 is not WSL)
-import
+logical(C_BOOL) function is_wsl() bind(C, name="fs_is_wsl")
+!! Windows Subsystem for Linux (WSL) detected?
+import C_BOOL
 end function
 
 integer(C_LONG) function fs_getpid() bind(C)
