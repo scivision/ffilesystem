@@ -7,6 +7,13 @@ on:
       - "**.cpp"
       - ".github/workflows/ci_bsd.yml"
 
+  workflow_dispatch:
+
+# avoid wasted runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 
 jobs:
   test:
