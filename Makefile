@@ -25,9 +25,7 @@ FC := gfortran
 
 BUILD_DIR := build-make
 
-INC := -Iinclude/
-
-cpp = 1
+INC := -Iinclude/ -Isrc/
 
 # optional, but useful
 cfeat =
@@ -35,7 +33,7 @@ cppfeat =
 
 oflags = -O2 -DNDEBUG
 
-CXXFLAGS := -std=c++17 $(oflags) $(cppfeat) $(INC) -DHAVE_CXX_FILESYSTEM -Dffilesystem_extra
+CXXFLAGS := -std=c++20 $(oflags) $(cppfeat) $(INC) -DHAVE_CXX_FILESYSTEM -Dffilesystem_extra
 CFLAGS := $(oflags) $(cfeat) $(INC)
 FFLAGS := $(oflags)
 
@@ -115,6 +113,12 @@ else
 	RM := rm -rf
 	MKDIR := mkdir -p
 	MKDIR_QUIET :=
+endif
+
+ifneq ($(OS),Windows_NT)
+ifeq ($(shell uname -s),Darwin)
+    LDFLAGS += -framework DiskArbitration -framework CoreFoundation
+endif
 endif
 
 ifeq (icpx,$(findstring icpx,$(CXX)))
