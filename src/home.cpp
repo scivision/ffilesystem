@@ -1,51 +1,8 @@
 #include <string>
 #include <string_view>
 
-#include <system_error>
-
-#if __has_include(<format>)
-#include <format>  // IWYU pragma: keep
-#endif
-
-
-// get_profile_dir
-#if defined(_WIN32)
-#define WIN32_LEAN_AND_MEAN
-#ifndef SECURITY_WIN32
-#define SECURITY_WIN32
-#endif
-#include "win32_path.h"
-#include <UserEnv.h> // GetUserProfileDirectory
-#include <Security.h> // GetUserNameEx
-#include <Windows.h>
-#else
-#include <sys/types.h>  // IWYU pragma: keep
-#include <pwd.h>      // for getpwuid, passwd
-#include <unistd.h> // for mac too
-#endif
-
 #include "ffilesystem.h"
 
-
-struct passwd* fs_getpwuid()
-{
-#if !defined(_WIN32)
-  const uid_t eff_uid = ::geteuid();
-
-  if(auto pw = ::getpwuid(eff_uid))
-    return pw;
-
-  fs_error_callback(
-#if defined(__cpp_lib_format)  // C++20
-    std::format("uid: {}", eff_uid)
-#else
-    std::to_string(eff_uid)
-#endif
-    );
-#endif
-
-  return {};
-}
 
 
 std::string fs_get_homedir()
@@ -54,40 +11,6 @@ std::string fs_get_homedir()
     return h.value();
 
   return fs_get_profile_dir();
-}
-
-
-std::string fs_get_profile_dir()
-{
-
-#if defined(_WIN32)
-  // https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-getuserprofiledirectorya
-  // works on MSYS2, MSVC, oneAPI
-  HANDLE h = nullptr;
-
-  if(OpenProcessToken( GetCurrentProcess(), TOKEN_QUERY, &h)) {
-    DWORD L = 0;
-    GetUserProfileDirectoryW(h, nullptr, &L);
-    if (L <= 0){
-      fs_error_callback("GetUserProfileDirectoryW");
-      return {};
-    }
-
-    std::wstring w(L, '\0');
-    DWORD Lr{L};
-    BOOL const ok = GetUserProfileDirectoryW(h, w.data(), &Lr);
-    CloseHandle(h);
-
-    if(ok && Lr == L)
-      return fs_win32_to_narrow(w);
-  }
-#else
-  if (auto pw = fs_getpwuid())
-    return pw->pw_dir;
-#endif
-
-  fs_error_callback("");
-  return {};
 }
 
 
@@ -125,31 +48,4 @@ std::string fs_expanduser(std::string_view path)
     e.push_back('/');
 
   return e.append(path.substr(i));
-}
-
-
-std::string fs_get_username()
-{
-  // Get username of the current user
-
-#if defined(_WIN32)
-
-// https://learn.microsoft.com/en-us/windows/win32/api/secext/nf-secext-getusernameexa
-// https://learn.microsoft.com/en-us/windows/win32/api/secext/ne-secext-extended_name_format
-  ULONG L = 0;
-  if (GetUserNameExW(NameSamCompatible, nullptr, &L) == 0 && L > 0) {
-    std::wstring w(L, L'\0');
-    if (GetUserNameExW(NameSamCompatible, w.data(), &L) != 0)
-      return fs_win32_to_narrow(w);
-  }
-
-#else
-
-  if (auto pw = fs_getpwuid())
-    return pw->pw_name;
-
-#endif
-
-  fs_error_callback("");
-  return {};
 }

@@ -4,22 +4,33 @@
 #include "ffilesystem.h"
 
 #include <boost/ut.hpp>
+#ifdef FFS_SYSTEM_DISABLED
+#include "disabled_system.h"
+#endif
 
 int main() {
   using namespace boost::ut;
 
   "username"_test = [] {
+#ifdef FFS_SYSTEM_DISABLED
+    ffs_test::expect_disabled_string([] { return fs_get_username(); });
+#else
     std::string user = fs_get_username();
     expect(!user.empty());
     std::cout << "Username " << user << "\n";
+#endif
   };
 
   "environment"_test = [] {
     expect(!fs_get_cwd().empty());
 
+#ifdef FFS_SYSTEM_DISABLED
+    ffs_test::expect_disabled_string([] { return fs_get_profile_dir(); });
+#else
     std::string pdir = fs_get_profile_dir();
     expect(!pdir.empty());
     std::cout << "Profile directory " << pdir << "\n";
+#endif
 
     std::string p = fs_get_homedir();
     expect(!p.empty());
@@ -82,9 +93,13 @@ int main() {
       expect(fs_setenv("USERPROFILE", "") >> fatal);
     }
 
+#ifdef FFS_SYSTEM_DISABLED
+    ffs_test::expect_disabled_string([] { return fs_get_profile_dir(); });
+#else
     std::string pdir = fs_get_profile_dir();
     expect(!pdir.empty());
     std::cout << "Profile directory " << pdir << "\n";
+#endif
 
     auto t = fs_get_tempdir();
     expect(!t.empty());
@@ -102,6 +117,10 @@ int main() {
     auto h = fs_getenv(fs_is_windows() ? "USERPROFILE" : "HOME");
     expect(!h.has_value()) << "Environment variable HOME or USERPROFILE should not be set in test";
 
+#ifdef FFS_SYSTEM_DISABLED
+    ffs_test::expect_disabled_string([] { return fs_get_homedir(); });
+    ffs_test::expect_disabled_string([] { return fs_expanduser("~"); });
+#else
     std::string p = fs_get_homedir();
     expect(!p.empty());
     std::cout << "Home directory " << p << "\n";
@@ -110,5 +129,6 @@ int main() {
     // NOTE: profiledir does not always (but may) equal homedir, for example when root user.
 
     expect(eq(fs_expanduser("~"), p));
+#endif
   };
 }

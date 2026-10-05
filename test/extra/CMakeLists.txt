@@ -12,7 +12,10 @@ endif()
 foreach(t IN LISTS boost_ut_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
-  target_include_directories(test_${t}_cpp PRIVATE ${boost_ut_SOURCE_DIR}/include)
+  target_compile_definitions(test_${t}_cpp PRIVATE
+    $<$<NOT:$<BOOL:${ffilesystem_system}>>:FFS_SYSTEM_DISABLED>)
+  target_include_directories(test_${t}_cpp PRIVATE ${boost_ut_SOURCE_DIR}/include
+    ${ffilesystem_SOURCE_DIR}/test)
   target_compile_options(test_${t}_cpp PRIVATE ${ffilesystem_cpp_test_flags})
 
   add_test(NAME ${t}_cpp COMMAND test_${t}_cpp)

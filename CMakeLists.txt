@@ -148,7 +148,6 @@ src/extra/exepath.cpp
 src/extra/libpath.cpp
 src/extra/random.cpp
 src/extra/removable.cpp
-src/extra/winsock.cpp
   )
 endif()
 
@@ -159,6 +158,8 @@ src/sys/shell.cpp
 src/sys/sysctl.cpp
 src/sys/uid.cpp
 src/sys/uname.cpp
+src/sys/user.cpp
+src/sys/winsock.cpp
   )
 else()
   list(APPEND _src src/sys/disabled.cpp)

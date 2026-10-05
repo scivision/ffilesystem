@@ -64,8 +64,27 @@ bool fs_stdin_tty(){
   return false;
 }
 
+// user.cpp
+std::string fs_get_profile_dir()
+{
+  fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
+  return {};
+}
+
+std::string fs_get_username()
+{
+  fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
+  return {};
+}
+
 // shell.cpp
 std::string fs_get_shell(){
+  fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
+  return {};
+}
+
+// winsock.cpp
+std::string fs_hostname(){
   fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
   return {};
 }

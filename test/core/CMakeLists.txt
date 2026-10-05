@@ -70,7 +70,8 @@ if(t STREQUAL "log")
   add_log_tests(Fortran test_${t}_fortran)
   set_tests_properties(Fortran_log_silent Fortran_log_stderr PROPERTIES LABELS "Fortran")
 else()
-  add_test(NAME Fortran_${t} COMMAND test_${t}_fortran)
+  add_test(NAME Fortran_${t} COMMAND test_${t}_fortran
+    $<$<AND:$<STREQUAL:${t},env>,$<NOT:$<BOOL:${ffilesystem_system}>>>:disabled>)
   set_tests_properties(Fortran_${t} PROPERTIES
   LABELS Fortran
   SKIP_RETURN_CODE 77
@@ -160,6 +161,8 @@ endif()
 foreach(t IN LISTS boost_ut_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
+  target_compile_definitions(test_${t}_cpp PRIVATE
+    $<$<NOT:$<BOOL:${ffilesystem_system}>>:FFS_SYSTEM_DISABLED>)
   target_include_directories(test_${t}_cpp PRIVATE ${boost_ut_SOURCE_DIR}/include
     ${ffilesystem_SOURCE_DIR}/test ${ffilesystem_SOURCE_DIR}/src)
   target_compile_options(test_${t}_cpp PRIVATE ${ffilesystem_cpp_test_flags})

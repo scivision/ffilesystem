@@ -30,7 +30,9 @@ PASS_REGULAR_EXPRESSION ${cli_regex}
 )
 
 add_test(NAME CppCLInoLeak
-COMMAND ${CMAKE_COMMAND} -Dexe:FILEPATH=$<TARGET_FILE:fs_cli> -P ${CMAKE_CURRENT_SOURCE_DIR}/stdin.cmake
+COMMAND ${CMAKE_COMMAND} -Dexe:FILEPATH=$<TARGET_FILE:fs_cli>
+  -Dffilesystem_system:BOOL=${ffilesystem_system}
+  -P ${CMAKE_CURRENT_SOURCE_DIR}/stdin.cmake
 )
 
 set_tests_properties(CppCLInoLeak PROPERTIES

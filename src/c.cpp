@@ -425,11 +425,6 @@ std::string::size_type fs_with_suffix(const char* path, const char* new_suffix,
     return {};
   }
 
-  std::string fs_hostname(){
-    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
-    return {};
-  }
-
   bool fs_is_case_sensitive(std::string_view path){
     fs_error_callback(path, std::make_error_code(std::errc::function_not_supported));
     return false;

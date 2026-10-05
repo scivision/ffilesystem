@@ -87,7 +87,6 @@ COMM_SRCS = \
 	$(comdir)extra/owner.cpp \
 	$(comdir)extra/random.cpp \
 	$(comdir)extra/removable.cpp \
-	$(comdir)extra/winsock.cpp \
 	$(comdir)sys/disabled.cpp
 
 OBJS := $(COMM_SRCS:%=$(BUILD_DIR)/%.o)

@@ -7,6 +7,7 @@
 #include <tlhelp32.h> // for CreateToolhelp32Snapshot, Process32First
 #include "win32_path.h"
 #else
+#include "sys/internal_sys.h"
 #include <pwd.h>     // for passwd
 #endif
 
