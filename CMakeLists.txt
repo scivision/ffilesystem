@@ -149,7 +149,6 @@ src/extra/libpath.cpp
 src/extra/random.cpp
 src/extra/removable.cpp
 src/extra/shell.cpp
-src/extra/sysctl.cpp
 src/extra/uid.cpp
 src/extra/winsock.cpp
   )
@@ -158,6 +157,7 @@ endif()
 if(ffilesystem_system)
   list(APPEND _src
 src/sys/memory.cpp
+src/sys/sysctl.cpp
 src/sys/uname.cpp
   )
 else()

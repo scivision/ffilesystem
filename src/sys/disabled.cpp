@@ -34,3 +34,9 @@ unsigned long long fs_get_free_memory()
                     std::make_error_code(std::errc::function_not_supported));
   return std::numeric_limits<unsigned long long>::max();
 }
+
+// sysctl.cpp
+bool fs_is_rosetta(){
+  fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
+  return false;
+}

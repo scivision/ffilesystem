@@ -455,12 +455,6 @@ std::string::size_type fs_with_suffix(const char* path, const char* new_suffix,
     return false;
    }
 
-
-  bool fs_is_rosetta(){
-    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
-    return false;
-  }
-
   std::string fs_lib_path(){
     fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return {};
