@@ -220,6 +220,9 @@ int main(int argc, char** argv) {
     fs_remove(file);
   };
 
+#if !defined(FFS_EXTRA_ENABLED)
+  skip /
+#endif
   "filesystem_type"_test = [argv] {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
@@ -240,7 +243,7 @@ int main(int argc, char** argv) {
   };
 }
 
-#ifndef _WIN32
+#if !defined(_WIN32)
   skip /
 #endif
   "short_long"_test = [] {

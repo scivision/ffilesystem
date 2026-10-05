@@ -309,7 +309,8 @@ There is no "is_musl()" function due to MUSL designers
 a
 [MUSL feature macro](https://wiki.musl-libc.org/faq.html).
 
-Disk / partition formatting is something we won't add. We do have functions to report the partition type and available capacity of the disk partition.
+Disk / partition formatting is something we won't add.
+We do have functions to report the partition type and available capacity of the disk partition.
 
 ### Windows
 

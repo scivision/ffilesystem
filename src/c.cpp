@@ -444,4 +444,9 @@ std::string::size_type fs_with_suffix(const char* path, const char* new_suffix,
     fs_error_callback(path, std::make_error_code(std::errc::function_not_supported));
     return 0;
   }
+
+  std::string fs_partition_type(std::string_view path){
+    fs_error_callback(path, std::make_error_code(std::errc::function_not_supported));
+    return {};
+  }
 #endif

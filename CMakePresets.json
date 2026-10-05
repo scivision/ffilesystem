@@ -100,6 +100,15 @@
   "toolset": "ClangCL"
 },
 {
+  "name": "noextra",
+  "inherits": "default",
+  "displayName": "Build without extra features",
+  "description": "Build with C++ but without extra features",
+  "cacheVariables": {
+    "ffilesystem_extra": false
+  }
+},
+{
   "name": "linux", "inherits": "default",
   "displayName": "Linux build (for WSL on GHA)",
   "generator": "Ninja",

@@ -195,17 +195,10 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
     // https://man.freebsd.org/cgi/man.cgi?copy_file_range(2)
     // https://man7.org/linux/man-pages/man2/copy_file_range.2.html
 
-  std::string const fst = fs_filesystem_type(source);
+  // these types of partitions might not work with copy_range and fall back to copy_loop
+  // "debugfs" "procfs" "sysfs" "tracefs"
 
-  bool useloop = fst == "debugfs" ||
-                 fst == "procfs" ||
-                 fst == "sysfs" ||
-                 fst == "tracefs";
-
-  if (useloop)
-    ok = fs_copy_loop(rid.get(), wid.get(), len);
-  else
-    ok = fs_copy_range(rid.get(), wid.get(), len);
+  ok = fs_copy_range(rid.get(), wid.get(), len);
 
   // https://github.com/boostorg/filesystem/issues/184
   if (!ok && (errno == ENOSYS || errno == EOPNOTSUPP)) {

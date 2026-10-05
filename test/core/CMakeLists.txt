@@ -135,7 +135,6 @@ owner
 parent
 permissions
 pure
-random
 remove
 rename
 reserved
@@ -150,6 +149,10 @@ which
 with_suffix
 log
 )
+
+if(ffilesystem_extra)
+  list(APPEND boost_ut_tests random)
+endif()
 
 if(NOT ANDROID)
   list(APPEND boost_ut_tests is_fifo)
@@ -166,7 +169,9 @@ foreach(t IN LISTS boost_ut_tests)
   add_executable(test_${t}_cpp test_${t}.cpp)
   target_link_libraries(test_${t}_cpp PRIVATE ffilesystem)
   target_compile_definitions(test_${t}_cpp PRIVATE
-    $<$<NOT:$<BOOL:${ffilesystem_system}>>:FFS_SYSTEM_DISABLED>)
+    $<$<NOT:$<BOOL:${ffilesystem_system}>>:FFS_SYSTEM_DISABLED>
+    $<$<BOOL:${ffilesystem_extra}>:FFS_EXTRA_ENABLED>
+    )
   target_include_directories(test_${t}_cpp PRIVATE ${boost_ut_SOURCE_DIR}/include
     ${ffilesystem_SOURCE_DIR}/test ${ffilesystem_SOURCE_DIR}/src)
   target_compile_options(test_${t}_cpp PRIVATE ${ffilesystem_cpp_test_flags})
