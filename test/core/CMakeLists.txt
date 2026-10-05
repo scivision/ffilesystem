@@ -70,8 +70,12 @@ if(t STREQUAL "log")
   add_log_tests(Fortran test_${t}_fortran)
   set_tests_properties(Fortran_log_silent Fortran_log_stderr PROPERTIES LABELS "Fortran")
 else()
-  add_test(NAME Fortran_${t} COMMAND test_${t}_fortran
-    $<$<AND:$<STREQUAL:${t},env>,$<NOT:$<BOOL:${ffilesystem_system}>>>:disabled>)
+  if(t STREQUAL "env" AND NOT ffilesystem_system)
+    add_test(NAME Fortran_${t} COMMAND test_${t}_fortran "disabled")
+  else()
+    add_test(NAME Fortran_${t} COMMAND test_${t}_fortran)
+  endif()
+
   set_tests_properties(Fortran_${t} PROPERTIES
   LABELS Fortran
   SKIP_RETURN_CODE 77

@@ -5,14 +5,15 @@ use filesystem
 
 implicit none
 
-integer :: argc, i
-character(2) :: argv
+integer :: i, L
+character(:), allocatable :: argv
 
-argc = command_argument_count()
 
-if(argc > 0) then
+call get_command_argument(1, argv, length=L, status=i)
+if(i == 0 .and. L > 0) then
+  allocate(character(L) :: argv)
   call get_command_argument(1, argv, status=i)
-  if(i /= 0) error stop "could not get command argument 1"
+  if(i /= 0) error stop "which: could not get command argument 1"
   read(argv, "(i2)") i
 else
   i = 0
@@ -32,7 +33,8 @@ end if
 if (i==1) then
   s1 = which(s2, path="nowhere")
   if (len_trim(s1) /= 0) error stop "FAIL:test_exe: which(" // s2 // ", path='')"
-  stop "OK: which() with empty path"
+  print '(a)', "OK: which() with empty path"
+  stop
 endif
 
 s1 = which(s2)
