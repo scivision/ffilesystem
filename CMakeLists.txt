@@ -151,15 +151,20 @@ src/extra/removable.cpp
 src/extra/shell.cpp
 src/extra/sysctl.cpp
 src/extra/uid.cpp
-src/extra/uname.cpp
 src/extra/winsock.cpp
   )
 endif()
 
+if(ffilesystem_system)
+  list(APPEND _src
+src/sys/memory.cpp
+src/sys/uname.cpp
+  )
+else()
+  list(APPEND _src src/sys/disabled.cpp)
+endif()
 
-add_library(ffilesystem ${_src}
-$<IF:$<BOOL:${ffilesystem_system}>,src/sys/memory.cpp,src/sys/disabled.cpp>
-)
+add_library(ffilesystem ${_src})
 
 include(cmake/compilers.cmake)
 

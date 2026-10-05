@@ -90,8 +90,8 @@ COMM_SRCS = \
 	$(comdir)extra/shell.cpp \
 	$(comdir)extra/sysctl.cpp \
 	$(comdir)extra/uid.cpp \
-	$(comdir)extra/uname.cpp \
-	$(comdir)extra/winsock.cpp
+	$(comdir)extra/winsock.cpp \
+	$(comdir)sys/disabled.cpp
 
 OBJS := $(COMM_SRCS:%=$(BUILD_DIR)/%.o)
 

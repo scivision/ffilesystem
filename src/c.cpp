@@ -410,11 +410,6 @@ std::string::size_type fs_with_suffix(const char* path, const char* new_suffix,
 
 #if !defined(ffilesystem_extra)
 
-  std::string fs_cpu_arch(){
-    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
-    return {};
-  }
-
   std::string fs_exe_path(){
     fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return {};
@@ -466,11 +461,6 @@ std::string::size_type fs_with_suffix(const char* path, const char* new_suffix,
     return false;
   }
 
-  bool fs_is_wsl(){
-    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
-    return false;
-  }
-
   std::string fs_lib_path(){
     fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
     return {};
@@ -479,11 +469,6 @@ std::string::size_type fs_with_suffix(const char* path, const char* new_suffix,
   std::string::size_type fs_max_component(std::string_view path){
     fs_error_callback(path, std::make_error_code(std::errc::function_not_supported));
     return 0;
-  }
-
-  std::string fs_os_version(){
-    fs_error_callback("", std::make_error_code(std::errc::function_not_supported));
-    return {};
   }
 
   bool fs_stdin_tty(){
