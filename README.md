@@ -271,6 +271,8 @@ The computer needs Visual Studio Installer "Individual Components":
 * "C++ Clang Compiler for Windows"
 * "MSBuild support for LLVM (clang-cl) toolset"
 
+We haven't tested with [uClibc-ng](https://uclibc-ng.org/).
+
 ### Possible future features
 
 * inquire if a file is encrypted or compressed, etc.
