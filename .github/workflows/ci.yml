@@ -39,7 +39,7 @@ jobs:
     - &checkout
       uses: actions/checkout@v7
 
-    - uses: ./.github/workflows/composite-build
+    - uses: ./.github/actions/composite-build
 
     - &cpp23
       name: C++23 workflow
@@ -72,7 +72,7 @@ jobs:
 
     - *checkout
 
-    - uses: ./.github/workflows/composite-build
+    - uses: ./.github/actions/composite-build
 
     - name: ISO_Fortran_binding.h workflow
       if: matrix.gcc-version >= 12
@@ -128,7 +128,7 @@ jobs:
 
     - *checkout
 
-    - uses: ./.github/workflows/composite-build
+    - uses: ./.github/actions/composite-build
 
     - *cpp23
 
@@ -170,7 +170,7 @@ jobs:
 
   #   - *checkout
 
-  #   - uses: ./.github/workflows/composite-build
+  #   - uses: ./.github/actions/composite-build
 
 
   cmake-older:
@@ -186,7 +186,7 @@ jobs:
 
     - *checkout
 
-    - uses: ./.github/workflows/composite-cmake
+    - uses: ./.github/actions/composite-cmake
 
     - name: workflow without std::filesystem
       run: $CMAKE --workflow --preset nostdfs

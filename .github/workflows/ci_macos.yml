@@ -52,7 +52,7 @@ jobs:
     - &checkout
       uses: actions/checkout@v7
 
-    - uses: ./.github/workflows/composite-build
+    - uses: ./.github/actions/composite-build
 
     - name: C++23 workflow
       run: cmake --workflow cpp23
