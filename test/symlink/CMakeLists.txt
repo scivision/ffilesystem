@@ -1,3 +1,4 @@
+set_property(DIRECTORY PROPERTY LABELS "symlink")
 
 if(HAVE_BOOST_UT)
 
@@ -10,7 +11,10 @@ foreach(t IN LISTS boost_ut_tests)
   target_compile_options(test_${t}_cpp PRIVATE ${ffilesystem_cpp_test_flags})
 
   add_test(NAME ${t}_cpp COMMAND test_${t}_cpp)
-  set_tests_properties(${t}_cpp PROPERTIES LABELS "Cpp")
+  set_tests_properties(${t}_cpp PROPERTIES
+  LABELS "Cpp"
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  )
 endforeach()
 
 endif()

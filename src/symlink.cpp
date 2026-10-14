@@ -176,10 +176,15 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
 #if FS_USE_WIN32_SYMLINK
   DWORD p = SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
 
-  if(fs_is_dir(target))
+  // it is well-known and implemented across other major projects that Windows
+  // CreateSymbolicLinkW requires the target to use Windows-style file separator
+  // for relative target path.
+  std::string tgt{target};
+  fs_as_windows(tgt);
+  if(fs_is_dir(tgt))
     p |= SYMBOLIC_LINK_FLAG_DIRECTORY;
 
-  if(CreateSymbolicLinkW(fs_win32_to_wide(link).c_str(), fs_win32_to_wide(target).c_str(), p))
+  if(CreateSymbolicLinkW(fs_win32_to_wide(link).c_str(), fs_win32_to_wide(tgt).c_str(), p))
     return true;
 
 #elif defined(HAVE_CXX_FILESYSTEM)

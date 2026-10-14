@@ -6,61 +6,81 @@
 namespace {
 
 struct symlink_ctx {
-  std::string tfile;
-  std::string tdir;
+  std::string link_file;
+  std::string link_file_rel;
+  std::string link_dir;
+
+  std::string tgt_file;
+  std::string tgt_file_rel;
+  std::string tgt_dir;
+
   std::string in_file;
-  std::string tgt;
-  std::string test_dir;
   std::string_view nonnull_file;
 
   void cleanup() const {
-    for (const auto& link : {tfile, tdir}) {
+    for (const auto& link : {link_file, link_dir, link_file_rel}) {
       if (fs_is_symlink(link)) {
         fs_remove(link);
       }
     }
-    fs_remove(tgt);
-    fs_remove(test_dir);
+    fs_remove(tgt_file);
+    fs_remove(tgt_file_rel);
+    fs_remove(tgt_dir);
   }
 
-  ~symlink_ctx() { cleanup(); }
+  // ~symlink_ctx() { cleanup(); }
 };
 
 auto setup(symlink_ctx& ctx) {
   using namespace boost::ut;
 
   const std::string cwd = fs_get_cwd();
-  ctx.test_dir = cwd + "/symlink_test_dir";
-  expect(fs_mkdir(ctx.test_dir) >> fatal) << "Failed to create test directory: " << ctx.test_dir;
 
-  ctx.tgt = ctx.test_dir + "/test_is_symlink_target.txt";
-  expect(fs_touch(ctx.tgt) >> fatal) << "Failed to create target file: " << ctx.tgt;
+  // absolute target dir
+  ctx.tgt_dir = cwd + "/symlink_test_dir";
+  expect(fs_mkdir(ctx.tgt_dir) >> fatal) << "Failed to create test directory: " << ctx.tgt_dir;
 
-  ctx.tdir = ctx.test_dir + "/link.dir";
-  ctx.tfile = ctx.tdir + "/cmake_test_symlink.txt.link";
+  // absolute target file
+  ctx.tgt_file = ctx.tgt_dir + "/test_is_symlink_target.txt";
+  expect(fs_touch(ctx.tgt_file) >> fatal) << "Failed to create target file: " << ctx.tgt_file;
 
-  if (fs_is_symlink(ctx.tfile)) {
-    std::cout << "Removing existing test symlink file: " << ctx.tfile << "\n";
-    expect(fs_remove(ctx.tfile) >> fatal) << "Failed to remove existing test symlink file: " << ctx.tfile;
+  // The symlink target is relative to the link's parent directory.
+  ctx.tgt_file_rel = "symlink_test_dir/test_is_symlink_rel.txt";
+  expect(fs_touch(ctx.tgt_file_rel) >> fatal) << "Failed to create relative target file: " << ctx.tgt_file_rel;
+
+  ctx.link_dir = ctx.tgt_dir + "/link.dir";
+  ctx.link_file = ctx.link_dir + "/cmake_test_symlink.txt.link";
+  ctx.link_file_rel = "test_is_symlink_rel.txt.link";
+
+  // cleanup prior test
+  for (const auto& link : {ctx.link_file, ctx.link_dir, ctx.link_file_rel}) {
+    if (fs_is_symlink(link)) {
+      std::cout << "Removing existing test symlink: " << link << "\n";
+      expect(fs_remove(link) >> fatal) << "Failed to remove existing test symlink: " << link;
+    }
   }
 
-  if (fs_is_symlink(ctx.tdir)) {
-    std::cout << "Removing existing test symlink dir: " << ctx.tdir << "\n";
-    expect(fs_remove(ctx.tdir) >> fatal) << "Failed to remove existing test symlink dir: " << ctx.tdir;
-  }
+  // create absolute dir symlink
+  expect(fs_create_symlink(ctx.tgt_dir, ctx.link_dir) >> fatal)
+      << "Failed to create symlink: " << ctx.link_dir << " -> " << ctx.tgt_dir;
+  expect(fs_is_dir(ctx.link_dir) >> fatal) << ctx.link_dir << " is not a directory";
+  expect(fs_equivalent(ctx.link_dir, ctx.tgt_dir)) << "Symlink directory " << ctx.link_dir << " is not equivalent to target" << ctx.tgt_dir;
 
-  expect(fs_create_symlink(ctx.test_dir, ctx.tdir) >> fatal)
-      << "Failed to create symlink: " << ctx.tdir << " -> " << ctx.test_dir;
-  expect(fs_is_dir(ctx.tdir) >> fatal) << ctx.tdir << " is not a directory";
-  std::cout << "Created symlink DIR: " << ctx.tdir << " -> " << ctx.test_dir << "\n";
+  // create absolute file symlink
+  expect(fs_create_symlink(ctx.tgt_file, ctx.link_file) >> fatal)
+      << "Failed to create symlink: " << ctx.link_file << " -> " << ctx.tgt_file;
+  expect(fs_is_file(ctx.link_file) >> fatal) << ctx.link_file << " is not a file after creating symlink";
+  expect(fs_equivalent(ctx.link_file, ctx.tgt_file)) << "Symlink file " << ctx.link_file << " is not equivalent to target" << ctx.tgt_file;
 
-  expect(fs_create_symlink(ctx.tgt, ctx.tfile) >> fatal)
-      << "Failed to create symlink: " << ctx.tfile << " -> " << ctx.tgt;
-  expect(fs_is_file(ctx.tfile) >> fatal) << ctx.tfile << " is not a file after creating symlink";
-  std::cout << "Created symlink FILE: " << ctx.tfile << " -> " << ctx.tgt << "\n";
+  // create relative file symlink
+  expect(fs_create_symlink(ctx.tgt_file_rel, ctx.link_file_rel) >> fatal)
+      << "Failed to create symlink: " << ctx.link_file_rel << " -> " << ctx.tgt_file_rel;
+  expect(fs_is_file(ctx.link_file_rel) >> fatal) << ctx.link_file_rel << " is not a file after creating symlink";
+  // fs_equivalent triggers failure of relative target on Windows before our src/symlink.cpp fix.
+  expect(fs_equivalent(ctx.link_file_rel, ctx.tgt_file_rel)) << "Symlink file " << ctx.link_file_rel << " is not equivalent to target" << ctx.tgt_file_rel;
 
-  ctx.in_file = ctx.tfile + "-read_past_the_end_of_buffer";
-  ctx.nonnull_file = std::string_view(ctx.in_file.data(), ctx.tfile.size());
+  ctx.in_file = ctx.link_file + "-read_past_the_end_of_buffer";
+  ctx.nonnull_file = std::string_view(ctx.in_file.data(), ctx.link_file.size());
   expect(ctx.nonnull_file.back() != '\0' >> fatal);
 }
 
@@ -75,7 +95,9 @@ int main() {
 
     expect(!fs_is_symlink("not-exist-file"));
     expect(!fs_is_symlink(""));
-    expect(fs_is_symlink(ctx.tfile));
+    expect(fs_is_symlink(ctx.link_file));
+    expect(fs_is_symlink(ctx.link_file_rel));
+
     expect(fs_is_symlink(ctx.nonnull_file)) << "is_symlink() should not read past the end of string_view buffer";
   };
 
@@ -83,6 +105,6 @@ int main() {
     symlink_ctx ctx;
     setup(ctx);
 
-    expect(fs_is_symlink(ctx.tdir));
+    expect(fs_is_symlink(ctx.link_dir));
   };
 }
