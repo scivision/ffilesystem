@@ -241,7 +241,7 @@ bool fs_set_cwd(std::string_view);
 
 bool fs_set_modtime(std::string_view, const bool = false);
 
-bool fs_set_permissions(std::string_view, int, int, int);
+bool fs_set_permissions(std::string_view, const int, const int, const int);
 
 bool fs_setenv(std::string_view, std::string_view);
 
@@ -405,7 +405,7 @@ bool fs_is_reserved(const char*);
 bool fs_is_prefix(const char*, const char*);
 bool fs_is_subdir(const char*, const char*);
 
-bool fs_set_permissions(const char*, int, int, int);
+bool fs_set_permissions(const char*, const int, const int, const int);
 
 size_t fs_get_permissions(const char*, char*, const size_t);
 
