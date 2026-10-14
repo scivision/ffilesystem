@@ -67,8 +67,12 @@ typedef struct _REPARSE_DATA_BUFFER
 namespace {
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer)
+int fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer)
 {
+  // Return values:
+  // -1: error or file does not exist
+  //  0: not a reparse point
+  //  1: reparse point exists
 
 // this function is adapted from
 // https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
@@ -80,9 +84,9 @@ bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer)
   if (DWORD attr = GetFileAttributesW(fs_win32_to_wide(path).c_str()); attr == INVALID_FILE_ATTRIBUTES)
     // ec = std::make_error_code(std::errc::no_such_file_or_directory);
     // don't emit error for non-existent files
-    return false;
+    return -1;
   else if (!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
-    return false;
+    return 0;
 
   // Using 0 instead of GENERIC_READ as it allows reading of file attributes
   // even if we do not have permission to read the file itself
@@ -112,10 +116,10 @@ bool fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer)
 
   CloseHandle(h);
   if(ok)
-    return true;
+    return 1;
 
   fs_error_callback(path);
-  return false;
+  return -1;
 }
 #endif
 
@@ -159,7 +163,7 @@ bool fs_is_appexec_alias(std::string_view path)
 #if defined(_WIN32) || defined(__CYGWIN__)
   std::byte buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
 
-  if (!fs_win32_get_reparse_buffer(path, buffer))
+  if (fs_win32_get_reparse_buffer(path, buffer) != 1)
     return false;
 
   PREPARSE_DATA_BUFFER data =
@@ -235,6 +239,8 @@ bool fs_win32_is_symlink(std::string_view path)
 {
 // distinguish between Windows symbolic links and reparse points as
 // reparse points can be unlike symlinks.
+// We consider a Junction (a type of reparse point) as a symlink for our purposes
+// as indicated by IO_REPARSE_TAG_MOUNT_POINT.
 //
 // this function is adapted from
 // https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
@@ -243,8 +249,14 @@ bool fs_win32_is_symlink(std::string_view path)
   std::byte buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
   // Since FILE_ATTRIBUTE_REPARSE_POINT is set this file must be
   // a symbolic link if it is not a reparse point.
-  if (!fs_win32_get_reparse_buffer(path, buffer))
+  switch (fs_win32_get_reparse_buffer(path, buffer)) {
+  case 1:
+    break;
+  case 0:
     return GetLastError() == ERROR_NOT_A_REPARSE_POINT;
+  default:
+    return false;
+  }
 
   ULONG reparseTag =
     reinterpret_cast<PREPARSE_DATA_BUFFER>(&buffer[0])->ReparseTag;
