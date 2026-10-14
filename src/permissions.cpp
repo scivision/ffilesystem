@@ -12,16 +12,23 @@ namespace Filesystem = std::filesystem;
 #else
 #include <sys/types.h>
 #include <sys/stat.h> // chmod, permissions constants
+# if defined(_WIN32)
+# define WIN32_LEAN_AND_MEAN
+# include <io.h> // for chmod
+#  ifndef S_IRUSR
+   constexpr mode_t S_IRUSR = _S_IREAD;
+#  endif
+#  ifndef S_IWUSR
+   constexpr mode_t S_IWUSR = _S_IWRITE;
+#  endif
+#  ifndef S_IXUSR
+   constexpr mode_t S_IXUSR = _S_IEXEC;
+#  endif
+# endif
 #endif
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <io.h> // IWYU pragma: keep
-// chmod
-#endif
 
-
-bool fs_set_permissions(std::string_view path, int readable, int writable, int executable)
+bool fs_set_permissions(std::string_view path, const int readable, const int writable, const int executable)
 {
 // only sets permission for owner, not group or others
 
@@ -64,30 +71,21 @@ bool fs_set_permissions(std::string_view path, int readable, int writable, int e
 #else
 
   mode_t m = fs_st_mode(path);
-#ifdef _MSC_VER
-  constexpr mode_t r = _S_IREAD;
-  constexpr mode_t w = _S_IWRITE;
-  constexpr mode_t x = _S_IEXEC;
-#else
-  constexpr mode_t r = S_IRUSR;
-  constexpr mode_t w = S_IWUSR;
-  constexpr mode_t x = S_IXUSR;
-#endif
 
   if(readable > 0)
-    m |= r;
+    m |= S_IRUSR;
   else if (readable < 0)
-    m &= ~r;
+    m &= ~S_IRUSR;
 
   if(writable > 0)
-    m |= w;
+    m |= S_IWUSR;
   else if (writable < 0)
-    m &= ~w;
+    m &= ~S_IWUSR;
 
   if(executable > 0)
-    m |= x;
+    m |= S_IXUSR;
   else if (executable < 0)
-    m &= ~x;
+    m &= ~S_IXUSR;
 
 // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/chmod-wchmod
   const std::string cpath{path};
@@ -159,27 +157,18 @@ std::string fs_get_permissions(std::string_view path)
 #else
 
   const mode_t m = fs_st_mode(path);
-  if(m == 0) FFS_UNLIKELY
+  if(m == 0)
   {
     fs_error_callback(path);
     return {};
   }
 
-#if defined(_MSC_VER)
-  if (m & _S_IREAD)
-    r[0] = 'r';
-  if (m & _S_IWRITE)
-    r[1] = 'w';
-  if (m & _S_IEXEC)
-    r[2] = 'x';
-#else
   if (m & S_IRUSR)
     r[0] = 'r';
   if (m & S_IWUSR)
     r[1] = 'w';
   if (m & S_IXUSR)
     r[2] = 'x';
-#endif
 
 #if !defined(_WIN32)
   if (m & S_IRGRP)
