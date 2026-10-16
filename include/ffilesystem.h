@@ -275,8 +275,6 @@ std::string fs_which(std::string_view, std::string_view = {}, const bool = false
 
 std::string fs_with_suffix(std::string_view, std::string_view);
 
-std::string_view::size_type fs_symlink_length([[maybe_unused]] std::string_view);
-
 dev_t fs_st_dev(std::string_view);
 ino_t fs_inode(std::string_view);
 

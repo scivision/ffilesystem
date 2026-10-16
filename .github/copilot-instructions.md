@@ -11,5 +11,9 @@ At the end of making changes, check the `cmake --workflow default` and `cmake --
 
 ## Windows
 
-On Windows when wanting to use WSL, the `cmake --workflow --preset linux` workflow uses /tmp/build for the build directory, to avoid conflicts with the native Windows build directory and filesystem.
+On Windows when wanting to use WSL, we provide CMake workflows just for that:
+
+* `cmake --workflow --preset linux` workflow uses /tmp/build for the build directory, to avoid conflicts with the native Windows build directory and filesystem. It has `-Dffilesystem_cpp=on` option set.
+* `cmake --workflow --preset linux-nostdfs` workflow disables `<filesystem>` backend to simulate older environments where `<filesystem>` is not available. It has `-Dffilesystem_cpp=off` option set.
+
 When testing on a Windows computer, test with both a native Windows compiler as well as WSL to help avoid non-Windows breakage.

@@ -43,8 +43,9 @@ std::string fs_exe_path()
 #elif defined(__linux__) || defined(__CYGWIN__)
   // https://man7.org/linux/man-pages/man2/readlink.2.html
   const std::string exe = "/proc/self/exe";
-  std::string p(fs_symlink_length(exe), '\0');
 
+  // fs_symlink_length() does NOT work on /proc/self/exe in general
+  std::string p(fs_get_max_path(), '\0');
   if(ssize_t L = ::readlink(exe.c_str(), p.data(), p.size()); L > 0) {
     p.resize(static_cast<std::string::size_type>(L));
     return p;

@@ -49,31 +49,38 @@ namespace Filesystem = std::filesystem;
 #include <sys/stat.h> // for stat, statx
 
 
-std::string_view::size_type fs_symlink_length([[maybe_unused]] std::string_view path)
-{
-  // get the string length of a symlink target
-  // falls back to maximum path length
-
-  std::string_view::size_type L = 0;
-
+namespace {
 #if !defined(_WIN32)
+std::string_view::size_type fs_symlink_length(std::string_view path)
+{
+  // get the string length (including the null terminator) of a symlink target
+  // 0 if error
+  // does not work on /proc/self/exe in general - outputs 0
+
+  auto handle_error = [&]() {
+    fs_error_callback(path);
+    return 0;
+  };
+
   const std::string cpath{path};
 
 #if defined(HAVE_STATX)
-  if(struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_SIZE, &x) == 0)
-    L = x.stx_size;
+  if(struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_SIZE, &x) == 0) {
+    if (fs_trace) std::cout << "TRACE:symlink_length(" << path << "):statx: symlink size: " << x.stx_size << "\n";
+    return x.stx_size + 1;
+  }
   else if (errno != ENOSYS)
-    return fs_get_max_path();
+    return handle_error();
 #endif
 // https://linux.die.net/man/2/lstat
 
   if(struct stat s; ::lstat(cpath.c_str(), &s) == 0)
-    L = s.st_size;
-#endif
+    return s.st_size + 1;
 
-  return (L > 0) ? L + 1 : fs_get_max_path();
+  return handle_error();
 }
-
+#endif
+}
 
 bool fs_is_symlink(std::string_view path)
 {
@@ -146,11 +153,14 @@ std::string fs_read_symlink(std::string_view path)
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/readlink.2.html
 
   std::string::size_type const L = fs_symlink_length(path);
+  if (L == 0)
+    return {};
+
   std::string p(L, '\0');
 
   // readlink() does not null-terminate the result
   if (ssize_t Lr = ::readlink(std::string{path}.c_str(), p.data(), p.size());
-    Lr == static_cast<ssize_t>(L-1)) {
+      Lr == static_cast<ssize_t>(L-1)) {
     p.resize(static_cast<std::string::size_type>(Lr));
     return p;
   }
