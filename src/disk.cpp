@@ -110,8 +110,6 @@ ino_t fs_inode(std::string_view path)
   // inode number of the file or directory
   //
   // Windows: .st_ino is always zero.
-  // See source code for fs_equivalent() for how to use BY_HANDLE_FILE_INFORMATION
-  // with GetFileInformationByHandle().
 
   std::error_code ec;
 
@@ -121,17 +119,25 @@ ino_t fs_inode(std::string_view path)
   };
 
 #if defined(_WIN32)
+// we don't use GetFileInformationByName because it has trouble with relative symlinks, and
+// we don't want to confuse the inode number with a potentially incorrect file ID
 
-#if defined(HAVE_GETFILEINFORMATIONBYNAME)
-  // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-file_stat_basic_information
-  FILE_STAT_BASIC_INFORMATION f1;
+  HANDLE h = fs_win32_get_file_handle(path);
+  if (h == INVALID_HANDLE_VALUE) {
+    ec = std::error_code(static_cast<int>(GetLastError()), std::system_category());
+    return handle_error();
+  }
 
-  if (GetFileInformationByName(fs_win32_to_wide(path).c_str(), FileStatBasicByNameInfo, &f1, sizeof(f1)))
-    return static_cast<ino_t>(f1.FileId.QuadPart);
+  BY_HANDLE_FILE_INFORMATION info{};
+  const BOOL ok = GetFileInformationByHandle(h, &info);
+  const DWORD error = ok ? ERROR_SUCCESS : GetLastError();
+  CloseHandle(h);
 
-#else
-  ec = std::make_error_code(std::errc::function_not_supported);
-#endif
+  if (ok)
+    return static_cast<ino_t>((static_cast<std::uint64_t>(info.nFileIndexHigh) << 32) |
+                             info.nFileIndexLow);
+
+  ec = std::error_code(static_cast<int>(error), std::system_category());
 
 #else
 

@@ -50,23 +50,31 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
 #else
 
 #if defined(_WIN32)
+  // GetFileInformationByName has trouble with relative symlinks - it says they're not the same
+  // thus we need to use GetFileInformationByHandle instead
 
-#if defined(HAVE_GETFILEINFORMATIONBYNAME)
-  // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-file_stat_basic_information
-  // GetFileInformationByName in Windows >= 24H2
-  // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getfileinformationbyname
-  // https://github.com/rust-lang/rust/issues/130169
-  FILE_STAT_BASIC_INFORMATION f1, f2;
+  auto get_file_info = [&](std::string_view path, BY_HANDLE_FILE_INFORMATION& info) {
+    HANDLE h = fs_win32_get_file_handle(path);
+    if (h == INVALID_HANDLE_VALUE) {
+      ec = std::error_code(static_cast<int>(GetLastError()), std::system_category());
+      return false;
+    }
 
-  if ( GetFileInformationByName(fs_win32_to_wide(path1).c_str(), FileStatBasicByNameInfo, &f1, sizeof(f1)) &&
-      GetFileInformationByName(fs_win32_to_wide(path2).c_str(), FileStatBasicByNameInfo, &f2, sizeof(f2))) {
-        return f1.VolumeSerialNumber.QuadPart == f2.VolumeSerialNumber.QuadPart &&
-               f1.FileId.QuadPart == f2.FileId.QuadPart;
-  }
-  // .FileID and .VolumeSerialNumber are LARGE_INTEGER
-#else
-  ec = std::make_error_code(std::errc::not_supported);
-#endif
+    const BOOL ok = GetFileInformationByHandle(h, &info);
+    const DWORD error = ok ? ERROR_SUCCESS : GetLastError();
+    CloseHandle(h);
+
+    if (!ok)
+      ec = std::error_code(static_cast<int>(error), std::system_category());
+
+    return ok != 0;
+  };
+
+  BY_HANDLE_FILE_INFORMATION f1{}, f2{};
+  if (get_file_info(path1, f1) && get_file_info(path2, f2))
+    return f1.dwVolumeSerialNumber == f2.dwVolumeSerialNumber &&
+           f1.nFileIndexHigh == f2.nFileIndexHigh &&
+           f1.nFileIndexLow == f2.nFileIndexLow;
 
 #else
 

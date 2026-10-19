@@ -55,9 +55,7 @@ elseif(LINUX OR ANDROID)
 endif()
 
 
-if(WIN32)
-  check_cxx_symbol_exists(GetFileInformationByName "Windows.h" ffilesystem_HAVE_GetFileInformationByName)
-elseif(LINUX OR ANDROID)
+if(LINUX OR ANDROID)
   block()
   set(CMAKE_REQUIRED_DEFINITIONS -D_DEFAULT_SOURCE)
   check_cxx_symbol_exists(statx "sys/stat.h;fcntl.h" ffilesystem_HAVE_STATX)

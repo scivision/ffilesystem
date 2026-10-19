@@ -68,9 +68,6 @@ int main() {
     expect(eq(fs_st_dev("not-exist-file"), static_cast<dev_t>(0))) << "backend " << fs_backend();
   };
 
-#if defined(_WIN32) && !defined(HAVE_GETFILEINFORMATIONBYNAME)
-    skip /
-#endif
   "inode"_test = [] {
     device_ctx ctx;
     setup(ctx);
