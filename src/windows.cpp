@@ -239,30 +239,34 @@ bool fs_win32_is_symlink(std::string_view path)
 {
 // distinguish between Windows symbolic links and reparse points as
 // reparse points can be unlike symlinks.
-// We consider a Junction (a type of reparse point) as a symlink for our purposes
-// as indicated by IO_REPARSE_TAG_MOUNT_POINT.
+// IO_REPARSE_TAG_MOUNT_POINT Junction is a type of reparse point
+// that we treat as a symlink.
 //
-// this function is adapted from
-// https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
-// that has a BSD 3-clause license
+// Using 0 instead of GENERIC_READ as it allows reading of file attributes
+// even if we do not have permission to read the file itself
 
-  std::byte buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
-  // Since FILE_ATTRIBUTE_REPARSE_POINT is set this file must be
-  // a symbolic link if it is not a reparse point.
-  switch (fs_win32_get_reparse_buffer(path, buffer)) {
-  case 1:
-    break;
-  case 0:
-    return GetLastError() == ERROR_NOT_A_REPARSE_POINT;
-  default:
+  HANDLE h = CreateFileW(fs_win32_to_wide(path).c_str(),
+                         0,
+                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                         OPEN_EXISTING,
+                         FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+
+  if (h == INVALID_HANDLE_VALUE) {
+    const DWORD err = GetLastError();
+    if (err != ERROR_FILE_NOT_FOUND && err != ERROR_PATH_NOT_FOUND)
+      fs_error_callback(path, "CreateFileW failed");
     return false;
   }
 
-  ULONG reparseTag =
-    reinterpret_cast<PREPARSE_DATA_BUFFER>(&buffer[0])->ReparseTag;
-
-  return (reparseTag == IO_REPARSE_TAG_SYMLINK) ||
-         (reparseTag == IO_REPARSE_TAG_MOUNT_POINT);
+  FILE_ATTRIBUTE_TAG_INFO t;
+  BOOL ok = GetFileInformationByHandleEx(h, FileAttributeTagInfo, &t, sizeof(t));
+  CloseHandle(h);
+  if (ok) {
+    return t.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT &&
+      (t.ReparseTag == IO_REPARSE_TAG_SYMLINK || t.ReparseTag == IO_REPARSE_TAG_MOUNT_POINT);
+  }
+  fs_error_callback(path, "GetFileInformationByHandleEx failed");
+  return false;
 }
 #endif
 

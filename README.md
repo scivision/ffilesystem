@@ -288,6 +288,7 @@ An older C++ object-oriented interface is
 
 Other implementations of C++ filesystem include:
 
+* MinGW `<filesystem>` [symlink implementation](https://gcc.gnu.org/pipermail/gcc-patches/2026-July/722394.html)
 * [Boost.Filesystem](https://www.boost.org/doc/libs/1_86_0/libs/filesystem/doc/index.htm) what the stdlib filesystem is based on, often tries newer features. [Boost.Filesystem source code](https://github.com/boostorg/filesystem)
 * [ghc-filesystem](https://github.com/gulrak/filesystem) for older compilers.
 * deprecated `<experimental/filesystem>` is missing vital lexical operations.
