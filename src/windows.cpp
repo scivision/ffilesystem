@@ -16,112 +16,9 @@
 #include "ffilesystem.h"
 #include "win32_path.h"
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-// create type PREPARSE_DATA_BUFFER
-// from ntifs.h, which can only be used by drivers
-// typedef is copied from https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
-// that has a BSD 3-clause license
-typedef struct _REPARSE_DATA_BUFFER
-{
-  ULONG ReparseTag;
-  USHORT ReparseDataLength;
-  USHORT Reserved;
-  union
-  {
-    struct
-    {
-      USHORT SubstituteNameOffset;
-      USHORT SubstituteNameLength;
-      USHORT PrintNameOffset;
-      USHORT PrintNameLength;
-      ULONG Flags;
-      WCHAR PathBuffer[1];
-    } SymbolicLinkReparseBuffer;
-    struct
-    {
-      USHORT SubstituteNameOffset;
-      USHORT SubstituteNameLength;
-      USHORT PrintNameOffset;
-      USHORT PrintNameLength;
-      WCHAR PathBuffer[1];
-    } MountPointReparseBuffer;
-    struct
-    {
-      UCHAR DataBuffer[1];
-    } GenericReparseBuffer;
-    struct
-    {
-      ULONG Version;
-      WCHAR StringList[1];
-      // In version 3, there are 4 NUL-terminated strings:
-      // * Package ID
-      // * Entry Point
-      // * Executable Path
-      // * Application Type
-    } AppExecLinkReparseBuffer;
-  } DUMMYUNIONNAME;
-} REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
-#endif
-
 
 namespace {
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-int fs_win32_get_reparse_buffer(std::string_view path, std::byte* buffer)
-{
-  // Return values:
-  // -1: error or file does not exist
-  //  0: not a reparse point
-  //  1: reparse point exists
-
-// this function is adapted from
-// https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
-// that has a BSD 3-clause license
-
-// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesw
-
-// https://learn.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
-  if (DWORD attr = GetFileAttributesW(fs_win32_to_wide(path).c_str()); attr == INVALID_FILE_ATTRIBUTES)
-    // ec = std::make_error_code(std::errc::no_such_file_or_directory);
-    // don't emit error for non-existent files
-    return -1;
-  else if (!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
-    return 0;
-
-  // Using 0 instead of GENERIC_READ as it allows reading of file attributes
-  // even if we do not have permission to read the file itself
-
-  // A reparse point may be an execution alias (Windows Store app), which
-  // is similar to a symlink but it cannot be opened as a regular file.
-  // We must look at the reparse point data explicitly.
-
-  // FILE_ATTRIBUTE_REPARSE_POINT means:
-  // * a file or directory that has an associated reparse point, or
-  // * a file that is a symbolic link.
-
-  HANDLE h = CreateFileW(fs_win32_to_wide(path).c_str(),
-                         0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
-                         FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
-
-  if (h == INVALID_HANDLE_VALUE) {
-    fs_error_callback(path, "CreateFileW failed");
-    return {};
-  }
-
-  DWORD bytesReturned = 0;
-
-  BOOL ok = DeviceIoControl(h, FSCTL_GET_REPARSE_POINT, nullptr, 0, buffer,
-                        MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &bytesReturned,
-                        nullptr);
-
-  CloseHandle(h);
-  if(ok)
-    return 1;
-
-  fs_error_callback(path);
-  return -1;
-}
-#endif
 
 }
 
@@ -156,21 +53,27 @@ bool fs_is_appexec_alias(std::string_view path)
 // https://learn.microsoft.com/en-us/windows/terminal/command-line-arguments?tabs=windows#add-windows-terminal-executable-to-your-path
 // https://learn.microsoft.com/en-us/windows/win32/fileio/reparse-points
 //
-// this function is adapted from
-// https://gitlab.kitware.com/utils/kwsys/-/blob/master/SystemTools.cxx
-// that has a BSD 3-clause license
+// https://learn.microsoft.com/en-us/windows/win32/fileio/reparse-point-tags
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-  std::byte buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+  HANDLE h = fs_win32_get_file_handle(path, FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS);
 
-  if (fs_win32_get_reparse_buffer(path, buffer) != 1)
+  if (h == INVALID_HANDLE_VALUE) {
+    const DWORD err = GetLastError();
+    if (err != ERROR_FILE_NOT_FOUND)
+      fs_error_callback(path, "CreateFileW failed");
     return false;
+  }
 
-  PREPARSE_DATA_BUFFER data =
-    reinterpret_cast<PREPARSE_DATA_BUFFER>(&buffer[0]);
-
-  // https://learn.microsoft.com/en-us/windows/win32/fileio/reparse-point-tags
-  return data->ReparseTag == IO_REPARSE_TAG_APPEXECLINK;
+  FILE_ATTRIBUTE_TAG_INFO t;
+  BOOL ok = GetFileInformationByHandleEx(h, FileAttributeTagInfo, &t, sizeof(t));
+  CloseHandle(h);
+  if (ok) {
+    return t.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT &&
+           t.ReparseTag == IO_REPARSE_TAG_APPEXECLINK;
+  }
+  fs_error_callback(path, "GetFileInformationByHandleEx failed");
+  return false;
 
 #else
   fs_error_callback(path, std::make_error_code(std::errc::function_not_supported));
@@ -181,7 +84,7 @@ bool fs_is_appexec_alias(std::string_view path)
 
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-HANDLE fs_win32_get_file_handle(std::string_view path)
+HANDLE fs_win32_get_file_handle(std::string_view path, const DWORD flags)
 {
   // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
   // FILE_FLAG_BACKUP_SEMANTICS is required to open a handle to a directory, else ERROR_ACCESS_DENIED
@@ -190,7 +93,7 @@ HANDLE fs_win32_get_file_handle(std::string_view path)
                      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                      nullptr,
                      OPEN_EXISTING,
-                     FILE_FLAG_BACKUP_SEMANTICS,
+                     flags,
                      nullptr);
 }
 #endif
@@ -245,11 +148,7 @@ bool fs_win32_is_symlink(std::string_view path)
 // Using 0 instead of GENERIC_READ as it allows reading of file attributes
 // even if we do not have permission to read the file itself
 
-  HANDLE h = CreateFileW(fs_win32_to_wide(path).c_str(),
-                         0,
-                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
-                         OPEN_EXISTING,
-                         FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+  HANDLE h = fs_win32_get_file_handle(path, FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS);
 
   if (h == INVALID_HANDLE_VALUE) {
     const DWORD err = GetLastError();

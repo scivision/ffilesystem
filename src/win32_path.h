@@ -27,7 +27,7 @@ bool fs_win32_is_symlink(std::string_view path);
 
 std::string fs_win32_final_path(std::string_view);
 std::string fs_win32_full_name(std::string_view);
-HANDLE fs_win32_get_file_handle(std::string_view);
+HANDLE fs_win32_get_file_handle(std::string_view, const DWORD=FILE_FLAG_BACKUP_SEMANTICS);
 std::string fs_win32_to_narrow(std::wstring_view);
 std::wstring fs_win32_to_wide(std::string_view);
 #endif
