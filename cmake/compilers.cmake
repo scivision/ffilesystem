@@ -17,6 +17,43 @@ if(LINUX AND CMAKE_CXX_COMPILER_ID MATCHES "IntelLLVM|NVHPC")
   set(ffilesystem_linker_lang Fortran)
 endif()
 
+
+if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
+
+if(ffilesystem_ranges)
+  check_cxx_symbol_exists(__cpp_lib_ranges "version" ffilesystem_HAVE_RANGES)
+else()
+  unset(ffilesystem_HAVE_RANGES CACHE)
+endif()
+
+if(ffilesystem_HAVE_RANGES)
+  # split_view's inner iterator only models contiguous_iterator (needed for the
+  # string_view(iterator, sentinel) ctor used here) since P2210R2 "Superior String
+  # Splitting", landed in libstdc++ for GCC 12:
+  # https://wg21.link/P2210R2
+  # https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#status.iso.2023
+  # despite the GCC docs, -std=c++23 isn't required for this specific feature
+  check_source_compiles(CXX
+  "#include <ranges>
+  #include <string>
+  #include <string_view>
+
+  int main(){
+    std::string s(\"a/b\");
+    for(const auto& sub : s | std::views::split('/')){
+      std::string_view part(sub.begin(), sub.end());
+    }
+    return 0;
+  }"
+  ffilesystem_HAVE_RANGES_SPLIT_STRING_VIEW
+  )
+else()
+  unset(ffilesystem_HAVE_RANGES_SPLIT_STRING_VIEW CACHE)
+endif()
+
+endif()
+
+
 if(ffilesystem_cpp)
   include(${CMAKE_CURRENT_LIST_DIR}/CppCheck.cmake)
   cpp_check()
