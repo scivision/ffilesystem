@@ -25,6 +25,11 @@ namespace Filesystem = std::filesystem;
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+# include <algorithm> // for std::equal
+# if defined(HAVE_CPP_RANGES)
+# include <ranges> // for std::ranges::equal
+# endif
+
 #include "win32_path.h"
 #endif
 
@@ -51,16 +56,16 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
 
 #if defined(_WIN32)
   // GetFileInformationByName has trouble with relative symlinks - it says they're not the same
-  // thus we need to use GetFileInformationByHandle instead
+  // thus we need to query file identity with GetFileInformationByHandleEx
 
-  auto get_file_info = [&](std::string_view path, BY_HANDLE_FILE_INFORMATION& info) {
+  auto get_file_info = [&](std::string_view path, FILE_ID_INFO& info) {
     HANDLE h = fs_win32_get_file_handle(path);
     if (h == INVALID_HANDLE_VALUE) {
       fs_error_callback(path);
       return false;
     }
 
-    const BOOL ok = GetFileInformationByHandle(h, &info);
+    const BOOL ok = GetFileInformationByHandleEx(h, FileIdInfo, &info, sizeof(info));
     CloseHandle(h);
 
     if (!ok)
@@ -69,11 +74,15 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
     return ok != 0;
   };
 
-  BY_HANDLE_FILE_INFORMATION f1{}, f2{};
+  FILE_ID_INFO f1{}, f2{};
   if (get_file_info(path1, f1) && get_file_info(path2, f2))
-    return f1.dwVolumeSerialNumber == f2.dwVolumeSerialNumber &&
-           f1.nFileIndexHigh == f2.nFileIndexHigh &&
-           f1.nFileIndexLow == f2.nFileIndexLow;
+    return f1.VolumeSerialNumber == f2.VolumeSerialNumber &&
+#if defined(HAVE_CPP_RANGES)
+      std::ranges::equal(f1.FileId.Identifier, f2.FileId.Identifier);
+#else
+      std::equal(f1.FileId.Identifier, f1.FileId.Identifier + sizeof(f1.FileId.Identifier),
+                 f2.FileId.Identifier, f2.FileId.Identifier + sizeof(f2.FileId.Identifier));
+#endif
 
 #else
 

@@ -66,6 +66,7 @@ bool fs_is_appexec_alias(std::string_view path)
   }
 
   FILE_ATTRIBUTE_TAG_INFO t;
+  // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getfileinformationbyhandleex
   BOOL ok = GetFileInformationByHandleEx(h, FileAttributeTagInfo, &t, sizeof(t));
   CloseHandle(h);
   if (ok) {
