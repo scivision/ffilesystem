@@ -56,16 +56,15 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
   auto get_file_info = [&](std::string_view path, BY_HANDLE_FILE_INFORMATION& info) {
     HANDLE h = fs_win32_get_file_handle(path);
     if (h == INVALID_HANDLE_VALUE) {
-      ec = std::error_code(static_cast<int>(GetLastError()), std::system_category());
+      fs_error_callback(path);
       return false;
     }
 
     const BOOL ok = GetFileInformationByHandle(h, &info);
-    const DWORD error = ok ? ERROR_SUCCESS : GetLastError();
     CloseHandle(h);
 
     if (!ok)
-      ec = std::error_code(static_cast<int>(error), std::system_category());
+      fs_error_callback(path);
 
     return ok != 0;
   };

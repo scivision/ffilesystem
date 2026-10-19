@@ -111,10 +111,8 @@ ino_t fs_inode(std::string_view path)
   //
   // Windows: .st_ino is always zero.
 
-  std::error_code ec;
-
   auto handle_error = [&]() {
-    fs_error_callback(path, ec);
+    fs_error_callback(path);
     return ino_t{};
   };
 
@@ -123,21 +121,16 @@ ino_t fs_inode(std::string_view path)
 // we don't want to confuse the inode number with a potentially incorrect file ID
 
   HANDLE h = fs_win32_get_file_handle(path);
-  if (h == INVALID_HANDLE_VALUE) {
-    ec = std::error_code(static_cast<int>(GetLastError()), std::system_category());
+  if (h == INVALID_HANDLE_VALUE)
     return handle_error();
-  }
 
   BY_HANDLE_FILE_INFORMATION info{};
   const BOOL ok = GetFileInformationByHandle(h, &info);
-  const DWORD error = ok ? ERROR_SUCCESS : GetLastError();
   CloseHandle(h);
 
   if (ok)
     return static_cast<ino_t>((static_cast<std::uint64_t>(info.nFileIndexHigh) << 32) |
                              info.nFileIndexLow);
-
-  ec = std::error_code(static_cast<int>(error), std::system_category());
 
 #else
 
