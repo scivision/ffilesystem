@@ -87,10 +87,14 @@ fs_normal(std::string_view path)
 
 #endif
 
+  // Preserve the Windows drive root without parsing every trailing-separator path.
+  const bool is_windows_drive_root =
+    r.length() == 3 && r[1] == ':' && r[2] == '/' && fs_is_windows();
+
   // no trailing slash
   if (r.length() > 1 &&
       (r.back() == '/' || r.back() == fs_filesep()) &&
-      (!fs_is_windows() || r != fs_root(r))
+      !is_windows_drive_root
     )
     r.pop_back();
 

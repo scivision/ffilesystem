@@ -83,11 +83,13 @@ const std::array<case_t, 61> cases{{
 };
 
 #if defined(_WIN32)
-    const std::array<case_t, 7> windows_cases{{
+    const std::array<case_t, 9> windows_cases{{
             {R"(\/\///\/)", "/"},
             {R"(a/b/..\//..///\/../c\\/)", "../c"},
             {R"(..a/b/..\//..///\/../c\\/)", "../c"},
             {R"(..\)", ".."},
+            {"c:/", "c:/"},
+            {"c://", "c:/"},
             {R"(c:\)", "c:/"},
             {R"(c:\\)", "c:/"},
             {R"(c:\a/b/../)", "c:/a"},
