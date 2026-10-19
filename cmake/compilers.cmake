@@ -101,12 +101,11 @@ endif()
 
 target_compile_options(ffilesystem PRIVATE "$<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang,GNU>:-Wold-style-cast>")
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
-  # MSVC has __cpluscplus = 199711L by default, which is C++98!
-  # MSVC 15.7 (19.14) added /Zc:__cplusplus to set __cplusplus to the true value.
-  # oneAPI since 2023.1 sets __cplusplus to the true value with MSVC by auto-setting this flag.
-  target_compile_options(ffilesystem PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>")
-endif()
+# MSVC has __cplusplus = 199711L by default, which is C++98!
+# MSVC 15.7 (19.14) added /Zc:__cplusplus to set __cplusplus to the true value.
+# oneAPI since 2023.1 sets __cplusplus to the true value with MSVC by auto-setting this flag.
+# use add_*() to avoid confusing conflicts
+add_compile_options("$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/Zc:__cplusplus>")
 
 # too many false positives esp. regarding argv[1] and higher
 # target_compile_options(ffilesystem PRIVATE "$<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang,IntelLLVM>:-Wunsafe-buffer-usage>")

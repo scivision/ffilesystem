@@ -9,7 +9,11 @@
 
 long fs_cpp_lang() {
   // C++ version compiler claims to support with given options
+#if defined(_MSVC_LANG) && (_MSVC_LANG > __cplusplus)
+  return _MSVC_LANG;
+#else
   return __cplusplus;
+#endif
 }
 
 
