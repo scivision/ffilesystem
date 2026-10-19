@@ -83,6 +83,7 @@ int main() {
     expect(fs_copy_file(ctx->s3, ctx->s2, true));
     expect(eq(fs_file_size(ctx->s2), static_cast<std::uintmax_t>(0)));
 
+    // Test copying from a file that does not exist
     const std::string missing = ctx->s1 + ".missing";
     expect(!fs_copy_file(missing, ctx->s2, true));
     expect(eq(fs_file_size(ctx->s2), static_cast<std::uintmax_t>(0)));

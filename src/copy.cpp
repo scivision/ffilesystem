@@ -226,18 +226,26 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
 
   std::error_code ec;
 
-  const bool source_is_file = fs_is_file(source);
-  const bool destination_is_file = fs_is_file(dest);
-  if (overwrite && source_is_file && destination_is_file && fs_equivalent(source, dest))
+  if(!fs_is_file(source)) {
+    fs_error_callback(source, std::make_error_code(std::errc::no_such_file_or_directory));
     return false;
+  }
+  if (fs_equivalent(source, dest)) {
+    fs_error_callback(source,dest, std::make_error_code(std::errc::file_exists));
+    return false;
+  }
+  if (fs_is_dir(source)) {
+    fs_error_callback(source, std::make_error_code(std::errc::is_a_directory));
+    return false;
+  }
 
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
   auto opt = Filesystem::copy_options::none;
   if (overwrite)
     opt = Filesystem::copy_options::overwrite_existing;
 // WORKAROUND: Windows MinGW GCC 11..13, Intel oneAPI Linux: bug with overwrite_existing failing on overwrite
 
-  if(overwrite && source_is_file && destination_is_file && !fs_remove(dest))
+  if(overwrite && fs_is_file(dest) && !fs_remove(dest))
     fs_error_callback(dest, std::make_error_code(std::errc::io_error));
 
   if(Filesystem::copy_file(source, dest, opt, ec) && !ec)
