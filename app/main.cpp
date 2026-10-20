@@ -151,7 +151,7 @@ bool one_arg(std::string_view fun, std::string_view a1)
     {"touch", [](std::string_view a1) { return "touch " + std::string(a1) + " " + std::to_string(fs_touch(a1)); }},
     {"set_modtime", [](std::string_view a1) { return fs_set_modtime(a1); }},
     {"getenv", [](std::string_view a1) { auto e = fs_getenv(a1);
-      if (e){ return e.value(); };
+      if (e){ return *e; };
       std::cerr << a1 << " environment variable not set\n";
       return std::string();
     }},

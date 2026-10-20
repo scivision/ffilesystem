@@ -126,8 +126,8 @@ fs_get_owner_name(std::string_view path)
   if (std::string s = fs_win32_owner(path, false); !s.empty())
     return s;
 #else
-  if (auto uid = fs_stat_uid(path)) {
-    if (auto pw = getpwuid(uid.value()))
+  if (auto uid = fs_stat_uid(path); uid) {
+    if (auto pw = getpwuid(*uid))
       return pw->pw_name;
   }
 #endif
@@ -144,8 +144,8 @@ fs_get_owner_group(std::string_view path)
   if (std::string s = fs_win32_owner(path, true); !s.empty())
     return s;
 #else
-  if (auto gid = fs_stat_gid(path)) {
-    if (auto gr = getgrgid(gid.value()))
+  if (auto gid = fs_stat_gid(path); gid) {
+    if (auto gr = getgrgid(*gid))
       return gr->gr_name;
   }
 #endif

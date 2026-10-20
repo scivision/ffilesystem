@@ -67,7 +67,7 @@ std::time_t fs_get_modtime(std::string_view path)
 
 #if defined(HAVE_CLOCK_CAST) && defined(HAVE_CXX_FILESYSTEM)
   if(auto t_fs = fs_get_modtime_fs(path); t_fs){
-    auto t_sys = std::chrono::clock_cast<std::chrono::system_clock>(t_fs.value());
+    auto t_sys = std::chrono::clock_cast<std::chrono::system_clock>(*t_fs);
     return std::chrono::system_clock::to_time_t(t_sys);
   }
 #else

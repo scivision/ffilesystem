@@ -27,7 +27,7 @@ std::string fs_which_generic(std::string_view name, std::string_view path, const
   std::string paths;
   if(path.empty()){
     if (auto p = fs_getenv("PATH"); p)
-      paths = p.value();
+      paths = *p;
   } else {
     paths = std::string(path);
   }

@@ -101,7 +101,7 @@ std::string fs_get_terminal()
 
 #else
   if (auto t = fs_getenv("TERM"); t)
-    return t.value();
+    return *t;
 #endif
 
   fs_error_callback("");

@@ -112,7 +112,7 @@ bool fs_is_exe(std::string_view path)
 
   std::string pathext;
   if(auto e = fs_getenv("PATHEXT"); e) {
-    pathext = e.value();
+    pathext = *e;
     fs_ascii_lower(pathext);
   } else {
     pathext = ".com;.exe;.bat;.cmd";
