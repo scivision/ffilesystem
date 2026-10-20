@@ -17,9 +17,11 @@ if(is_windows()) then
 
   if(root_name(s1) /= rn) error stop "root name should be " // rn // ", got " // root_name(s1)
   if(root_name(s2) /= rn) error stop "root name should be " // rn // ", got " // root_name(s2)
+  if(.not. has_root_name(s1)) error stop "has_root_name should be true for " // s1
 
   if(root_directory(s1) /= "\") error stop "root directory should be \, got " // root_directory(s1)
   if(root_directory(s2) /= "/") error stop "root directory should be /, got " // root_directory(s2)
+  if(.not. has_root_directory(s2)) error stop "has_root_directory should be true for " // s2
 
 else
 

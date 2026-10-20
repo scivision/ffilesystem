@@ -197,6 +197,8 @@ main : do
     print '(L1)', has_filename(arg1)
   case ("has_root_directory")
     print '(L1)', has_root_directory(arg1)
+  case ("has_root_name")
+    print '(L1)', has_root_name(arg1)
   case ("is_absolute")
     print '(L1)', is_absolute(arg1)
   case ("is_appexec")

@@ -13,7 +13,7 @@ public :: get_homedir, get_profile_dir, get_username, hostname, &
  get_cwd, set_cwd, which
 public :: set_error_callback, reset_error_callback
 public :: normal, expanduser, as_posix, as_windows, &
-has_filename, has_root_directory, &
+has_filename, has_root_directory, has_root_name, &
 fs_has_cfi, &
 is_absolute, is_char_device, is_fifo, is_case_sensitive, is_dir, is_file, &
 is_exe, is_executable_binary, is_other, &
@@ -426,6 +426,11 @@ character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
 logical(C_BOOL) function fs_has_root_directory(path) bind(C)
+import
+character(kind=C_CHAR), intent(in) :: path(*)
+end function
+
+logical(C_BOOL) function fs_has_root_name(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
@@ -1076,6 +1081,14 @@ logical function has_root_directory(path) result(r)
 character(*), intent(in) :: path
 
 r = fs_has_root_directory(trim(path) // C_NULL_CHAR)
+end function
+
+
+logical function has_root_name(path) result(r)
+!! does path have a root name component
+character(*), intent(in) :: path
+
+r = fs_has_root_name(trim(path) // C_NULL_CHAR)
 end function
 
 

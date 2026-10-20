@@ -33,9 +33,11 @@ expect(fs_root_name("") == "");
 expect(fs_root_name("a/b") == "");
 expect(fs_root_name("./a/b") == "");
 expect(fs_root_name("../a/b") == "");
+expect(!fs_has_root_name(""));
 
 if (fs_is_windows()) {
 expect(fs_root_name("c:/a/b") == "c:");
+expect(fs_has_root_name("c:/a/b"));
 expect(fs_root_name("/etc") == "");
 expect(fs_root_name(R"(C:\)") == "C:");
 

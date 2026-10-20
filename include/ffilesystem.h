@@ -235,7 +235,10 @@ bool fs_rename(std::string_view, std::string_view);
 std::string fs_resolve(std::string_view, const bool = false);
 
 std::string fs_root(std::string_view);
+
 std::string fs_root_name(std::string_view);
+bool fs_has_root_name(std::string_view);
+
 std::string fs_root_directory(std::string_view);
 bool fs_has_root_directory(std::string_view);
 
@@ -367,7 +370,10 @@ size_t fs_parent(const char*, char*, const size_t);
 size_t fs_suffix(const char*, char*, const size_t);
 
 size_t fs_root(const char*, char*, const size_t);
+
 size_t fs_root_name(const char*, char*, const size_t);
+bool fs_has_root_name(const char*);
+
 size_t fs_root_directory(const char*, char*, const size_t);
 bool fs_has_root_directory(const char*);
 

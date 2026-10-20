@@ -64,21 +64,12 @@ fs_is_absolute(std::string_view path)
 {
   // is path absolute?
 
-#if defined(HAVE_CXX_FILESYSTEM) && !(defined(__MINGW32__) && !defined(__clang__) && defined(__GNUC__))
+#if defined(HAVE_CXX_FILESYSTEM)
   return Filesystem::path(path).is_absolute();
 #else
-  if(fs_is_windows()) {
-    if(path.length() < 3)
-      return false;
-
-    if (path[0] == '\\' && path[1] == '\\')
-      return true;
-
-    // Windows drive letter with slash (e.g. C: without slash is relative)
-    return !(fs_root_name(path).empty()) && (path[2] == '/' || path[2] == fs_filesep());
-  } else {
-    return !path.empty() && path.front() == '/';
-  }
+  return (fs_is_windows())
+  ? fs_has_root_name(path) && fs_has_root_directory(path)
+  : fs_has_root_directory(path);
 #endif
 }
 
@@ -90,14 +81,7 @@ fs_has_filename(std::string_view path)
 #if defined(HAVE_CXX_FILESYSTEM)
   return Filesystem::path(path).has_filename();
 #else
-  if (path.empty())
-    return false;
-
-  const auto i = fs_is_windows()
-    ? path.find_last_of(R"(/\)")
-    : path.rfind('/');
-
-  return (i == std::string_view::npos) || (i < path.length() - 1);
+  return !fs_file_name(path).empty();
 #endif
 }
 
@@ -153,7 +137,13 @@ fs_root_directory(std::string_view path)
 #endif
 }
 
-bool fs_has_root_directory(std::string_view path){ return !fs_root_directory(path).empty(); }
+bool fs_has_root_directory(std::string_view path){
+#ifdef HAVE_CXX_FILESYSTEM
+  return Filesystem::path(path).has_root_directory();
+#else
+  return !fs_root_directory(path).empty();
+#endif
+}
 
 
 std::string
@@ -167,6 +157,14 @@ fs_root_name([[maybe_unused]] std::string_view path)
     return std::string(1, path[0]) + ":";
 
   return {};
+#endif
+}
+
+bool fs_has_root_name(std::string_view path){
+#ifdef HAVE_CXX_FILESYSTEM
+  return Filesystem::path(path).has_root_name();
+#else
+  return !fs_root_name(path).empty();
 #endif
 }
 

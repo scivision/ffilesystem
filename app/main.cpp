@@ -170,6 +170,7 @@ bool one_arg(std::string_view fun, std::string_view a1)
     {"filename", [](std::string_view a1) { return fs_file_name(a1); }},
     {"has_filename", [](std::string_view a1) { return fs_has_filename(a1); }},
     {"has_root_directory", [](std::string_view a1) { return fs_has_root_directory(a1); }},
+    {"has_root_name", [](std::string_view a1) { return fs_has_root_name(a1); }},
     {"is_absolute", [](std::string_view a1) { return fs_is_absolute(a1); }},
     {"is_exe", [](std::string_view a1) { return fs_is_exe(a1); }},
     {"is_exe_bin", [](std::string_view a1) { return fs_is_executable_binary(a1); }},

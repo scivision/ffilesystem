@@ -272,6 +272,8 @@ size_t fs_root_directory(const char* path, char* result, const size_t buffer_siz
 
 bool fs_has_root_directory(const char* path) { return fs_has_root_directory(std::string_view(path)); }
 
+bool fs_has_root_name(const char* path) { return fs_has_root_name(std::string_view(path)); }
+
 size_t fs_get_owner_name(const char* path, char* result, const size_t buffer_size)
 {
   return fs_str2char(fs_get_owner_name(path), result, buffer_size);

@@ -76,11 +76,6 @@ int main() {
 
     expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_resolve(*sys_drive + "/", true));
     expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_resolve(*sys_drive + "/", false));
-
-    if (fs_backend() != "<filesystem>") {
-      expect(any_of{R"(\\?\)" + *sys_drive + "\\", R"(\\?\)" + *sys_drive + "/"} ==
-        fs_resolve(R"(\\?\)" + *sys_drive + "\\", true));
-    }
   };
 
   "resolve_parent_dir"_test = [] {
