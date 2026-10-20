@@ -6,9 +6,7 @@
 
 #include "ffilesystem.h"
 
-#if defined(_WIN32) || defined(__CYGWIN__)
 #include "win32_path.h"
-#endif
 
 #include <string>
 #include <string_view>
@@ -34,12 +32,7 @@ fs_canonical(
 
   std::error_code ec;
 
-#if defined(HAVE_CXX_FILESYSTEM)
-
-#if defined(__MINGW32__)
-  if (fs_is_symlink(path))
-    return fs_win32_final_path(path);
-#endif
+#if defined(HAVE_CXX_FILESYSTEM) && !FS_USE_WIN32_SYMLINK
 
   if(auto c = strict ? Filesystem::canonical(path, ec) : Filesystem::weakly_canonical(path, ec); !ec)
     return c.generic_string();

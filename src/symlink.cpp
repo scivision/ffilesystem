@@ -33,14 +33,6 @@ namespace Filesystem = std::filesystem;
 
 #endif
 
-// MinGW GCC <filesystem> symlink functions don't work until GCC 17
-// https://gcc.gnu.org/gcc-17/changes.html#libstdcxx
-#if (defined(__MINGW32__) && !defined(__clang__) && (defined(__GNUC__) && (__GNUC__ < 17))) || (defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM))
-#define FS_USE_WIN32_SYMLINK 1
-#else
-#define FS_USE_WIN32_SYMLINK 0
-#endif
-
 
 #if defined(HAVE_STATX)
 #include <fcntl.h>   // AT_* constants for statx
@@ -143,8 +135,12 @@ std::string fs_read_symlink(std::string_view path)
   std::error_code ec = std::make_error_code(std::errc::invalid_argument);
 
 #if FS_USE_WIN32_SYMLINK
-  if(fs_is_symlink(path))
-    return fs_win32_final_path(path);
+  // previously we used fs_win32_final_path(path) if it was a symlink, but this
+  // is not consistent with the other implementations that only resolve a single symlink
+  // refer to
+  // https://github.com/gcc-mirror/gcc/blob/301747370a2a8f5654dfefba7561ccde995f512e/libstdc%2B%2B-v3/src/c%2B%2B17/fs_ops.cc#L1256
+  // to see the complexity involved, so we're erroring as this case is not supported.
+  ec = std::make_error_code(std::errc::function_not_supported);
 #elif defined(HAVE_CXX_FILESYSTEM)
   if(auto p = Filesystem::read_symlink(path, ec); !ec)
     return p.string();

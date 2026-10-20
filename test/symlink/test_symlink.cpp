@@ -1,4 +1,5 @@
 #include "ffilesystem.h"
+#include "win32_path.h"
 
 #include <iostream>
 
@@ -96,7 +97,11 @@ if (!fs_is_writable(".")) {
     expect(fs_is_symlink(ctx.link_file)) << "is_symlink() should be true for symlink: " << ctx.link_file;
     expect(fs_is_file(ctx.link_file))
         << "is_file(" << ctx.link_file << ") should be true for existing regular file target " << ctx.tgt;
+#if FS_USE_WIN32_SYMLINK
+    expect(eq(fs_canonical(ctx.link_file, true), ctx.tgt));
+#else
     expect(eq(fs_read_symlink(ctx.link_file), ctx.tgt));
+#endif
 
     // Cygwin will have /cygdrive/c and /home/ as roots
     if (!fs_is_cygwin()) {
@@ -112,8 +117,13 @@ if (!fs_is_writable(".")) {
 
     expect(fs_is_dir(ctx.link_dir)) << "is_dir(" << ctx.link_dir << ") should be true for link to existing dir";
     expect(fs_is_symlink(ctx.link_dir)) << "is_symlink() should be true for symlink: " << ctx.link_dir;
+#if FS_USE_WIN32_SYMLINK
+    expect(eq(fs_canonical(ctx.nonnull_file, true), ctx.tgt))
+        << "canonical() should not read past the end of string_view buffer";
+#else
     expect(eq(fs_read_symlink(ctx.nonnull_file), ctx.tgt))
         << "read_symlink() should not read past the end of string_view buffer";
+#endif
   };
 
   "exists"_test = [] {
