@@ -14,6 +14,7 @@
 
 #include <iostream>
 
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -51,15 +52,14 @@ namespace Filesystem = std::filesystem;
 
 namespace {
 #if !defined(_WIN32) && !defined(HAVE_CXX_FILESYSTEM)
-std::string_view::size_type fs_symlink_length(std::string_view path)
+std::optional<std::string_view::size_type> fs_symlink_length(std::string_view path)
 {
-  // get the string length (including the null terminator) of a symlink target
-  // 0 if error
-  // does not work on /proc/self/exe in general - outputs 0
+  // get the string length (excluding the null terminator) of a symlink target
+  // Magic symlinks under /proc or /sys are special and have st_size = 0
 
   auto handle_error = [&]() {
     fs_error_callback(path);
-    return 0;
+    return std::nullopt;
   };
 
   const std::string cpath{path};
@@ -67,7 +67,7 @@ std::string_view::size_type fs_symlink_length(std::string_view path)
 #if defined(HAVE_STATX)
   if(struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, STATX_SIZE, &x) == 0) {
     if (fs_trace) std::cout << "TRACE:symlink_length(" << path << "):statx: symlink size: " << x.stx_size << "\n";
-    return x.stx_size + 1;
+    return x.stx_size;
   }
   else if (errno != ENOSYS)
     return handle_error();
@@ -75,7 +75,7 @@ std::string_view::size_type fs_symlink_length(std::string_view path)
 // https://linux.die.net/man/2/lstat
 
   if(struct stat s; ::lstat(cpath.c_str(), &s) == 0)
-    return s.st_size + 1;
+    return s.st_size;
 
   return handle_error();
 }
@@ -137,7 +137,8 @@ bool fs_lexists(std::string_view path)
 
 std::string fs_read_symlink(std::string_view path)
 {
-  // read the target of a symlink
+  // read the target of a symlink, which might itself be a symlink
+  // returns empty string if the path is not a symlink or an error occurs
 
   std::error_code ec = std::make_error_code(std::errc::invalid_argument);
 
@@ -151,16 +152,18 @@ std::string fs_read_symlink(std::string_view path)
 
   // https://www.man7.org/linux/man-pages/man2/readlink.2.html
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/readlink.2.html
-
-  std::string::size_type const L = fs_symlink_length(path);
-  if (L == 0)
+  const auto s = fs_symlink_length(path);
+  if (!s)
     return {};
 
-  std::string p(L, '\0');
+  const auto L = *s == 0 ? fs_get_max_path() : *s;
+  // A priori links under /sys or /proc will have st_size = 0
+
+  std::string p(L+1, '\0');
 
   // readlink() does not null-terminate the result
   if (ssize_t Lr = ::readlink(std::string{path}.c_str(), p.data(), p.size());
-      Lr == static_cast<ssize_t>(L-1)) {
+      Lr == static_cast<ssize_t>(L)) {
     p.resize(static_cast<std::string::size_type>(Lr));
     return p;
   }
