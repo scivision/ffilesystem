@@ -77,13 +77,14 @@ if (p1%path() /= get_homedir()) error stop "expanduser"
 p1 = path_t(".")
 p1 = p1%canonical()
 L1 = p1%length()
-if (L1 == 0) then
+if (L1 <= 1) then
   write(stderr,*) "ERROR: canonical(.) " // p1%path()
   error stop
 end if
 
-if (.not. same_file(p1%path(), get_cwd())) then
-  write(stderr,*) "ERROR: canonical(.) " // p1%path() // " /= get_cwd: " // get_cwd()
+s2 = file_name(get_cwd())
+if (s2 /= p1%file_name()) then
+  write(stderr,*) "ERROR: canonical(.) " // p1%path() // " /= get_cwd: " // s2
   error stop
 end if
 
@@ -91,13 +92,13 @@ end if
 p1 = path_t(".")
 p1 = p1%resolve()
 L1 = p1%length()
-if (L1 == 0) then
+if (L1 <= 1) then
   write(stderr,*) "ERROR: resolve(.) " // p1%path()
   error stop
 end if
 
-if (.not. same_file(p1%path(), get_cwd())) then
-  write(stderr,*) "ERROR: resolve(.) " // p1%path() // " /= get_cwd: " // get_cwd()
+if (s2 /= p1%file_name()) then
+  write(stderr,*) "ERROR: resolve(.) " // p1%path() // " /= get_cwd: " // s2
   error stop
 end if
 

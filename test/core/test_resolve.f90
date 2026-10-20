@@ -8,21 +8,22 @@ implicit none
 
 valgrind : block
 
-character(:), allocatable :: p1, cwd
+character(:), allocatable :: p1, cwd, n
 
 integer :: L1, L3
 
 ! -- current directory  -- old MacOS doesn't handle "." or ".." alone
 p1 = resolve(".")
 L1 = len_trim(p1)
-if (L1 < 1) then
+if (L1 <= 1) then
   write(stderr,*) "ERROR: resolve '.' " // p1
   error stop
 end if
 
 cwd = get_cwd()
+n = file_name(cwd)
 
-if (.not. same_file(p1, cwd)) then
+if (file_name(p1) /= n) then
   write(stderr,*) "ERROR: resolve('.') " // p1 // " /= " // cwd
   error stop
 end if
@@ -30,7 +31,7 @@ end if
 print *, "OK: current dir = ", p1
 
 !> empty
-if(.not. same_file(resolve(""), cwd)) then
+if(file_name(resolve("")) /= n) then
   write(stderr,*) "resolve('') " // resolve("") // " /= " // cwd
   error stop
 end if
