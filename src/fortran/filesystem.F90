@@ -13,7 +13,7 @@ public :: get_homedir, get_profile_dir, get_username, hostname, &
  get_cwd, set_cwd, which
 public :: set_error_callback, reset_error_callback
 public :: normal, expanduser, as_posix, as_windows, &
-has_filename, &
+has_filename, has_root_directory, &
 fs_has_cfi, &
 is_absolute, is_char_device, is_fifo, is_case_sensitive, is_dir, is_file, &
 is_exe, is_executable_binary, is_other, &
@@ -28,7 +28,8 @@ long_paths_enabled, &
 copy_file, mkdir, &
 relative_to, proximate_to, &
 hard_link_count, &
-root, root_name, same_file, file_size, &
+root, root_directory, root_name, &
+same_file, file_size, &
 space_available, space_capacity, get_blksize, &
 file_name, parent, stem, suffix, with_suffix, &
 absolute, &
@@ -419,12 +420,17 @@ character(kind=c_char), intent(out) :: path(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
 
-logical(c_bool) function fs_has_filename(path) bind(C)
+logical(C_BOOL) function fs_has_filename(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
-logical(c_bool) function fs_is_absolute(path) bind(C)
+logical(C_BOOL) function fs_has_root_directory(path) bind(C)
+import
+character(kind=C_CHAR), intent(in) :: path(*)
+end function
+
+logical(C_BOOL) function fs_is_absolute(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
@@ -465,7 +471,7 @@ import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
-logical(c_bool) function fs_is_exe(path) bind(C)
+logical(C_BOOL) function fs_is_exe(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
@@ -475,25 +481,25 @@ import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
-logical(c_bool) function fs_is_readable(path) bind(C)
+logical(C_BOOL) function fs_is_readable(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
-logical(c_bool) function fs_is_writable(path) bind(C)
+logical(C_BOOL) function fs_is_writable(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
-logical(c_bool) function fs_is_reserved(path) bind(C)
+logical(C_BOOL) function fs_is_reserved(path) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
 integer(C_SIZE_T) function fs_join(path, other, result, buffer_size) bind(C)
 import
-character(kind=c_char), intent(in) :: path(*), other(*)
-character(kind=c_char), intent(out) :: result(*)
+character(kind=C_CHAR), intent(in) :: path(*), other(*)
+character(kind=C_CHAR), intent(out) :: result(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
 
@@ -509,8 +515,8 @@ end function
 
 integer(C_SIZE_T) function fs_absolute(path, base, result, buffer_size) bind(C)
 import
-character(kind=c_char), intent(in) :: path(*), base(*)
-character(kind=c_char), intent(out) :: result(*)
+character(kind=C_CHAR), intent(in) :: path(*), base(*)
+character(kind=C_CHAR), intent(out) :: result(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
 
@@ -530,15 +536,15 @@ end function
 
 integer(C_SIZE_T) function fs_relative_to(base, other, result, buffer_size) bind(C)
 import
-character(kind=c_char), intent(in) :: base(*), other(*)
-character(kind=c_char), intent(out) :: result(*)
+character(kind=C_CHAR), intent(in) :: base(*), other(*)
+character(kind=C_CHAR), intent(out) :: result(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
 
 integer(C_SIZE_T) function fs_proximate_to(base, other, result, buffer_size) bind(C)
 import
-character(kind=c_char), intent(in) :: base(*), other(*)
-character(kind=c_char), intent(out) :: result(*)
+character(kind=C_CHAR), intent(in) :: base(*), other(*)
+character(kind=C_CHAR), intent(out) :: result(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
 
@@ -551,6 +557,13 @@ integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
 
 integer(C_SIZE_T) function fs_root(path, result, buffer_size) bind(C)
+import
+character(kind=C_CHAR), intent(in) :: path(*)
+character(kind=C_CHAR), intent(out) :: result(*)
+integer(C_SIZE_T), intent(in), value :: buffer_size
+end function
+
+integer(C_SIZE_T) function fs_root_directory(path, result, buffer_size) bind(C)
 import
 character(kind=C_CHAR), intent(in) :: path(*)
 character(kind=C_CHAR), intent(out) :: result(*)
@@ -590,7 +603,7 @@ end function
 
 logical(C_BOOL) function fs_touch(path) bind(C)
 import
-character(kind=c_char), intent(in) :: path(*)
+character(kind=C_CHAR), intent(in) :: path(*)
 end function
 
 integer(C_LONG_LONG) function fs_get_modtime(path) bind(C)
@@ -605,7 +618,7 @@ end function
 
 integer(C_SIZE_T) function fs_with_suffix(path, new_suffix, result, buffer_size) bind(C)
 import
-character(kind=C_CHAR), intent(in) :: path(*), new_suffix
+character(kind=C_CHAR), intent(in) :: path(*), new_suffix(*)
 character(kind=C_CHAR), intent(out) :: result(*)
 integer(C_SIZE_T), intent(in), value :: buffer_size
 end function
@@ -1058,6 +1071,14 @@ r = fs_has_filename(trim(path) // C_NULL_CHAR)
 end function
 
 
+logical function has_root_directory(path) result(r)
+!! does path have a root directory component
+character(*), intent(in) :: path
+
+r = fs_has_root_directory(trim(path) // C_NULL_CHAR)
+end function
+
+
 logical function is_absolute(path) result(r)
 !! is path absolute
 character(*), intent(in) :: path
@@ -1254,6 +1275,16 @@ character(*), intent(in) :: path
 
 include "ifc0a.inc"
 N = fs_root(trim(path) // C_NULL_CHAR, cbuf, N)
+r = cbuf(:N)
+end function
+
+
+function root_directory(path) result(r)
+!! returns root directory of path
+character(*), intent(in) :: path
+
+include "ifc0a.inc"
+N = fs_root_directory(trim(path) // C_NULL_CHAR, cbuf, N)
 r = cbuf(:N)
 end function
 

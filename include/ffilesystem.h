@@ -235,7 +235,9 @@ bool fs_rename(std::string_view, std::string_view);
 std::string fs_resolve(std::string_view, const bool = false);
 
 std::string fs_root(std::string_view);
-std::string fs_root_name([[maybe_unused]] std::string_view);
+std::string fs_root_name(std::string_view);
+std::string fs_root_directory(std::string_view);
+bool fs_has_root_directory(std::string_view);
 
 bool fs_set_cwd(std::string_view);
 
@@ -366,6 +368,8 @@ size_t fs_suffix(const char*, char*, const size_t);
 
 size_t fs_root(const char*, char*, const size_t);
 size_t fs_root_name(const char*, char*, const size_t);
+size_t fs_root_directory(const char*, char*, const size_t);
+bool fs_has_root_directory(const char*);
 
 size_t fs_with_suffix(const char*, const char*, char*, const size_t);
 
@@ -381,7 +385,7 @@ bool fs_exists(const char*);
 bool fs_lexists(const char*);
 bool fs_is_removable(const char*);
 
-bool fs_has_filename(const char* path);
+bool fs_has_filename(const char*);
 bool fs_is_absolute(const char*);
 bool fs_is_case_sensitive(const char*);
 

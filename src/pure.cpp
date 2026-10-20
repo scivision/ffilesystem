@@ -128,22 +128,32 @@ fs_root(std::string_view path)
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).root_path().string();
 #else
-  if (std::string r = fs_root_name(path); r.empty()){
-    if (fs_slash_first(path))
-      return std::string(1, path.front());
-
-    return {};
-  } else if (fs_is_windows()) {
-    if (path.length() >= 3 && (path[2] == '/' || path[2] == '\\')){
-      return r + path[2];
-    }
-
-    return r;
-  } else
-    return "/";
-
+  return fs_root_name(path) + fs_root_directory(path);
 #endif
 }
+
+
+std::string
+fs_root_directory(std::string_view path)
+{
+#ifdef HAVE_CXX_FILESYSTEM
+  return Filesystem::path(path).root_directory().string();
+#else
+  if (fs_is_windows()) {
+    if(path.length() >= 3 && path[1] == ':' && (path[2] == '/' || path[2] == '\\'))
+      return std::string(1, path[2]);
+    else if (path.length() >= 1 && (path[0] == '/' || path[0] == '\\'))
+      return std::string(1, path[0]);
+
+    return "";
+  }
+  else {
+    return fs_slash_first(path) ? std::string(1, path.front()) : "";
+  }
+#endif
+}
+
+bool fs_has_root_directory(std::string_view path){ return !fs_root_directory(path).empty(); }
 
 
 std::string
@@ -152,11 +162,12 @@ fs_root_name([[maybe_unused]] std::string_view path)
 
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).root_name().string();
-#elif defined(_WIN32)
-  const auto parts = fs_win32_split_path(path);
-  return parts ? parts->drive : std::string{};
-#endif
+#else
+  if (fs_is_windows() && path.length() >= 2 && path[1] == ':')
+    return std::string(1, path[0]) + ":";
+
   return {};
+#endif
 }
 
 
