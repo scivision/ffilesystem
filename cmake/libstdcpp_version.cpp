@@ -1,6 +1,6 @@
 #if __has_include(<version>)
 #include <version>
-#elif __has_include(<ciso646>)
+#else
 // < C++20 standard
 #include <ciso646>
 #endif

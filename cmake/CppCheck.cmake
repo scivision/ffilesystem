@@ -1,5 +1,6 @@
 # Check compiler C++ capabilities
 include(CheckSourceCompiles)
+include(CheckCXXSymbolExists)
 
 include_guard()
 

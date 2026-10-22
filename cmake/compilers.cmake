@@ -142,7 +142,11 @@ target_compile_options(ffilesystem PRIVATE "$<$<COMPILE_LANG_AND_ID:CXX,AppleCla
 # MSVC 15.7 (19.14) added /Zc:__cplusplus to set __cplusplus to the true value.
 # oneAPI since 2023.1 sets __cplusplus to the true value with MSVC by auto-setting this flag.
 # use add_*() to avoid confusing conflicts
-add_compile_options("$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/Zc:__cplusplus>")
+foreach(t IN ITEMS ffilesystem fs_cli filesystem_cli)
+if(TARGET ${t})
+  target_compile_options(${t} PRIVATE "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/Zc:__cplusplus>")
+endif()
+endforeach()
 
 # too many false positives esp. regarding argv[1] and higher
 # target_compile_options(ffilesystem PRIVATE "$<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang,IntelLLVM>:-Wunsafe-buffer-usage>")
