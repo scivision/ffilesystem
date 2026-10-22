@@ -22,8 +22,10 @@
 #include <Windows.h>
 #include <io.h> // _access_s
 #include "win32_path.h"
+#define FS_ACCESS _access_s
 #else
 #include <unistd.h>
+#define FS_ACCESS access
 #endif
 
 #if defined(HAVE_CXX_FILESYSTEM)
@@ -46,16 +48,16 @@ bool fs_check_access(std::string_view path, const int mode){
   std::string cpath{path};
   bool ok;
 
-#if defined(_WIN32)
   // to use GetFileAttributesExW would need more advanced techniques like
   // https://gitlab.kitware.com/cmake/cmake/-/blob/master/Source/kwsys/SystemTools.cxx#L1408
   //
   // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
-  fs_as_windows(cpath);  // needed for _access_s to correctly interpret the path on Windows
-  ok = _access_s(cpath.c_str(), mode) == 0;
-#else
-  ok = access(cpath.c_str(), mode) == 0;
-#endif
+
+  if (fs_is_windows())
+    fs_as_windows(cpath);  // needed for _access_s to correctly interpret the path on Windows
+
+  ok = FS_ACCESS(cpath.c_str(), mode) == 0;
+
   if (!ok && errno != ENOENT)
     fs_error_callback(path);
 
