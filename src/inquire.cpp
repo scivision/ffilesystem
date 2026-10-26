@@ -8,7 +8,6 @@
 #endif
 
 #include "ffilesystem.h"
-#include "internal.h"
 
 #include <string_view>
 #include <system_error>
@@ -39,6 +38,8 @@ namespace Filesystem = std::filesystem;
 #if defined(HAVE_STATX)
 #include <fcntl.h>   // AT_* constants for statx
 #endif
+
+#include "internal.h"
 
 
 namespace {
@@ -316,25 +317,17 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 
 #else
 
-  const std::string cpath{path};
-
-  auto handle_error = [&]() {
-    fs_error_callback(path);
-    return fs_unknown_size;
-  };
-
 #if defined(HAVE_STATX)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
 
-  if (struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_NLINK, &x) == 0)
-    return x.stx_nlink;
-  else if (errno != ENOSYS)
-    return handle_error();
+  return fs_internal::get_stat_value<std::uintmax_t>(
+      path, fs_unknown_size, STATX_NLINK,
+      [](const struct statx& x) { return static_cast<std::uintmax_t>(x.stx_nlink); },
+      [](const struct stat& s) { return static_cast<std::uintmax_t>(s.st_nlink); });
+#else
+  return fs_internal::get_stat_value<std::uintmax_t>(
+      path, fs_unknown_size,
+      [](const struct stat& s) { return static_cast<std::uintmax_t>(s.st_nlink); });
 #endif
-
-  if (struct stat s; ::stat(cpath.c_str(), &s) == 0)
-    return s.st_nlink;
-
-  return handle_error();
 #endif
 }

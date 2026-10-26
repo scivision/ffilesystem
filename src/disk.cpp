@@ -24,37 +24,7 @@
 #endif
 
 #include "ffilesystem.h"
-
-namespace {
-
-#if defined(HAVE_STATX)
-template <typename T, typename StatxValue, typename StatValue>
-T get_stat_value(std::string_view path, unsigned int statx_mask,
-                 StatxValue statx_value, StatValue stat_value)
-#else
-template <typename T, typename StatValue>
-T get_stat_value(std::string_view path, StatValue stat_value)
-#endif
-{
-  const std::string cpath{path};
-
-#if defined(HAVE_STATX)
-  if (struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, statx_mask, &x) == 0)
-    return statx_value(x);
-  else if (errno != ENOSYS) {
-    fs_error_callback(path);
-    return {};
-  }
-#endif
-
-  if (struct stat s; ::stat(cpath.c_str(), &s) == 0)
-    return stat_value(s);
-
-  fs_error_callback(path);
-  return {};
-}
-
-} // namespace
+#include "internal.h"
 
 
 std::size_t fs_get_blksize(std::string_view path)
@@ -87,13 +57,13 @@ std::size_t fs_get_blksize(std::string_view path)
 #else
 
 #if defined(HAVE_STATX)
-  return get_stat_value<std::size_t>(
-      path, STATX_BASIC_STATS,
+  return fs_internal::get_stat_value<std::size_t>(
+      path, {}, STATX_BASIC_STATS,
       [](const struct statx& x) { return static_cast<std::size_t>(x.stx_blksize); },
       [](const struct stat& s) { return static_cast<std::size_t>(s.st_blksize); });
 #else
-  return get_stat_value<std::size_t>(
-      path, [](const struct stat& s) { return static_cast<std::size_t>(s.st_blksize); });
+  return fs_internal::get_stat_value<std::size_t>(
+      path, {}, [](const struct stat& s) { return static_cast<std::size_t>(s.st_blksize); });
 #endif
 
 #endif
@@ -107,12 +77,13 @@ dev_t fs_st_dev(std::string_view path)
 
 #if defined(HAVE_STATX)
   // don't call as ::makedev because some platforms e.g. Android have makedev as a macro
-  return get_stat_value<dev_t>(
-      path, STATX_INO,
+  return fs_internal::get_stat_value<dev_t>(
+      path, {}, STATX_INO,
       [](const struct statx& x) { return makedev(x.stx_dev_major, x.stx_dev_minor); },
       [](const struct stat& s) { return s.st_dev; });
 #else
-  return get_stat_value<dev_t>(path, [](const struct stat& s) { return s.st_dev; });
+  return fs_internal::get_stat_value<dev_t>(
+      path, {}, [](const struct stat& s) { return s.st_dev; });
 #endif
 }
 
@@ -147,12 +118,13 @@ ino_t fs_inode(std::string_view path)
 #else
 
 #if defined(HAVE_STATX)
-  return get_stat_value<ino_t>(
-      path, STATX_INO,
+  return fs_internal::get_stat_value<ino_t>(
+      path, {}, STATX_INO,
       [](const struct statx& x) { return static_cast<ino_t>(x.stx_ino); },
       [](const struct stat& s) { return s.st_ino; });
 #else
-  return get_stat_value<ino_t>(path, [](const struct stat& s) { return s.st_ino; });
+  return fs_internal::get_stat_value<ino_t>(
+      path, {}, [](const struct stat& s) { return s.st_ino; });
 #endif
 
 #endif // _WIN32
