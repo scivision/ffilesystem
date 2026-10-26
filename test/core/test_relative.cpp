@@ -1,56 +1,67 @@
 #include "ffilesystem.h"
 
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
+
 #include <boost/ut.hpp>
 
-
 int main() {
-using namespace boost::ut;
+  using namespace boost::ut;
 
-"relative_to"_test = [] {
+  auto expect_relative = [](auto const& test_case) {
+    expect(eq(fs_relative_to(test_case.first.first, test_case.first.second),
+              test_case.second));
+  };
 
-expect(eq(fs_relative_to("", ""), std::string{""}));
-expect(eq(fs_relative_to("Hello", "Hello"), std::string{"."}));
-expect(eq(fs_relative_to("Hello", "Hello/"), std::string{"."}));
-expect(eq(fs_relative_to("a/b", "a/b"), std::string{"."}));
-expect(eq(fs_relative_to("a///b", "a/b"), std::string{"."}));
-expect(eq(fs_relative_to("a/b", "a///b"), std::string{"."}));
-expect(eq(fs_relative_to("a/b", "a/b/"), std::string{"."}));
-expect(eq(fs_relative_to("a/b/", "a/b"), std::string{"."}));
-expect(eq(fs_relative_to("a/b", "a"), std::string{".."}));
-expect(eq(fs_relative_to("a/b", "a/"), std::string{"../"}));
-expect(eq(fs_relative_to("a", "a/b/"), std::string{"b/"}));
-expect(eq(fs_relative_to("a", "a/b/."), std::string{"b/"}));
-expect(eq(fs_relative_to("a", "a/b/.."), std::string{"."}));
-expect(eq(fs_relative_to("a/b/c/d", "a/b"), std::string{"../.."}));
-expect(eq(fs_relative_to("a/b/c/d", "a/b/"), std::string{"../../"}));
-expect(eq(fs_relative_to("./a/b", "./a/c"), std::string{"../c"}));
+  "relative_to"_test = [expect_relative](auto const& test_case) {
+    expect_relative(test_case);
+  } | std::vector<std::pair<std::pair<std::string_view, std::string_view>,
+                            std::string_view>>{
+          {{"", ""}, ""},
+          {{"Hello", "Hello"}, "."},
+          {{"Hello", "Hello/"}, "."},
+          {{"a/b", "a/b"}, "."},
+          {{"a///b", "a/b"}, "."},
+          {{"a/b", "a///b"}, "."},
+          {{"a/b", "a/b/"}, "."},
+          {{"a/b/", "a/b"}, "."},
+          {{"a/b", "a"}, ".."},
+          {{"a/b", "a/"}, "../"},
+          {{"a", "a/b/"}, "b/"},
+          {{"a", "a/b/."}, "b/"},
+          {{"a", "a/b/.."}, "."},
+          {{"a/b/c/d", "a/b"}, "../.."},
+          {{"a/b/c/d", "a/b/"}, "../../"},
+          {{"./a/b", "./a/c"}, "../c"},
+          {{"", "a"}, "a"},
+          {{"/", "/"}, "."},
+          {{"/dev/null", "/dev/null"}, "."},
+          {{"a/b", "c/d"}, "../../c/d"},
+          {{"c", "a/b"}, "../a/b"},
+          {{"a/b", "a/c"}, "../c"},
+      };
 
-if (fs_is_windows()){
-auto e = fs_getenv("SYSTEMDRIVE");
-expect(e.has_value() >> fatal) << "Failed to get SYSTEMDRIVE environment variable";
-std::string c = e.value();
+  if (fs_is_windows()) {
+    auto drive = fs_getenv("SYSTEMDRIVE");
+    expect(drive.has_value() >> fatal) << "Failed to get SYSTEMDRIVE environment variable";
+    const std::string c = drive.value();
 
-expect(eq(fs_relative_to(c+"/", c+"/a/b"), std::string{"a/b"}));
-expect(eq(fs_relative_to(c+"/a/b", c+"/"), std::string{"../.."}));
-expect(eq(fs_relative_to(c+"/a/b", c+"/a/b"), std::string{"."}));
-expect(eq(fs_relative_to(c+"/a/b", c+"/a"), std::string{".."}));
-// {c+"/a", "b", ""} //  ambiguous with Clang/Flang ARM MinGW <filesystem>
+    // NOTE: on Windows, if a path is real, finalPath is used, which makes drive letters upper case.
+    const std::vector<std::pair<std::pair<std::string, std::string>, std::string>>
+        windows_cases{
+            {{c + "/", c + "/a/b"}, "a/b"},
+            {{c + "/a/b", c + "/"}, "../.."},
+            {{c + "/a/b", c + "/a/b"}, "."},
+            {{c + "/a/b", c + "/a"}, ".."},
+        };
+    for (const auto& test_case : windows_cases) {
+      expect_relative(test_case);
+    }
+    // {c+"/a", "b", ""} is ambiguous with Clang/Flang ARM MinGW <filesystem>.
+  }
 
-// NOTE: on Windows, if a path is real, finalPath is used, which makes drive letters upper case.
-
-}
-
-
-expect(eq(fs_relative_to("", "a"), std::string{"a"}));
-expect(eq(fs_relative_to("/", "/"), std::string{"."}));
-expect(eq(fs_relative_to("Hello", "Hello"), std::string{"."}));
-expect(eq(fs_relative_to("Hello", "Hello/"), std::string{"."}));
-expect(eq(fs_relative_to("/dev/null", "/dev/null"), std::string{"."}));
-expect(eq(fs_relative_to("a/b", "c/d"), std::string{"../../c/d"}));
-expect(eq(fs_relative_to("c", "a/b"), std::string{"../a/b"}));
-expect(eq(fs_relative_to("a/b", "a/c"), std::string{"../c"}));
-// NOTE: use relative non-existing paths, as on macOS AppleClang, the <filesystem> gives incorrect results on non-existing absolute paths,
-// Which don't make sense anyway.
-
-};
+  // NOTE: use relative non-existing paths, as on macOS AppleClang, the <filesystem>
+  // gives incorrect results on non-existing absolute paths, which don't make sense anyway.
 }
