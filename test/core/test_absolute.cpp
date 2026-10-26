@@ -17,19 +17,20 @@ struct absolute_ctx {
 auto make_ctx() {
   absolute_ctx ctx{};
 
-  ctx.cwd = fs_absolute("", "");
+  ctx.cwd = fs_get_cwd();
+  expect(!ctx.cwd.empty() >> fatal);
 
   if (fs_is_windows()) {
     ctx.base = "j:\\foo";
-    ctx.ref = std::string{"j:\\foo"} + fs_filesep() + "rel";
     if (const auto d = fs_getenv("SystemDrive")) {
       expect(d.has_value() >> fatal);
       ctx.sys_drive = d.value();
     }
   } else {
     ctx.base = "/foo";
-    ctx.ref = "/foo/rel";
   }
+
+  ctx.ref = ctx.base + fs_filesep() + "rel";
 
   return ctx;
 }
@@ -42,14 +43,22 @@ int main() {
   "absolute"_test = [] {
     const auto ctx = make_ctx();
 
-    expect(!ctx.cwd.empty());
+    const std::string dot = ".";
+
     expect(eq(fs_absolute(""), ctx.cwd));
     expect(eq(fs_absolute("", ""), ctx.cwd));
     expect(eq(fs_absolute("rel", ctx.base), ctx.ref));
     expect(eq(fs_absolute(ctx.cwd + fs_filesep() + "rel"), ctx.cwd + fs_filesep() + "rel"));
 
-    // absolute("./rel") may be "/fullpath/./rel" (our method, and most <filesystem> except Windows)
-    //                     or "/fullpath/rel" (Windows <filesystem>)
+    std::string r = ctx.cwd + fs_filesep();
+    if (!fs_is_windows() || (fs_is_mingw() && fs_is_clang() && fs_backend() == "<filesystem>")) r += dot + fs_filesep();
+
+    r += "rel";
+
+    expect(eq(fs_absolute(dot + fs_filesep() + "rel"), r));
+
+    // absolute("./rel") may be "/cwd/./rel" (our method, and most <filesystem> except Windows)
+    //                     or "/cwd/rel" (Windows <filesystem>)
     // using for base "." or ".." and similar has similar ambiguity for testing.
 
     // relative path, empty base
