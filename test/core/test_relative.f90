@@ -2,8 +2,6 @@ program main
 
 use filesystem
 
-use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-
 implicit none
 
 if(relative_to("", "") /= "") error stop "FAIL: relative_to()"
