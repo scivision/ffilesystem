@@ -61,7 +61,7 @@ jobs:
       run: cmake --workflow clangcl --fresh
 
     - name: Install Release
-      run: cmake --install build --config Release
+      run: cmake --install build-clangcl --config Release
 
     - name: example configure
       run: cmake --workflow clangcl
