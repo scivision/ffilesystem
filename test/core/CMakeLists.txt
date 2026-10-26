@@ -31,14 +31,15 @@ filesize space
 is_dir
 is_empty
 is_subdir join
-normal parent root
+normal
+parent
+pure
+root
 resolve
 relative proximate
 reserved safe
 set_cwd
 separator
-stem
-suffix
 with_suffix
 log
 owner
