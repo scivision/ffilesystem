@@ -49,8 +49,7 @@ std::string fs_win32_get_owner(const PSID pSid)
   if (!LookupAccountSidW(nullptr, pSid, s.data(), &L1, domain.data(), &L2, &eUse))
     return {};
 
-  // it's L1, not L1 - 1
-  return fs_win32_to_narrow(std::wstring_view(s.data(), L1));
+  return fs_win32_to_narrow(s);
 }
 
 std::string fs_win32_owner(std::string_view path, bool group)
