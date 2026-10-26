@@ -1,20 +1,17 @@
 #include "ffilesystem.h"
 
-#include <array>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 #include <boost/ut.hpp>
 
 int main() {
 	using namespace boost::ut;
 
-	"drop_slash"_test = [] {
-		struct case_t {
-			std::string_view input;
-			std::string_view expected;
-		};
-
-		constexpr std::array<case_t, 9> cases{{
+	"drop_slash"_test = [](auto const& test_case) {
+		expect(eq(fs_drop_slash(test_case.first), test_case.second));
+	} | std::vector<std::pair<std::string_view, std::string_view>>{
 			{"", ""},
 			{"a", "a"},
 			{"a/", "a"},
@@ -24,29 +21,22 @@ int main() {
 			{"a////b", "a/b"},
 			{"a//b//", "a/b"},
 			{"/", "/"},
-		}};
+		};
 
-		for (const auto& test_case : cases) {
-			expect(eq(fs_drop_slash(test_case.input), test_case.expected));
-		}
-
-		if (fs_is_windows()) {
-			constexpr std::array<case_t, 3> windows_cases{{
+	if (fs_is_windows()) {
+		"drop_slash_windows"_test = [](auto const& test_case) {
+			expect(eq(fs_drop_slash(test_case.first), test_case.second));
+		} | std::vector<std::pair<std::string_view, std::string_view>>{
 				{"c:/", "c:/"},
 				{"c:///", "c:/"},
 				{"c:/a/b//", "c:/a/b"},
-			}};
+				{R"(\\server\share\a\\b\\)", R"(\\server\share\a\\b\\)"},
+			};
 
-			for (const auto& test_case : windows_cases) {
-				expect(eq(fs_drop_slash(test_case.input), test_case.expected));
-			}
-
-			expect(eq(fs_drop_slash(R"(\\server\share\a\\b\\)"),
-				std::string_view{R"(\\server\share\a\\b\\)"}));
-
-			if (fs_win32_long_paths_enabled()) {
+		if (fs_win32_long_paths_enabled()) {
+			"drop_slash_windows_long_paths"_test = [] {
 				expect(eq(fs_drop_slash(R"(\\?\C:/)"), std::string_view{R"(\\?\C:/)"}));
-			}
+			};
 		}
-	};
+	}
 }

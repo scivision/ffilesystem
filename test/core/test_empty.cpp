@@ -2,6 +2,8 @@
 
 #include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 #include "ffilesystem.h"
 
@@ -17,29 +19,33 @@ int main() {
     fs_as_posix(s);
     expect(s.empty());
 
-    expect(fs_file_name(e).empty());
-    expect(fs_stem(e).empty());
-    expect(fs_join(e, e).empty());
-    expect(fs_suffix(e).empty());
-    expect(fs_with_suffix(e, e).empty());
-    expect(!fs_is_char_device(e));
-    expect(!fs_is_reserved(e));
-    expect(!fs_is_symlink(e));
-    expect(!fs_create_symlink(e, e));
-    expect(!fs_mkdir(e));
-    expect(fs_which(e).empty());
-    expect(fs_root(e).empty());
-    expect(!fs_exists(e));
-    expect(!fs_is_absolute(e));
-    expect(!fs_is_dir(e));
-    expect(!fs_is_exe(e));
-    expect(!fs_is_file(e));
-    expect(!fs_remove(e));
-    expect(fs_canonical(e, false).empty());
-    expect(!fs_equivalent(e, e));
-    expect(fs_expanduser(e).empty());
-    expect(!fs_copy_file(e, e, false));
-    expect(!fs_touch(e));
+    "empty_input functions"_test = [](auto const& test_case) {
+      expect(test_case.second("")) << test_case.first;
+    } | std::vector<std::pair<std::string_view, bool (*)(std::string_view)>>{
+            {"fs_file_name", [](std::string_view input) { return fs_file_name(input).empty(); }},
+            {"fs_stem", [](std::string_view input) { return fs_stem(input).empty(); }},
+            {"fs_join", [](std::string_view input) { return fs_join(input, input).empty(); }},
+            {"fs_suffix", [](std::string_view input) { return fs_suffix(input).empty(); }},
+            {"fs_with_suffix", [](std::string_view input) { return fs_with_suffix(input, input).empty(); }},
+            {"fs_is_char_device", [](std::string_view input) { return !fs_is_char_device(input); }},
+            {"fs_is_reserved", [](std::string_view input) { return !fs_is_reserved(input); }},
+            {"fs_is_symlink", [](std::string_view input) { return !fs_is_symlink(input); }},
+            {"fs_create_symlink", [](std::string_view input) { return !fs_create_symlink(input, input); }},
+            {"fs_mkdir", [](std::string_view input) { return !fs_mkdir(input); }},
+            {"fs_which", [](std::string_view input) { return fs_which(input).empty(); }},
+            {"fs_root", [](std::string_view input) { return fs_root(input).empty(); }},
+            {"fs_exists", [](std::string_view input) { return !fs_exists(input); }},
+            {"fs_is_absolute", [](std::string_view input) { return !fs_is_absolute(input); }},
+            {"fs_is_dir", [](std::string_view input) { return !fs_is_dir(input); }},
+            {"fs_is_exe", [](std::string_view input) { return !fs_is_exe(input); }},
+            {"fs_is_file", [](std::string_view input) { return !fs_is_file(input); }},
+            {"fs_remove", [](std::string_view input) { return !fs_remove(input); }},
+            {"fs_canonical", [](std::string_view input) { return fs_canonical(input, false).empty(); }},
+            {"fs_equivalent", [](std::string_view input) { return !fs_equivalent(input, input); }},
+            {"fs_expanduser", [](std::string_view input) { return fs_expanduser(input).empty(); }},
+            {"fs_copy_file", [](std::string_view input) { return !fs_copy_file(input, input, false); }},
+            {"fs_touch", [](std::string_view input) { return !fs_touch(input); }},
+        };
 
     expect(eq(fs_file_size(e), fs_unknown_size)) << "backend: " << fs_backend();
 
