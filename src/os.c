@@ -77,6 +77,15 @@ bool fs_is_mingw(){
 #endif
 }
 
+bool fs_is_clang(){
+// this means the compiler is identifying as Clang - could be AppleClang, ClangCL, IntelLLVM, Clang, ...
+#ifdef __clang__
+  return true;
+#else
+  return false;
+#endif
+}
+
 bool fs_is_appleclang(){
 #if defined(__clang__) && defined(__apple_build_version__)
   return true;

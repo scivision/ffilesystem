@@ -339,6 +339,7 @@ bool fs_is_unix();
 bool fs_is_windows();
 bool fs_is_wsl();
 bool fs_is_mingw();
+bool fs_is_clang();
 bool fs_is_clangcl();
 bool fs_is_msvc();
 bool fs_is_appleclang();
