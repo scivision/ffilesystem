@@ -3,6 +3,8 @@
 
 #include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 #include <boost/ut.hpp>
 
@@ -69,46 +71,60 @@ int main(int argc, char** argv) {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
 
-    for (const auto& s : {std::string("."), std::string(".."), std::string("/"), ctx.self, ctx.self_name, ctx.cwd}) {
-      expect(fs_exists(s)) << "Expected to exist: " << s;
-    }
-
-    for (const auto& s : {"ffs_exists_not-exist-file", ""}) {
-      expect(!fs_exists(s)) << "Expected to not exist: " << s;
-    }
-
-    expect(fs_exists(ctx.nonnull_dir));
+    "exists cases"_test = [](auto const& test_case) {
+      expect(eq(fs_exists(test_case.first), test_case.second)) << test_case.first;
+    } | std::vector<std::pair<std::string_view, bool>>{
+            {".", true},
+            {"..", true},
+            {"/", true},
+            {ctx.self, true},
+            {ctx.self_name, true},
+            {ctx.cwd, true},
+            {"ffs_exists_not-exist-file", false},
+            {"", false},
+            {ctx.nonnull_dir, true},
+        };
   };
 
   "is_dir"_test = [argv] {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
 
-    expect(!fs_is_dir(""));
-    expect(fs_is_dir("."));
-    expect(fs_is_dir(ctx.cwd));
-    expect(!fs_is_dir(ctx.self));
-    expect(!fs_is_dir("ffs_is_dir_not-exist-dir"));
+    "is_dir cases"_test = [](auto const& test_case) {
+      expect(eq(fs_is_dir(test_case.first), test_case.second)) << test_case.first;
+    } | std::vector<std::pair<std::string_view, bool>>{
+            {"", false},
+            {".", true},
+            {ctx.cwd, true},
+            {ctx.self, false},
+            {"ffs_is_dir_not-exist-dir", false},
+        };
   };
 
   "is_file"_test = [argv] {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
 
-    expect(fs_is_file(ctx.self));
-    expect(!fs_is_file("ffs_is_file_not-exist-file"));
-    expect(!fs_is_file(""));
-    expect(!fs_is_file("."));
-    expect(!fs_is_file(ctx.cwd));
+    "is_file cases"_test = [](auto const& test_case) {
+      expect(eq(fs_is_file(test_case.first), test_case.second)) << test_case.first;
+    } | std::vector<std::pair<std::string_view, bool>>{
+            {ctx.self, true},
+            {"ffs_is_file_not-exist-file", false},
+            {"", false},
+            {".", false},
+            {ctx.cwd, false},
+        };
   };
 
   "is_readable"_test = [argv] {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
 
-    expect(fs_is_readable("."));
-    expect(fs_is_readable(ctx.self));
-    expect(fs_is_readable(ctx.cwd));
+    "is_readable cases"_test = [](auto const& path) {
+      expect(fs_is_readable(path)) << path;
+    } | std::vector<std::string_view>{
+            ".", ctx.self, ctx.cwd, "/", ctx.nonnull_dir,
+        };
 
     if (fs_is_windows()) {
       expect(fs_is_readable(ctx.sys_drive));
@@ -117,9 +133,6 @@ int main(int argc, char** argv) {
         expect(fs_is_readable(R"(\\?\)" + ctx.sys_drive + "\\"));
       }
     }
-
-    expect(fs_is_readable("/"));
-    expect(fs_is_readable(ctx.nonnull_dir));
   };
 
   "is_writable"_test = [argv] {
@@ -148,22 +161,26 @@ int main(int argc, char** argv) {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
 
-    expect(!fs_is_other(""));
-    expect(!fs_is_other("."));
-    expect(!fs_is_other(ctx.self));
-    expect(!fs_is_other(ctx.cwd));
-    expect(!fs_is_other("ffs_is_other_not-exist-file"));
+    "is_other cases"_test = [](auto const& path) {
+      expect(!fs_is_other(path)) << path;
+    } | std::vector<std::string_view>{
+            "", ".", ctx.self, ctx.cwd, "ffs_is_other_not-exist-file",
+        };
   };
 
   "stat_mode"_test = [argv] {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
 
-    expect(neq(fs_st_mode(ctx.self), 0));
-    expect(neq(fs_st_mode(ctx.cwd), 0));
-    expect(eq(fs_st_mode("ffs_stat_mode_not-exist-file"), 0));
-    expect(eq(fs_st_mode(""), 0));
-    expect(neq(fs_st_mode(ctx.nonnull_dir), 0));
+    "stat_mode cases"_test = [](auto const& test_case) {
+      expect(eq(fs_st_mode(test_case.first) != 0, test_case.second)) << test_case.first;
+    } | std::vector<std::pair<std::string_view, bool>>{
+            {ctx.self, true},
+            {ctx.cwd, true},
+            {"ffs_stat_mode_not-exist-file", false},
+            {"", false},
+            {ctx.nonnull_dir, true},
+        };
   };
 
   "realpath"_test = [argv] {
@@ -191,9 +208,9 @@ int main(int argc, char** argv) {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
 
-    expect(fs_get_modtime(ctx.cwd) > 0);
-    expect(fs_get_modtime(ctx.nonnull_dir) > 0)
-        << "problem with non null-terminated path " << ctx.nonnull_dir;
+    "get_mod_time cases"_test = [](auto const& path) {
+      expect(fs_get_modtime(path) > 0) << path;
+    } | std::vector<std::string_view>{ctx.cwd, ctx.nonnull_dir};
   };
 
   "touch"_test = [argv] {
