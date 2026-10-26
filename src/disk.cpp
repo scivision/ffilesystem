@@ -58,12 +58,13 @@ std::size_t fs_get_blksize(std::string_view path)
 
 #if defined(HAVE_STATX)
   return fs_internal::get_stat_value<std::size_t>(
-      path, {}, STATX_BASIC_STATS,
+      path, {}, fs_internal::report_stat_error, STATX_BASIC_STATS,
       [](const struct statx& x) { return static_cast<std::size_t>(x.stx_blksize); },
       [](const struct stat& s) { return static_cast<std::size_t>(s.st_blksize); });
 #else
   return fs_internal::get_stat_value<std::size_t>(
-      path, {}, [](const struct stat& s) { return static_cast<std::size_t>(s.st_blksize); });
+      path, {}, fs_internal::report_stat_error,
+      [](const struct stat& s) { return static_cast<std::size_t>(s.st_blksize); });
 #endif
 
 #endif
@@ -78,12 +79,12 @@ dev_t fs_st_dev(std::string_view path)
 #if defined(HAVE_STATX)
   // don't call as ::makedev because some platforms e.g. Android have makedev as a macro
   return fs_internal::get_stat_value<dev_t>(
-      path, {}, STATX_INO,
+      path, {}, fs_internal::report_stat_error, STATX_INO,
       [](const struct statx& x) { return makedev(x.stx_dev_major, x.stx_dev_minor); },
       [](const struct stat& s) { return s.st_dev; });
 #else
   return fs_internal::get_stat_value<dev_t>(
-      path, {}, [](const struct stat& s) { return s.st_dev; });
+      path, {}, fs_internal::report_stat_error, [](const struct stat& s) { return s.st_dev; });
 #endif
 }
 
@@ -119,12 +120,12 @@ ino_t fs_inode(std::string_view path)
 
 #if defined(HAVE_STATX)
   return fs_internal::get_stat_value<ino_t>(
-      path, {}, STATX_INO,
+      path, {}, fs_internal::report_stat_error, STATX_INO,
       [](const struct statx& x) { return static_cast<ino_t>(x.stx_ino); },
       [](const struct stat& s) { return s.st_ino; });
 #else
   return fs_internal::get_stat_value<ino_t>(
-      path, {}, [](const struct stat& s) { return s.st_ino; });
+      path, {}, fs_internal::report_stat_error, [](const struct stat& s) { return s.st_ino; });
 #endif
 
 #endif // _WIN32

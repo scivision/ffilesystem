@@ -15,13 +15,23 @@
 
 namespace fs_internal {
 
+inline void report_stat_error(std::string_view path)
+{
+  fs_error_callback(path);
+}
+
+inline void ignore_stat_error(std::string_view)
+{}
+
 #if defined(HAVE_STATX)
-template <typename T, typename StatxValue, typename StatValue>
-T get_stat_value(std::string_view path, T error_value, unsigned int statx_mask,
+template <typename T, typename ErrorHandler, typename StatxValue, typename StatValue>
+T get_stat_value(std::string_view path, T error_value, ErrorHandler error_handler,
+                 unsigned int statx_mask,
                  StatxValue statx_value, StatValue stat_value)
 #else
-template <typename T, typename StatValue>
-T get_stat_value(std::string_view path, T error_value, StatValue stat_value)
+template <typename T, typename ErrorHandler, typename StatValue>
+T get_stat_value(std::string_view path, T error_value, ErrorHandler error_handler,
+                 StatValue stat_value)
 #endif
 {
   const std::string cpath{path};
@@ -30,7 +40,7 @@ T get_stat_value(std::string_view path, T error_value, StatValue stat_value)
   if (struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, statx_mask, &x) == 0)
     return statx_value(x);
   else if (errno != ENOSYS) {
-    fs_error_callback(path);
+    error_handler(path);
     return error_value;
   }
 #endif
@@ -38,7 +48,7 @@ T get_stat_value(std::string_view path, T error_value, StatValue stat_value)
   if (struct stat s; ::stat(cpath.c_str(), &s) == 0)
     return stat_value(s);
 
-  fs_error_callback(path);
+  error_handler(path);
   return error_value;
 }
 

@@ -9,6 +9,7 @@
 #endif
 
 #include "ffilesystem.h"
+#include "internal.h"
 
 #include <iostream>
 #include <optional>
@@ -60,11 +61,6 @@ std::optional<Filesystem::file_time_type> fs_get_modtime_fs(std::string_view pat
 
 std::time_t fs_get_modtime(std::string_view path)
 {
-  auto handle_error = [&]() {
-    fs_error_callback(path);
-    return std::time_t{};
-  };
-
 #if defined(HAVE_CLOCK_CAST) && defined(HAVE_CXX_FILESYSTEM)
   if(auto t_fs = fs_get_modtime_fs(path); t_fs){
     auto t_sys = std::chrono::clock_cast<std::chrono::system_clock>(*t_fs);
@@ -72,21 +68,21 @@ std::time_t fs_get_modtime(std::string_view path)
   }
 #else
 
-  const std::string cpath{path};
-
 #if defined(HAVE_STATX)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
-  if(struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_MTIME, &x) == 0)
-    return x.stx_mtime.tv_sec;
-  else if (errno != ENOSYS)
-    return handle_error();
+  return fs_internal::get_stat_value<std::time_t>(
+      path, {}, fs_internal::report_stat_error, STATX_MTIME,
+      [](const struct statx& x) { return static_cast<std::time_t>(x.stx_mtime.tv_sec); },
+      [](const struct stat& s) { return static_cast<std::time_t>(s.st_mtime); });
+#else
+  return fs_internal::get_stat_value<std::time_t>(
+      path, {}, fs_internal::report_stat_error,
+      [](const struct stat& s) { return static_cast<std::time_t>(s.st_mtime); });
+#endif
 #endif
 
-  if (struct stat s; ::stat(cpath.c_str(), &s) == 0)
-    return s.st_mtime;
-#endif
-
-  return handle_error();
+  fs_internal::report_stat_error(path);
+  return {};
 }
 
 

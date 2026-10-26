@@ -5,9 +5,6 @@
 #if !defined(_DEFAULT_SOURCE)
 #define _DEFAULT_SOURCE
 #endif
-#if defined(HAVE_STATX)
-#include <fcntl.h>   // AT_* constants for statx
-#endif
 #endif
 
 #ifdef _WIN32
@@ -27,6 +24,7 @@
 #include <string_view>
 
 #include "ffilesystem.h"
+#include "internal.h"
 #include "win32_path.h"
 
 
@@ -80,37 +78,31 @@ std::string fs_win32_owner(std::string_view path, bool group)
 
 std::optional<uid_t> fs_stat_uid(std::string_view path)
 {
-  const std::string cpath{path};
-
 #if defined(HAVE_STATX)
-  if(struct statx s; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_UID, &s) == 0)
-    return s.stx_uid;
-  else if (errno != ENOSYS)
-    return {};
+  return fs_internal::get_stat_value<std::optional<uid_t>>(
+      path, {}, fs_internal::ignore_stat_error, STATX_UID,
+      [](const struct statx& s) { return static_cast<uid_t>(s.stx_uid); },
+      [](const struct stat& s) { return s.st_uid; });
+#else
+  return fs_internal::get_stat_value<std::optional<uid_t>>(
+      path, {}, fs_internal::ignore_stat_error,
+      [](const struct stat& s) { return s.st_uid; });
 #endif
-
-  if(struct stat s; ::stat(cpath.c_str(), &s) == 0)
-    return s.st_uid;
-
-  return {};
 }
 
 
 std::optional<gid_t> fs_stat_gid(std::string_view path)
 {
-  const std::string cpath{path};
-
 #if defined(HAVE_STATX)
-  if(struct statx s; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_GID, &s) == 0)
-    return s.stx_gid;
-  else if (errno != ENOSYS)
-    return {};
+  return fs_internal::get_stat_value<std::optional<gid_t>>(
+      path, {}, fs_internal::ignore_stat_error, STATX_GID,
+      [](const struct statx& s) { return static_cast<gid_t>(s.stx_gid); },
+      [](const struct stat& s) { return s.st_gid; });
+#else
+  return fs_internal::get_stat_value<std::optional<gid_t>>(
+      path, {}, fs_internal::ignore_stat_error,
+      [](const struct stat& s) { return s.st_gid; });
 #endif
-
-  if(struct stat s; ::stat(cpath.c_str(), &s) == 0)
-    return s.st_gid;
-
-  return {};
 }
 
 #endif

@@ -5,6 +5,7 @@
 #endif
 
 #include "ffilesystem.h"
+#include "internal.h"
 
 #include <string_view>
 #include <system_error>
@@ -18,19 +19,12 @@ namespace Filesystem = std::filesystem;
 #else
 #include <iostream>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "win32_path.h"
 #else
 #include <dirent.h>  // opendir, readdir, closedir
-#endif
-
-#if defined(HAVE_STATX)
-#include <fcntl.h>   // AT_* constants for statx
 #endif
 
 #endif
@@ -59,24 +53,17 @@ std::uintmax_t fs_file_size(std::string_view path)
 
 #else
 
-  auto handle_error = [&]() {
-    fs_error_callback(path, ec);
-    return fs_unknown_size;
-  };
-
-  const std::string cpath{path};
-
 #if defined(HAVE_STATX)
-  if(struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_SIZE, &x) == 0)
-    return x.stx_size;
-  else if (errno != ENOSYS)
-    return handle_error();
+  return fs_internal::get_stat_value<std::uintmax_t>(
+      path, fs_unknown_size, [&ec](std::string_view p) { fs_error_callback(p, ec); },
+      STATX_SIZE,
+      [](const struct statx& x) { return static_cast<std::uintmax_t>(x.stx_size); },
+      [](const struct stat& s) { return static_cast<std::uintmax_t>(s.st_size); });
+#else
+  return fs_internal::get_stat_value<std::uintmax_t>(
+      path, fs_unknown_size, [&ec](std::string_view p) { fs_error_callback(p, ec); },
+      [](const struct stat& s) { return static_cast<std::uintmax_t>(s.st_size); });
 #endif
-
-  if (struct stat s; ::stat(cpath.c_str(), &s) == 0)
-    return s.st_size;
-
-  return handle_error();
 
 #endif
 

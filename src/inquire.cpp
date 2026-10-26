@@ -321,12 +321,12 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
 // https://www.man7.org/linux/man-pages/man2/statx.2.html
 
   return fs_internal::get_stat_value<std::uintmax_t>(
-      path, fs_unknown_size, STATX_NLINK,
+      path, fs_unknown_size, fs_internal::report_stat_error, STATX_NLINK,
       [](const struct statx& x) { return static_cast<std::uintmax_t>(x.stx_nlink); },
       [](const struct stat& s) { return static_cast<std::uintmax_t>(s.st_nlink); });
 #else
   return fs_internal::get_stat_value<std::uintmax_t>(
-      path, fs_unknown_size,
+      path, fs_unknown_size, fs_internal::report_stat_error,
       [](const struct stat& s) { return static_cast<std::uintmax_t>(s.st_nlink); });
 #endif
 #endif
