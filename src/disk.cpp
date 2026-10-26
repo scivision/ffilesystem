@@ -61,13 +61,7 @@ std::size_t fs_get_blksize(std::string_view path)
 {
   // block size in bytes
 
-  auto handle_error = [&]() {
-    fs_error_callback(path);
-    return std::size_t{};
-  };
-
 #if defined(_WIN32)
-
   const std::string root = fs_root_name(path);
   if (root.empty())
     return {};
@@ -88,22 +82,21 @@ std::size_t fs_get_blksize(std::string_view path)
       return diskGeometry.Geometry.BytesPerSector;
   }
 
+  fs_error_callback(path);
+  return std::size_t{};
 #else
 
-  const std::string cpath{path};
-
 #if defined(HAVE_STATX)
-  if(struct statx x; ::statx(AT_FDCWD, cpath.c_str(), AT_NO_AUTOMOUNT, STATX_BASIC_STATS, &x) == 0)
-    return x.stx_blksize;
-  else if (errno != ENOSYS)
-    return handle_error();
+  return get_stat_value<std::size_t>(
+      path, STATX_BASIC_STATS,
+      [](const struct statx& x) { return static_cast<std::size_t>(x.stx_blksize); },
+      [](const struct stat& s) { return static_cast<std::size_t>(s.st_blksize); });
+#else
+  return get_stat_value<std::size_t>(
+      path, [](const struct stat& s) { return static_cast<std::size_t>(s.st_blksize); });
 #endif
 
-  if (struct stat s; ::stat(cpath.c_str(), &s) == 0)
-    return s.st_blksize;
 #endif
-
-  return handle_error();
 }
 
 
