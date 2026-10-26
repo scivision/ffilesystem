@@ -1,88 +1,101 @@
 #include "ffilesystem.h"
 
+#include <string_view>
+#include <utility>
+#include <vector>
+
 #include <boost/ut.hpp>
 
 int main() {
-using namespace boost::ut;
+  using namespace boost::ut;
 
-"root"_test = [] {
+  std::vector<std::pair<std::string_view, std::string_view>> root_cases{
+      {"", ""},
+      {"a/b", ""},
+      {"./a/b", ""},
+      {"../a/b", ""},
+  };
 
-expect(fs_root("") == "");
-expect(fs_root("a/b") == "");
-expect(fs_root("./a/b") == "");
-expect(fs_root("../a/b") == "");
+  if (fs_is_windows()) {
+    root_cases.insert(root_cases.end(), {
+        {"c:", "c:"},
+        {"c:/a/b", "c:/"},
+        {"/etc", "/"},
+        {"\\etc", "\\"},
+        {"c:\\", "c:\\"},
+        {"c:/", "c:/"},
+        {"\\", "\\"},
+    });
+  } else {
+    root_cases.insert(root_cases.end(), {
+        {"/a/b", "/"},
+        {"c:/etc", ""},
+    });
+  }
 
-if (fs_is_windows()) {
-expect(fs_root("c:") == "c:");
-expect(fs_root("c:/a/b") == "c:/");
-expect(fs_root("/etc") == "/");
-expect(fs_root("\\etc") == "\\");
-expect(fs_root("c:\\") == "c:\\");
-expect(fs_root("c:/") == "c:/");
-expect(fs_root("\\") == "\\");
-}
-else {
-expect(fs_root("/a/b") == "/");
-expect(fs_root("c:/etc") == "");
-}
+  "root"_test = [](auto const& test_case) {
+    expect(fs_root(test_case.first) == test_case.second);
+  } | root_cases;
 
-};
+  std::vector<std::pair<std::string_view, std::string_view>> root_name_cases{
+      {"", ""},
+      {"a/b", ""},
+      {"./a/b", ""},
+      {"../a/b", ""},
+  };
 
-"root_name"_test = [] {
-expect(fs_root_name("") == "");
-expect(fs_root_name("a/b") == "");
-expect(fs_root_name("./a/b") == "");
-expect(fs_root_name("../a/b") == "");
-expect(!fs_has_root_name(""));
+  if (fs_is_windows()) {
+    root_name_cases.insert(root_name_cases.end(), {
+        {"c:/a/b", "c:"},
+        {"/etc", ""},
+        {R"(C:\)", "C:"},
+    });
+  } else {
+    root_name_cases.insert(root_name_cases.end(), {
+        {"/a/b", ""},
+        {"c:/etc", ""},
+    });
+  }
 
-if (fs_is_windows()) {
-expect(fs_root_name("c:/a/b") == "c:");
-expect(fs_has_root_name("c:/a/b"));
-expect(fs_root_name("/etc") == "");
-expect(fs_root_name(R"(C:\)") == "C:");
+  "root_name"_test = [](auto const& test_case) {
+    expect(fs_root_name(test_case.first) == test_case.second);
+    expect(fs_has_root_name(test_case.first) == !test_case.second.empty());
+  } | root_name_cases;
 
-const std::string drive_prefixed = "C:/must-not-be-read";
-const std::string_view truncated_drive(drive_prefixed.data(), 1);
-expect((truncated_drive == "C") >> fatal);
-expect(fs_root_name(truncated_drive) == "")
-  << "fs_root_name() read past string_view length for a non-null-terminated path";
-}
-else {
-expect(fs_root_name("/a/b") == "");
-expect(fs_root_name("c:/etc") == "");
-}
+  if (fs_is_windows()) {
+    constexpr char drive_prefixed[] = "C:/must-not-be-read";
+    const std::string_view truncated_drive{drive_prefixed, 1};
+    expect((truncated_drive == "C") >> fatal);
+    expect(fs_root_name(truncated_drive) == "")
+      << "fs_root_name() read past string_view length for a non-null-terminated path";
+  }
 
-};
+  std::vector<std::pair<std::string_view, std::string_view>> root_directory_cases{
+      {"", ""},
+      {"a/b", ""},
+      {"./a/b", ""},
+      {"../a/b", ""},
+  };
 
+  if (fs_is_windows()) {
+    root_directory_cases.insert(root_directory_cases.end(), {
+        {"c:", ""},
+        {"c:/a/b", "/"},
+        {"/etc", "/"},
+        {"\\etc", "\\"},
+        {"c:\\", "\\"},
+        {"c:/", "/"},
+        {"\\", "\\"},
+    });
+  } else {
+    root_directory_cases.insert(root_directory_cases.end(), {
+        {"/a/b", "/"},
+        {"c:/etc", ""},
+    });
+  }
 
-"root_directory"_test = [] {
-expect(fs_root_directory("") == "");
-expect(!fs_has_root_directory(""));
-
-expect(fs_root_directory("a/b") == "");
-expect(fs_root_directory("./a/b") == "");
-expect(fs_root_directory("../a/b") == "");
-
-if (fs_is_windows()) {
-expect(fs_root_directory("c:") == "");
-
-expect(fs_root_directory("c:/a/b") == "/");
-expect(fs_has_root_directory("c:/a/b"));
-
-expect(fs_root_directory("/etc") == "/");
-expect(fs_has_root_directory("/etc"));
-
-expect(fs_root_directory("\\etc") == "\\");
-expect(fs_root_directory("c:\\") == "\\");
-expect(fs_root_directory("c:/") == "/");
-expect(fs_root_directory("\\") == "\\");
-}
-else {
-expect(fs_root_directory("/a/b") == "/");
-expect(fs_has_root_directory("/a/b"));
-
-expect(fs_root_directory("c:/etc") == "");
-expect(!fs_has_root_directory("c:/etc"));
-}
-};
+  "root_directory"_test = [](auto const& test_case) {
+    expect(fs_root_directory(test_case.first) == test_case.second);
+    expect(fs_has_root_directory(test_case.first) == !test_case.second.empty());
+  } | root_directory_cases;
 }
