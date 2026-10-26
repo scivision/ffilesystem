@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <system_error>
 namespace Filesystem = std::filesystem;
+#elif defined(_WIN32)
+#include "win32_path.h"
 #endif
 
 #include "ffilesystem.h"
@@ -17,14 +19,11 @@ std::string fs_absolute(std::string_view path)
   // Inspired by Python pathlib.Path.absolute()
   // https://docs.python.org/3/library/pathlib.html#pathlib.Path.absolute
 
-  // Linux, MinGW can't handle empty paths
+  // Linux, MinGW std::filesystem::absolute can't handle empty paths
   if(path.empty())
     return fs_get_cwd();
 
-  if (fs_is_absolute(path))
-    return std::string(path);
-
-#ifdef HAVE_CXX_FILESYSTEM
+#if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
 
   if(auto a = Filesystem::absolute(path, ec); !ec)
@@ -32,7 +31,13 @@ std::string fs_absolute(std::string_view path)
 
   fs_error_callback(path, ec);
   return {};
+#elif defined(_WIN32)
+  // this is what std::filesystem::absolute specifies and is what MSVC does - it's distinct from a trivial algorithm.
+  return fs_win32_full_name(path);
 #else
+  if (fs_is_absolute(path))
+    return std::string(path);
+
   std::string a = fs_get_cwd();
   if(a.empty())
     return {};

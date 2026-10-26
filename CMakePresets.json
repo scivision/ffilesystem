@@ -78,6 +78,7 @@
   }
 },
 { "name": "msvc", "inherits": "nofortran",
+  "binaryDir": "build-${presetName}",
   "displayName": "Visual Studio without Fortran",
   "generator": "Visual Studio 18 2026",
   "condition": {

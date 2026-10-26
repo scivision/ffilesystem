@@ -20,8 +20,8 @@ auto make_ctx() {
   ctx.cwd = fs_absolute("", "");
 
   if (fs_is_windows()) {
-    ctx.base = "j:/foo";
-    ctx.ref = std::string{"j:/foo"} + fs_filesep() + "rel";
+    ctx.base = "j:\\foo";
+    ctx.ref = std::string{"j:\\foo"} + fs_filesep() + "rel";
     if (const auto d = fs_getenv("SystemDrive")) {
       expect(d.has_value() >> fatal);
       ctx.sys_drive = d.value();
@@ -46,7 +46,7 @@ int main() {
     expect(eq(fs_absolute(""), ctx.cwd));
     expect(eq(fs_absolute("", ""), ctx.cwd));
     expect(eq(fs_absolute("rel", ctx.base), ctx.ref));
-    expect(eq(fs_absolute(ctx.cwd + "/rel"), ctx.cwd + "/rel"));
+    expect(eq(fs_absolute(ctx.cwd + fs_filesep() + "rel"), ctx.cwd + fs_filesep() + "rel"));
 
     // absolute("./rel") may be "/fullpath/./rel" (our method, and most <filesystem> except Windows)
     //                     or "/fullpath/rel" (Windows <filesystem>)
@@ -63,7 +63,7 @@ int main() {
 
     if (fs_is_windows()) {
       expect(!ctx.sys_drive.empty());
-      expect(eq(fs_absolute(ctx.sys_drive + "/"), ctx.sys_drive + "/"));
+      expect(eq(fs_absolute(ctx.sys_drive + fs_filesep()), ctx.sys_drive + fs_filesep()));
 
       // NOTE: no, as MSYS interprets "/" totally differently depending on backend and vs MSVC
       // std::string s = fs_absolute("/");
