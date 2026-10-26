@@ -10,6 +10,7 @@ target_link_libraries(fs_cli PRIVATE ffilesystem)
 target_compile_definitions(fs_cli PRIVATE
 "$<$<BOOL:${HAVE_CXX_FILESYSTEM}>:HAVE_CXX_FILESYSTEM>"
 "$<$<BOOL:${ffilesystem_extra}>:ffilesystem_extra>"
+"$<$<BOOL:${ffilesystem_system}>:ffilesystem_system>"
 )
 target_include_directories(fs_cli PRIVATE ${ffilesystem_SOURCE_DIR}/src)
 

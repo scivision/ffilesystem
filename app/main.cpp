@@ -422,20 +422,28 @@ std::cout << "current working directory (CWD): " << cwd << "\n";
 std::cout << "Compiler: " << fs_compiler() << "\n";
 std::cout << "Optimized: " << fs_is_optimized() << " Trace: " << fs_trace << "\n";
 
-std::cout << "Username: " << fs_get_username() << "\n";
 std::cout << "Homedir: " << fs_get_homedir() << "\n";
 
 if (fs_is_windows())
   std::cout << "Windows long paths enabled: " << fs_win32_long_paths_enabled() << "\n";
 
-// doesn't work usefully on Cygwin
-#if defined(ffilesystem_extra)
 
-std::cout << "maximum path component length: " << fs_max_component(cwd) << "\n";
+#if defined(ffilesystem_system)
 std::cout << "CPU arch: " << fs_cpu_arch() << "\n";
 std::cout << "Shell: " << fs_get_shell() << "\n";
 std::cout << "Hostname: " << fs_hostname() << "\n";
+std::cout << "Username: " << fs_get_username() << "\n";
 
+if(fs_is_admin())
+  std::cout << "NOTE: running as admin / sudo\n";
+#endif
+
+
+#if defined(ffilesystem_extra)
+
+std::cout << "maximum path component length: " << fs_max_component(cwd) << "\n";
+
+// doesn't work usefully on Cygwin
 if(!fs_is_cygwin())
   std::cout << "CWD filesystem Type: " << fs_filesystem_type(cwd) << "\n";
 #endif
@@ -443,10 +451,6 @@ if(!fs_is_cygwin())
 // commented out  because some systems (Cygwin) silently exit with error code 0 on std::locale("") call
 //std::cout << "Locale: " << fs_get_locale_name() << "\n";
 
-#if defined(ffilesystem_extra)
-if(fs_is_admin())
-  std::cout << "NOTE: running as admin / sudo\n";
-#endif
 
 std::cout << std::endl;
 // flush for CI etc.
