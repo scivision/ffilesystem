@@ -75,6 +75,10 @@ bool fs_stdin_tty()
 
 std::string fs_get_terminal()
 {
+  // if possible return the terminal name or identifier
+  // for CI runners or AI agents, there is likely no terminal attached,
+  // so the output would be an empty string
+
 #if defined(_WIN32)
   // inspired by https://gitlab.kitware.com/utils/kwsys/-/commit/0d6eac1feb8615fe59e8f972d41d1eaa8bc9baf8
   // Windows Console Host: ConsoleWindowClass
@@ -104,6 +108,5 @@ std::string fs_get_terminal()
     return *t;
 #endif
 
-  fs_error_callback("");
   return {};
 }

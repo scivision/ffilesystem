@@ -129,6 +129,7 @@ get_terminal()
 
 The Terminal on Windows is "ConsoleWindowClass" for legacy COMSPEC or "PseudoConsoleWindow" for Windows Terminal.
 On non-Windows systems (or WSL) the Terminal may represent itself like "xterm" or "gnome-terminal".
+The result may be empty when no terminal is available, such as in a headless or agent-launched process, or when `TERM` is unset.
 
 ---
 

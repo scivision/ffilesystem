@@ -74,6 +74,23 @@ int main() {
       expect(!ctx.sys_drive.empty());
       expect(eq(fs_absolute(ctx.sys_drive + fs_filesep()), ctx.sys_drive + fs_filesep()));
 
+      const std::string cwd_root = fs_root(ctx.cwd);
+      const std::string cwd_root_name = fs_root_name(ctx.cwd);
+      expect(!cwd_root.empty() >> fatal);
+      expect(!cwd_root_name.empty() >> fatal);
+
+      std::string drive_relative = cwd_root_name + "rel";
+      expect(!fs_is_absolute(drive_relative));
+      std::string expected_drive_relative = ctx.cwd;
+      if (expected_drive_relative.back() != '/' && expected_drive_relative.back() != '\\')
+        expected_drive_relative.push_back(fs_filesep());
+      expected_drive_relative += "rel";
+      expect(eq(fs_absolute(drive_relative), expected_drive_relative));
+
+      std::string root_directory_relative = fs_root_directory(ctx.cwd) + "rel";
+      expect(!fs_is_absolute(root_directory_relative));
+      expect(eq(fs_absolute(root_directory_relative), cwd_root + "rel"));
+
       // NOTE: no, as MSYS interprets "/" totally differently depending on backend and vs MSVC
       // std::string s = fs_absolute("/");
       // fs_as_posix(s);
