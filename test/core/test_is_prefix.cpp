@@ -1,36 +1,32 @@
 #include "ffilesystem.h"
-#include <array>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include <boost/ut.hpp>
 
 int main() {
     using namespace boost::ut;
 
-    struct case_t {
-        std::string base;
-        std::string pre;
-        bool expected;
-    };
+    "is_prefix true"_test = [](auto const& test_case) {
+        expect(fs_is_prefix(test_case.first, test_case.second));
+    } | std::vector<std::pair<std::string, std::string>>{
+            {"a/b", "a/b"},
+            {"a/b/", "a/b"},
+            {"a/b", "a/b/"},
+            {"c:/", "c:/a"},
+        };
 
-    const std::array<case_t, 12> cases{{
-            {"a/b//c", "a/b", false},
-            {"a/b/c", "a/b/", false},
-            {"a/b/c", "a", false},
-            {"a/b", "a/b", true},
-            {"a/b/", "a/b", true},
-            {"/a/b", "a/b", false},
-            {"a/b", "/a/b", false},
-            {"a/b", "a/b/", true},
-            {"a/b", "c", false},
-            {"b", "a/b", false},
-            {"c:/a", "c:/", false},
-            {"c:/", "c:/a", true},
-    }};
-
-    "is_prefix"_test = [cases] {
-        for (const auto& test_case : cases) {
-            expect(eq(fs_is_prefix(test_case.base, test_case.pre), test_case.expected));
-        }
-    };
+    "is_prefix false"_test = [](auto const& test_case) {
+        expect(!fs_is_prefix(test_case.first, test_case.second));
+    } | std::vector<std::pair<std::string, std::string>>{
+            {"a/b//c", "a/b"},
+            {"a/b/c", "a/b/"},
+            {"a/b/c", "a"},
+            {"/a/b", "a/b"},
+            {"a/b", "/a/b"},
+            {"a/b", "c"},
+            {"b", "a/b"},
+            {"c:/a", "c:/"},
+        };
 }
