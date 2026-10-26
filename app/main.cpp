@@ -30,6 +30,13 @@ namespace Filesystem = std::filesystem;
 #ifdef _MSC_VER
 #define WIN32_LEAN_AND_MEAN
 #include <crtdbg.h>
+# ifndef NOMINMAX
+#  define NOMINMAX
+# endif
+#endif
+
+#if defined(_WIN32) || defined(__CYGWIN__)
+#include "win32_path.h"
 #endif
 
 #include "ffilesystem.h"
@@ -195,6 +202,10 @@ bool one_arg(std::string_view fun, std::string_view a1)
     {"remove", [](std::string_view a1) { return fs_remove(a1); }},
     {"which", [](std::string_view a1) { return fs_which(a1, "", false); }},
     {"which_all", [](std::string_view a1) { return fs_which(a1, "", true); }},
+#if defined(_WIN32) || defined(__CYGWIN__)
+    {"full_name", [](std::string_view a1) { return fs_win32_full_name(a1); }},
+    {"final_path", [](std::string_view a1) { return fs_win32_final_path(a1); }},
+#endif
   };
 
   static const std::unordered_map<std::string_view, std::function<std::uintmax_t(std::string_view)>> m1uintm =

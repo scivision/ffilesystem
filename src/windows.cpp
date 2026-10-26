@@ -204,15 +204,16 @@ fs_win32_full_name(std::string_view path)
 
   std::wstring const w = fs_win32_to_wide(path);
 
-  auto const L = GetFullPathNameW(w.c_str(), 0, nullptr, nullptr);
+  DWORD const L = GetFullPathNameW(w.c_str(), 0, nullptr, nullptr);
   if(L > 0){
-    std::wstring r(L+1, '\0');
-    if(DWORD const Lr = GetFullPathNameW(w.c_str(), static_cast<DWORD>(r.size()), r.data(), nullptr);
-       Lr > 0 && Lr < r.size())
-      return fs_win32_to_narrow(std::wstring_view(r.data(), Lr));
+    std::wstring r(L, '\0');
+    if(DWORD const Lr = GetFullPathNameW(w.c_str(), static_cast<DWORD>(r.size()), r.data(), nullptr); Lr < L && Lr > 0)
+      return fs_win32_to_narrow(r);
+    else
+      fs_error_callback(path, "GetFullPathNameW: Lr=" + std::to_string(Lr));
   }
 
-  fs_error_callback(path);
+  fs_error_callback(path, "GetFullPathNameW: L=" + std::to_string(L));
   return {};
 }
 
@@ -239,13 +240,13 @@ std::string fs_win32_final_path(std::string_view path)
 
   if(DWORD const L = GetFinalPathNameByHandleW(h, nullptr, 0, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS); L > 0)
   {
-    std::wstring w(L + 1, '\0');
+    std::wstring w(L, '\0');
     DWORD const Lr = GetFinalPathNameByHandleW(h, w.data(), L, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
 
     CloseHandle(h);
 
     if(Lr == L-1) {
-      std::string r(fs_win32_to_narrow(std::wstring_view(w.data(), L)));
+      std::string r(fs_win32_to_narrow(w));
 
       if (fs_win32_is_ext_path(r) && !fs_win32_is_ext_path(path))
         r.erase(0, 4);

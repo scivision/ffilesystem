@@ -11,6 +11,7 @@ target_compile_definitions(fs_cli PRIVATE
 "$<$<BOOL:${HAVE_CXX_FILESYSTEM}>:HAVE_CXX_FILESYSTEM>"
 "$<$<BOOL:${ffilesystem_extra}>:ffilesystem_extra>"
 )
+target_include_directories(fs_cli PRIVATE ${ffilesystem_SOURCE_DIR}/src)
 
 install(TARGETS fs_cli EXPORT ffilesystem-targets
 BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR})

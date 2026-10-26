@@ -91,5 +91,15 @@ using namespace boost::ut;
     expect(final.find('\0') == std::string::npos);
     expect(full.back() != '\0');
     expect(final.back() != '\0');
+
+    std::string pfull = fs_win32_full_name("..");
+    expect(!pfull.empty() >> fatal);
+    expect(fs_exists(pfull));
+    expect(pfull.length() < full.length());
+
+    std::string pfinal = fs_win32_final_path("..");
+    expect(!pfinal.empty() >> fatal);
+    expect(fs_exists(pfinal));
+    expect(pfinal.length() < final.length());
   };
 }
