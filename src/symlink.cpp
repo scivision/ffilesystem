@@ -4,7 +4,7 @@
 #endif
 #endif
 
-#if defined(_WIN32)
+#if FS_USE_WIN32_SYMLINK
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #endif

@@ -73,10 +73,10 @@ bool no_arg(std::string_view fun){
     {"long_paths", fs_win32_long_paths_enabled}
   };
 
-using fs_function = std::function<std::variant<std::string, bool, int, char, long, unsigned long long>()>;
+using fs_function = std::function<std::variant<std::string, std::string_view, bool, int, char, long, unsigned long long>()>;
 
 static const std::unordered_map<std::string_view, fs_function> fs_function_map = {
-  {"backend", []() { return fs_backend(); }},
+  {"backend", []() { return ffilesystem::backend; }},
   {"is_wsl", []() { return fs_is_wsl(); }},
   {"filesep", []() { return ffilesystem::file_separator; }},
   {"pathsep", []() { return ffilesystem::path_separator; }},
@@ -410,7 +410,7 @@ int main()
 
 const std::string cwd = fs_get_cwd();
 
-std::cout << "Ffilesystem. Backend: " << fs_backend() << "\n";
+std::cout << "Ffilesystem. Backend: " << ffilesystem::backend << "\n";
 std::cout << fs_compiler() << "\n";
 std::cout << "Ffilesystem C++ standard " << fs_cpp_lang() << "  CLI C++ standard " << __cplusplus << "\n";
 std::cout << "Ffilesystem C++ <format> support: " << fs_cpp_format() << "\n";

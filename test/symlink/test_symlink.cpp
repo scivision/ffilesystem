@@ -134,7 +134,7 @@ if (!fs_is_writable(".")) {
     expect(fs_exists(ctx.link_file)) << "exists() should be true for existing symlink: " << ctx.link_file;
     expect(fs_exists(ctx.link_dir)) << "exists() should be true for existing symlink: " << ctx.link_dir;
 
-    if (!ffilesystem::is_windows || (fs_is_msvc() && fs_backend() == "<filesystem>")) {
+    if (!ffilesystem::is_windows || (fs_is_msvc() && ffilesystem::backend == "<filesystem>")) {
       // Python os.stat() and os.lstat() handle broken symlink correctly on Windows
       expect(!fs_exists(ctx.broken_link)) << "exists() should be false for broken symlink: " << ctx.broken_link;
     }

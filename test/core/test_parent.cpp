@@ -38,7 +38,7 @@ int main() {
         {"x:/", "x:/"},
         {"x:\\", "x:/"},
     };
-    if (fs_backend() != "<filesystem>") {
+    if (ffilesystem::backend != "<filesystem>") {
       windows_cases.emplace_back(R"(\\?\C:\a\b/../.parent.txt)",
                                  R"(\\?\C:\a\b/..)");
     }

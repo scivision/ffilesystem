@@ -185,9 +185,9 @@ size_t fs_exe_path(char* path, const size_t buffer_size)
   return fs_str2char(fs_exe_path(), path, buffer_size);
 }
 
-size_t fs_backend(char* path, const size_t buffer_size)
+size_t fs_backend(char* r, const size_t buffer_size)
 {
-  return fs_str2char(fs_backend(), path, buffer_size);
+  return fs_str2char(ffilesystem::backend, r, buffer_size);
 }
 
 size_t fs_as_posix(const char* path, char* result, const size_t buffer_size)

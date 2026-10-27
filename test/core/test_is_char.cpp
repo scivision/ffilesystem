@@ -26,7 +26,7 @@ int main() {
     }
   };
 
-if (fs_backend() == "<filesystem>" && fs_is_mingw() && fs_compiler().substr(0, 5) == "Clang")
+if (ffilesystem::backend == "<filesystem>" && fs_is_mingw() && fs_compiler().substr(0, 5) == "Clang")
   {
     skip / "exists"_test = [] {};
   } else {

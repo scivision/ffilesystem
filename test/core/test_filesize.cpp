@@ -46,12 +46,12 @@ if (!fs_is_writable(".")) {
 
     constexpr std::uintmax_t fsize = 5;
 
-    expect(eq(fs_file_size(ctx.file), fsize)) << "backend " << fs_backend() << " file " << ctx.file;
+    expect(eq(fs_file_size(ctx.file), fsize)) << "backend " << ffilesystem::backend << " file " << ctx.file;
 
-    expect(eq(fs_file_size("."), fs_unknown_size)) << "backend " << fs_backend();
-    expect(eq(fs_file_size("not-exist-file"), fs_unknown_size)) << "backend " << fs_backend();
+    expect(eq(fs_file_size("."), fs_unknown_size)) << "backend " << ffilesystem::backend;
+    expect(eq(fs_file_size("not-exist-file"), fs_unknown_size)) << "backend " << ffilesystem::backend;
 
-    expect(eq(fs_file_size(ctx.nonnull_file), fsize)) << "backend " << fs_backend()
+    expect(eq(fs_file_size(ctx.nonnull_file), fsize)) << "backend " << ffilesystem::backend
             << "fs_file_size() non-null-terminated path " << ctx.nonnull_file;
   };
 }

@@ -47,13 +47,13 @@ int main() {
             {"fs_touch", [](std::string_view input) { return !fs_touch(input); }},
         };
 
-    expect(eq(fs_file_size(e), fs_unknown_size)) << "backend: " << fs_backend();
+    expect(eq(fs_file_size(e), fs_unknown_size)) << "backend: " << ffilesystem::backend;
 
     expect(!fs_get_cwd().empty());
     expect(!fs_get_homedir().empty());
 
     if (!ffilesystem::is_windows) {
-      expect(eq(fs_space_available(e), fs_unknown_size)) << "backend: " << fs_backend();
+      expect(eq(fs_space_available(e), fs_unknown_size)) << "backend: " << ffilesystem::backend;
       expect(!fs_set_permissions(e, 0, 0, 0));
     }
   };

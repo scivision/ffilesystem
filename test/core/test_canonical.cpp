@@ -104,7 +104,7 @@ int main() {
     expect(any_of{*sys_drive + "\\", *sys_drive + "/"} == fs_canonical(*sys_drive + "/", false));
     expect(any_of{"M:\\", "M:/"} == fs_canonical("M:/", false));
 
-    if (fs_backend() != "<filesystem>") {
+    if (ffilesystem::backend != "<filesystem>") {
       expect(any_of{R"(\\?\)" + *sys_drive + "\\", R"(\\?\)" + *sys_drive + "/"} == fs_canonical(R"(\\?\)" + *sys_drive + "\\", true));
     }
 };

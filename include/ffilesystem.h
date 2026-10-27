@@ -101,6 +101,14 @@ constexpr char path_separator = (is_windows)
   ? ';'
   : ':';
 
+constexpr std::string_view backend =
+#ifdef HAVE_CXX_FILESYSTEM
+  "<filesystem>";
+#else
+  "C";
+#endif
+
+
 } // namespace ffilesystem
 
 std::string fs_absolute(std::string_view);
@@ -111,8 +119,6 @@ std::string fs_as_posix(std::string_view);
 
 void fs_as_windows(std::string&);
 void fs_as_windows(std::wstring&);
-
-std::string fs_backend();
 
 std::string fs_canonical(std::string_view, const bool = false);
 

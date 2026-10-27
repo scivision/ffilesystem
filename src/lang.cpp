@@ -35,15 +35,6 @@ long fs_cpp_ranges() {
 }
 
 
-std::string fs_backend() {
-#ifdef HAVE_CXX_FILESYSTEM
-  return "<filesystem>";
-#else
-  return "C";
-#endif
-}
-
-
 bool fs_is_optimized() {
 #if defined(__OPTIMIZE__) || defined(FFS_OPTIMIZED)
   return true;

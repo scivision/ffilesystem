@@ -194,7 +194,7 @@ if(argc > 1)
 std::string_view path;
 
 std::cout << fs_compiler() << "\n";
-std::cout << "Ffilesystem backend: " << fs_backend() << "\n";
+std::cout << "Ffilesystem backend: " << ffilesystem::backend << "\n";
 std::cout << "C++ standard: " << fs_cpp_lang() << "\n";
 std::cout << "C standard: " << fs_c_lang() << "\n";
 std::cout << "Benchmark C++ standard " << __cplusplus << "\n";

@@ -33,7 +33,7 @@ int main() {
 
     expect(fs_hard_link_count(".") >= 1U);
 
-    expect(eq(fs_hard_link_count("not-exist-file"), fs_unknown_size)) << "backend " << fs_backend();
+    expect(eq(fs_hard_link_count("not-exist-file"), fs_unknown_size)) << "backend " << ffilesystem::backend;
 
     std::cout << "the return code for errors e.g. not existing file is " << fs_unknown_size << "\n";
 
@@ -65,7 +65,7 @@ int main() {
     expect(eq(fs_st_dev(ctx.nonnull2), fs_st_dev(in)))
         << "fs_st_dev(" << ctx.nonnull2 << ") should be the same as fs_st_dev(" << in << ")";
 
-    expect(eq(fs_st_dev("not-exist-file"), static_cast<dev_t>(0))) << "backend " << fs_backend();
+    expect(eq(fs_st_dev("not-exist-file"), static_cast<dev_t>(0))) << "backend " << ffilesystem::backend;
   };
 
   "inode"_test = [] {
@@ -79,6 +79,6 @@ int main() {
     expect(eq(fs_inode(ctx.nonnull2), inode_dot))
         << "fs_inode(" << ctx.nonnull2 << ") should be the same as fs_inode(" << in << ")";
 
-    expect(eq(fs_inode("not-exist-file"), static_cast<ino_t>(0))) << "backend " << fs_backend();
+    expect(eq(fs_inode("not-exist-file"), static_cast<ino_t>(0))) << "backend " << ffilesystem::backend;
   };
 }

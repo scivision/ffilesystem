@@ -51,7 +51,7 @@ int main() {
     expect(eq(fs_absolute(ctx.cwd + ffilesystem::file_separator + "rel"), ctx.cwd + ffilesystem::file_separator + "rel"));
 
     std::string r = ctx.cwd + ffilesystem::file_separator;
-    if (!ffilesystem::is_windows || (fs_is_mingw() && fs_is_clang() && fs_backend() == "<filesystem>")) r += dot + ffilesystem::file_separator;
+    if (!ffilesystem::is_windows || (fs_is_mingw() && fs_is_clang() && ffilesystem::backend == "<filesystem>")) r += dot + ffilesystem::file_separator;
 
     r += "rel";
 
@@ -96,7 +96,7 @@ int main() {
       // fs_as_posix(s);
       // expect(eq(fs_drop_slash(s), cwd));
 
-      if (fs_is_msvc() && fs_backend() == "<filesystem>" && fs_win32_long_paths_enabled()) {
+      if (fs_is_msvc() && ffilesystem::backend == "<filesystem>" && fs_win32_long_paths_enabled()) {
         expect(eq(fs_absolute(R"(\\?\X:\anybody)"), std::string{R"(\\?\X:\anybody)"}));
         expect(eq(fs_absolute(R"(\\?\UNC\server\share)"), std::string{R"(\\?\UNC\server\share)"}));
       }
@@ -122,7 +122,7 @@ int main() {
       expect(!fs_is_absolute("/"));
       expect(!fs_is_absolute("/日本語"));
 
-      if (fs_is_msvc() && fs_backend() == "<filesystem>" && fs_win32_long_paths_enabled()) {
+      if (fs_is_msvc() && ffilesystem::backend == "<filesystem>" && fs_win32_long_paths_enabled()) {
         expect(fs_is_absolute(R"(\\?\)"));
         expect(fs_is_absolute(R"(\\.\)"));
 
