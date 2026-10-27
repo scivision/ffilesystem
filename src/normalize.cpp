@@ -215,7 +215,7 @@ fs_split_pathsep(std::string_view path)
   std::string_view::size_type end;
 
   while (start < path.length()) {
-    end = path.find(fs_pathsep(), start);
+    end = path.find(ffilesystem::path_separator, start);
 
     if (end == std::string_view::npos){
       parts.push_back(std::string(path.substr(start)));

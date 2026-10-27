@@ -208,7 +208,7 @@ fs_join(std::string_view path, std::string_view other)
   if(fs_is_absolute(other) || (fs_has_root_name(other) && fs_root_name(other) != fs_root_name(path)))
     return std::string(other);
   else if (fs_has_root_directory(other))
-    return fs_root_name(path) + std::string(other);
+    return fs_root_name(path).append(other);
 
   std::string p{path};
 

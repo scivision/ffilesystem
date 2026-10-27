@@ -78,7 +78,8 @@ using fs_function = std::function<std::variant<std::string, bool, int, char, lon
 static const std::unordered_map<std::string_view, fs_function> fs_function_map = {
   {"backend", []() { return fs_backend(); }},
   {"is_wsl", []() { return fs_is_wsl(); }},
-  {"pathsep", []() { return fs_pathsep(); }},
+  {"filesep", []() { return ffilesystem::file_separator; }},
+  {"pathsep", []() { return ffilesystem::path_separator; }},
   {"cpp_lang", []() { return fs_cpp_lang(); }},
   {"c_lang", []() { return fs_c_lang(); }},
   {"locale", []() { return fs_get_locale_name(); }},

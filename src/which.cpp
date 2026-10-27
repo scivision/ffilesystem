@@ -47,7 +47,7 @@ std::string fs_which_generic(std::string_view name, std::string_view path, const
   std::string::size_type end;
 
 do {
-    end = paths.find(fs_pathsep(), start);
+    end = paths.find(ffilesystem::path_separator, start);
 
     // avoid empty path
     if (end != std::string::npos && end == start){
@@ -65,7 +65,7 @@ do {
 
     if (fs_is_file(r) && fs_is_exe(r)){
       if(find_all)
-        t += r + fs_pathsep();
+        t += r + ffilesystem::path_separator;
       else
         return r;
     }

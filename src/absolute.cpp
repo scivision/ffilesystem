@@ -42,7 +42,7 @@ std::string fs_absolute(std::string_view path)
   if(a.empty())
     return {};
 
-  a.push_back('/');
+  a.push_back(ffilesystem::file_separator);
   return a.append(path);
   // NOT normalized to be consistent with <filesystem>
 #endif
@@ -63,7 +63,7 @@ std::string fs_absolute(std::string_view path, std::string_view base)
 
   if(!path.empty()){
     if(!ffilesystem::is_file_separator(b.back()))
-      b.push_back('/');
+      b.push_back(ffilesystem::file_separator);
 
     // don't need join(). Keeps it like Python pathlib.Path.absolute()
     b.append(path);
