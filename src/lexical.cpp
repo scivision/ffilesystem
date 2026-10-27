@@ -35,6 +35,12 @@ void fs_as_windows(std::string& path)
     std::replace(path.begin(), path.end(), '/', '\\');
 }
 
+void fs_as_windows(std::wstring& path)
+{
+  if(fs_is_windows())
+    std::replace(path.begin(), path.end(), '/', '\\');
+}
+
 
 void fs_ascii_lower(std::string& s)
 {

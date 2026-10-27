@@ -84,6 +84,7 @@ void fs_as_posix(std::string&);
 std::string fs_as_posix(std::string_view);
 
 void fs_as_windows(std::string&);
+void fs_as_windows(std::wstring&);
 
 std::string fs_backend();
 
