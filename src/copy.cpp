@@ -158,7 +158,7 @@ bool fs_copy_range(int const rid, int const wid, off_t len)
 bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, bool overwrite)
 {
   // copy a file in chunks
-  const std::string src(source);
+  const std::string src{source};
   fd_handle rid(::open(src.c_str(), O_RDONLY | O_CLOEXEC));
   if (!rid)
     return false;
@@ -175,7 +175,7 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
     opt |= O_EXCL;
 
 // https://linux.die.net/man/3/open
-  const std::string dst(dest);
+  const std::string dst{dest};
   fd_handle wid(::open(dst.c_str(), opt, s.st_mode));
   if (!wid)
     return false;
