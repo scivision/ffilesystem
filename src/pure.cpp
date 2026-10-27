@@ -106,16 +106,14 @@ fs_root_directory(std::string_view path)
   return Filesystem::path(path).root_directory().string();
 #else
   if (fs_is_windows()) {
-    if(path.length() >= 3 && path[1] == ':' && ffilesystem::is_file_separator(path[2]))
-      return std::string(1, path[2]);
-    else if (path.length() >= 1 && ffilesystem::is_file_separator(path[0]))
-      return std::string(1, path[0]);
+    const auto i = path.size() >= 2 && path[1] == ':' ? 2u : 0u;
 
-    return "";
+    return i < path.size() && ffilesystem::is_file_separator(path[i])
+      ? std::string(1, path[i])
+      : "";
   }
-  else {
-    return ffilesystem::is_file_separator(path.front()) ? std::string(1, path.front()) : "";
-  }
+
+  return ffilesystem::is_file_separator(path.front()) ? std::string(1, path.front()) : "";
 #endif
 }
 
@@ -135,8 +133,8 @@ fs_root_name([[maybe_unused]] std::string_view path)
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).root_name().string();
 #else
-  if (fs_is_windows() && path.length() >= 2 && path[1] == ':')
-    return std::string(1, path[0]) + ":";
+  if (fs_is_windows() && path.size() >= 2 && path[1] == ':')
+    return std::string(path.substr(0, 2));
 
   return {};
 #endif
