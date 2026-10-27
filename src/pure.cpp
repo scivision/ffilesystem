@@ -78,10 +78,8 @@ fs_file_name(std::string_view path)
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).filename().string();
 #else
-  if(auto i = path.find_last_of(ffilesystem::file_separators); i != std::string_view::npos)
-    return std::string(path.substr(i + 1));
-
-  return std::string(path);
+  const auto i = path.find_last_of(ffilesystem::file_separators);
+  return std::string(path.substr(i == std::string_view::npos ? 0 : i + 1));
 #endif
 }
 
@@ -161,8 +159,7 @@ fs_stem(std::string_view path)
     return r;
 
   // find last dot
-  if (auto i = r.rfind('.');
-      i != std::string::npos && i != 0)
+  if (auto i = r.rfind('.'); i != std::string::npos && i != 0)
     r.resize(i);
 
   return r;
@@ -229,9 +226,9 @@ fs_with_suffix(std::string_view path, std::string_view new_suffix)
     r = stem;
   else {
     r = p;
-    if(p.back() != '/'){
+    if(p.back() != '/')
       r.push_back('/');
-    }
+
     r += stem;
   }
 
