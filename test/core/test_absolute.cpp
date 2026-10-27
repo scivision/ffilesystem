@@ -30,7 +30,7 @@ auto make_ctx() {
     ctx.base = "/foo";
   }
 
-  ctx.ref = ctx.base + fs_filesep() + "rel";
+  ctx.ref = ctx.base + ffilesystem::file_separator + "rel";
 
   return ctx;
 }
@@ -48,31 +48,31 @@ int main() {
     expect(eq(fs_absolute(""), ctx.cwd));
     expect(eq(fs_absolute("", ""), ctx.cwd));
     expect(eq(fs_absolute("rel", ctx.base), ctx.ref));
-    expect(eq(fs_absolute(ctx.cwd + fs_filesep() + "rel"), ctx.cwd + fs_filesep() + "rel"));
+    expect(eq(fs_absolute(ctx.cwd + ffilesystem::file_separator + "rel"), ctx.cwd + ffilesystem::file_separator + "rel"));
 
-    std::string r = ctx.cwd + fs_filesep();
-    if (!fs_is_windows() || (fs_is_mingw() && fs_is_clang() && fs_backend() == "<filesystem>")) r += dot + fs_filesep();
+    std::string r = ctx.cwd + ffilesystem::file_separator;
+    if (!fs_is_windows() || (fs_is_mingw() && fs_is_clang() && fs_backend() == "<filesystem>")) r += dot + ffilesystem::file_separator;
 
     r += "rel";
 
-    expect(eq(fs_absolute(dot + fs_filesep() + "rel"), r));
+    expect(eq(fs_absolute(dot + ffilesystem::file_separator + "rel"), r));
 
     // absolute("./rel") may be "/cwd/./rel" (our method, and most <filesystem> except Windows)
     //                     or "/cwd/rel" (Windows <filesystem>)
     // using for base "." or ".." and similar has similar ambiguity for testing.
 
     // relative path, empty base
-    expect(eq(fs_absolute("rel", ""), ctx.cwd + fs_filesep() + "rel"));
+    expect(eq(fs_absolute("rel", ""), ctx.cwd + ffilesystem::file_separator + "rel"));
 
     // empty path, relative base
-    expect(eq(fs_absolute("", "rel"), ctx.cwd + fs_filesep() + "rel"));
+    expect(eq(fs_absolute("", "rel"), ctx.cwd + ffilesystem::file_separator + "rel"));
 
-    expect(eq(fs_absolute("日本語"), ctx.cwd + fs_filesep() + "日本語"));
-    expect(eq(fs_absolute("have space"), ctx.cwd + fs_filesep() + "have space"));
+    expect(eq(fs_absolute("日本語"), ctx.cwd + ffilesystem::file_separator + "日本語"));
+    expect(eq(fs_absolute("have space"), ctx.cwd + ffilesystem::file_separator + "have space"));
 
     if (fs_is_windows()) {
       expect(!ctx.sys_drive.empty());
-      expect(eq(fs_absolute(ctx.sys_drive + fs_filesep()), ctx.sys_drive + fs_filesep()));
+      expect(eq(fs_absolute(ctx.sys_drive + ffilesystem::file_separator), ctx.sys_drive + ffilesystem::file_separator));
 
       const std::string cwd_root = fs_root(ctx.cwd);
       const std::string cwd_root_name = fs_root_name(ctx.cwd);
@@ -83,7 +83,7 @@ int main() {
       expect(!fs_is_absolute(drive_relative));
       std::string expected_drive_relative = ctx.cwd;
       if (expected_drive_relative.back() != '/' && expected_drive_relative.back() != '\\')
-        expected_drive_relative.push_back(fs_filesep());
+        expected_drive_relative.push_back(ffilesystem::file_separator);
       expected_drive_relative += "rel";
       expect(eq(fs_absolute(drive_relative), expected_drive_relative));
 

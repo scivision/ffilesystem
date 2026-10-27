@@ -35,15 +35,15 @@ auto setup(symlink_ctx& ctx, std::string_view name) {
   // realpath is for Windows Dev Drive and Networked drives
   expect(!ctx.cwd.empty() >> fatal) << "get_cwd() should not return empty string";
 
-  ctx.tgt = ctx.cwd + fs_filesep() + "test_" + n + "_cpp.txt";
-  ctx.not_exist_tgt = ctx.cwd + fs_filesep() + "test_" + n + "_cpp.notexist";
+  ctx.tgt = ctx.cwd + ffilesystem::file_separator + "test_" + n + "_cpp.txt";
+  ctx.not_exist_tgt = ctx.cwd + ffilesystem::file_separator + "test_" + n + "_cpp.notexist";
 
   expect(fs_touch(ctx.tgt) >> fatal);
   expect(fs_is_file(ctx.tgt) >> fatal) << "is_file(" << ctx.tgt << ") should be true for existing regular file";
 
-  ctx.link_file = ctx.cwd + fs_filesep() + "test_" + n + "_cpp.link";
-  ctx.link_dir = ctx.cwd + fs_filesep() + "test_" + n + "_cpp.dir.link";
-  ctx.broken_link = ctx.cwd + fs_filesep() + "test_" + n + "_cpp.broken";
+  ctx.link_file = ctx.cwd + ffilesystem::file_separator + "test_" + n + "_cpp.link";
+  ctx.link_dir = ctx.cwd + ffilesystem::file_separator + "test_" + n + "_cpp.dir.link";
+  ctx.broken_link = ctx.cwd + ffilesystem::file_separator + "test_" + n + "_cpp.broken";
   ctx.in_file = ctx.link_file + "-in_file";
   ctx.in2 = ctx.in_file + "-read_past_the_end_of_buffer";
 

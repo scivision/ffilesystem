@@ -72,10 +72,37 @@ constexpr std::uintmax_t fs_unknown_size = static_cast<std::uintmax_t>(-1);
 #endif
 
 #ifdef HAVE_CXX_FILESYSTEM
-
 #include <filesystem>
-
 #endif
+
+namespace ffilesystem {
+
+inline constexpr char file_separator =
+#ifdef _WIN32
+  '\\';
+#else
+  '/';
+#endif
+
+inline constexpr std::string_view file_separators =
+#ifdef _WIN32
+  "\\/";
+#else
+  "/";
+#endif
+
+inline constexpr bool is_file_separator(char c) noexcept
+{
+  return c == '/' || c == file_separator;
+}
+
+inline constexpr char path_separator =
+#ifdef _WIN32
+  ';';
+#else
+  ':';
+#endif
+}
 
 std::string fs_absolute(std::string_view);
 std::string fs_absolute(std::string_view, std::string_view);

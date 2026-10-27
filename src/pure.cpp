@@ -14,16 +14,9 @@ namespace Filesystem = std::filesystem;
 #include "ffilesystem.h"
 
 
-char
-fs_filesep(){
-  return fs_is_windows() ? '\\' : '/';
-}
+char fs_filesep(){ return ffilesystem::file_separator; }
 
-
-char
-fs_pathsep(){
-  return fs_is_windows() ? ';' : ':';
-}
+char fs_pathsep(){ return ffilesystem::path_separator; }
 
 
 const char* fs_devnull(){
@@ -34,7 +27,7 @@ const char* fs_devnull(){
 bool
 fs_slash_first(std::string_view path)
 {
-  return !path.empty() && (path.front() == '/' || path.front() == fs_filesep());
+  return !path.empty() && ffilesystem::is_file_separator(path.front());
 }
 
 
@@ -92,14 +85,10 @@ fs_file_name(std::string_view path)
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).filename().string();
 #else
+  if(auto i = path.find_last_of(ffilesystem::file_separators); i != std::string_view::npos)
+    return std::string(path.substr(i + 1));
 
-  const auto i = fs_is_windows()
-    ? path.find_last_of(R"(/\)")
-    : path.rfind('/');
-
-  return (i != std::string_view::npos)
-    ? std::string(path.substr(i + 1))
-    : std::string(path);
+  return std::string(path);
 #endif
 }
 
@@ -124,15 +113,15 @@ fs_root_directory(std::string_view path)
   return Filesystem::path(path).root_directory().string();
 #else
   if (fs_is_windows()) {
-    if(path.length() >= 3 && path[1] == ':' && (path[2] == '/' || path[2] == '\\'))
+    if(path.length() >= 3 && path[1] == ':' && ffilesystem::is_file_separator(path[2]))
       return std::string(1, path[2]);
-    else if (path.length() >= 1 && (path[0] == '/' || path[0] == '\\'))
+    else if (path.length() >= 1 && ffilesystem::is_file_separator(path[0]))
       return std::string(1, path[0]);
 
     return "";
   }
   else {
-    return fs_slash_first(path) ? std::string(1, path.front()) : "";
+    return ffilesystem::is_file_separator(path.front()) ? std::string(1, path.front()) : "";
   }
 #endif
 }
@@ -211,22 +200,19 @@ std::string
 fs_join(std::string_view path, std::string_view other)
 {
   // does not normalize to preserve possible symlinks
-  if(path.empty() && other.empty())
-    return {};
-  if(path.empty())
-    return std::string(other);
-  if(other.empty())
-    return std::string(path);
 
 #ifdef HAVE_CXX_FILESYSTEM
+  // use generic string to keep '/' file separator to avoid confusion
   return (Filesystem::path(path) / other).generic_string();
 #else
-  if (other.front() == '/' || (fs_is_windows() && fs_is_absolute(other)))
+  if(fs_is_absolute(other) || (fs_has_root_name(other) && fs_root_name(other) != fs_root_name(path)))
     return std::string(other);
+  else if (fs_has_root_directory(other))
+    return fs_root_name(path) + std::string(other);
 
-  std::string p(path);
+  std::string p{path};
 
-  if(p.back() != '/')
+  if(!path.empty() && !ffilesystem::is_file_separator(p.back()))
     p.push_back('/');
 
   return p.append(other);

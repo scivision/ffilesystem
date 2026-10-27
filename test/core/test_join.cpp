@@ -15,7 +15,7 @@ int main() {
   } | std::vector<std::pair<std::pair<std::string_view, std::string_view>,
                             std::string_view>>{
           {{"", ""}, ""},
-          {{"a", ""}, "a"},
+          {{"a", ""}, "a/"},
           {{"", "b"}, "b"},
           {{"a/b/", "c/"}, "a/b/c/"},
           {{"/", ""}, "/"},

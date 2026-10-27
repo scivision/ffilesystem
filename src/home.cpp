@@ -23,22 +23,19 @@ std::string fs_expanduser(std::string_view path)
     return std::string(path);
 
   // second character is not a file separator
-  // std::set is much slower than a simple if
-  if(path.length() > 1 && !(path[1] == '/' || path[1] == fs_filesep()))
+  if(path.length() > 1 && !ffilesystem::is_file_separator(path[1]))
     return std::string(path);
 
   std::string e = fs_get_homedir();
   if(e.empty() || path.length() < 3)
     return e;
 
-// handle initial duplicated file separators. NOT .lexical_normal to handle "~/.."
-// std::set is much slower than a simple if
-  std::string::size_type i = 2;
-  while(i < path.length() && (path[i] == '/' || path[i] == fs_filesep()))
-    i++;
-
-  if (e.back() != '/' && e.back() != fs_filesep())
+  if (!ffilesystem::is_file_separator(e.back()))
     e.push_back('/');
 
-  return e.append(path.substr(i));
+  // handle initial duplicated file separators. NOT .lexical_normal to handle "~/.."
+  if (auto i = path.find_first_not_of(ffilesystem::file_separators, 2); i != std::string_view::npos)
+    e.append(path.substr(i));
+
+  return e;
 }

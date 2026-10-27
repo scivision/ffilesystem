@@ -16,7 +16,7 @@
 void fs_as_posix(std::string& path)
 {
   if(fs_is_windows())
-    std::replace(path.begin(), path.end(), fs_filesep(), '/');
+    std::replace(path.begin(), path.end(), ffilesystem::file_separator, '/');
 }
 
 std::string fs_as_posix(std::string_view path)
@@ -32,13 +32,13 @@ std::string fs_as_posix(std::string_view path)
 void fs_as_windows(std::string& path)
 {
   if(fs_is_windows())
-    std::replace(path.begin(), path.end(), '/', '\\');
+    std::replace(path.begin(), path.end(), '/', ffilesystem::file_separator);
 }
 
 void fs_as_windows(std::wstring& path)
 {
   if(fs_is_windows())
-    std::replace(path.begin(), path.end(), '/', '\\');
+    std::replace(path.begin(), path.end(), '/', ffilesystem::file_separator);
 }
 
 
@@ -130,7 +130,7 @@ fs_is_safe_char(const char c)
   // set<char, std::less<>>  6us
   // vector<char> 0.3us so much faster!
   // <string_view>.find_first_of is same speed as vector<char> but more readable
-  constexpr std::string_view safe = "_-.~@#$%^&()[]{}+=,!";
+  constexpr std::string_view safe{"_-.~@#$%^&()[]{}+=,!"};
 
   return std::isalnum(static_cast<unsigned char>(c)) || safe.find(c) != std::string_view::npos;
 }
