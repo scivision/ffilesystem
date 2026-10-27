@@ -280,8 +280,6 @@ bool fs_setenv(std::string_view, std::string_view);
 
 std::string fs_shortname(std::string_view);
 
-bool fs_slash_first(std::string_view);
-
 std::uintmax_t fs_space_available(std::string_view);
 std::uintmax_t fs_space_capacity(std::string_view);
 std::size_t fs_get_blksize(std::string_view);

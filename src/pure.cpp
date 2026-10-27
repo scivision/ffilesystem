@@ -24,13 +24,6 @@ const char* fs_devnull(){
 }
 
 
-bool
-fs_slash_first(std::string_view path)
-{
-  return !path.empty() && ffilesystem::is_file_separator(path.front());
-}
-
-
 std::string::size_type
 fs_strncpy(const char* path, char* result, const std::string::size_type buffer_size)
 {

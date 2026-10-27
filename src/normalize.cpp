@@ -77,7 +77,7 @@ fs_normal(std::string_view path)
   // rebuild path
   r.reserve(p.length() + 1);  // avoid reallocation while appending below
 
-   if (fs_slash_first(path))
+   if (ffilesystem::is_file_separator(path.front()))
      r.push_back('/');
 
   for (const auto& part : parts){

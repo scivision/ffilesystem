@@ -47,12 +47,12 @@ else {
   std::string buf;
 
   std::string const p = fs_resolve(path, false);
-  // ERROR_PATH_NOT_FOUND if relative directory
+  // Windows gives ERROR_PATH_NOT_FOUND if relative directory
 
   const std::vector<std::string> parts = fs_split(p);
 
   // if first part is root
-  if(fs_slash_first(p))
+  if(ffilesystem::is_file_separator(p.front()))
     buf.push_back('/');
 
   // iterate over parts
