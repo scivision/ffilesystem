@@ -1,35 +1,28 @@
 #include "ffilesystem.h"
-#include <array>
-#include <string>
+
+#include <string_view>
+#include <utility>
+#include <vector>
 
 #include <boost/ut.hpp>
 
 int main() {
-    using namespace boost::ut;
+  using namespace boost::ut;
 
-    struct case_t {
-        std::string base;
-        std::string sub;
-        bool expected;
-    };
-
-    const std::array<case_t, 11> cases{{
-            {"a/b/c", "a/b", true},
-            {"a/b/c", "a/b/", true},
-            {"a/b/c", "a", true},
-            {"a/b/", "a/b", false},
-            {"a/b", "a/b", false},
-            {"/a/b", "a/b", false},
-            {"a/b", "/a/b", false},
-            {"a/b", "a/b/", false},
-            {"a/b", "c", false},
-            {"b", "a/b", false},
-            {"c:/a", "c:/", true},
-    }};
-
-    "is_subdir"_test = [cases] {
-        for (const auto& test_case : cases) {
-            expect(eq(fs_is_subdir(test_case.base, test_case.sub), test_case.expected));
-        }
-    };
+  "is_subdir"_test = [](auto const& test_case) {
+    expect(eq(fs_is_subdir(test_case.first.first, test_case.first.second),
+              test_case.second));
+  } | std::vector<std::pair<std::pair<std::string_view, std::string_view>, bool>>{
+          {{"a/b/c", "a/b"}, true},
+          {{"a/b/c", "a/b/"}, true},
+          {{"a/b/c", "a"}, true},
+          {{"a/b/", "a/b"}, false},
+          {{"a/b", "a/b"}, false},
+          {{"/a/b", "a/b"}, false},
+          {{"a/b", "/a/b"}, false},
+          {{"a/b", "a/b/"}, false},
+          {{"a/b", "c"}, false},
+          {{"b", "a/b"}, false},
+          {{"c:/a", "c:/"}, true},
+      };
 }
