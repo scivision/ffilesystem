@@ -90,7 +90,7 @@ if (ok) {
   skip / "is_fifo"_test = [] {};
 }
 
-if (!ok || (fs_is_windows() && fs_backend() == "<filesystem>" &&
+if (!ok || (ffilesystem::is_windows && fs_backend() == "<filesystem>" &&
       (fs_is_msvc() || (fs_is_mingw() && fs_compiler().substr(0, 5) == "Clang")))) {
         skip / "is_file"_test = [] {};
 } else {
@@ -99,7 +99,7 @@ if (!ok || (fs_is_windows() && fs_backend() == "<filesystem>" &&
   };
 }
 
-if (!ok || fs_is_windows()) {
+if (!ok || ffilesystem::is_windows) {
         skip / "exists"_test = [] {};
 } else {
   "exists"_test = [&ctx] {

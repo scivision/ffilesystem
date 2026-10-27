@@ -32,7 +32,7 @@ using namespace boost::ut;
         {"./日本語", true},
     };
 
-if (fs_is_windows()){
+if (ffilesystem::is_windows){
     "HasFilename Windows"_test = [](auto const& test_case) {
         expect(fs_has_filename(test_case.first) == test_case.second);
     } | std::vector<std::pair<std::string, bool>>{
@@ -79,7 +79,7 @@ if (fs_is_windows()){
         {"./日本語", "日本語"},
     };
 
-if (fs_is_windows()){
+if (ffilesystem::is_windows){
     "FileName Windows"_test = [](auto const& test_case) {
         expect(fs_file_name(test_case.first) == test_case.second);
     } | std::vector<std::pair<std::string, std::string>>{

@@ -26,7 +26,7 @@ expect(eq(fs_stem("日本語.日本語"), std::string{"日本語"}));
 expect(eq(fs_stem("some space.txt"), std::string{"some space"}));
 expect(eq(fs_stem("some space"), std::string{"some space"}));
 
-if(fs_is_windows()){
+if(ffilesystem::is_windows){
 
 expect(eq(fs_stem(R"(C:\a\ball.text)"), std::string{"ball"}));
 
@@ -66,7 +66,7 @@ expect(eq(fs_suffix("../.b.c"), std::string{".c"}));
 expect(eq(fs_suffix("日本語.語"), std::string{".語"}));
 expect(eq(fs_suffix("some space.txt"), std::string{".txt"}));
 
-if(fs_is_windows()){
+if(ffilesystem::is_windows){
 expect(eq(fs_suffix(R"(C:\a\ball.text)"), std::string{".text"}));
 
 if(fs_win32_long_paths_enabled()) {

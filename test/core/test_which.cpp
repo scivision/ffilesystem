@@ -17,7 +17,7 @@ struct which_ctx {
 auto setup_which(which_ctx& ctx, std::string_view arg0) {
   using namespace boost::ut;
 
-  ctx.testExe = fs_is_windows() ? "cmake.exe" : "ls";
+  ctx.testExe = ffilesystem::is_windows ? "cmake.exe" : "ls";
 
   const std::string self{arg0};
   expect(fs_is_exe(self) >> fatal);
@@ -31,7 +31,7 @@ auto setup_which(which_ctx& ctx, std::string_view arg0) {
 auto setup_which_no_path(which_ctx& ctx) {
   using namespace boost::ut;
 
-  ctx.testExe = fs_is_windows() ? "cmake.exe" : "ls";
+  ctx.testExe = ffilesystem::is_windows ? "cmake.exe" : "ls";
   expect(fs_setenv("PATH", "") >> fatal);
 }
 
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
 
     expect(fs_is_file(ctx.name) >> fatal) << ctx.name << " does not exist";
     // for Windows only: local dir is preferred
-    if (fs_is_windows()) {
+    if (ffilesystem::is_windows) {
       expect(!fs_which(ctx.name).empty());
     } else {
       expect(fs_which(ctx.name).empty());

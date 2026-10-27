@@ -86,7 +86,7 @@ if (!fs_equivalent(".", fs_parent(argv[0]))) {
   };
 }
 
-if(fs_is_windows() || fs_is_cygwin() || fs_is_admin() || !fs_is_writable(".")) {
+if(ffilesystem::is_windows || fs_is_cygwin() || fs_is_admin() || !fs_is_writable(".")) {
     skip / "equivalent_inaccessible_directory"_test = [] {};
 } else {
   std::string base;

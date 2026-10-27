@@ -20,7 +20,7 @@ std::string fs_parent(std::string_view path)
   const auto fix_path = [](std::string& s){
     if (s.empty())
       s = ".";
-    else if (fs_is_windows() && s == fs_root_name(s))
+    else if (ffilesystem::is_windows && s == fs_root_name(s))
       s.push_back('/');
   };
 

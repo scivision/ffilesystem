@@ -28,7 +28,7 @@ auto make_ctx() {
   ctx.s2 = ctx.cwd + ffilesystem::file_separator + n + "_some_text.txt.copy";
   ctx.s3 = ctx.cwd + ffilesystem::file_separator + n + "_empty.txt";
   ctx.s4 = ctx.cwd + ffilesystem::file_separator + n + "_empty.txt.copy";
-  if (fs_is_windows() && fs_win32_long_paths_enabled()) {
+  if (ffilesystem::is_windows && fs_win32_long_paths_enabled()) {
     ctx.ext1 = R"(\\?\)" + ctx.s1;
     ctx.ext5 = R"(\\?\)" + ctx.s2 + ".long";
   }

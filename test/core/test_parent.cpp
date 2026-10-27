@@ -30,7 +30,7 @@ int main() {
           {"a/b/../.parent.txt", "a/b/.."},
       };
 
-  if (!fs_is_windows()) {
+  if (!ffilesystem::is_windows) {
     skip / "parent_windows"_test = [] {};
   } else {
     std::vector<std::pair<std::string_view, std::string_view>> windows_cases{

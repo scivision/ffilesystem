@@ -27,7 +27,7 @@ void setup(ondisk_ctx& ctx, std::string_view arg0) {
   ctx.cwd = fs_get_cwd();
   expect(!ctx.cwd.empty() >> fatal);
 
-  if (fs_is_windows()) {
+  if (ffilesystem::is_windows) {
     auto d = fs_getenv("SystemDrive");
     expect(d.has_value() >> fatal) << "Failed to get SystemDrive";
     ctx.sys_drive = d.value();
@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
             ".", ctx.self, ctx.cwd, "/", ctx.nonnull_dir,
         };
 
-    if (fs_is_windows()) {
+    if (ffilesystem::is_windows) {
       expect(fs_is_readable(ctx.sys_drive));
 
       if (fs_win32_long_paths_enabled()) {
@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
 
     expect(fs_is_writable(ctx.cwd));
 
-    if (fs_is_windows()) {
+    if (ffilesystem::is_windows) {
       if (fs_win32_long_paths_enabled()) {
         std::string s = R"(\\?\)" + ctx.self;
         expect(fs_is_writable(s)) << s;

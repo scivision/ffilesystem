@@ -52,7 +52,7 @@ int main() {
     expect(!fs_get_cwd().empty());
     expect(!fs_get_homedir().empty());
 
-    if (!fs_is_windows()) {
+    if (!ffilesystem::is_windows) {
       expect(eq(fs_space_available(e), fs_unknown_size)) << "backend: " << fs_backend();
       expect(!fs_set_permissions(e, 0, 0, 0));
     }

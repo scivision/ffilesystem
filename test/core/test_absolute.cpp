@@ -20,7 +20,7 @@ auto make_ctx() {
   ctx.cwd = fs_get_cwd();
   expect(!ctx.cwd.empty() >> fatal);
 
-  if (fs_is_windows()) {
+  if (ffilesystem::is_windows) {
     ctx.base = "j:\\foo";
     if (const auto d = fs_getenv("SystemDrive")) {
       expect(d.has_value() >> fatal);
@@ -51,7 +51,7 @@ int main() {
     expect(eq(fs_absolute(ctx.cwd + ffilesystem::file_separator + "rel"), ctx.cwd + ffilesystem::file_separator + "rel"));
 
     std::string r = ctx.cwd + ffilesystem::file_separator;
-    if (!fs_is_windows() || (fs_is_mingw() && fs_is_clang() && fs_backend() == "<filesystem>")) r += dot + ffilesystem::file_separator;
+    if (!ffilesystem::is_windows || (fs_is_mingw() && fs_is_clang() && fs_backend() == "<filesystem>")) r += dot + ffilesystem::file_separator;
 
     r += "rel";
 
@@ -70,7 +70,7 @@ int main() {
     expect(eq(fs_absolute("日本語"), ctx.cwd + ffilesystem::file_separator + "日本語"));
     expect(eq(fs_absolute("have space"), ctx.cwd + ffilesystem::file_separator + "have space"));
 
-    if (fs_is_windows()) {
+    if (ffilesystem::is_windows) {
       expect(!ctx.sys_drive.empty());
       expect(eq(fs_absolute(ctx.sys_drive + ffilesystem::file_separator), ctx.sys_drive + ffilesystem::file_separator));
 
@@ -112,7 +112,7 @@ int main() {
     expect(!fs_is_absolute("日本語"));
     expect(!fs_is_absolute("some space here"));
 
-    if (fs_is_windows()) {
+    if (ffilesystem::is_windows) {
       expect(!ctx.sys_drive.empty());
       expect(fs_is_absolute(ctx.sys_drive + "/"));
 

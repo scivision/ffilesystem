@@ -20,7 +20,7 @@ char fs_pathsep(){ return ffilesystem::path_separator; }
 
 
 const char* fs_devnull(){
-  return fs_is_windows() ? "nul" : "/dev/null";
+  return ffilesystem::is_windows ? "nul" : "/dev/null";
 }
 
 
@@ -53,9 +53,9 @@ fs_is_absolute(std::string_view path)
 #if defined(HAVE_CXX_FILESYSTEM)
   return Filesystem::path(path).is_absolute();
 #else
-  return (fs_is_windows())
-  ? fs_has_root_name(path) && fs_has_root_directory(path)
-  : fs_has_root_directory(path);
+  return ffilesystem::is_windows
+    ? fs_has_root_name(path) && fs_has_root_directory(path)
+    : fs_has_root_directory(path);
 #endif
 }
 
@@ -103,7 +103,7 @@ fs_root_directory(std::string_view path)
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).root_directory().string();
 #else
-  if (fs_is_windows()) {
+  if (ffilesystem::is_windows) {
     const auto i = path.size() >= 2 && path[1] == ':' ? 2u : 0u;
 
     return i < path.size() && ffilesystem::is_file_separator(path[i])
@@ -131,7 +131,7 @@ fs_root_name([[maybe_unused]] std::string_view path)
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).root_name().string();
 #else
-  if (fs_is_windows() && path.size() >= 2 && path[1] == ':')
+  if (ffilesystem::is_windows && path.size() >= 2 && path[1] == ':')
     return std::string(path.substr(0, 2));
 
   return {};

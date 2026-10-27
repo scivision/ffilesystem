@@ -77,7 +77,7 @@ if (!fs_is_writable("."))
     expect(fs_is_readable(ctx.read)) << ctx.read << " should be readable";
   };
 
-  if(fs_is_windows() || fs_is_cygwin() || (fs_is_wsl() && fs_filesystem_type(fs_absolute(".")) == "v9fs")) {
+  if(ffilesystem::is_windows || fs_is_cygwin() || (fs_is_wsl() && fs_filesystem_type(fs_absolute(".")) == "v9fs")) {
     skip / "permissions_not_readable"_test = [] {};
   } else {
 
@@ -104,7 +104,7 @@ if (!fs_is_writable("."))
     expect(fs_set_permissions(ctx.nonnull_file, 1, 0, 0));
   };
 
-  if(fs_is_windows() || fs_is_cygwin() || (fs_is_wsl() && fs_filesystem_type(fs_absolute(".")) == "v9fs")) {
+  if(ffilesystem::is_windows || fs_is_cygwin() || (fs_is_wsl() && fs_filesystem_type(fs_absolute(".")) == "v9fs")) {
     skip / "permissions_writable"_test = [] {};
   } else {
 
@@ -118,7 +118,7 @@ if (!fs_is_writable("."))
     const std::string p = fs_get_permissions(ctx.nowrite);
 
     // MSVC with <filesystem>, but we'll skip all windows
-    if (!fs_is_windows() && !fs_is_cygwin()) {
+    if (!ffilesystem::is_windows && !fs_is_cygwin()) {
       expect(eq(p[1], '-'));
 
       if (!fs_is_admin()) {

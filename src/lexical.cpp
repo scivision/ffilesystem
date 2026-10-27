@@ -15,7 +15,7 @@
 
 void fs_as_posix(std::string& path)
 {
-  if(fs_is_windows())
+  if(ffilesystem::is_windows)
     std::replace(path.begin(), path.end(), ffilesystem::file_separator, '/');
 }
 
@@ -31,13 +31,13 @@ std::string fs_as_posix(std::string_view path)
 
 void fs_as_windows(std::string& path)
 {
-  if(fs_is_windows())
+  if(ffilesystem::is_windows)
     std::replace(path.begin(), path.end(), '/', ffilesystem::file_separator);
 }
 
 void fs_as_windows(std::wstring& path)
 {
-  if(fs_is_windows())
+  if(ffilesystem::is_windows)
     std::replace(path.begin(), path.end(), '/', ffilesystem::file_separator);
 }
 
@@ -76,7 +76,7 @@ bool
 fs_is_reserved(std::string_view path)
 {
   // defined as https://docs.python.org/3.13/library/os.path.html#os.path.isreserved
-  if(!fs_is_windows())
+  if(!ffilesystem::is_windows)
     return false;
 
   std::string const n = fs_file_name(path);

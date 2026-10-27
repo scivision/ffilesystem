@@ -49,12 +49,12 @@ int main() {
   };
 
   "getenv"_test = [] {
-    const std::string name = fs_is_windows() ? "USERPROFILE" : "HOME";
+    const std::string name = ffilesystem::is_windows ? "USERPROFILE" : "HOME";
     std::string in_name = name + "-walkoff-end-of-buffer";
     std::string_view nonnull_name(in_name.data(), name.size());
     expect(nonnull_name.back() != '\0') << "Environment variable name should not be null-terminated in test";
 
-    auto h = fs_getenv(fs_is_windows() ? "USERPROFILE" : "HOME");
+    auto h = fs_getenv(ffilesystem::is_windows ? "USERPROFILE" : "HOME");
     expect(h.has_value() >> fatal) << "Environment variable HOME or USERPROFILE should be set";
 
     h = fs_getenv(nonnull_name);
@@ -89,7 +89,7 @@ int main() {
     expect(fs_setenv("HOME", "") >> fatal);
     expect(fs_setenv("XDG_CONFIG_HOME", "") >> fatal);
     expect(fs_setenv("TMPDIR", "") >> fatal);
-    if (fs_is_windows()) {
+    if (ffilesystem::is_windows) {
       expect(fs_setenv("USERPROFILE", "") >> fatal);
     }
 
@@ -110,11 +110,11 @@ int main() {
   "no_home"_test = [] {
     expect(fs_setenv("HOME", "") >> fatal);
     expect(fs_setenv("XDG_CONFIG_HOME", "") >> fatal);
-    if (fs_is_windows()) {
+    if (ffilesystem::is_windows) {
       expect(fs_setenv("USERPROFILE", "") >> fatal);
     }
 
-    auto h = fs_getenv(fs_is_windows() ? "USERPROFILE" : "HOME");
+    auto h = fs_getenv(ffilesystem::is_windows ? "USERPROFILE" : "HOME");
     expect(!h.has_value()) << "Environment variable HOME or USERPROFILE should not be set in test";
 
 #ifdef FFS_SYSTEM_DISABLED

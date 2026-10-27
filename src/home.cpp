@@ -7,7 +7,7 @@
 
 std::string fs_get_homedir()
 {
-  if (auto h = fs_getenv(fs_is_windows() ? "USERPROFILE" : "HOME"); h && !h->empty())
+  if (auto h = fs_getenv(ffilesystem::is_windows ? "USERPROFILE" : "HOME"); h && !h->empty())
     return *h;
 
   return fs_get_profile_dir();

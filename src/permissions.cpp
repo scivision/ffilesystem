@@ -137,7 +137,7 @@ std::string fs_get_permissions(std::string_view path)
   if ((p & owner_exec) != none)
     r[2] = 'x';
 
-  if(!fs_is_windows()){
+  if(!ffilesystem::is_windows){
 
   if ((p & group_read) != none)
     r[3] = 'r';

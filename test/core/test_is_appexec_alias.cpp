@@ -39,7 +39,7 @@ int main() {
 
   app_exec_ctx ctx;
 
-if (!fs_is_windows() || !setup(ctx)) {
+if (!ffilesystem::is_windows || !setup(ctx)) {
   skip / "app_exec_alias"_test = [] {};
   return 77;
 } else {

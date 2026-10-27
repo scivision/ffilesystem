@@ -54,7 +54,7 @@ bool fs_check_access(std::string_view path, const int mode){
   //
   // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
 
-  if (fs_is_windows())
+  if (ffilesystem::is_windows)
     fs_as_windows(cpath);  // needed for _access_s to correctly interpret the path on Windows
 
   ok = FS_ACCESS(cpath.c_str(), mode) == 0;
@@ -114,7 +114,7 @@ fs_exists(std::string_view path)
 
 #if defined(HAVE_CXX_FILESYSTEM)
 
-  ok = (Filesystem::exists(path, ec) && !ec) || (fs_is_windows() && fs_is_appexec_alias(path));
+  ok = (Filesystem::exists(path, ec) && !ec) || (ffilesystem::is_windows && fs_is_appexec_alias(path));
   // MSVC and minGW Clang need fs_is_appexec_alias() due to permissions error
 
 #else
@@ -130,7 +130,7 @@ fs_exists(std::string_view path)
   ec = std::make_error_code(std::errc(errno));
 #endif
 
-  if (fs_is_windows())
+  if (ffilesystem::is_windows)
     ok |= fs_is_char_device(path);
 
   if (!ok && ec && ec != std::errc::no_such_file_or_directory)
@@ -190,7 +190,7 @@ fs_is_file(std::string_view path)
 
 #if defined(HAVE_CXX_FILESYSTEM)
   ok = (Filesystem::is_regular_file(path, ec) && !ec) ||
-        (fs_is_windows() && fs_is_appexec_alias(path));
+        (ffilesystem::is_windows && fs_is_appexec_alias(path));
   // MSVC and minGW Clang need fs_is_appexec_alias() due to permissions error
 #else
 

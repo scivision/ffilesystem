@@ -16,7 +16,7 @@ int main() {
       {"../a/b", ""},
   };
 
-  if (fs_is_windows()) {
+  if (ffilesystem::is_windows) {
     root_cases.insert(root_cases.end(), {
         {"c:", "c:"},
         {"c:/a/b", "c:/"},
@@ -44,7 +44,7 @@ int main() {
       {"../a/b", ""},
   };
 
-  if (fs_is_windows()) {
+  if (ffilesystem::is_windows) {
     root_name_cases.insert(root_name_cases.end(), {
         {"c:/a/b", "c:"},
         {"/etc", ""},
@@ -62,7 +62,7 @@ int main() {
     expect(fs_has_root_name(test_case.first) == !test_case.second.empty());
   } | root_name_cases;
 
-  if (fs_is_windows()) {
+  if (ffilesystem::is_windows) {
     constexpr char drive_prefixed[] = "C:/must-not-be-read";
     const std::string_view truncated_drive{drive_prefixed, 1};
     expect((truncated_drive == "C") >> fatal);
@@ -77,7 +77,7 @@ int main() {
       {"../a/b", ""},
   };
 
-  if (fs_is_windows()) {
+  if (ffilesystem::is_windows) {
     root_directory_cases.insert(root_directory_cases.end(), {
         {"c:", ""},
         {"c:/a/b", "/"},

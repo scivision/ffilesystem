@@ -10,7 +10,7 @@ using namespace boost::ut;
 expect(!fs_is_safe_name("test/re/"));
 expect(!fs_is_safe_name("test/re"));
 
-if(fs_is_windows())
+if(ffilesystem::is_windows)
   expect(!fs_is_safe_name("hi."));
 else
   expect(fs_is_safe_name("hi."));

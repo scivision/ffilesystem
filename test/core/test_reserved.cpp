@@ -16,13 +16,13 @@ expect(!fs_is_reserved("."));
 expect(eq(fs_normal(ref), ref));
 
 bool b = fs_is_absolute(ref);
-if (fs_is_windows())
+if (ffilesystem::is_windows)
   expect(!b);
 else
   expect(b);
 
 b = fs_is_reserved(ref);
-if (fs_is_windows())
+if (ffilesystem::is_windows)
   expect(b);
 else
   expect(!b);

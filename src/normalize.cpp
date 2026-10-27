@@ -88,7 +88,7 @@ fs_normal(std::string_view path)
 #endif
 
   // Preserve the Windows drive root without parsing every trailing-separator path.
-  const bool is_windows_drive_root = fs_is_windows() &&
+  const bool is_windows_drive_root = ffilesystem::is_windows &&
     r.length() == 3 && r[1] == ':' && r[2] == '/';
 
   // no trailing slash
@@ -111,7 +111,7 @@ fs_drop_trailing_slash(std::string& p)
   while(p.length() > 1 && ffilesystem::is_file_separator(p.back()))
     p.pop_back();
 
-  if (fs_is_windows() && !p.empty() && p == fs_root_name(p))
+  if (ffilesystem::is_windows && !p.empty() && p == fs_root_name(p))
     p.push_back('/');
 }
 

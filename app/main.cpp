@@ -66,7 +66,7 @@ bool no_arg(std::string_view fun){
     {"is_macos", fs_is_macos},
     {"is_rosetta", fs_is_rosetta},
     {"is_unix", fs_is_unix},
-    {"is_windows", fs_is_windows},
+    {"is_windows", []() { return ffilesystem::is_windows; }},
     {"is_mingw", fs_is_mingw},
     {"is_cygwin", fs_is_cygwin},
     {"has_statx", fs_has_statx},
@@ -425,7 +425,7 @@ std::cout << "Optimized: " << fs_is_optimized() << " Trace: " << fs_trace << "\n
 
 std::cout << "Homedir: " << fs_get_homedir() << "\n";
 
-if (fs_is_windows())
+if (ffilesystem::is_windows)
   std::cout << "Windows long paths enabled: " << fs_win32_long_paths_enabled() << "\n";
 
 

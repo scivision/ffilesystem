@@ -43,7 +43,7 @@ int main() {
           {{"a/b", "a/c"}, "../c"},
       };
 
-  if (fs_is_windows()) {
+  if (ffilesystem::is_windows) {
     auto drive = fs_getenv("SYSTEMDRIVE");
     expect(drive.has_value() >> fatal) << "Failed to get SYSTEMDRIVE environment variable";
     const std::string c = drive.value();

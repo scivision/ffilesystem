@@ -77,32 +77,31 @@ constexpr std::uintmax_t fs_unknown_size = static_cast<std::uintmax_t>(-1);
 
 namespace ffilesystem {
 
-inline constexpr char file_separator =
+constexpr bool is_windows =
 #ifdef _WIN32
-  '\\';
+  true;
 #else
-  '/';
+  false;
 #endif
 
-inline constexpr std::string_view file_separators =
-#ifdef _WIN32
-  "\\/";
-#else
-  "/";
-#endif
+constexpr char file_separator = (is_windows)
+  ? '\\'
+  : '/';
 
-inline constexpr bool is_file_separator(char c) noexcept
+constexpr std::string_view file_separators = (is_windows)
+  ? "\\/"
+  : "/";
+
+constexpr bool is_file_separator(char c) noexcept
 {
   return c == '/' || c == file_separator;
 }
 
-inline constexpr char path_separator =
-#ifdef _WIN32
-  ';';
-#else
-  ':';
-#endif
-}
+constexpr char path_separator = (is_windows)
+  ? ';'
+  : ':';
+
+} // namespace ffilesystem
 
 std::string fs_absolute(std::string_view);
 std::string fs_absolute(std::string_view, std::string_view);

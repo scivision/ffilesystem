@@ -53,14 +53,6 @@ bool fs_is_bsd() {
 #endif
 }
 
-bool fs_is_windows() {
-#ifdef _WIN32
-  return true;
-#else
-  return false;
-#endif
-}
-
 bool fs_is_cygwin(){
 #ifdef __CYGWIN__
   return true;

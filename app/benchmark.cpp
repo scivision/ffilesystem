@@ -233,7 +233,7 @@ for (std::string_view func : funcs)
     if (std::binary_search(tf.begin(), tf.end(), func))
       path = "./..";
     else if (func == "which")
-      path = (fs_is_windows()) ? "cmake.exe" : "sh";
+      path = ffilesystem::is_windows ? "cmake.exe" : "sh";
     else
       path = ".";
   }

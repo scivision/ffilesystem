@@ -23,7 +23,7 @@ int main() {
 			{"/", "/"},
 		};
 
-	if (fs_is_windows()) {
+	if (ffilesystem::is_windows) {
 		"drop_slash_windows"_test = [](auto const& test_case) {
 			expect(eq(fs_drop_slash(test_case.first), test_case.second));
 		} | std::vector<std::pair<std::string_view, std::string_view>>{

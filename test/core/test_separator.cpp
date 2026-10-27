@@ -13,14 +13,14 @@ using namespace boost::ut;
 "as_posix"_test = [](auto const& test_case) {
   std::string path{test_case.first};
   fs_as_posix(path);
-  expect(eq(path, fs_is_windows() ? test_case.second : test_case.first));
+  expect(eq(path, ffilesystem::is_windows ? test_case.second : test_case.first));
 } | std::vector<std::pair<std::string_view, std::string_view>>{
         {R"(a\b)", "a/b"},
         {R"(C:\my\path)", "C:/my/path"},
     };
 
 "path_sep"_test = [] {
-  expect(eq(ffilesystem::path_separator, (fs_is_windows()) ? ';' : ':'));
+  expect(eq(ffilesystem::path_separator, ffilesystem::is_windows ? ';' : ':'));
 };
 
 }

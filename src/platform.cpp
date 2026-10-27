@@ -15,8 +15,6 @@ namespace Filesystem = std::filesystem;
 #include <string>
 #include <string_view>
 
-
-
 #include <system_error> // for std::error_code
 
 #if defined(_WIN32)
@@ -27,6 +25,9 @@ namespace Filesystem = std::filesystem;
 #include <unistd.h> // IWYU pragma: keep
 // getcwd, chdir
 #endif
+
+
+bool fs_is_windows() { return ffilesystem::is_windows; }
 
 
 bool fs_set_cwd(std::string_view path)
@@ -71,13 +72,12 @@ std::string fs_get_cwd()
 // unistd.h https://www.man7.org/linux/man-pages/man3/getcwd.3.html
 // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/getcwd.3.html
 
-std::string buf(fs_get_max_path(), '\0');
+  std::string buf(fs_get_max_path(), '\0');
 
-if (::getcwd(buf.data(), buf.size())) {
-  fs_trim(buf);
-  return buf;
+  if (::getcwd(buf.data(), buf.size())) {
+    fs_trim(buf);
+    return buf;
 }
-
 #endif
 
   fs_error_callback("", ec);
