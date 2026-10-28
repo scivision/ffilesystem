@@ -85,8 +85,8 @@ using namespace boost::ut;
 
     expect(!full.empty() >> fatal);
     expect(!final.empty() >> fatal);
-    expect(fs_exists(full));
-    expect(fs_exists(final));
+    expect(ffilesystem::exists(full));
+    expect(ffilesystem::exists(final));
     expect(full.find('\0') == std::string::npos);
     expect(final.find('\0') == std::string::npos);
     expect(full.back() != '\0');
@@ -94,12 +94,12 @@ using namespace boost::ut;
 
     std::string pfull = fs_win32_full_name("..");
     expect(!pfull.empty() >> fatal);
-    expect(fs_exists(pfull));
+    expect(ffilesystem::exists(pfull));
     expect(pfull.length() < full.length());
 
     std::string pfinal = fs_win32_final_path("..");
     expect(!pfinal.empty() >> fatal);
-    expect(fs_exists(pfinal));
+    expect(ffilesystem::exists(pfinal));
     expect(pfinal.length() < final.length());
   };
 }

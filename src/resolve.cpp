@@ -18,10 +18,9 @@ namespace Filesystem = std::filesystem;
 #endif
 
 
-std::string
-fs_canonical(
-  std::string_view path,
-  const bool strict)
+namespace ffilesystem {
+
+std::string canonical(std::string_view path, const bool strict)
 {
   // canonicalize path, i.e. resolve all symbolic links, remove ".", ".." and extra slashes
   // if strict is true, then path must exist
@@ -39,11 +38,11 @@ fs_canonical(
 
 #else
 
-  if (std::string c = fs_realpath(path); !c.empty())
+  if (std::string c = realpath(path); !c.empty())
     return c;
 
   if (!strict)
-    return fs_normal(path);
+    return normal(path);
   // std::filesystem::weakly_canonical() and boost::filesystem::canonical()
   // resolve the path to the current working directory for non-existing paths.
   // https://github.com/boostorg/filesystem/blob/f4bb6d0f3ebe9f8b90243d8a98989191925d49d2/src/operations.cpp#L5023
@@ -57,17 +56,18 @@ fs_canonical(
 }
 
 
-std::string fs_resolve(std::string_view path, const bool strict)
+std::string resolve(std::string_view path, const bool strict)
 {
   // works like canonical(absolute(path)).
   // Inspired by Python pathlib.Path.resolve()
   // https://docs.python.org/3/library/pathlib.html#pathlib.Path.resolve
 
-  return fs_canonical(fs_absolute(path), strict);
+  return canonical(absolute(path), strict);
 }
 
 
-std::string fs_realpath(std::string_view path)
+
+std::string realpath(std::string_view path)
 {
   // resolve real existing path
   // not defined for non-existing path--may return empty string.
@@ -86,3 +86,5 @@ std::string fs_realpath(std::string_view path)
 #endif
 
 }
+
+} // namespace ffilesystem

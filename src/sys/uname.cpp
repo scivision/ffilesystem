@@ -20,8 +20,9 @@
 #include <sys/utsname.h>
 #endif
 
+namespace ffilesystem {
 
-bool fs_is_wsl()
+bool is_wsl()
 {
   // false: not WSL, or the probe failed
   // Uses three-step heuristic to detect WSL
@@ -33,13 +34,13 @@ bool fs_is_wsl()
   // fallbacks.
 #if defined(__linux__)
   auto env_is_set = [](std::string_view name) {
-    const auto value = fs_getenv(name);
+    const auto value = getenv(name);
     return value && !value->empty();
   };
   if (env_is_set("WSL_DISTRO_NAME") || env_is_set("WSL_INTEROP"))
     return true;
 
-  if (fs_is_dir("/run/WSL"))
+  if (is_directory("/run/WSL"))
     return true;
 
 #ifdef HAVE_UTSNAME
@@ -48,7 +49,7 @@ bool fs_is_wsl()
     return false;
 
   std::string r(b.release);
-  fs_ascii_lower(r);
+  ascii_lower(r);
 
 #if defined(__cpp_lib_string_contains) // C++23
   return r.contains("microsoft") || r.contains("wsl");
@@ -63,9 +64,8 @@ bool fs_is_wsl()
 }
 
 
-std::string fs_cpu_arch()
+std::string cpu_arch()
 {
-
   std::error_code ec;
 
 #ifdef HAVE_UTSNAME
@@ -91,7 +91,7 @@ std::string fs_cpu_arch()
 }
 
 
-std::string fs_os_version()
+std::string os_version()
 {
 // get operating system version
 
@@ -138,3 +138,5 @@ std::string fs_os_version()
   fs_error_callback("", ec);
   return {};
 }
+
+} // namespace ffilesystem

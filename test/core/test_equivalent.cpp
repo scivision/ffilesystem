@@ -20,8 +20,8 @@ auto make_ctx(std::string_view arg0) {
     std::optional<equivalent_ctx> ctx{equivalent_ctx{}};
 
   ctx->self = arg0;
-  ctx->self_name = fs_file_name(ctx->self);
-  expect(fs_is_file(ctx->self) >> fatal) << "Test executable not found: " << ctx->self;
+  ctx->self_name = ffilesystem::file_name(ctx->self);
+  expect(ffilesystem::is_file(ctx->self) >> fatal) << "Test executable not found: " << ctx->self;
 
   ctx->in_file = ctx->self + "-read_past_the_end_of_buffer";
   ctx->nonnull_file = std::string_view(ctx->in_file.data(), ctx->self.size());
@@ -31,19 +31,19 @@ auto make_ctx(std::string_view arg0) {
 }
 
 auto setup_inaccessible_directory(std::string& base, std::string& secret) {
-  base = "ffs_equiv_inaccessible_dir";
+  base = "fffilesystem::equiv_inaccessible_dir";
   secret = base + "/secret";
 
-  if (fs_exists(secret) && !fs_set_permissions(secret, 1, 1, 1)) return false;
+  if (ffilesystem::exists(secret) && !ffilesystem::set_permissions(secret, 1, 1, 1)) return false;
 
-  if (fs_exists(base) && (!fs_remove(secret) || !fs_remove(base))) return false;
+  if (ffilesystem::exists(base) && (!ffilesystem::remove(secret) || !ffilesystem::remove(base))) return false;
 
-  if (!fs_mkdir(secret)) return false;
-  if (!fs_set_permissions(base, -1, -1, -1)) return false;
+  if (!ffilesystem::mkdir(secret)) return false;
+  if (!ffilesystem::set_permissions(base, -1, -1, -1)) return false;
 
-  if(fs_exists(secret)) return false;
-  if(fs_is_dir(secret)) return false;
-  if(fs_is_file(secret)) return false;
+  if(ffilesystem::exists(secret)) return false;
+  if(ffilesystem::is_directory(secret)) return false;
+  if(ffilesystem::is_file(secret)) return false;
 
   return true;
 }
@@ -53,40 +53,40 @@ auto setup_inaccessible_directory(std::string& base, std::string& secret) {
 int main(int argc, char** argv) {
   using namespace boost::ut;
 
-if (!fs_equivalent(".", fs_parent(argv[0]))) {
+if (!ffilesystem::equivalent(".", ffilesystem::parent(argv[0]))) {
   skip / "equivalent_filename"_test = [] {};
 } else {
   "equivalent_filename"_test = [argv] {
     const auto ctx = make_ctx(argv[0]);
     expect(ctx.has_value() >> fatal);
 
-    expect(fs_is_file(ctx->self_name) >> fatal) << "Test executable name not found in CWD: " << ctx->self_name;
+    expect(ffilesystem::is_file(ctx->self_name) >> fatal) << "Test executable name not found in CWD: " << ctx->self_name;
 
-    expect(fs_equivalent(ctx->self_name, "./" + ctx->self_name));
-    expect(fs_equivalent(ctx->self_name, ctx->self));
-    expect(fs_equivalent(ctx->self_name, ctx->nonnull_file));
-    expect(fs_equivalent(ctx->self, ctx->self_name));
-    expect(fs_equivalent(ctx->self, ctx->self));
+    expect(ffilesystem::equivalent(ctx->self_name, "./" + ctx->self_name));
+    expect(ffilesystem::equivalent(ctx->self_name, ctx->self));
+    expect(ffilesystem::equivalent(ctx->self_name, ctx->nonnull_file));
+    expect(ffilesystem::equivalent(ctx->self, ctx->self_name));
+    expect(ffilesystem::equivalent(ctx->self, ctx->self));
   };
 
   "equivalent_relative"_test = [] {
-    std::string s = "ffs_equiv_not-exist";
-    expect(!fs_equivalent(s, s));
+    std::string s = "fffilesystem::equiv_not-exist";
+    expect(!ffilesystem::equivalent(s, s));
 
-    std::string cwd = fs_get_cwd();
+    std::string cwd = ffilesystem::get_cwd();
     expect(!cwd.empty() >> fatal);
 
-    expect(fs_equivalent("..", fs_parent(cwd)));
-    expect(fs_equivalent(".", "./"));
-    expect(fs_equivalent(".", cwd));
-    expect(!fs_equivalent("..", cwd));
+    expect(ffilesystem::equivalent("..", ffilesystem::parent(cwd)));
+    expect(ffilesystem::equivalent(".", "./"));
+    expect(ffilesystem::equivalent(".", cwd));
+    expect(!ffilesystem::equivalent("..", cwd));
 
     // NOTE: This can be false on networked drive or Windows Dev Drive
-    // fs_equivalent(".", fs_realpath("."));
+    // ffilesystem::equivalent(".", ffilesystem::realpath("."));
   };
 }
 
-if(ffilesystem::is_windows || fs_is_cygwin() || fs_is_admin() || !fs_is_writable(".")) {
+if(ffilesystem::is_windows || fs_is_cygwin() || ffilesystem::is_admin() || !ffilesystem::is_writable(".")) {
     skip / "equivalent_inaccessible_directory"_test = [] {};
 } else {
   std::string base;
@@ -95,11 +95,11 @@ if(ffilesystem::is_windows || fs_is_cygwin() || fs_is_admin() || !fs_is_writable
   if (setup_inaccessible_directory(base, secret)) {
     "equivalent_inaccessible_directory"_test = [base, secret] {
 
-      expect(!fs_equivalent(secret, secret));
+      expect(!ffilesystem::equivalent(secret, secret));
 
-      expect(fs_set_permissions(base, 1, 1, 1));
-      expect(fs_remove(secret));
-      expect(fs_remove(base));
+      expect(ffilesystem::set_permissions(base, 1, 1, 1));
+      expect(ffilesystem::remove(secret));
+      expect(ffilesystem::remove(base));
     };
   } else {
     skip / "equivalent_inaccessible_directory"_test = [] {};

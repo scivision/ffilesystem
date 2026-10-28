@@ -28,7 +28,9 @@ namespace Filesystem = std::filesystem;
 #endif
 
 
-bool fs_set_permissions(std::string_view path, const int readable, const int writable, const int executable)
+namespace ffilesystem {
+
+bool set_permissions(std::string_view path, const int readable, const int writable, const int executable)
 {
 // only sets permission for owner, not group or others
 
@@ -44,7 +46,7 @@ bool fs_set_permissions(std::string_view path, const int readable, const int wri
 
   std::error_code ec;
   // need to error if path doesn't exist and no operations are requested
-  if(!fs_exists(path))
+  if(!exists(path))
     ec = std::make_error_code(std::errc::no_such_file_or_directory);
 
   if (!ec && readable != 0)
@@ -99,7 +101,7 @@ bool fs_set_permissions(std::string_view path, const int readable, const int wri
 }
 
 
-std::string fs_get_permissions(std::string_view path)
+std::string get_permissions(std::string_view path)
 {
 
   std::string r = "---------";
@@ -137,7 +139,7 @@ std::string fs_get_permissions(std::string_view path)
   if ((p & owner_exec) != none)
     r[2] = 'x';
 
-  if(!ffilesystem::is_windows){
+  if(!is_windows){
 
   if ((p & group_read) != none)
     r[3] = 'r';
@@ -189,3 +191,5 @@ std::string fs_get_permissions(std::string_view path)
 
   return r;
 }
+
+} // namespace ffilesystem

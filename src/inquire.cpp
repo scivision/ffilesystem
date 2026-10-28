@@ -55,7 +55,7 @@ bool fs_check_access(std::string_view path, const int mode){
   // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-s-waccess-s
 
   if (ffilesystem::is_windows)
-    fs_as_windows(cpath);  // needed for _access_s to correctly interpret the path on Windows
+    ffilesystem::as_windows(cpath);  // needed for _access_s to correctly interpret the path on Windows
 
   ok = FS_ACCESS(cpath.c_str(), mode) == 0;
 
@@ -91,21 +91,12 @@ DWORD fs_win32_file_type(std::string_view path){
 
 }
 
-bool fs_has_statx()
-{
-// https://www.man7.org/linux/man-pages/man2/statx.2.html
-#if defined(HAVE_STATX)
-  return true;
-#else
-  return false;
-#endif
-}
 
+namespace ffilesystem {
 
-bool
-fs_exists(std::string_view path)
+bool exists(std::string_view path)
 {
-  // fs_exists() is true even if path is non-readable, as long as UID has permission to see it.
+  // exists() is true even if path is non-readable, as long as UID has permission to see it.
   // this is like Python pathlib.Path.exists()
   // unlike kwSys:SystemTools:FileExists which uses R_OK instead of F_OK like this project.
 
@@ -114,8 +105,8 @@ fs_exists(std::string_view path)
 
 #if defined(HAVE_CXX_FILESYSTEM)
 
-  ok = (Filesystem::exists(path, ec) && !ec) || (ffilesystem::is_windows && fs_is_appexec_alias(path));
-  // MSVC and minGW Clang need fs_is_appexec_alias() due to permissions error
+  ok = (Filesystem::exists(path, ec) && !ec) || (is_windows && is_appexec_alias(path));
+  // MSVC and minGW Clang need is_appexec_alias() due to permissions error
 
 #else
 
@@ -130,8 +121,7 @@ fs_exists(std::string_view path)
   ec = std::make_error_code(std::errc(errno));
 #endif
 
-  if (ffilesystem::is_windows)
-    ok |= fs_is_char_device(path);
+  if (is_windows) ok |= is_char_device(path);
 
   if (!ok && ec && ec != std::errc::no_such_file_or_directory)
     fs_error_callback(path);
@@ -140,8 +130,7 @@ fs_exists(std::string_view path)
 }
 
 
-bool
-fs_is_dir(std::string_view path)
+bool is_directory(std::string_view path)
 {
   // is path a directory or a symlink to a directory
 
@@ -177,8 +166,7 @@ fs_is_dir(std::string_view path)
 }
 
 
-bool
-fs_is_file(std::string_view path)
+bool is_file(std::string_view path)
 {
   // is path a regular file or a symlink to a regular file - not a directory, device, or symlink to a directory.
   // stat() doesn't detect App Execution Aliases
@@ -190,8 +178,8 @@ fs_is_file(std::string_view path)
 
 #if defined(HAVE_CXX_FILESYSTEM)
   ok = (Filesystem::is_regular_file(path, ec) && !ec) ||
-        (ffilesystem::is_windows && fs_is_appexec_alias(path));
-  // MSVC and minGW Clang need fs_is_appexec_alias() due to permissions error
+        (is_windows && is_appexec_alias(path));
+  // MSVC and minGW Clang need is_appexec_alias() due to permissions error
 #else
 
 #if defined(_WIN32)
@@ -213,8 +201,16 @@ fs_is_file(std::string_view path)
 }
 
 
-bool
-fs_is_fifo(std::string_view path)
+bool is_other(std::string_view path)
+{
+  // just as defined by <filesystem>
+  // note that the symlink could point to something not a file or directory
+  // https://en.cppreference.com/w/cpp/filesystem/is_other
+  return exists(path) && !is_file(path) && !is_directory(path) && !is_symlink(path);
+}
+
+
+bool is_fifo(std::string_view path)
 {
   // mkfifo() or CreateNamedPipe()
   bool ok;
@@ -232,7 +228,7 @@ fs_is_fifo(std::string_view path)
 }
 
 
-bool fs_is_char_device(std::string_view path)
+bool is_char_device(std::string_view path)
 {
 // character device like /dev/null or CONIN$
 
@@ -252,23 +248,14 @@ bool fs_is_char_device(std::string_view path)
 }
 
 
-bool fs_is_other(std::string_view path)
-{
-  // just as defined by <filesystem>
-  // note that the symlink could point to something not a file or directory
-  // https://en.cppreference.com/w/cpp/filesystem/is_other
-  return fs_exists(path) && !fs_is_file(path) && !fs_is_dir(path) && !fs_is_symlink(path);
-}
-
-
-bool fs_is_readable(std::string_view path)
+bool is_readable(std::string_view path)
 {
   // is path readable by the user
   // does not guarantee that the path can be opened (for example, it may be locked)
   //
   // MSVC / MinGW ::perms doesn't detect App Execution Aliases readability
   // like Python os.access(path, os.R_OK) or uv_is_readable().
-  // same reasons as our fs_is_writable().
+  // same reasons as our is_writable().
 
   return fs_check_access(path,
 #if defined(_WIN32)
@@ -281,7 +268,7 @@ bool fs_is_readable(std::string_view path)
 }
 
 
-bool fs_is_writable(std::string_view path)
+bool is_writable(std::string_view path)
 {
   // is path writable by the user.
   // this is a more strict test than checking permissions bits,
@@ -303,7 +290,7 @@ bool fs_is_writable(std::string_view path)
 }
 
 
-std::uintmax_t fs_hard_link_count(std::string_view path)
+std::uintmax_t hard_link_count(std::string_view path)
 {
 
 #if defined(HAVE_CXX_FILESYSTEM)
@@ -330,4 +317,7 @@ std::uintmax_t fs_hard_link_count(std::string_view path)
       [](const struct stat& s) { return static_cast<std::uintmax_t>(s.st_nlink); });
 #endif
 #endif
+}
+
+
 }

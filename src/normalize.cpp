@@ -58,8 +58,9 @@ fs_normal_split(std::string_view path, const std::string& p)
 } // namespace
 
 
-std::string
-fs_normal(std::string_view path)
+namespace ffilesystem {
+
+std::string normal(std::string_view path)
 {
   // normalize path
   std::string r;
@@ -71,13 +72,13 @@ fs_normal(std::string_view path)
   if (path.empty())
     return ".";
 
-  const std::string p{fs_as_posix(path)};
+  const std::string p{as_posix(path)};
   const std::vector<std::string_view> parts = fs_normal_split(path, p);
 
   // rebuild path
   r.reserve(p.length() + 1);  // avoid reallocation while appending below
 
-   if (ffilesystem::is_file_separator(path.front()))
+   if (is_file_separator(path.front()))
      r.push_back('/');
 
   for (const auto& part : parts){
@@ -88,12 +89,12 @@ fs_normal(std::string_view path)
 #endif
 
   // Preserve the Windows drive root without parsing every trailing-separator path.
-  const bool is_windows_drive_root = ffilesystem::is_windows &&
+  const bool is_windows_drive_root = is_windows &&
     r.length() == 3 && r[1] == ':' && r[2] == '/';
 
   // no trailing slash
   if (r.length() > 1) {
-    if (ffilesystem::is_file_separator(r.back()) && !is_windows_drive_root)
+    if (is_file_separator(r.back()) && !is_windows_drive_root)
       r.pop_back();
   } else if (r.empty())
     r.push_back('.');
@@ -102,22 +103,20 @@ fs_normal(std::string_view path)
 }
 
 
-void
-fs_drop_trailing_slash(std::string& p)
+void drop_trailing_slash(std::string& p)
 {
   // drop trailing "/" and "\" from the path
   // but not if it is the Windows root name
 
-  while(p.length() > 1 && ffilesystem::is_file_separator(p.back()))
+  while(p.length() > 1 && is_file_separator(p.back()))
     p.pop_back();
 
-  if (ffilesystem::is_windows && !p.empty() && p == fs_root_name(p))
+  if (is_windows && !p.empty() && p == root_name(p))
     p.push_back('/');
 }
 
 
-std::string
-fs_drop_slash(std::string_view in)
+std::string drop_slash(std::string_view in)
 {
   // drop all trailing "/" and duplicated internal "/"
 
@@ -132,9 +131,9 @@ fs_drop_slash(std::string_view in)
 
   std::string s(in);
 
-  fs_as_posix(s);
+  as_posix(s);
 
-  fs_drop_trailing_slash(s);
+  drop_trailing_slash(s);
 
   if(fs_trace > 1) std::cout << "TRACE:drop_slash(" << in << "): removed trailing slash: " << s << "\n";
 
@@ -147,7 +146,7 @@ fs_drop_slash(std::string_view in)
 
 
 void
-fs_trim(std::string& s)
+trim(std::string& s)
 {
   // remove all content after the first null character
   if(auto i = s.find('\0'); i != std::string::npos)
@@ -155,13 +154,12 @@ fs_trim(std::string& s)
 }
 
 
-std::vector<std::string>
-fs_split(std::string_view path)
+std::vector<std::string> split_filesep(std::string_view path)
 {
   if(path.empty())
     return {};
 
-  std::string const p{fs_as_posix(path)};
+  std::string const p{ffilesystem::as_posix(path)};
 
   // break paths into non-empty components
   std::vector<std::string> parts;
@@ -172,7 +170,7 @@ fs_split(std::string_view path)
     if (!part.empty())
       parts.emplace_back(part);
   }
-  if (fs_trace) std::cout << "TRACE:fs_split(" << path << "): used C++20 range adapter\n";
+  if (fs_trace) std::cout << "TRACE:split_filesep(" << path << "): used C++20 range adapter\n";
 #else
   // split path, including last component
   std::string_view::size_type start{0};
@@ -203,8 +201,7 @@ fs_split(std::string_view path)
   return parts;
 }
 
-std::vector<std::string>
-fs_split_pathsep(std::string_view path)
+std::vector<std::string> split_pathsep(std::string_view path)
 {
   // break paths into elements separated by path separator,
   // excluding empty elements.
@@ -230,3 +227,5 @@ fs_split_pathsep(std::string_view path)
 
   return parts;
 }
+
+} // namespace ffilesystem

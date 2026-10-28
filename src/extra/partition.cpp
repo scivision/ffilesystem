@@ -122,7 +122,9 @@ std::string fs_type_linux(std::string_view path)
 #endif
 
 
-std::string fs_filesystem_type(std::string_view path)
+namespace ffilesystem {
+
+std::string filesystem_type(std::string_view path)
 {
   // return name of filesystem type if known
 
@@ -135,7 +137,7 @@ std::string fs_filesystem_type(std::string_view path)
   if(!fs_is_cygwin() && path.length() >= 2 && path[0] == '\\' && path[1] == '\\')
     return {};
 
-  std::string r = fs_is_cygwin() ? std::string{path} : fs_root(path);
+  std::string r = fs_is_cygwin() ? std::string{path} : root(path);
   if(r.empty())
     return {};
 
@@ -173,3 +175,5 @@ std::string fs_filesystem_type(std::string_view path)
   fs_error_callback(path, ec);
   return {};
 }
+
+} // namespace ffilesystem

@@ -6,11 +6,11 @@ int main() {
 using namespace boost::ut;
 
   "LibPath"_test = [] {
-    std::string path = fs_lib_path();
+    std::string path = ffilesystem::lib_path();
 
     expect(!path.empty());
-    expect(fs_exists(path));
-    expect(!fs_is_dir(path));
-    expect(fs_is_file(path));
+    expect(ffilesystem::exists(path));
+    expect(!ffilesystem::is_directory(path));
+    expect(ffilesystem::is_file(path));
 };
 }

@@ -47,7 +47,7 @@ namespace {
 bool no_arg(std::string_view fun){
 
   if (fun == "free_ram" || fun == "total_ram") {
-    const auto memory = fun == "free_ram" ? fs_get_free_memory() : fs_total_sys_memory();
+    const auto memory = fun == "free_ram" ? fs_get_free_memory() : ffilesystem::total_sys_memory();
     if ((fun == "free_ram" && memory == std::numeric_limits<unsigned long long>::max()) ||
         (fun == "total_ram" && memory == 0))
       std::cerr << "ERROR: " << fun << " unavailable\n";
@@ -59,17 +59,16 @@ bool no_arg(std::string_view fun){
   static const std::unordered_map<std::string_view, std::function<bool()>> mbool =
   {
     {"optimized", fs_is_optimized},
-    {"is_admin", fs_is_admin},
+    {"is_admin", ffilesystem::is_admin},
     {"is_android", fs_is_android},
     {"is_bsd", fs_is_bsd},
     {"is_linux", fs_is_linux},
     {"is_macos", fs_is_macos},
-    {"is_rosetta", fs_is_rosetta},
+    {"is_rosetta", ffilesystem::is_rosetta},
     {"is_unix", fs_is_unix},
     {"is_windows", []() { return ffilesystem::is_windows; }},
     {"is_mingw", fs_is_mingw},
     {"is_cygwin", fs_is_cygwin},
-    {"has_statx", fs_has_statx},
     {"long_paths", fs_win32_long_paths_enabled}
   };
 
@@ -77,27 +76,28 @@ using fs_function = std::function<std::variant<std::string, std::string_view, bo
 
 static const std::unordered_map<std::string_view, fs_function> fs_function_map = {
   {"backend", []() { return ffilesystem::backend; }},
-  {"is_wsl", []() { return fs_is_wsl(); }},
+  {"has_statx", []() { return ffilesystem::has_statx; }},
+  {"is_wsl", []() { return ffilesystem::is_wsl(); }},
   {"filesep", []() { return ffilesystem::file_separator; }},
   {"pathsep", []() { return ffilesystem::path_separator; }},
   {"cpp_lang", []() { return fs_cpp_lang(); }},
   {"c_lang", []() { return fs_c_lang(); }},
   {"locale", []() { return fs_get_locale_name(); }},
-  {"username", []() { return fs_get_username(); }},
-  {"hostname", []() { return fs_hostname(); }},
-  {"shell", []() { return fs_get_shell(); }},
-  {"stdin_tty", []() { return fs_stdin_tty(); }},
-  {"arch", []() { return fs_cpu_arch(); }},
-  {"profile", []() { return fs_get_profile_dir(); }},
-  {"os_version", []() { return fs_os_version(); }},
-  {"libpath", []() { return fs_lib_path(); }},
-  {"exepath", []() { return fs_exe_path(); }},
-  {"compiler", []() { return fs_compiler(); }},
-  {"homedir", []() { return fs_get_homedir(); }},
-  {"terminal", []() { return fs_get_terminal(); }},
-  {"tempdir", []() { return fs_get_tempdir(); }},
+  {"username", []() { return ffilesystem::get_username(); }},
+  {"hostname", []() { return ffilesystem::hostname(); }},
+  {"shell", []() { return ffilesystem::get_shell(); }},
+  {"stdin_tty", []() { return ffilesystem::stdin_tty(); }},
+  {"arch", []() { return ffilesystem::cpu_arch(); }},
+  {"profile", []() { return ffilesystem::get_profile_dir(); }},
+  {"os_version", []() { return ffilesystem::os_version(); }},
+  {"libpath", []() { return ffilesystem::lib_path(); }},
+  {"exepath", []() { return ffilesystem::exe_path(); }},
+  {"compiler", []() { return ffilesystem::compiler(); }},
+  {"homedir", []() { return ffilesystem::get_homedir(); }},
+  {"terminal", []() { return ffilesystem::get_terminal(); }},
+  {"tempdir", []() { return ffilesystem::get_tempdir(); }},
   {"max_path", []() { return static_cast<unsigned long long>(fs_get_max_path()); }},
-  {"cwd", []() { return fs_get_cwd(); }},
+  {"cwd", []() { return ffilesystem::get_cwd(); }},
   {"max_open_files", []() { return fs_get_max_open_files(); }},
 };
 
@@ -124,7 +124,7 @@ static const std::unordered_map<std::string_view, fs_function> fs_function_map =
   } else if (const auto bit = mbool.find(fun); bit != mbool.end())
     std::cout << bit->second();
   else if (fun == "pid")
-    std::cout << fs_getpid();
+    std::cout << ffilesystem::getpid();
   else
     ok = false;
 
@@ -143,66 +143,66 @@ bool one_arg(std::string_view fun, std::string_view a1)
   static const std::unordered_map<std::string_view, fs_one_arg_function> fs_one_arg_function_map = {
     {"lexically_normal", [](std::string_view a1) { return fs_lexically_normal(a1); }},
     {"make_preferred", [](std::string_view a1) { return fs_make_preferred(a1); }},
-    {"parent", [](std::string_view a1) { return fs_parent(a1); }},
-    {"suffix", [](std::string_view a1) { return fs_suffix(a1); }},
-    {"canonical", [](std::string_view a1) { return fs_canonical(a1, true); }},
-    {"weakly_canonical", [](std::string_view a1) { return fs_canonical(a1, false); }},
-    {"resolve", [](std::string_view a1) { return fs_resolve(a1, true); }},
-    {"weakly_resolve", [](std::string_view a1) { return fs_resolve(a1, false); }},
-    {"normal", [](std::string_view a1) { return fs_normal(a1); }},
-    {"type", [](std::string_view a1) { return fs_filesystem_type(a1); }},
-    {"is_reserved", [](std::string_view a1) { return fs_is_reserved(a1); }},
-    {"is_safe", [](std::string_view a1) { return fs_is_safe_name(a1); }},
-    {"is_appexec", [](std::string_view a1) { return fs_is_appexec_alias(a1); }},
-    {"long", [](std::string_view a1) { return fs_longname(a1); }},
-    {"short", [](std::string_view a1) { return fs_shortname(a1); }},
-    {"touch", [](std::string_view a1) { return "touch " + std::string(a1) + " " + std::to_string(fs_touch(a1)); }},
-    {"set_modtime", [](std::string_view a1) { return fs_set_modtime(a1); }},
-    {"getenv", [](std::string_view a1) { auto e = fs_getenv(a1);
+    {"parent", [](std::string_view a1) { return ffilesystem::parent(a1); }},
+    {"suffix", [](std::string_view a1) { return ffilesystem::suffix(a1); }},
+    {"canonical", [](std::string_view a1) { return ffilesystem::canonical(a1, true); }},
+    {"weakly_canonical", [](std::string_view a1) { return ffilesystem::canonical(a1, false); }},
+    {"resolve", [](std::string_view a1) { return ffilesystem::resolve(a1, true); }},
+    {"weakly_resolve", [](std::string_view a1) { return ffilesystem::resolve(a1, false); }},
+    {"normal", [](std::string_view a1) { return ffilesystem::normal(a1); }},
+    {"type", [](std::string_view a1) { return ffilesystem::filesystem_type(a1); }},
+    {"is_reserved", [](std::string_view a1) { return ffilesystem::is_reserved(a1); }},
+    {"is_safe", [](std::string_view a1) { return ffilesystem::is_safe_name(a1); }},
+    {"is_appexec", [](std::string_view a1) { return ffilesystem::is_appexec_alias(a1); }},
+    {"long", [](std::string_view a1) { return ffilesystem::longname(a1); }},
+    {"short", [](std::string_view a1) { return ffilesystem::shortname(a1); }},
+    {"touch", [](std::string_view a1) { return "touch " + std::string(a1) + " " + std::to_string(ffilesystem::touch(a1)); }},
+    {"set_modtime", [](std::string_view a1) { return ffilesystem::set_modtime(a1); }},
+    {"getenv", [](std::string_view a1) { auto e = ffilesystem::getenv(a1);
       if (e){ return *e; };
       std::cerr << a1 << " environment variable not set\n";
       return std::string{};
     }},
-    {"setenv", [](std::string_view a1) { std::cout << "unset " << a1 << "\n"; return fs_setenv(a1, ""); }},
-    {"realpath", [](std::string_view a1) { return fs_realpath(a1); }},
-    {"as_posix", [](std::string_view a1) { std::string s(a1); fs_as_posix(s); return s; }},
-    {"as_windows", [](std::string_view a1) { std::string s(a1); fs_as_windows(s); return s; }},
-    {"max_component", [](std::string_view a1) { return static_cast<std::uintmax_t>(fs_max_component(a1)); }},
-    {"mkdir", [](std::string_view a1) { return fs_mkdir(a1); }},
-    {"owner", [](std::string_view a1) { return fs_get_owner_name(a1) + "\n" + fs_get_owner_group(a1); }},
-    {"expanduser", [](std::string_view a1) { return fs_expanduser(a1); }},
-    {"root", [](std::string_view a1) { return fs_root(a1); }},
-    {"root_directory", [](std::string_view a1) { return fs_root_directory(a1); }},
-    {"root_name", [](std::string_view a1) { return fs_root_name(a1); }},
-    {"drop_slash", [](std::string_view a1) { return fs_drop_slash(a1); }},
-    {"filename", [](std::string_view a1) { return fs_file_name(a1); }},
-    {"has_filename", [](std::string_view a1) { return fs_has_filename(a1); }},
-    {"has_root_directory", [](std::string_view a1) { return fs_has_root_directory(a1); }},
-    {"has_root_name", [](std::string_view a1) { return fs_has_root_name(a1); }},
-    {"is_absolute", [](std::string_view a1) { return fs_is_absolute(a1); }},
-    {"is_exe", [](std::string_view a1) { return fs_is_exe(a1); }},
-    {"is_exe_bin", [](std::string_view a1) { return fs_is_executable_binary(a1); }},
-    {"is_case_sensitive", [](std::string_view a1) { return fs_is_case_sensitive(a1); }},
-    {"is_dir", [](std::string_view a1) { return fs_is_dir(a1); }},
-    {"is_char", [](std::string_view a1) { return fs_is_char_device(a1); }},
-    {"is_file", [](std::string_view a1) { return fs_is_file(a1); }},
-    {"is_fifo", [](std::string_view a1) { return fs_is_fifo(a1); }},
-    {"is_symlink", [](std::string_view a1) { return fs_is_symlink(a1); }},
-    {"is_removable", [](std::string_view a1) { return fs_is_removable(a1); }},
-    {"is_readable", [](std::string_view a1) { return fs_is_readable(a1); }},
-    {"is_writable", [](std::string_view a1) { return fs_is_writable(a1); }},
-    {"device", [](std::string_view a1) { return static_cast<std::uintmax_t>(fs_st_dev(a1)); }},
-    {"inode", [](std::string_view a1) { return static_cast<std::uintmax_t>(fs_inode(a1)); }},
-    {"perm", [](std::string_view a1) { return fs_get_permissions(a1); }},
-    {"read_symlink", [](std::string_view a1) { return fs_read_symlink(a1); }},
-    {"stem", [](std::string_view a1) { return fs_stem(a1); }},
-    {"exists", [](std::string_view a1) { return fs_exists(a1); }},
-    {"blksize", [](std::string_view a1) { return static_cast<std::uintmax_t>(fs_get_blksize(a1)); }},
-    {"absolute", [](std::string_view a1) { return fs_absolute(a1); }},
-    {"is_empty", [](std::string_view a1) { return fs_is_empty(a1); }},
-    {"remove", [](std::string_view a1) { return fs_remove(a1); }},
-    {"which", [](std::string_view a1) { return fs_which(a1, "", false); }},
-    {"which_all", [](std::string_view a1) { return fs_which(a1, "", true); }},
+    {"setenv", [](std::string_view a1) { std::cout << "unset " << a1 << "\n"; return ffilesystem::setenv(a1, ""); }},
+    {"realpath", [](std::string_view a1) { return ffilesystem::realpath(a1); }},
+    {"as_posix", [](std::string_view a1) { std::string s(a1); ffilesystem::as_posix(s); return s; }},
+    {"as_windows", [](std::string_view a1) { std::string s(a1); ffilesystem::as_windows(s); return s; }},
+    {"max_component", [](std::string_view a1) { return static_cast<std::uintmax_t>(ffilesystem::max_component(a1)); }},
+    {"mkdir", [](std::string_view a1) { return ffilesystem::mkdir(a1); }},
+    {"owner", [](std::string_view a1) { return ffilesystem::get_owner_name(a1) + "\n" + ffilesystem::get_owner_group(a1); }},
+    {"expanduser", [](std::string_view a1) { return ffilesystem::expanduser(a1); }},
+    {"root", [](std::string_view a1) { return ffilesystem::root(a1); }},
+    {"root_directory", [](std::string_view a1) { return ffilesystem::root_directory(a1); }},
+    {"root_name", [](std::string_view a1) { return ffilesystem::root_name(a1); }},
+    {"drop_slash", [](std::string_view a1) { return ffilesystem::drop_slash(a1); }},
+    {"filename", [](std::string_view a1) { return ffilesystem::file_name(a1); }},
+    {"has_filename", [](std::string_view a1) { return ffilesystem::has_filename(a1); }},
+    {"has_root_directory", [](std::string_view a1) { return ffilesystem::has_root_directory(a1); }},
+    {"has_root_name", [](std::string_view a1) { return ffilesystem::has_root_name(a1); }},
+    {"is_absolute", [](std::string_view a1) { return ffilesystem::is_absolute(a1); }},
+    {"is_exe", [](std::string_view a1) { return ffilesystem::is_exe(a1); }},
+    {"is_exe_bin", [](std::string_view a1) { return ffilesystem::is_executable_binary(a1); }},
+    {"ffilesystem::is_case_sensitive", [](std::string_view a1) { return ffilesystem::is_case_sensitive(a1); }},
+    {"is_dir", [](std::string_view a1) { return ffilesystem::is_directory(a1); }},
+    {"is_char", [](std::string_view a1) { return ffilesystem::is_char_device(a1); }},
+    {"is_file", [](std::string_view a1) { return ffilesystem::is_file(a1); }},
+    {"is_fifo", [](std::string_view a1) { return ffilesystem::is_fifo(a1); }},
+    {"is_symlink", [](std::string_view a1) { return ffilesystem::is_symlink(a1); }},
+    {"is_removable", [](std::string_view a1) { return ffilesystem::is_removable(a1); }},
+    {"is_readable", [](std::string_view a1) { return ffilesystem::is_readable(a1); }},
+    {"is_writable", [](std::string_view a1) { return ffilesystem::is_writable(a1); }},
+    {"device", [](std::string_view a1) { return static_cast<std::uintmax_t>(ffilesystem::st_dev(a1)); }},
+    {"inode", [](std::string_view a1) { return static_cast<std::uintmax_t>(ffilesystem::inode(a1)); }},
+    {"perm", [](std::string_view a1) { return ffilesystem::get_permissions(a1); }},
+    {"read_symlink", [](std::string_view a1) { return ffilesystem::read_symlink(a1); }},
+    {"stem", [](std::string_view a1) { return ffilesystem::stem(a1); }},
+    {"exists", [](std::string_view a1) { return ffilesystem::exists(a1); }},
+    {"blksize", [](std::string_view a1) { return static_cast<std::uintmax_t>(ffilesystem::get_blksize(a1)); }},
+    {"absolute", [](std::string_view a1) { return ffilesystem::absolute(a1); }},
+    {"is_empty", [](std::string_view a1) { return ffilesystem::is_empty(a1); }},
+    {"remove", [](std::string_view a1) { return ffilesystem::remove(a1); }},
+    {"which", [](std::string_view a1) { return ffilesystem::which(a1, "", false); }},
+    {"which_all", [](std::string_view a1) { return ffilesystem::which(a1, "", true); }},
 #if defined(_WIN32) || defined(__CYGWIN__)
     {"full_name", [](std::string_view a1) { return fs_win32_full_name(a1); }},
     {"final_path", [](std::string_view a1) { return fs_win32_final_path(a1); }},
@@ -211,10 +211,10 @@ bool one_arg(std::string_view fun, std::string_view a1)
 
   static const std::unordered_map<std::string_view, std::function<std::uintmax_t(std::string_view)>> m1uintm =
   {
-    {"file_size", [](std::string_view a1) { return fs_file_size(a1); }},
-    {"space_available", [](std::string_view a1) { return fs_space_available(a1); }},
-    {"space_capacity", [](std::string_view a1) { return fs_space_capacity(a1); }},
-    {"hard_link_count", [](std::string_view a1) { return fs_hard_link_count(a1); }}
+    {"file_size", [](std::string_view a1) { return ffilesystem::file_size(a1); }},
+    {"space_available", [](std::string_view a1) { return ffilesystem::space_available(a1); }},
+    {"space_capacity", [](std::string_view a1) { return ffilesystem::space_capacity(a1); }},
+    {"hard_link_count", [](std::string_view a1) { return ffilesystem::hard_link_count(a1); }}
   };
 
   bool ok = true;
@@ -239,7 +239,7 @@ bool one_arg(std::string_view fun, std::string_view a1)
       std::cout << r;
   } else if (fun == "modtime"){
 
-    const std::time_t t = fs_get_modtime(a1);
+    const std::time_t t = ffilesystem::get_modtime(a1);
     #if defined(_MSC_VER)
       std::string buf(26, '\0');
       ctime_s(buf.data(), buf.size(), &t);
@@ -248,19 +248,19 @@ bool one_arg(std::string_view fun, std::string_view a1)
       std::cout << std::ctime(&t); // NOSONAR
     #endif
   } else if (fun == "fs_modtime")
-    std::cout << fs_get_modtime(a1);
+    std::cout << ffilesystem::get_modtime(a1);
   else if (fun == "random")
-    std::cout << fs_generate_random_alphanumeric_string(std::strtoul(a1.data(), nullptr, 10));
+    std::cout << ffilesystem::generate_random_alphanumeric_string(std::strtoul(a1.data(), nullptr, 10));
   else if (fun == "split"){
-    std::vector<std::string> v = fs_split(a1);
+    std::vector<std::string> v = ffilesystem::split_filesep(a1);
     for (const auto &s : v)
       std::cout << s << "\n";
   } else if (fun == "chdir" || fun == "set_cwd") {
-    auto cwd = fs_get_cwd();
+    auto cwd = ffilesystem::get_cwd();
     if(!cwd.empty()){
       std::cout << "cwd: " << cwd;
-      if(fs_set_cwd(a1)){
-        cwd = fs_get_cwd();
+      if(ffilesystem::set_cwd(a1)){
+        cwd = ffilesystem::get_cwd();
         if(!cwd.empty())
           std::cout << "new cwd: " << cwd;
         else
@@ -287,7 +287,7 @@ bool one_arg(std::string_view fun, std::string_view a1)
           std::cout << " " << s;
       }
 
-      std::cout << " " << fs_get_permissions(p.generic_string());
+      std::cout << " " << ffilesystem::get_permissions(p.generic_string());
       std::cout << std::endl;
     }
 #else
@@ -308,20 +308,20 @@ bool two_arg(std::string_view fun, std::string_view a1, std::string_view a2)
   using fs_two_arg_function = std::function<std::variant<std::string, bool>(std::string_view, std::string_view)>;
 
   static const std::unordered_map<std::string_view, fs_two_arg_function> fs_two_arg_function_map = {
-    {"which", [](std::string_view a1, std::string_view a2) { return fs_which(a1, a2, false); }},
-    {"which_all", [](std::string_view a1, std::string_view a2) { return fs_which(a1, a2, true); }},
-    {"same", [](std::string_view a1, std::string_view a2) { return fs_equivalent(a1, a2); }},
-    {"join", [](std::string_view a1, std::string_view a2) { return fs_join(a1, a2); }},
-    {"with_suffix", [](std::string_view a1, std::string_view a2) { return fs_with_suffix(a1, a2); }},
-    {"is_prefix", [](std::string_view a1, std::string_view a2) { return fs_is_prefix(a1, a2); }},
-    {"is_subdir", [](std::string_view a1, std::string_view a2) { return fs_is_subdir(a1, a2); }},
-    {"relative", [](std::string_view a1, std::string_view a2) { return fs_relative_to(a1, a2); }},
-    {"proximate", [](std::string_view a1, std::string_view a2) { return fs_proximate_to(a1, a2); }},
-    {"setenv", [](std::string_view a1, std::string_view a2) { return fs_setenv(a1, a2); }},
-    {"copy", [](std::string_view a1, std::string_view a2) { return fs_copy_file(a1, a2, false); }},
-    {"create_symlink", [](std::string_view a1, std::string_view a2) { return fs_create_symlink(a1, a2); }},
-    {"absolute", [](std::string_view a1, std::string_view a2) { return fs_absolute(a1, a2); }},
-    {"rename", [](std::string_view a1, std::string_view a2) { return fs_rename(a1, a2); }}
+    {"which", [](std::string_view a1, std::string_view a2) { return ffilesystem::which(a1, a2, false); }},
+    {"which_all", [](std::string_view a1, std::string_view a2) { return ffilesystem::which(a1, a2, true); }},
+    {"same", [](std::string_view a1, std::string_view a2) { return ffilesystem::equivalent(a1, a2); }},
+    {"join", [](std::string_view a1, std::string_view a2) { return ffilesystem::join(a1, a2); }},
+    {"with_suffix", [](std::string_view a1, std::string_view a2) { return ffilesystem::with_suffix(a1, a2); }},
+    {"is_prefix", [](std::string_view a1, std::string_view a2) { return ffilesystem::is_prefix(a1, a2); }},
+    {"is_subdir", [](std::string_view a1, std::string_view a2) { return ffilesystem::is_subdir(a1, a2); }},
+    {"relative", [](std::string_view a1, std::string_view a2) { return ffilesystem::relative_to(a1, a2); }},
+    {"proximate", [](std::string_view a1, std::string_view a2) { return ffilesystem::proximate_to(a1, a2); }},
+    {"setenv", [](std::string_view a1, std::string_view a2) { return ffilesystem::setenv(a1, a2); }},
+    {"copy", [](std::string_view a1, std::string_view a2) { return ffilesystem::copy_file(a1, a2, false); }},
+    {"create_symlink", [](std::string_view a1, std::string_view a2) { return ffilesystem::create_symlink(a1, a2); }},
+    {"absolute", [](std::string_view a1, std::string_view a2) { return ffilesystem::absolute(a1, a2); }},
+    {"rename", [](std::string_view a1, std::string_view a2) { return ffilesystem::rename(a1, a2); }}
   };
 
   bool ok = true;
@@ -369,7 +369,7 @@ bool two_arg(std::string_view fun, std::string_view a1, std::string_view a2)
       x = -1;
 #endif
 
-    auto p = fs_get_permissions(a1);
+    auto p = ffilesystem::get_permissions(a1);
     if(p.empty()){
       std::cerr << "ERROR get_permissions(" << a1 << ") before chmod\n";
       return false;
@@ -377,10 +377,10 @@ bool two_arg(std::string_view fun, std::string_view a1, std::string_view a2)
 
     std::cout << "before chmod " << a1 << " " << p << "\n";
     std::cout << "setting r,w,x " << r << " " << w << " " << x << "\n";
-    if(!fs_set_permissions(a1, r, w, x))
+    if(!ffilesystem::set_permissions(a1, r, w, x))
       std::cerr << "ERROR set_permissions(" << a1 << ")\n";
 
-    p = fs_get_permissions(a1);
+    p = ffilesystem::get_permissions(a1);
     if(p.empty())
       std::cerr << "ERROR get_permissions(" << a1 << ") after chmod\n";
     else
@@ -408,45 +408,45 @@ int main()
   _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
 #endif
 
-const std::string cwd = fs_get_cwd();
+const std::string cwd = ffilesystem::get_cwd();
 
 std::cout << "Ffilesystem. Backend: " << ffilesystem::backend << "\n";
-std::cout << fs_compiler() << "\n";
+std::cout << ffilesystem::compiler() << "\n";
 std::cout << "Ffilesystem C++ standard " << fs_cpp_lang() << "  CLI C++ standard " << __cplusplus << "\n";
 std::cout << "Ffilesystem C++ <format> support: " << fs_cpp_format() << "\n";
 std::cout << "Ffilesystem C++ <ranges> support: " << fs_cpp_ranges() << "\n";
 std::cout << "Ffilesystem C standard " << fs_c_lang() << "\n";
-std::cout << "libcpp: " << fs_libcxx() << "\n";
+std::cout << "libcpp: " << ffilesystem::libcxx() << "\n";
 std::cout << "libc: " << fs_libc() << "\n";
 std::cout << "maximum path length: " << fs_get_max_path() << "\n";
 std::cout << "current working directory (CWD): " << cwd << "\n";
-std::cout << "Compiler: " << fs_compiler() << "\n";
+std::cout << "Compiler: " << ffilesystem::compiler() << "\n";
 std::cout << "Optimized: " << fs_is_optimized() << " Trace: " << fs_trace << "\n";
 
-std::cout << "Homedir: " << fs_get_homedir() << "\n";
+std::cout << "Homedir: " << ffilesystem::get_homedir() << "\n";
 
 if (ffilesystem::is_windows)
   std::cout << "Windows long paths enabled: " << fs_win32_long_paths_enabled() << "\n";
 
 
 #if defined(ffilesystem_system)
-std::cout << "CPU arch: " << fs_cpu_arch() << "\n";
-std::cout << "Shell: " << fs_get_shell() << "\n";
-std::cout << "Hostname: " << fs_hostname() << "\n";
-std::cout << "Username: " << fs_get_username() << "\n";
+std::cout << "CPU arch: " << ffilesystem::cpu_arch() << "\n";
+std::cout << "Shell: " << ffilesystem::get_shell() << "\n";
+std::cout << "Hostname: " << ffilesystem::hostname() << "\n";
+std::cout << "Username: " << ffilesystem::get_username() << "\n";
 
-if(fs_is_admin())
+if(ffilesystem::is_admin())
   std::cout << "NOTE: running as admin / sudo\n";
 #endif
 
 
 #if defined(ffilesystem_extra)
 
-std::cout << "maximum path component length: " << fs_max_component(cwd) << "\n";
+std::cout << "maximum path component length: " << ffilesystem::max_component(cwd) << "\n";
 
 // doesn't work usefully on Cygwin
 if(!fs_is_cygwin())
-  std::cout << "CWD filesystem Type: " << fs_filesystem_type(cwd) << "\n";
+  std::cout << "CWD filesystem Type: " << ffilesystem::filesystem_type(cwd) << "\n";
 #endif
 
 // commented out  because some systems (Cygwin) silently exit with error code 0 on std::locale("") call

@@ -19,8 +19,10 @@ namespace Filesystem = std::filesystem;
 
 #include <iostream>
 
-bool
-fs_remove(std::string_view path)
+
+namespace ffilesystem {
+
+bool remove(std::string_view path)
 {
   // remove a file or empty directory
   // returns false if path does not exist or is a non-empty directory
@@ -37,7 +39,7 @@ fs_remove(std::string_view path)
 
 #if defined(_WIN32)
   // Windows std::remove is confused by symlink directories, not deleting them, so give an _unlink
-  if(fs_exists(path)){
+  if(exists(path)){
   // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-deletefilea
   // Need RemoveDirectoryW when deleting a directory symlink with std::remove()
   // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsymboliclinka#remarks
@@ -53,8 +55,7 @@ fs_remove(std::string_view path)
 }
 
 
-bool
-fs_rename(std::string_view from, std::string_view to)
+bool rename(std::string_view from, std::string_view to)
 {
   // rename a file or directory
   // existing "to" is overwritten
@@ -73,5 +74,6 @@ fs_rename(std::string_view from, std::string_view to)
 
   fs_error_callback(from, to, ec);
   return false;
-
 }
+
+} // namespace ffilesystem

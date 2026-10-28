@@ -23,8 +23,10 @@
 
 [[maybe_unused]] constexpr std::size_t DEFAULT_MAX_PATH = 256;
 
+namespace ffilesystem {
+
 // This function returns the maximum length of a single component in the given path.
-std::string_view::size_type fs_max_component(std::string_view path)
+std::string_view::size_type max_component(std::string_view path)
 {
   // maximum length of each component of a path. That is, while the maximum
   // total length of a path may be thousands of character, each segment of the
@@ -34,7 +36,7 @@ std::string_view::size_type fs_max_component(std::string_view path)
 
 #if defined(_WIN32)
   DWORD L = 0;
-  if(GetVolumeInformationW(fs_win32_to_wide(fs_root(path)).c_str(), nullptr, 0, nullptr, &L, nullptr, nullptr, 0) != 0)
+  if(GetVolumeInformationW(fs_win32_to_wide(ffilesystem::root(path)).c_str(), nullptr, 0, nullptr, &L, nullptr, nullptr, 0) != 0)
     return L;
 #elif defined(_PC_NAME_MAX)
   errno = 0;
@@ -51,4 +53,6 @@ std::string_view::size_type fs_max_component(std::string_view path)
 
   fs_error_callback(path, ec);
   return {};
+}
+
 }

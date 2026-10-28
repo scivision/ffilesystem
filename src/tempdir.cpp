@@ -21,9 +21,9 @@ namespace Filesystem = std::filesystem;
 #endif
 
 
+namespace ffilesystem {
 
-std::string
-fs_get_tempdir()
+std::string get_tempdir()
 {
   std::error_code ec;
 
@@ -53,10 +53,10 @@ fs_get_tempdir()
 #endif
 
 #if !defined(_WIN32)
-  auto t = fs_getenv("TMPDIR");
+  auto t = getenv("TMPDIR");
   std::string tempdir{t.value_or("/tmp")};
 
-  if (fs_is_dir(tempdir))
+  if (is_directory(tempdir))
     return tempdir;
 #endif
 
@@ -64,3 +64,5 @@ fs_get_tempdir()
   return {};
 
 }
+
+} // namespace ffilesystem

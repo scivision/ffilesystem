@@ -11,14 +11,14 @@ int main() {
 using namespace boost::ut;
 
 suite TestExpand = [] {
-    std::string const h = fs_get_homedir();
+    std::string const h = ffilesystem::get_homedir();
     "Expanduser home directory"_test = [h] {
         expect(!h.empty() >> fatal) << "Home directory should not be empty";
-        expect(fs_is_dir(h) >> fatal) << "Home directory should be a directory: " << h;
+        expect(ffilesystem::is_directory(h) >> fatal) << "Home directory should be a directory: " << h;
     };
 
     "Expanduser"_test = [](auto const& test_case) {
-        expect(fs_expanduser(test_case.first) == test_case.second);
+        expect(ffilesystem::expanduser(test_case.first) == test_case.second);
     } | std::vector<std::pair<std::string, std::string>>{
             {"", ""},
             {".", "."},

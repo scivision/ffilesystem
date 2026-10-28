@@ -15,7 +15,7 @@ struct filesize_ctx {
 
   ~filesize_ctx() {
     if (!file.empty()) {
-      fs_remove(file);
+     ffilesystem::remove(file);
     }
   }
 };
@@ -37,7 +37,7 @@ void setup(filesize_ctx& ctx) {
 int main() {
   using namespace boost::ut;
 
-if (!fs_is_writable(".")) {
+if (!ffilesystem::is_writable(".")) {
   skip / "file_size"_test = [] {};
 } else {
   "file_size"_test = [] {
@@ -46,13 +46,13 @@ if (!fs_is_writable(".")) {
 
     constexpr std::uintmax_t fsize = 5;
 
-    expect(eq(fs_file_size(ctx.file), fsize)) << "backend " << ffilesystem::backend << " file " << ctx.file;
+    expect(eq(ffilesystem::file_size(ctx.file), fsize)) << "backend " << ffilesystem::backend << " file " << ctx.file;
 
-    expect(eq(fs_file_size("."), fs_unknown_size)) << "backend " << ffilesystem::backend;
-    expect(eq(fs_file_size("not-exist-file"), fs_unknown_size)) << "backend " << ffilesystem::backend;
+    expect(eq(ffilesystem::file_size("."), fs_unknown_size)) << "backend " << ffilesystem::backend;
+    expect(eq(ffilesystem::file_size("not-exist-file"), fs_unknown_size)) << "backend " << ffilesystem::backend;
 
-    expect(eq(fs_file_size(ctx.nonnull_file), fsize)) << "backend " << ffilesystem::backend
-            << "fs_file_size() non-null-terminated path " << ctx.nonnull_file;
+    expect(eq(ffilesystem::file_size(ctx.nonnull_file), fsize)) << "backend " << ffilesystem::backend
+            << "ffilesystem::file_size() non-null-terminated path " << ctx.nonnull_file;
   };
 }
 }

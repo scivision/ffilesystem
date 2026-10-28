@@ -12,7 +12,7 @@ using namespace boost::ut;
 
 "as_posix"_test = [](auto const& test_case) {
   std::string path{test_case.first};
-  fs_as_posix(path);
+  ffilesystem::as_posix(path);
   expect(eq(path, ffilesystem::is_windows ? test_case.second : test_case.first));
 } | std::vector<std::pair<std::string_view, std::string_view>>{
         {R"(a\b)", "a/b"},

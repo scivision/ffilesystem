@@ -10,7 +10,7 @@ using namespace boost::ut;
 
 int main() {
   "WithSuffix"_test = [](auto const& test_case) {
-    expect(eq(fs_with_suffix(test_case.first.first, test_case.first.second),
+    expect(eq(ffilesystem::with_suffix(test_case.first.first, test_case.first.second),
               test_case.second));
   } | std::vector<std::pair<std::pair<std::string_view, std::string_view>,
                             std::string_view>>{

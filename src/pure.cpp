@@ -14,10 +14,22 @@ namespace Filesystem = std::filesystem;
 #include "ffilesystem.h"
 
 
-char fs_filesep(){ return ffilesystem::file_separator; }
+namespace ffilesystem {
 
-char fs_pathsep(){ return ffilesystem::path_separator; }
+bool is_absolute(std::string_view path)
+{
+  // is path absolute?
 
+#if defined(HAVE_CXX_FILESYSTEM)
+  return Filesystem::path(path).is_absolute();
+#else
+  return is_windows
+    ? has_root_name(path) && has_root_directory(path)
+    : has_root_directory(path);
+#endif
+}
+
+}
 
 const char* fs_devnull(){
   return ffilesystem::is_windows ? "nul" : "/dev/null";
@@ -45,115 +57,97 @@ fs_strncpy(const char* path, char* result, const std::string::size_type buffer_s
 }
 
 
-bool
-fs_is_absolute(std::string_view path)
-{
-  // is path absolute?
+namespace ffilesystem {
 
-#if defined(HAVE_CXX_FILESYSTEM)
-  return Filesystem::path(path).is_absolute();
-#else
-  return ffilesystem::is_windows
-    ? fs_has_root_name(path) && fs_has_root_directory(path)
-    : fs_has_root_directory(path);
-#endif
-}
-
-
-bool
-fs_has_filename(std::string_view path)
+bool has_filename(std::string_view path)
 {
   // does path have a filename component?
 #if defined(HAVE_CXX_FILESYSTEM)
   return Filesystem::path(path).has_filename();
 #else
-  return !fs_file_name(path).empty();
+  return !file_name(path).empty();
 #endif
 }
 
 
-std::string
-fs_file_name(std::string_view path)
+std::string file_name(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).filename().string();
 #else
-  const auto i = path.find_last_of(ffilesystem::file_separators);
+  const auto i = path.find_last_of(file_separators);
   return std::string(path.substr(i == std::string_view::npos ? 0 : i + 1));
 #endif
 }
 
 
-std::string
-fs_root(std::string_view path)
+std::string root(std::string_view path)
 {
   // root_path = root_name / root_directory
 
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).root_path().string();
 #else
-  return fs_root_name(path) + fs_root_directory(path);
+  return root_name(path) + root_directory(path);
 #endif
 }
 
 
-std::string
-fs_root_directory(std::string_view path)
+std::string root_directory(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).root_directory().string();
 #else
-  if (ffilesystem::is_windows) {
+  if (is_windows) {
     const auto i = path.size() >= 2 && path[1] == ':' ? 2u : 0u;
 
-    return i < path.size() && ffilesystem::is_file_separator(path[i])
+    return i < path.size() && is_file_separator(path[i])
       ? std::string(1, path[i])
       : "";
   }
 
-  return ffilesystem::is_file_separator(path.front()) ? std::string(1, path.front()) : "";
+  return is_file_separator(path.front()) ? std::string(1, path.front()) : "";
 #endif
 }
 
-bool fs_has_root_directory(std::string_view path){
+
+bool has_root_directory(std::string_view path){
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).has_root_directory();
 #else
-  return !fs_root_directory(path).empty();
+  return !root_directory(path).empty();
 #endif
 }
 
 
-std::string
-fs_root_name([[maybe_unused]] std::string_view path)
+std::string root_name([[maybe_unused]] std::string_view path)
 {
 
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).root_name().string();
 #else
-  if (ffilesystem::is_windows && path.size() >= 2 && path[1] == ':')
+  if (is_windows && path.size() >= 2 && path[1] == ':')
     return std::string(path.substr(0, 2));
 
   return {};
 #endif
 }
 
-bool fs_has_root_name(std::string_view path){
+bool has_root_name(std::string_view path){
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).has_root_name();
 #else
-  return !fs_root_name(path).empty();
+  return !root_name(path).empty();
 #endif
 }
 
 
-std::string
-fs_stem(std::string_view path)
+std::string stem(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).filename().stem().string();
 #else
-  std::string r = fs_file_name(path);
+  std::string r = file_name(path);
   // handle special case a/..
   if (r == "..")
     return r;
@@ -167,13 +161,12 @@ fs_stem(std::string_view path)
 }
 
 
-std::string
-fs_suffix(std::string_view path)
+std::string suffix(std::string_view path)
 {
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).filename().extension().string();
 #else
-  const std::string p = fs_file_name(path);
+  const std::string p = file_name(path);
   // find last dot
   const auto i = p.rfind('.');
 
@@ -184,8 +177,7 @@ fs_suffix(std::string_view path)
 }
 
 
-std::string
-fs_join(std::string_view path, std::string_view other)
+std::string join(std::string_view path, std::string_view other)
 {
   // does not normalize to preserve possible symlinks
 
@@ -193,14 +185,14 @@ fs_join(std::string_view path, std::string_view other)
   // use generic string to keep '/' file separator to avoid confusion
   return (Filesystem::path(path) / other).generic_string();
 #else
-  if(fs_is_absolute(other) || (fs_has_root_name(other) && fs_root_name(other) != fs_root_name(path)))
+  if(ffilesystem::is_absolute(other) || (has_root_name(other) && root_name(other) != root_name(path)))
     return std::string(other);
-  else if (fs_has_root_directory(other))
-    return fs_root_name(path).append(other);
+  else if (has_root_directory(other))
+    return root_name(path).append(other);
 
   std::string p{path};
 
-  if(!path.empty() && !ffilesystem::is_file_separator(p.back()))
+  if(!path.empty() && !is_file_separator(p.back()))
     p.push_back('/');
 
   return p.append(other);
@@ -208,32 +200,33 @@ fs_join(std::string_view path, std::string_view other)
 }
 
 
-std::string
-fs_with_suffix(std::string_view path, std::string_view new_suffix)
+std::string with_suffix(std::string_view path, std::string_view new_suffix)
 {
-  std::string const stem = fs_stem(path);
+  std::string const s{stem(path)};
   // handle directory case: stem is empty
-  if(stem.empty())
-    return fs_join(path, new_suffix);
+  if(s.empty())
+    return join(path, new_suffix);
 
 #ifdef HAVE_CXX_FILESYSTEM
   return Filesystem::path(path).replace_extension(new_suffix).string();
 #else
-  std::string const p = fs_parent(path);
+  std::string const p = parent(path);
 
   std::string r;
   if (p == ".")
-    r = stem;
+    r = s;
   else {
     r = p;
     if(p.back() != '/')
       r.push_back('/');
 
-    r += stem;
+    r += s;
   }
 
   return r.append(new_suffix);
 #endif
+}
+
 }
 
 

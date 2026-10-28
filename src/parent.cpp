@@ -13,20 +13,23 @@ namespace Filesystem = std::filesystem;
 #endif
 
 
-std::string fs_parent(std::string_view path)
+namespace ffilesystem {
+
+
+std::string parent(std::string_view path)
 {
   std::string p{path};
 
   const auto fix_path = [](std::string& s){
     if (s.empty())
       s = ".";
-    else if (ffilesystem::is_windows && s == fs_root_name(s))
+    else if (is_windows && s == root_name(s))
       s.push_back('/');
   };
 
 #if defined(HAVE_CXX_FILESYSTEM)
 
-  fs_drop_trailing_slash(p);
+  drop_trailing_slash(p);
   // have to drop trailing slash to get expected parent path -- necessary for AppleClang
 
   p = Filesystem::path(p).parent_path().string();
@@ -41,13 +44,13 @@ std::string fs_parent(std::string_view path)
 
 #elif defined(_WIN32)
   // PathCchRemoveFileSpec cannot handle numerous corner cases
-  fs_drop_trailing_slash(p);
+  drop_trailing_slash(p);
   const auto parts = fs_win32_split_path(p);
   if (!parts)
     return {};
 
   p = parts->drive + parts->directory;
-  fs_drop_trailing_slash(p);
+  drop_trailing_slash(p);
   fix_path(p);
   return p;
 #else
@@ -59,5 +62,7 @@ std::string fs_parent(std::string_view path)
   fs_error_callback(path);
   return {};
 #endif
+
+}
 
 }

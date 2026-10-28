@@ -13,6 +13,8 @@
     "ffilesystem_warning_as_error": true,
     "ffilesystem_cpp": true,
     "ffilesystem_fallback": false,
+    "ffilesystem_extra": true,
+    "ffilesystem_system": true,
     "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE",
     "ffilesystem_BUILD_TESTING": true,
     "CMAKE_CXX_STANDARD": "20",

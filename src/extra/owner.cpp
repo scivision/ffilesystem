@@ -110,8 +110,9 @@ std::optional<gid_t> fs_stat_gid(std::string_view path)
 } // namespace
 
 
-std::string
-fs_get_owner_name(std::string_view path)
+namespace ffilesystem {
+
+std::string get_owner_name(std::string_view path)
 {
 #if defined(_WIN32)
   if (std::string s = fs_win32_owner(path, false); !s.empty())
@@ -128,8 +129,7 @@ fs_get_owner_name(std::string_view path)
 }
 
 
-std::string
-fs_get_owner_group(std::string_view path)
+std::string get_owner_group(std::string_view path)
 {
 #if defined(_WIN32)
   if (std::string s = fs_win32_owner(path, true); !s.empty())
@@ -143,4 +143,6 @@ fs_get_owner_group(std::string_view path)
 
   fs_error_callback(path);
   return {};
+}
+
 }

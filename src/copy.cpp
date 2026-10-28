@@ -220,21 +220,24 @@ bool fs_copy_file_range_or_loop(std::string_view source, std::string_view dest, 
 
 }
 
-bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite)
+
+namespace ffilesystem {
+
+bool copy_file(std::string_view source, std::string_view dest, bool overwrite)
 {
   // copy a single file -- symlinks are followed
 
   std::error_code ec;
 
-  if(!fs_is_file(source)) {
+  if(!is_file(source)) {
     fs_error_callback(source, std::make_error_code(std::errc::no_such_file_or_directory));
     return false;
   }
-  if (fs_equivalent(source, dest)) {
+  if (equivalent(source, dest)) {
     fs_error_callback(source,dest, std::make_error_code(std::errc::file_exists));
     return false;
   }
-  if (fs_is_dir(source)) {
+  if (is_directory(source)) {
     fs_error_callback(source, std::make_error_code(std::errc::is_a_directory));
     return false;
   }
@@ -245,7 +248,7 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
     opt = Filesystem::copy_options::overwrite_existing;
 // WORKAROUND: Windows MinGW GCC 11..13, Intel oneAPI Linux: bug with overwrite_existing failing on overwrite
 
-  if(overwrite && fs_is_file(dest) && !fs_remove(dest))
+  if(overwrite && is_file(dest) && !remove(dest))
     fs_error_callback(dest, std::make_error_code(std::errc::io_error));
 
   if(Filesystem::copy_file(source, dest, opt, ec) && !ec)
@@ -284,5 +287,7 @@ bool fs_copy_file(std::string_view source, std::string_view dest, bool overwrite
 
   fs_error_callback(source, dest, ec);
   return false;
+
+}
 
 }

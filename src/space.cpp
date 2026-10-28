@@ -71,13 +71,16 @@ space_info get_space(std::string_view path)
 
 }
 
-std::uintmax_t fs_space_available(std::string_view path)
+
+namespace ffilesystem {
+
+std::uintmax_t space_available(std::string_view path)
 {
   // filesystem space available for device holding path
   return get_space(path).available;
 }
 
-std::uintmax_t fs_space_capacity(std::string_view path)
+std::uintmax_t space_capacity(std::string_view path)
 {
   // filesystem space capacity for device holding path
   // total size of the filesystem, in bytes
@@ -85,3 +88,5 @@ std::uintmax_t fs_space_capacity(std::string_view path)
   // not the total physical disk size.
   return get_space(path).capacity;
 }
+
+} // namespace ffilesystem

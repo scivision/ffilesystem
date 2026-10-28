@@ -36,7 +36,9 @@ namespace Filesystem = std::filesystem;
 #endif
 
 
-bool fs_equivalent(std::string_view path1, std::string_view path2)
+namespace ffilesystem {
+
+bool equivalent(std::string_view path1, std::string_view path2)
 {
   // non-existent paths are not equivalent
 
@@ -117,4 +119,6 @@ bool fs_equivalent(std::string_view path1, std::string_view path2)
 #endif // HAVE_CXX_FILESYSTEM
 
   return handle_error();
+}
+
 }

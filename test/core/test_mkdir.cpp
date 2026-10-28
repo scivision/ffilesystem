@@ -12,7 +12,7 @@ struct mkdir_ctx {
 
   ~mkdir_ctx() {
     if (!dir.empty()) {
-      fs_remove(dir);
+     ffilesystem::remove(dir);
     }
   }
 };
@@ -20,7 +20,7 @@ struct mkdir_ctx {
 void setup(mkdir_ctx& ctx, std::string_view test_name) {
   using namespace boost::ut;
 
-  ctx.cwd = fs_get_cwd();
+  ctx.cwd = ffilesystem::get_cwd();
 
   ctx.dir = ctx.cwd + "/ffs_test_" + std::string{test_name} + "_dir";
 
@@ -34,26 +34,26 @@ void setup(mkdir_ctx& ctx, std::string_view test_name) {
 int main() {
   using namespace boost::ut;
 
-  if (!fs_is_writable(".")) {
+  if (!ffilesystem::is_writable(".")) {
     skip / "mkdir"_test = [] {};
   } else {
   "mkdir"_test = [] {
     mkdir_ctx ctx;
     setup(ctx, "mkdir");
 
-    expect(!fs_mkdir(""));
+    expect(!ffilesystem::mkdir(""));
 
     // Test mkdir with existing directory
-    expect(fs_mkdir(ctx.dir) >> fatal);
+    expect(ffilesystem::mkdir(ctx.dir) >> fatal);
 
     // Test mkdir with relative path
-    expect(fs_set_cwd(ctx.dir) >> fatal);
+    expect(ffilesystem::set_cwd(ctx.dir) >> fatal);
 
-    expect(fs_mkdir("test-filesystem-dir/hello") >> fatal);
-    expect(fs_is_dir(ctx.dir + "/test-filesystem-dir/hello"));
+    expect(ffilesystem::mkdir("test-filesystem-dir/hello") >> fatal);
+    expect(ffilesystem::is_directory(ctx.dir + "/test-filesystem-dir/hello"));
 
-    expect(fs_mkdir(ctx.nonnull_dir) >> fatal);
-    expect(!fs_is_dir(ctx.in_dir));
+    expect(ffilesystem::mkdir(ctx.nonnull_dir) >> fatal);
+    expect(!ffilesystem::is_directory(ctx.in_dir));
   };
 }
 }

@@ -16,7 +16,7 @@ struct space_ctx {
 auto setup(space_ctx& ctx) {
   using namespace boost::ut;
 
-  ctx.dir = fs_drop_slash(fs_get_tempdir());
+  ctx.dir = ffilesystem::drop_slash(ffilesystem::get_tempdir());
   std::cout << "Testing space on backend " << ffilesystem::backend << " with temp dir " << ctx.dir << "\n";
 
   ctx.in_dir = ctx.dir + "-invalid-memory-trailing-non-null-terminated-string_view";
@@ -33,12 +33,12 @@ int main() {
     space_ctx ctx;
     setup(ctx);
 
-    const auto avail = fs_space_available(ctx.dir);
+    const auto avail = ffilesystem::space_available(ctx.dir);
     expect(avail > 0 && avail < fs_unknown_size);
 
-    expect(eq(fs_space_available("cc:/not-exist-available"), fs_unknown_size)) << "backend " << ffilesystem::backend;
+    expect(eq(ffilesystem::space_available("cc:/not-exist-available"), fs_unknown_size)) << "backend " << ffilesystem::backend;
 
-    expect(neq(fs_space_available(ctx.nonnull_dir), fs_unknown_size))
+    expect(neq(ffilesystem::space_available(ctx.nonnull_dir), fs_unknown_size))
         << "problem with non null-terminated path " << ctx.nonnull_dir;
   };
 
@@ -46,12 +46,12 @@ int main() {
     space_ctx ctx;
     setup(ctx);
 
-    const auto cap = fs_space_capacity(ctx.dir);
+    const auto cap = ffilesystem::space_capacity(ctx.dir);
     expect(cap > 0 && cap < fs_unknown_size);
 
-    expect(eq(fs_space_capacity("cc:/not-exist-capacity"), fs_unknown_size)) << "backend " << ffilesystem::backend;
+    expect(eq(ffilesystem::space_capacity("cc:/not-exist-capacity"), fs_unknown_size)) << "backend " << ffilesystem::backend;
 
-    expect(neq(fs_space_capacity(ctx.nonnull_dir), fs_unknown_size))
+    expect(neq(ffilesystem::space_capacity(ctx.nonnull_dir), fs_unknown_size))
         << "problem with non null-terminated path " << ctx.nonnull_dir;
   };
 }

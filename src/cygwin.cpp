@@ -31,10 +31,14 @@ std::string fs_convert_path(std::string_view path, [[maybe_unused]] int const wh
 
 }
 
-std::string fs_to_cygpath(std::string_view path) {
+namespace ffilesystem {
+
+std::string to_cygpath(std::string_view path) {
   return fs_convert_path(path, CCP_WIN_A_TO_POSIX);
 }
 
-std::string fs_to_winpath(std::string_view path) {
+std::string to_winpath(std::string_view path) {
   return fs_convert_path(path, CCP_POSIX_TO_WIN_A);
 }
+
+} // namespace ffilesystem

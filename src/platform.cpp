@@ -27,12 +27,10 @@ namespace Filesystem = std::filesystem;
 #endif
 
 
-bool fs_is_windows() { return ffilesystem::is_windows; }
+namespace ffilesystem {
 
-
-bool fs_set_cwd(std::string_view path)
+bool set_cwd(std::string_view path)
 {
-
   std::error_code ec;
 
 #if defined(HAVE_CXX_FILESYSTEM)
@@ -53,7 +51,7 @@ bool fs_set_cwd(std::string_view path)
 }
 
 
-std::string fs_get_cwd()
+std::string get_cwd()
 {
   // does not have trailing slash
   std::error_code ec;
@@ -75,7 +73,7 @@ std::string fs_get_cwd()
   std::string buf(fs_get_max_path(), '\0');
 
   if (::getcwd(buf.data(), buf.size())) {
-    fs_trim(buf);
+    trim(buf);
     return buf;
 }
 #endif
@@ -83,3 +81,5 @@ std::string fs_get_cwd()
   fs_error_callback("", ec);
   return {};
 }
+
+} // namespace ffilesystem

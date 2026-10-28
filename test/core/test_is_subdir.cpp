@@ -10,7 +10,7 @@ int main() {
   using namespace boost::ut;
 
   "is_subdir"_test = [](auto const& test_case) {
-    expect(eq(fs_is_subdir(test_case.first.first, test_case.first.second),
+    expect(eq(ffilesystem::is_subdir(test_case.first.first, test_case.first.second),
               test_case.second));
   } | std::vector<std::pair<std::pair<std::string_view, std::string_view>, bool>>{
           {{"a/b/c", "a/b"}, true},

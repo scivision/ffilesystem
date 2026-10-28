@@ -3,10 +3,11 @@
 
 #include "ffilesystem.h"
 
+namespace ffilesystem {
 
-bool fs_touch(std::string_view path)
+bool touch(std::string_view path)
 {
-  if(fs_set_modtime(path, true))
+  if(set_modtime(path, true))
     return true;
 
   if(std::ofstream f(path.data()); f)
@@ -14,4 +15,6 @@ bool fs_touch(std::string_view path)
 
   fs_error_callback(path);
   return false;
+}
+
 }

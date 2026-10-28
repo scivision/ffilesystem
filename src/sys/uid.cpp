@@ -19,8 +19,9 @@
 
 #include "ffilesystem.h"
 
+namespace ffilesystem {
 
-bool fs_is_admin(){
+bool is_admin(){
   // is running as admin / root / superuser
 #if defined(_WIN32)
 	HANDLE h = nullptr;
@@ -47,7 +48,7 @@ bool fs_is_admin(){
 }
 
 
-pid_t fs_getpid()
+pid_t getpid()
 {
   // get process ID
 #if defined(_WIN32)
@@ -61,7 +62,7 @@ pid_t fs_getpid()
 }
 
 
-bool fs_stdin_tty()
+bool stdin_tty()
 {
 // detect if stdin is connected to a terminal
   return
@@ -73,7 +74,7 @@ bool fs_stdin_tty()
 }
 
 
-std::string fs_get_terminal()
+std::string get_terminal()
 {
   // if possible return the terminal name or identifier
   // for CI runners or AI agents, there is likely no terminal attached,
@@ -104,9 +105,11 @@ std::string fs_get_terminal()
   }
 
 #else
-  if (auto t = fs_getenv("TERM"); t)
+  if (auto t = getenv("TERM"); t)
     return *t;
 #endif
 
   return {};
 }
+
+} // namespace ffilesystem

@@ -23,8 +23,9 @@
 #include <limits> // for std::numeric_limits
 
 
+namespace ffilesystem {
 
-unsigned long long fs_total_sys_memory()
+unsigned long long total_sys_memory()
 {
 // https://stackoverflow.com/a/2513561
 
@@ -56,7 +57,7 @@ unsigned long long fs_total_sys_memory()
 }
 
 
-unsigned long long fs_get_free_memory()
+unsigned long long get_free_memory()
 {
   // https://github.com/ninja-build/ninja/pull/2605
 
@@ -139,3 +140,5 @@ unsigned long long fs_get_free_memory()
   return ull_max;
 
 }
+
+} // namespace ffilesystem

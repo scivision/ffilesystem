@@ -21,7 +21,9 @@ void module_anchor() {}
 #endif
 
 
-std::string fs_lib_path()
+namespace ffilesystem {
+
+std::string lib_path()
 {
 
 #if defined(_WIN32) || defined(__CYGWIN__)
@@ -43,3 +45,5 @@ std::string fs_lib_path()
   fs_error_callback("");
   return {};
 }
+
+} // namespace ffilesystem

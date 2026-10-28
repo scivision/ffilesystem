@@ -13,36 +13,39 @@
 #include "ffilesystem.h"
 
 
-void fs_as_posix(std::string& path)
+namespace ffilesystem {
+
+void as_posix(std::string& path)
 {
-  if(ffilesystem::is_windows)
-    std::replace(path.begin(), path.end(), ffilesystem::file_separator, '/');
+  if(is_windows)
+    std::replace(path.begin(), path.end(), file_separator, '/');
 }
 
-std::string fs_as_posix(std::string_view path)
+
+std::string as_posix(std::string_view path)
 {
   // based on Python pathlib.Path.posix()
   // https://github.com/python/cpython/blob/4de00a42661a1c280e06d2d5d71c4f69eda41562/Lib/pathlib/__init__.py#L328
   std::string s{path};
-  fs_as_posix(s);
+  as_posix(s);
   return s;
 }
 
 
-void fs_as_windows(std::string& path)
+void as_windows(std::string& path)
 {
-  if(ffilesystem::is_windows)
-    std::replace(path.begin(), path.end(), '/', ffilesystem::file_separator);
+  if(is_windows)
+    std::replace(path.begin(), path.end(), '/', file_separator);
 }
 
-void fs_as_windows(std::wstring& path)
+void as_windows(std::wstring& path)
 {
-  if(ffilesystem::is_windows)
-    std::replace(path.begin(), path.end(), '/', ffilesystem::file_separator);
+  if(is_windows)
+    std::replace(path.begin(), path.end(), '/', file_separator);
 }
 
 
-void fs_ascii_lower(std::string& s)
+void ascii_lower(std::string& s)
 {
   // for ASCII characters, not locale-aware.
   auto to_lower = [](char c) -> char {
@@ -56,7 +59,7 @@ void fs_ascii_lower(std::string& s)
 }
 
 
-void fs_ascii_upper(std::string& s)
+void ascii_upper(std::string& s)
 {
   // for ASCII characters, not locale-aware.
   auto to_upper = [](char c) -> char {
@@ -71,15 +74,13 @@ void fs_ascii_upper(std::string& s)
 }
 
 
-
-bool
-fs_is_reserved(std::string_view path)
+bool is_reserved(std::string_view path)
 {
   // defined as https://docs.python.org/3.13/library/os.path.html#os.path.isreserved
-  if(!ffilesystem::is_windows)
+  if(!is_windows)
     return false;
 
-  std::string const n = fs_file_name(path);
+  std::string const n =file_name(path);
 
   if(n.empty() || n == ".")
     return false;
@@ -95,7 +96,7 @@ fs_is_reserved(std::string_view path)
 
   // don't detect ASCII control characters as reserved, since multi-byte characters may falsely trip that check
 
-  std::string s = fs_stem(n);
+  std::string s = stem(n);
 
   if(auto L = s.length(); L < 3 || L > 4)
     return false;
@@ -107,7 +108,7 @@ fs_is_reserved(std::string_view path)
     "NUL", "PRN"
   };
 
-  fs_ascii_upper(s);
+  ascii_upper(s);
 
 #if defined(HAVE_CPP_RANGES)
 #if defined(__cpp_lib_ranges_contains) // C++23
@@ -121,24 +122,7 @@ fs_is_reserved(std::string_view path)
 }
 
 
-namespace {
-
-bool
-fs_is_safe_char(const char c)
-{
-  // unordered_set<char>  8us
-  // set<char, std::less<>>  6us
-  // vector<char> 0.3us so much faster!
-  // <string_view>.find_first_of is same speed as vector<char> but more readable
-  constexpr std::string_view safe{"_-.~@#$%^&()[]{}+=,!"};
-
-  return std::isalnum(static_cast<unsigned char>(c)) || safe.find(c) != std::string_view::npos;
-}
-
-}
-
-bool
-fs_is_safe_name(std::string_view filename)
+bool is_safe_name(std::string_view filename)
 {
   // check that only shell-safe characters are in filename
   // hasn't been fully tested yet across operating systems and file systems--let us know if character(s) should be unsafe
@@ -147,19 +131,18 @@ fs_is_safe_name(std::string_view filename)
   // https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file
   // we do not consider whitespaces, quotes, or ticks safe, as they can be confusing in shell scripts and command line usage
 
-  if(fs_is_reserved(filename))
+  if(is_reserved(filename))
     return false;
 
 #if defined(HAVE_CPP_RANGES)
-  return std::ranges::all_of(filename, fs_is_safe_char);
+  return std::ranges::all_of(filename, is_safe_char);
 #else // C++11
-  return std::all_of(filename.begin(), filename.end(), fs_is_safe_char);
+  return std::all_of(filename.begin(), filename.end(), is_safe_char);
 #endif
 }
 
 
-bool
-fs_non_ascii(std::string_view name)
+bool non_ascii(std::string_view name)
 {
   // check if name contains non-ASCII characters
 
@@ -172,16 +155,15 @@ fs_non_ascii(std::string_view name)
 }
 
 
-bool
-fs_is_prefix(std::string_view prefix, std::string_view path)
+bool is_prefix(std::string_view prefix, std::string_view path)
 {
   // Lexicographically, is prefix a prefix of path.
 
   if(prefix.empty() || path.empty())
     return false;
 
-  std::string const pr = fs_normal(prefix);
-  std::string const p = fs_normal(path);
+  std::string const pr = normal(prefix);
+  std::string const p = normal(path);
 
   if (pr == p)
     return true;
@@ -198,16 +180,15 @@ fs_is_prefix(std::string_view prefix, std::string_view path)
 }
 
 
-bool
-fs_is_subdir(std::string_view subdir, std::string_view dir)
+bool is_subdir(std::string_view subdir, std::string_view dir)
 {
   // Lexicographically, is subdir a subdirectory of dir.
 
   if(subdir.empty() || dir.empty())
     return false;
 
-  std::string const s = fs_normal(subdir);
-  std::string const d = fs_normal(dir);
+  std::string const s = normal(subdir);
+  std::string const d = normal(dir);
 
   if(s == d)
     return false;
@@ -222,3 +203,17 @@ fs_is_subdir(std::string_view subdir, std::string_view dir)
 #endif
 
 }
+
+
+bool is_safe_char(const char c)
+{
+  // unordered_set<char>  8us
+  // set<char, std::less<>>  6us
+  // vector<char> 0.3us so much faster!
+  // <string_view>.find_first_of is same speed as vector<char> but more readable
+  constexpr std::string_view safe{"_-.~@#$%^&()[]{}+=,!"};
+
+  return std::isalnum(static_cast<unsigned char>(c)) || safe.find(c) != std::string_view::npos;
+}
+
+} // namespace ffilesystem

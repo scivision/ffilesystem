@@ -84,18 +84,18 @@ bool ok = setup(ctx);
 
 if (ok) {
   "is_fifo"_test = [&ctx] {
-    expect(fs_is_fifo(ctx.name));
+    expect(ffilesystem::is_fifo(ctx.name));
   };
 } else {
   skip / "is_fifo"_test = [] {};
 }
 
 if (!ok || (ffilesystem::is_windows && ffilesystem::backend == "<filesystem>" &&
-      (fs_is_msvc() || (fs_is_mingw() && fs_compiler().substr(0, 5) == "Clang")))) {
+      (fs_is_msvc() || (fs_is_mingw() && ffilesystem::compiler().substr(0, 5) == "Clang")))) {
         skip / "is_file"_test = [] {};
 } else {
   "is_file"_test = [&ctx] {
-    expect(!fs_is_file(ctx.name));
+    expect(!ffilesystem::is_file(ctx.name));
   };
 }
 
@@ -103,7 +103,7 @@ if (!ok || ffilesystem::is_windows) {
         skip / "exists"_test = [] {};
 } else {
   "exists"_test = [&ctx] {
-    expect(fs_exists(ctx.name));
+    expect(ffilesystem::exists(ctx.name));
   };
 }
 }

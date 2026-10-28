@@ -27,12 +27,14 @@
 #include "internal.h"
 
 
-std::size_t fs_get_blksize(std::string_view path)
+namespace ffilesystem {
+
+std::size_t get_blksize(std::string_view path)
 {
   // block size in bytes
 
 #if defined(_WIN32)
-  const std::string root = fs_root_name(path);
+  const std::string root = root_name(path);
   if (root.empty())
     return {};
 
@@ -71,7 +73,7 @@ std::size_t fs_get_blksize(std::string_view path)
 }
 
 
-dev_t fs_st_dev(std::string_view path)
+dev_t st_dev(std::string_view path)
 {
   // device number of the file or directory
   // in general dev_t may be unsigned.
@@ -89,7 +91,7 @@ dev_t fs_st_dev(std::string_view path)
 }
 
 
-ino_t fs_inode(std::string_view path)
+ino_t inode(std::string_view path)
 {
   // inode number of the file or directory
   //
@@ -131,5 +133,7 @@ ino_t fs_inode(std::string_view path)
 #endif // _WIN32
 
   return handle_error();
+
+}
 
 }

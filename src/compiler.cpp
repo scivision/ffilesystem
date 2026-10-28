@@ -34,39 +34,35 @@ std::string fs_libc()
 #endif
 }
 
-namespace {
-constexpr unsigned long fs_libcxx_release()
-{
+namespace ffilesystem {
+
+constexpr unsigned long libcxx_release =
 #if defined(_LIBCPP_VERSION)  // LLVM libc++
-  return _LIBCPP_VERSION;
+  _LIBCPP_VERSION;
 #elif defined(_GLIBCXX_RELEASE)  // GNU libstdc++
-  return _GLIBCXX_RELEASE;
+  _GLIBCXX_RELEASE;
 #elif defined(_MSVC_STL_UPDATE)  // Microsoft STL
-  return _MSVC_STL_UPDATE;
+  _MSVC_STL_UPDATE;
 #else
-  return 0;
+  0;
 #endif
-}
-}
 
-
-std::string fs_libcxx()
-{
-  return
+constexpr std::string_view libcxx_name =
 #if defined(_LIBCPP_VERSION)
-  "LLVM libc++ " +
+  "LLVM libc++";
 #elif defined(_GLIBCXX_RELEASE)
-  "GNU libstdc++ " +
+  "GNU libstdc++";
 #elif defined(_MSVC_STL_UPDATE)
   // https://github.com/microsoft/STL/wiki/Macro-_MSVC_STL_UPDATE
-  "Microsoft STL " +
+  "Microsoft STL";
 #endif
-  std::to_string(fs_libcxx_release());
 
+std::string libcxx(){
+  return std::string(libcxx_name) + " " + std::to_string(libcxx_release);
 }
 
 
-std::string fs_compiler()
+std::string compiler()
 {
 
   return
@@ -109,5 +105,6 @@ std::string fs_compiler()
 #elif defined(_MSC_FULL_VER)
   "MSVC " + std::to_string(_MSC_FULL_VER);
 #endif
+}
 
 }

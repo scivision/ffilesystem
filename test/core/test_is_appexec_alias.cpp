@@ -13,16 +13,16 @@ struct app_exec_ctx {
 bool setup(app_exec_ctx& ctx) {
   using namespace boost::ut;
 
-  std::string appdir{fs_getenv("LOCALAPPDATA").value_or("")};
+  std::string appdir{ffilesystem::getenv("LOCALAPPDATA").value_or("")};
 
   if (!appdir.empty()) {
     appdir += "\\Microsoft\\WindowsApps";
-    expect(fs_is_dir(appdir) >> fatal) << "app execution alias directory not found " << appdir;
+    expect(ffilesystem::is_directory(appdir) >> fatal) << "app execution alias directory not found " << appdir;
   }
 
   for (const auto& exe : {"wt.exe", "winget.exe", "wsl.exe", "bash.exe"}) {
-    ctx.path = fs_which(exe, appdir);
-    // ARM Clang MSYS2 always gets empty from fs_which with path specified. Has to be in this directory to be appexec alias
+    ctx.path = ffilesystem::which(exe, appdir);
+    // ARM Clang MSYS2 always gets empty from ffilesystem::which with path specified. Has to be in this directory to be appexec alias
     std::cout << "Checking for app execution alias: " << exe << " in " << appdir << " got " << ctx.path << "\n";
     if (!ctx.path.empty()) {
       break;
@@ -44,7 +44,7 @@ if (!ffilesystem::is_windows || !setup(ctx)) {
   return 77;
 } else {
   "app_exec_alias"_test = [=] {
-    expect(fs_is_appexec_alias(ctx.path))  << "failed on " << ctx.path;
+    expect(ffilesystem::is_appexec_alias(ctx.path))  << "failed on " << ctx.path;
   };
 }
 }

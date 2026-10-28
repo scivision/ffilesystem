@@ -11,7 +11,7 @@ int main() {
   using namespace boost::ut;
 
   auto expect_relative = [](auto const& test_case) {
-    expect(eq(fs_relative_to(test_case.first.first, test_case.first.second),
+    expect(eq(ffilesystem::relative_to(test_case.first.first, test_case.first.second),
               test_case.second));
   };
 
@@ -44,7 +44,7 @@ int main() {
       };
 
   if (ffilesystem::is_windows) {
-    auto drive = fs_getenv("SYSTEMDRIVE");
+    auto drive = ffilesystem::getenv("SYSTEMDRIVE");
     expect(drive.has_value() >> fatal) << "Failed to get SYSTEMDRIVE environment variable";
     const std::string c = drive.value();
 

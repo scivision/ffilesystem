@@ -33,8 +33,9 @@ struct passwd* fs_getpwuid()
 }
 #endif
 
+namespace ffilesystem {
 
-std::string fs_get_profile_dir()
+std::string get_profile_dir()
 {
 
 #if defined(_WIN32)
@@ -68,7 +69,7 @@ std::string fs_get_profile_dir()
 }
 
 
-std::string fs_get_username()
+std::string get_username()
 {
   // Get username of the current user
 
@@ -93,3 +94,5 @@ std::string fs_get_username()
   fs_error_callback("");
   return {};
 }
+
+} // namespace ffilesystem

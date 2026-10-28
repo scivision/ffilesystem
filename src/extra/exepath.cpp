@@ -26,7 +26,9 @@
 #endif
 
 
-std::string fs_exe_path()
+namespace ffilesystem {
+
+std::string exe_path()
 {
   // https://stackoverflow.com/a/4031835
   // https://stackoverflow.com/a/1024937
@@ -78,4 +80,6 @@ std::string fs_exe_path()
 
   fs_error_callback("", ec);
   return {};
+}
+
 }

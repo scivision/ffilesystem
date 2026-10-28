@@ -112,7 +112,6 @@ src/executable.cpp
 src/home.cpp
 src/inquire.cpp
 src/internal.cpp
-src/lang.cpp
 src/lexical.cpp
 src/limits.cpp
 src/extra/locale.cpp

@@ -20,19 +20,19 @@ auto setup_which(which_ctx& ctx, std::string_view arg0) {
   ctx.testExe = ffilesystem::is_windows ? "cmake.exe" : "ls";
 
   const std::string self{arg0};
-  expect(fs_is_exe(self) >> fatal);
+  expect(ffilesystem::is_exe(self) >> fatal);
 
-  ctx.name = fs_file_name(self);
-  ctx.dir = fs_parent(self);
+  ctx.name = ffilesystem::file_name(self);
+  ctx.dir = ffilesystem::parent(self);
   ctx.rel = std::string("./") + ctx.name;
-  expect(fs_is_file(ctx.rel) >> fatal) << ctx.rel << " does not exist";
+  expect(ffilesystem::is_file(ctx.rel) >> fatal) << ctx.rel << " does not exist";
 }
 
 auto setup_which_no_path(which_ctx& ctx) {
   using namespace boost::ut;
 
   ctx.testExe = ffilesystem::is_windows ? "cmake.exe" : "ls";
-  expect(fs_setenv("PATH", "") >> fatal);
+  expect(ffilesystem::setenv("PATH", "") >> fatal);
 }
 
 } // namespace
@@ -44,39 +44,39 @@ int main(int argc, char** argv) {
     which_ctx ctx;
     setup_which(ctx, argv[0]);
 
-    expect(fs_is_absolute(fs_which(ctx.testExe)));
-    expect(eq(fs_file_name(fs_which(ctx.testExe)), ctx.testExe));
-    expect(fs_which(ctx.testExe, "nowhere").empty()) << ctx.testExe << " should not be found in 'nowhere'";
+    expect(ffilesystem::is_absolute(ffilesystem::which(ctx.testExe)));
+    expect(eq(ffilesystem::file_name(ffilesystem::which(ctx.testExe)), ctx.testExe));
+    expect(ffilesystem::which(ctx.testExe, "nowhere").empty()) << ctx.testExe << " should not be found in 'nowhere'";
 
-    expect(fs_which("/not/a/path").empty());
-    expect(fs_which("").empty());
+    expect(ffilesystem::which("/not/a/path").empty());
+    expect(ffilesystem::which("").empty());
 
     // Build a relative path from the running program
-    expect(!fs_which(ctx.rel).empty()) << ctx.rel << " is not found";
+    expect(!ffilesystem::which(ctx.rel).empty()) << ctx.rel << " is not found";
 
-    expect(fs_which("not-exist/" + ctx.name).empty());
+    expect(ffilesystem::which("not-exist/" + ctx.name).empty());
   };
 
   "which_local_dir"_test = [argv] {
     which_ctx ctx;
     setup_which(ctx, argv[0]);
 
-    expect(fs_is_file(ctx.name) >> fatal) << ctx.name << " does not exist";
+    expect(ffilesystem::is_file(ctx.name) >> fatal) << ctx.name << " does not exist";
     // for Windows only: local dir is preferred
     if (ffilesystem::is_windows) {
-      expect(!fs_which(ctx.name).empty());
+      expect(!ffilesystem::which(ctx.name).empty());
     } else {
-      expect(fs_which(ctx.name).empty());
+      expect(ffilesystem::which(ctx.name).empty());
     }
 
-    expect(!fs_which(ctx.name, ctx.dir).empty()) << ctx.name << " should be found in " << ctx.dir;
+    expect(!ffilesystem::which(ctx.name, ctx.dir).empty()) << ctx.name << " should be found in " << ctx.dir;
   };
 
   "which_no_path"_test = [] {
     which_ctx ctx;
     setup_which_no_path(ctx);
 
-    expect(fs_which(ctx.testExe).empty());
-    expect(fs_which(ctx.testExe, "nowhere").empty());
+    expect(ffilesystem::which(ctx.testExe).empty());
+    expect(ffilesystem::which(ctx.testExe, "nowhere").empty());
   };
 }

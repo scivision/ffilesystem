@@ -11,37 +11,37 @@ using namespace boost::ut;
 "reserved_agnostic"_test = [] {
 std::string ref = fs_devnull();
 
-expect(!fs_is_reserved("."));
+expect(!ffilesystem::is_reserved("."));
 
-expect(eq(fs_normal(ref), ref));
+expect(eq(ffilesystem::normal(ref), ref));
 
-bool b = fs_is_absolute(ref);
+bool b = ffilesystem::is_absolute(ref);
 if (ffilesystem::is_windows)
   expect(!b);
 else
   expect(b);
 
-b = fs_is_reserved(ref);
+b = ffilesystem::is_reserved(ref);
 if (ffilesystem::is_windows)
   expect(b);
 else
   expect(!b);
 
-expect(!fs_is_dir(ref));
+expect(!ffilesystem::is_directory(ref));
 
-const auto size = fs_file_size(ref);
+const auto size = ffilesystem::file_size(ref);
 expect(any_of{0UL, fs_unknown_size} == size);
 
-// omitted fs_space_available() since some systems don't handle NUL /dev/null well
+// omitted ffilesystem::space_available() since some systems don't handle NUL /dev/null well
 // e.g. Windows, macOS GCC, etc.
 
-expect(eq(fs_expanduser(ref), ref));
+expect(eq(ffilesystem::expanduser(ref), ref));
 
-expect(!fs_copy_file(ref, ref, false));
+expect(!ffilesystem::copy_file(ref, ref, false));
 
 // touch is ambiguous on reserved, so omit
 
-expect(!fs_is_symlink(ref));
+expect(!ffilesystem::is_symlink(ref));
 
 };
 
@@ -51,7 +51,7 @@ skip /
 "reserved_posix"_test = [] {
   std::string ref = fs_devnull();
 
-expect(!fs_is_exe(ref));
+expect(!ffilesystem::is_exe(ref));
 
 // NOTE: do not test
 //
@@ -63,10 +63,10 @@ expect(!fs_is_exe(ref));
 // since if testing with "root" privileges,
 // it can make the system unusable until reboot!
 
-expect(fs_exists(ref));
+expect(ffilesystem::exists(ref));
 
-expect(!fs_is_file(ref));
+expect(!ffilesystem::is_file(ref));
 
-expect(!fs_canonical(ref, false).empty());
+expect(!ffilesystem::canonical(ref, false).empty());
 };
 }

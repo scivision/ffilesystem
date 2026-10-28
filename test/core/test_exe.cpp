@@ -17,10 +17,10 @@ struct exe_ctx {
 
   ~exe_ctx() {
     if (!exe.empty()) {
-      fs_remove(exe);
+     ffilesystem::remove(exe);
     }
     if (!noexe.empty()) {
-      fs_remove(noexe);
+     ffilesystem::remove(noexe);
     }
   }
 };
@@ -36,18 +36,18 @@ void setup_ctx(exe_ctx& ctx, std::string_view test_name, std::string_view arg0) 
   if (fs_is_cygwin()) {
     ctx.self += ".exe";
   }
-  expect(fs_is_file(ctx.self) >> fatal) << "Self not found: " << ctx.self;
+  expect(ffilesystem::is_file(ctx.self) >> fatal) << "Self not found: " << ctx.self;
 
-  expect(fs_touch(ctx.exe) >> fatal);
-  expect(fs_is_file(ctx.exe) >> fatal) << "Failed to create test executable file: " << ctx.exe;
+  expect(ffilesystem::touch(ctx.exe) >> fatal);
+  expect(ffilesystem::is_file(ctx.exe) >> fatal) << "Failed to create test executable file: " << ctx.exe;
 
-  expect(fs_touch(ctx.noexe) >> fatal);
-  expect(fs_is_file(ctx.noexe) >> fatal) << "Failed to create test non-executable file: " << ctx.noexe;
+  expect(ffilesystem::touch(ctx.noexe) >> fatal);
+  expect(ffilesystem::is_file(ctx.noexe) >> fatal) << "Failed to create test non-executable file: " << ctx.noexe;
 
-  expect(fs_set_permissions(ctx.exe, 0, 0, 1) >> fatal);
-  expect(fs_set_permissions(ctx.noexe, 0, 0, -1) >> fatal);
+  expect(ffilesystem::set_permissions(ctx.exe, 0, 0, 1) >> fatal);
+  expect(ffilesystem::set_permissions(ctx.noexe, 0, 0, -1) >> fatal);
 
-  expect(!fs_get_permissions(ctx.exe).empty() >> fatal);
+  expect(!ffilesystem::get_permissions(ctx.exe).empty() >> fatal);
 
   ctx.in2 = ctx.self + "-invalid-memory-trailing-non-null-terminated-string_view";
   ctx.nonnull2 = std::string_view(ctx.in2.data(), ctx.self.size());
@@ -59,7 +59,7 @@ void setup_ctx(exe_ctx& ctx, std::string_view test_name, std::string_view arg0) 
 int main(int argc, char** argv) {
   using namespace boost::ut;
 
-  if ((fs_is_wsl() && fs_filesystem_type(fs_get_cwd()) == "v9fs") || !fs_is_writable(".")){
+  if ((ffilesystem::is_wsl() && ffilesystem::filesystem_type(ffilesystem::get_cwd()) == "v9fs") || !ffilesystem::is_writable(".")){
     skip / "is_exe"_test = [] {};
     skip / "is_exe_bin"_test = [] {};
     skip / "perms_self"_test = [] {};
@@ -74,15 +74,15 @@ int main(int argc, char** argv) {
     exe_ctx ctx;
     setup_ctx(ctx, "IsExe", argv[0]);
 
-    expect(!fs_is_exe(""));
+    expect(!ffilesystem::is_exe(""));
 
-    expect(!fs_is_file("not-exist"));
-    expect(!fs_is_exe("not-exist"));
+    expect(!ffilesystem::is_file("not-exist"));
+    expect(!ffilesystem::is_exe("not-exist"));
 
-    expect(fs_is_exe(ctx.self)) << "Self " << ctx.self << " should be an executable file";
-    expect(fs_is_exe(ctx.exe)) << "Test executable " << ctx.exe << " should be an executable file";
+    expect(ffilesystem::is_exe(ctx.self)) << "Self " << ctx.self << " should be an executable file";
+    expect(ffilesystem::is_exe(ctx.exe)) << "Test executable " << ctx.exe << " should be an executable file";
 
-    expect(fs_is_exe(ctx.nonnull2)) << "problem with non null-terminated path " << ctx.nonnull2;
+    expect(ffilesystem::is_exe(ctx.nonnull2)) << "problem with non null-terminated path " << ctx.nonnull2;
   };
 
 #ifdef __CYGWIN__
@@ -95,18 +95,18 @@ int main(int argc, char** argv) {
     // Cygwin is fussy about the full path, but it does work.
     // Cygwin wants the /cygdrive/ prefix rather than /home/username/ prefix.
 
-    expect(fs_is_executable_binary(ctx.self)) << ctx.self << " is not executable binary";
-    expect(fs_is_executable_binary(ctx.nonnull2)) << "problem with non null-terminated path " << ctx.nonnull2;
+    expect(ffilesystem::is_executable_binary(ctx.self)) << ctx.self << " is not executable binary";
+    expect(ffilesystem::is_executable_binary(ctx.nonnull2)) << "problem with non null-terminated path " << ctx.nonnull2;
 
-    expect(!fs_is_executable_binary(ctx.exe));
-    expect(!fs_is_executable_binary(ctx.noexe));
+    expect(!ffilesystem::is_executable_binary(ctx.exe));
+    expect(!ffilesystem::is_executable_binary(ctx.noexe));
   };
 
   "perms_self"_test = [argv] {
     exe_ctx ctx;
     setup_ctx(ctx, "PermsSelf", argv[0]);
 
-    std::string p = fs_get_permissions(ctx.self);
+    std::string p = ffilesystem::get_permissions(ctx.self);
     expect(p.size() >= 3U >> fatal);
     expect(eq(p[2], 'x'));
   };
@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
     exe_ctx ctx;
     setup_ctx(ctx, "IsExePerms", argv[0]);
 
-    std::string p = fs_get_permissions(ctx.exe);
+    std::string p = ffilesystem::get_permissions(ctx.exe);
     expect(p.size() >= 3U >> fatal);
     expect(eq(p[2], 'x'));
   };
@@ -127,9 +127,9 @@ int main(int argc, char** argv) {
     exe_ctx ctx;
     setup_ctx(ctx, "IsNotExePerms", argv[0]);
 
-    expect(!fs_is_exe(ctx.noexe));
+    expect(!ffilesystem::is_exe(ctx.noexe));
 
-    std::string p = fs_get_permissions(ctx.noexe);
+    std::string p = ffilesystem::get_permissions(ctx.noexe);
     expect(p.size() >= 3U >> fatal);
     expect(eq(p[2], '-'));
   };
@@ -138,16 +138,16 @@ int main(int argc, char** argv) {
     exe_ctx ctx;
     setup_ctx(ctx, "ChmodExe", argv[0]);
 
-    std::string p = fs_get_permissions(ctx.exe);
+    std::string p = ffilesystem::get_permissions(ctx.exe);
     std::cout << "permissions before chmod(" << ctx.exe << ", true)  = " << p << "\n";
 
-    expect(fs_set_permissions(ctx.exe, -1, 0, 1) >> fatal);
+    expect(ffilesystem::set_permissions(ctx.exe, -1, 0, 1) >> fatal);
     // test executable even without read permission
 
-    p = fs_get_permissions(ctx.exe);
+    p = ffilesystem::get_permissions(ctx.exe);
     std::cout << "permissions after chmod(" << ctx.exe << ", true) = " << p << "\n";
 
-    expect(fs_is_exe(ctx.exe));
+    expect(ffilesystem::is_exe(ctx.exe));
     expect(p.size() >= 3U >> fatal);
     expect(eq(p[2], 'x'));
   };
@@ -159,15 +159,15 @@ int main(int argc, char** argv) {
     exe_ctx ctx;
     setup_ctx(ctx, "ChmodNoExe", argv[0]);
 
-    std::string p = fs_get_permissions(ctx.noexe);
+    std::string p = ffilesystem::get_permissions(ctx.noexe);
     std::cout << "permissions before chmod(" << ctx.noexe << ", false)  = " << p << "\n";
 
-    expect(fs_set_permissions(ctx.noexe, 0, 0, -1) >> fatal);
+    expect(ffilesystem::set_permissions(ctx.noexe, 0, 0, -1) >> fatal);
 
-    p = fs_get_permissions(ctx.noexe);
+    p = ffilesystem::get_permissions(ctx.noexe);
     std::cout << "permissions after chmod(" << ctx.noexe << ",false) = " << p << "\n";
 
-    expect(!fs_is_exe(ctx.noexe));
+    expect(!ffilesystem::is_exe(ctx.noexe));
     expect(p.size() >= 3U >> fatal);
     expect(eq(p[2], '-'));
   };

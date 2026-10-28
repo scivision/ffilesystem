@@ -10,7 +10,7 @@ int main() {
   using namespace boost::ut;
 
   "parent"_test = [](auto const& test_case) {
-    expect(eq(fs_parent(test_case.first), test_case.second));
+    expect(eq(ffilesystem::parent(test_case.first), test_case.second));
   } | std::vector<std::pair<std::string_view, std::string_view>>{
           {"", "."},
           {"/", "/"},
@@ -44,7 +44,7 @@ int main() {
     }
 
     "parent_windows"_test = [](auto const& test_case) {
-      expect(eq(fs_parent(test_case.first), test_case.second));
+      expect(eq(ffilesystem::parent(test_case.first), test_case.second));
     } | windows_cases;
   }
 

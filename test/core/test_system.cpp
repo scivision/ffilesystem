@@ -9,14 +9,14 @@ int main() {
   using namespace boost::ut;
 
   "system"_test = [] {
-    expect(!fs_compiler().empty()) << "unknown compiler";
-    expect(neq(fs_compiler().length(), fs_get_max_path())) << "compiler has blank space";
+    expect(!ffilesystem::compiler().empty()) << "unknown compiler";
+    expect(neq(ffilesystem::compiler().length(), fs_get_max_path())) << "compiler has blank space";
 
 #ifdef FFS_SYSTEM_DISABLED
-    ffs_test::expect_disabled_string([] { return fs_get_username(); });
+    ffs_test::expect_disabled_string([] { return ffilesystem::get_username(); });
 #else
-    expect(!fs_get_username().empty());
-    expect(neq(fs_get_username().length(), fs_get_max_path())) << "username has blank space";
+    expect(!ffilesystem::get_username().empty());
+    expect(neq(ffilesystem::get_username().length(), fs_get_max_path())) << "username has blank space";
 #endif
   };
 }

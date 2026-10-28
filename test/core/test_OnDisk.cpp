@@ -24,11 +24,11 @@ struct ondisk_ctx {
 void setup(ondisk_ctx& ctx, std::string_view arg0) {
   using namespace boost::ut;
 
-  ctx.cwd = fs_get_cwd();
+  ctx.cwd = ffilesystem::get_cwd();
   expect(!ctx.cwd.empty() >> fatal);
 
   if (ffilesystem::is_windows) {
-    auto d = fs_getenv("SystemDrive");
+    auto d = ffilesystem::getenv("SystemDrive");
     expect(d.has_value() >> fatal) << "Failed to get SystemDrive";
     ctx.sys_drive = d.value();
   } else {
@@ -36,7 +36,7 @@ void setup(ondisk_ctx& ctx, std::string_view arg0) {
   }
 
   ctx.self = std::string{arg0};
-  ctx.self_name = fs_file_name(ctx.self);
+  ctx.self_name = ffilesystem::file_name(ctx.self);
 
   ctx.in_dir = "./invalid-memory-trailing-non-null-terminated-string_view";
   ctx.nonnull_dir = std::string_view(ctx.in_dir.data(), 2);
@@ -52,7 +52,7 @@ void setup(ondisk_ctx& ctx, std::string_view arg0) {
 int main(int argc, char** argv) {
   using namespace boost::ut;
 
-  if (!fs_is_writable(".")) {
+  if (!ffilesystem::is_writable(".")) {
     skip / "exists"_test = [] {};
     skip / "is_dir"_test = [] {};
     skip / "is_file"_test = [] {};
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
     setup(ctx, argv[0]);
 
     "exists cases"_test = [](auto const& test_case) {
-      expect(eq(fs_exists(test_case.first), test_case.second)) << test_case.first;
+      expect(eq(ffilesystem::exists(test_case.first), test_case.second)) << test_case.first;
     } | std::vector<std::pair<std::string_view, bool>>{
             {".", true},
             {"..", true},
@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
             {ctx.self, true},
             {ctx.self_name, true},
             {ctx.cwd, true},
-            {"ffs_exists_not-exist-file", false},
+            {"fffilesystem::exists_not-exist-file", false},
             {"", false},
             {ctx.nonnull_dir, true},
         };
@@ -91,13 +91,13 @@ int main(int argc, char** argv) {
     setup(ctx, argv[0]);
 
     "is_dir cases"_test = [](auto const& test_case) {
-      expect(eq(fs_is_dir(test_case.first), test_case.second)) << test_case.first;
+      expect(eq(ffilesystem::is_directory(test_case.first), test_case.second)) << test_case.first;
     } | std::vector<std::pair<std::string_view, bool>>{
             {"", false},
             {".", true},
             {ctx.cwd, true},
             {ctx.self, false},
-            {"ffs_is_dir_not-exist-dir", false},
+            {"fffilesystem::is_dir_not-exist-dir", false},
         };
   };
 
@@ -106,10 +106,10 @@ int main(int argc, char** argv) {
     setup(ctx, argv[0]);
 
     "is_file cases"_test = [](auto const& test_case) {
-      expect(eq(fs_is_file(test_case.first), test_case.second)) << test_case.first;
+      expect(eq(ffilesystem::is_file(test_case.first), test_case.second)) << test_case.first;
     } | std::vector<std::pair<std::string_view, bool>>{
             {ctx.self, true},
-            {"ffs_is_file_not-exist-file", false},
+            {"fffilesystem::is_file_not-exist-file", false},
             {"", false},
             {".", false},
             {ctx.cwd, false},
@@ -121,16 +121,16 @@ int main(int argc, char** argv) {
     setup(ctx, argv[0]);
 
     "is_readable cases"_test = [](auto const& path) {
-      expect(fs_is_readable(path)) << path;
+      expect(ffilesystem::is_readable(path)) << path;
     } | std::vector<std::string_view>{
             ".", ctx.self, ctx.cwd, "/", ctx.nonnull_dir,
         };
 
     if (ffilesystem::is_windows) {
-      expect(fs_is_readable(ctx.sys_drive));
+      expect(ffilesystem::is_readable(ctx.sys_drive));
 
       if (fs_win32_long_paths_enabled()) {
-        expect(fs_is_readable(R"(\\?\)" + ctx.sys_drive + "\\"));
+        expect(ffilesystem::is_readable(R"(\\?\)" + ctx.sys_drive + "\\"));
       }
     }
   };
@@ -140,21 +140,21 @@ int main(int argc, char** argv) {
     setup(ctx, argv[0]);
 
     if (!fs_is_cygwin() && !fs_is_bsd()) {
-      expect(fs_is_writable(ctx.self)) << "not every platform can detect writability of the current executable, but most can";
+      expect(ffilesystem::is_writable(ctx.self)) << "not every platform can detect writability of the current executable, but most can";
     }
 
-    expect(fs_is_writable(ctx.cwd));
+    expect(ffilesystem::is_writable(ctx.cwd));
 
     if (ffilesystem::is_windows) {
       if (fs_win32_long_paths_enabled()) {
         std::string s = R"(\\?\)" + ctx.self;
-        expect(fs_is_writable(s)) << s;
+        expect(ffilesystem::is_writable(s)) << s;
       }
-    } else if (!fs_is_admin() && !fs_is_cygwin()) {
-      expect(!fs_is_writable("/"));
+    } else if (!ffilesystem::is_admin() && !fs_is_cygwin()) {
+      expect(!ffilesystem::is_writable("/"));
     }
 
-    expect(fs_is_writable(ctx.nonnull_dir));
+    expect(ffilesystem::is_writable(ctx.nonnull_dir));
   };
 
   "is_other"_test = [argv] {
@@ -162,9 +162,9 @@ int main(int argc, char** argv) {
     setup(ctx, argv[0]);
 
     "is_other cases"_test = [](auto const& path) {
-      expect(!fs_is_other(path)) << path;
+      expect(!ffilesystem::is_other(path)) << path;
     } | std::vector<std::string_view>{
-            "", ".", ctx.self, ctx.cwd, "ffs_is_other_not-exist-file",
+            "", ".", ctx.self, ctx.cwd, "ffilesystem_is_other_not-exist-file",
         };
   };
 
@@ -187,20 +187,20 @@ int main(int argc, char** argv) {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
 
-    std::string expected = fs_realpath(ctx.cwd);
+    std::string expected = ffilesystem::realpath(ctx.cwd);
     expect(!expected.empty() >> fatal);
 
-    std::string r = fs_realpath(".");
+    std::string r = ffilesystem::realpath(".");
     expect(!r.empty() >> fatal);
     expect(eq(r, expected)) << r << " vs " << expected;
 
-    expect(fs_realpath("not-exist-realpath/b/c").empty());
+    expect(ffilesystem::realpath("not-exist-realpath/b/c").empty());
 
-    r = fs_realpath("..");
+    r = ffilesystem::realpath("..");
     expect(!r.empty() >> fatal);
-    expect(eq(r, fs_parent(expected))) << r;
+    expect(eq(r, ffilesystem::parent(expected))) << r;
 
-    expect(eq(fs_realpath(ctx.nonnull_dir), expected))
+    expect(eq(ffilesystem::realpath(ctx.nonnull_dir), expected))
         << "problem with non null-terminated path " << ctx.nonnull_dir;
   };
 
@@ -209,7 +209,7 @@ int main(int argc, char** argv) {
     setup(ctx, argv[0]);
 
     "get_mod_time cases"_test = [](auto const& path) {
-      expect(fs_get_modtime(path) > 0) << path;
+      expect(ffilesystem::get_modtime(path) > 0) << path;
     } | std::vector<std::string_view>{ctx.cwd, ctx.nonnull_dir};
   };
 
@@ -217,24 +217,24 @@ int main(int argc, char** argv) {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
 
-    std::string_view file = "ffs_touch_test_file";
-    expect(fs_touch(file));
+    std::string_view file = "Ffilesystem_touch_test_file";
+    expect(ffilesystem::touch(file));
 
-    auto t0 = fs_get_modtime(file);
+    auto t0 = ffilesystem::get_modtime(file);
     expect(t0 > 0);
 
-    expect(fs_set_modtime(file));
-    expect(fs_get_modtime(file) >= t0);
-    expect(!fs_set_modtime("not-exist-file"));
+    expect(ffilesystem::set_modtime(file));
+    expect(ffilesystem::get_modtime(file) >= t0);
+    expect(!ffilesystem::set_modtime("not-exist-file"));
 
     std::string in_file = ctx.self + "-invalid-memory-trailing-non-null-terminated-string_view";
     std::string_view nonnull_file = std::string_view(in_file.data(), ctx.self.size());
     expect(nonnull_file.back() != '\0' >> fatal) << "nonnull_file should not be null-terminated\n";
 
-    expect(fs_touch(nonnull_file) >> fatal);
-    expect(fs_is_file(nonnull_file));
+    expect(ffilesystem::touch(nonnull_file) >> fatal);
+    expect(ffilesystem::is_file(nonnull_file));
 
-    fs_remove(file);
+   ffilesystem::remove(file);
   };
 
 #if !defined(FFS_EXTRA_ENABLED)
@@ -244,10 +244,10 @@ int main(int argc, char** argv) {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
 
-    std::string t = fs_filesystem_type(ctx.sys_drive);
+    std::string t = ffilesystem::filesystem_type(ctx.sys_drive);
     expect(!t.empty() >> fatal) << "Failed to get filesystem type for " << ctx.sys_drive;
 
-    t = fs_filesystem_type(ctx.nonnull_sys_drive);
+    t = ffilesystem::filesystem_type(ctx.nonnull_sys_drive);
     expect(!t.empty()) << "problem with non null-terminated path " << ctx.nonnull_sys_drive;
   };
 
@@ -255,7 +255,7 @@ int main(int argc, char** argv) {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
 
-    expect(!fs_is_removable(ctx.sys_drive))
+    expect(!ffilesystem::is_removable(ctx.sys_drive))
         << "we assume that a CI system's system drive would not be removable";
   };
 }
@@ -265,14 +265,14 @@ int main(int argc, char** argv) {
 #endif
   "short_long"_test = [] {
     // the path must exist
-    auto e = fs_getenv("PROGRAMFILES");
+    auto e = ffilesystem::getenv("PROGRAMFILES");
     expect(e.has_value() >> fatal) << "Failed to get PROGRAMFILES environment variable";
     std::string long_path = e.value();
     expect(!long_path.empty() >> fatal);
 
-    std::string short_path = fs_shortname(long_path);
+    std::string short_path = ffilesystem::shortname(long_path);
 
     expect(neq(short_path, long_path));
-    expect(eq(fs_longname(short_path), long_path));
+    expect(eq(ffilesystem::longname(short_path), long_path));
   };
 }

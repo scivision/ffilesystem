@@ -13,9 +13,9 @@
 
 #include "ffilesystem.h"
 
+namespace ffilesystem {
 
-std::string
-fs_get_shell()
+std::string get_shell()
 {
 #if defined(_WIN32)
   const HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -64,3 +64,5 @@ fs_get_shell()
   fs_error_callback("");
   return {};
 }
+
+} // namespace ffilesystem

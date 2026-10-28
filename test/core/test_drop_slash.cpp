@@ -10,7 +10,7 @@ int main() {
 	using namespace boost::ut;
 
 	"drop_slash"_test = [](auto const& test_case) {
-		expect(eq(fs_drop_slash(test_case.first), test_case.second));
+		expect(eq(ffilesystem::drop_slash(test_case.first), test_case.second));
 	} | std::vector<std::pair<std::string_view, std::string_view>>{
 			{"", ""},
 			{"a", "a"},
@@ -25,7 +25,7 @@ int main() {
 
 	if (ffilesystem::is_windows) {
 		"drop_slash_windows"_test = [](auto const& test_case) {
-			expect(eq(fs_drop_slash(test_case.first), test_case.second));
+			expect(eq(ffilesystem::drop_slash(test_case.first), test_case.second));
 		} | std::vector<std::pair<std::string_view, std::string_view>>{
 				{"c:/", "c:/"},
 				{"c:///", "c:/"},
@@ -35,7 +35,7 @@ int main() {
 
 		if (fs_win32_long_paths_enabled()) {
 			"drop_slash_windows_long_paths"_test = [] {
-				expect(eq(fs_drop_slash(R"(\\?\C:/)"), std::string_view{R"(\\?\C:/)"}));
+				expect(eq(ffilesystem::drop_slash(R"(\\?\C:/)"), std::string_view{R"(\\?\C:/)"}));
 			};
 		}
 	}

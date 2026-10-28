@@ -17,11 +17,6 @@
 #include "win32_path.h"
 
 
-namespace {
-
-
-}
-
 #if defined(_WIN32)
 std::optional<fs_win32_path_parts>
 fs_win32_split_path(std::string_view path)
@@ -37,14 +32,16 @@ fs_win32_split_path(std::string_view path)
                    nullptr, 0, nullptr, 0) != 0)
     return std::nullopt;
 
-  fs_trim(parts.drive);
-  fs_trim(parts.directory);
+  ffilesystem::trim(parts.drive);
+  ffilesystem::trim(parts.directory);
   return parts;
 }
 #endif
 
 
-bool fs_is_appexec_alias(std::string_view path)
+namespace ffilesystem {
+
+bool is_appexec_alias(std::string_view path)
 {
 // Windows App Execution Alias allow easy access to Windows Store apps
 // from the Windows Terminal. However, they don't work with _access_s()
@@ -82,6 +79,8 @@ bool fs_is_appexec_alias(std::string_view path)
 #endif
 
 }
+
+} // namespace ffilesystem
 
 
 #if defined(_WIN32) || defined(__CYGWIN__)
@@ -262,7 +261,10 @@ std::string fs_win32_final_path(std::string_view path)
 }
 #endif
 
-std::string fs_longname(std::string_view in)
+
+namespace ffilesystem {
+
+std::string longname(std::string_view in)
 {
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getlongpathnamew
 // the path must exist
@@ -288,7 +290,7 @@ std::string fs_longname(std::string_view in)
 }
 
 
-std::string fs_shortname(std::string_view in)
+std::string shortname(std::string_view in)
 {
 // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getshortpathnamew
 // the path must exist
@@ -312,6 +314,8 @@ std::string fs_shortname(std::string_view in)
   fs_error_callback(in, ec);
   return {};
 }
+
+} // namespace ffilesystem
 
 
 #if defined(_WIN32) || defined(__CYGWIN__)

@@ -12,7 +12,9 @@ namespace Filesystem = std::filesystem;
 #include "ffilesystem.h"
 
 
-std::string fs_absolute(std::string_view path)
+namespace ffilesystem {
+
+std::string absolute(std::string_view path)
 {
   // wraps std::filesystem::absolute(path).
   // path need not exist
@@ -21,7 +23,7 @@ std::string fs_absolute(std::string_view path)
 
   // Linux, MinGW std::filesystem::absolute can't handle empty paths
   if(path.empty())
-    return fs_get_cwd();
+    return get_cwd();
 
 #if defined(HAVE_CXX_FILESYSTEM)
   std::error_code ec;
@@ -35,14 +37,14 @@ std::string fs_absolute(std::string_view path)
   // this is what std::filesystem::absolute specifies and is what MSVC does - it's distinct from a trivial algorithm.
   return fs_win32_full_name(path);
 #else
-  if (fs_is_absolute(path))
+  if (is_absolute(path))
     return std::string(path);
 
-  std::string a = fs_get_cwd();
+  std::string a = get_cwd();
   if(a.empty())
     return {};
 
-  a.push_back(ffilesystem::file_separator);
+  a.push_back(file_separator);
   return a.append(path);
   // NOT normalized to be consistent with <filesystem>
 #endif
@@ -50,24 +52,26 @@ std::string fs_absolute(std::string_view path)
 
 
 
-std::string fs_absolute(std::string_view path, std::string_view base)
+std::string absolute(std::string_view path, std::string_view base)
 {
   // rebase path on base.
 
-  if(fs_is_absolute(path))
+  if(is_absolute(path))
     return std::string(path);
 
-  std::string b = fs_absolute(base);
+  std::string b = absolute(base);
   if(b.empty())  FFS_UNLIKELY
     return {};
 
   if(!path.empty()){
-    if(!ffilesystem::is_file_separator(b.back()))
-      b.push_back(ffilesystem::file_separator);
+    if(!is_file_separator(b.back()))
+      b.push_back(file_separator);
 
     // don't need join(). Keeps it like Python pathlib.Path.absolute()
     b.append(path);
   }
 
   return b;
+}
+
 }

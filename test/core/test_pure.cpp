@@ -1,90 +1,103 @@
 #include "ffilesystem.h"
 
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
+
 #include <boost/ut.hpp>
 
 int main() {
 using namespace boost::ut;
 
-"stem"_test = [] {
+"stem"_test = [](auto const& test_case) {
+    expect(eq(ffilesystem::stem(test_case.first), std::string{test_case.second}));
+} | std::vector<std::pair<std::string_view, std::string_view>>{
+        {"", ""},
+        {"stem.a.b", "stem.a"},
+        {"stem.a", "stem"},
+        {"stem", "stem"},
+        {".stem", ".stem"},
+        {"stem.", "stem"},
+        {"stem.a.", "stem.a"},
+        {"stem/a/b", "b"},
+        {"./.stem", ".stem"},
+        {"../.stem", ".stem"},
+        {".stem.txt", ".stem"},
+        {"a/..", ".."},
+        {"a/../", ""},
+        {"a/.", "."},
+        {"日本語.日本語", "日本語"},
+        {"some space.txt", "some space"},
+        {"some space", "some space"},
+    };
 
-expect(eq(fs_stem(""), std::string{""}));
-expect(eq(fs_stem("stem.a.b"), std::string{"stem.a"}));
-expect(eq(fs_stem("stem.a"), std::string{"stem"}));
-expect(eq(fs_stem("stem"), std::string{"stem"}));
-expect(eq(fs_stem(".stem"), std::string{".stem"}));
-expect(eq(fs_stem("stem."), std::string{"stem"}));
-expect(eq(fs_stem("stem.a."), std::string{"stem.a"}));
-expect(eq(fs_stem("stem/a/b"), std::string{"b"}));
-expect(eq(fs_stem("./.stem"), std::string{".stem"}));
-expect(eq(fs_stem("../.stem"), std::string{".stem"}));
-expect(eq(fs_stem(".stem.txt"), std::string{".stem"}));
-expect(eq(fs_stem("a/.."), std::string{".."}));
-expect(eq(fs_stem("a/../"), std::string{""}));
-expect(eq(fs_stem("a/."), std::string{"."}));
+if (ffilesystem::is_windows) {
+    "stem Windows"_test = [](auto const& test_case) {
+        expect(eq(ffilesystem::stem(test_case.first), std::string{test_case.second}));
+    } | std::vector<std::pair<std::string_view, std::string_view>>{
+            {R"(C:\a\ball.text)", "ball"},
+        };
 
-expect(eq(fs_stem("日本語.日本語"), std::string{"日本語"}));
-expect(eq(fs_stem("some space.txt"), std::string{"some space"}));
-expect(eq(fs_stem("some space"), std::string{"some space"}));
-
-if(ffilesystem::is_windows){
-
-expect(eq(fs_stem(R"(C:\a\ball.text)"), std::string{"ball"}));
-
-if(fs_win32_long_paths_enabled()) {
-
-expect(eq(fs_stem(R"(\\?\)"), std::string{""}));
-expect(eq(fs_stem(R"(\\.\)"), std::string{""}));
-
-expect(eq(fs_stem(R"(\\?\C:\)"), std::string{""}));
-expect(eq(fs_stem(R"(\\.\C:\)"), std::string{""}));
-expect(eq(fs_stem(R"(\\?\UNC\server\share)"), std::string{"share"}));
-expect(eq(fs_stem(R"(\\?\UNC\server\share\日本語.txt)"), std::string{"日本語"}));
-
-expect(eq(fs_stem(R"(\\server\share\some space here.txt)"), std::string{"some space here"}));
-expect(eq(fs_stem(R"(\\?\C:\some space here.txt)"), std::string{"some space here"}));
-}
-}
-
-};
-
-"suffix"_test = [] {
-expect(eq(fs_suffix(""), std::string{""}));
-expect(eq(fs_suffix("a"), std::string{""}));
-expect(eq(fs_suffix("a."), std::string{"."}));
-expect(eq(fs_suffix("a.b"), std::string{".b"}));
-expect(eq(fs_suffix("a.b.c"), std::string{".c"}));
-expect(eq(fs_suffix("a/b.c"), std::string{".c"}));
-expect(eq(fs_suffix("a/b.c.d"), std::string{".d"}));
-expect(eq(fs_suffix("a/b/c.d"), std::string{".d"}));
-expect(eq(fs_suffix("a/b/c.d.e"), std::string{".e"}));
-expect(eq(fs_suffix("a/b/c.d/e"), std::string{""}));
-expect(eq(fs_suffix(".a"), std::string{""}));
-expect(eq(fs_suffix(".a."), std::string{"."}));
-expect(eq(fs_suffix(".a.b"), std::string{".b"}));
-expect(eq(fs_suffix("./b.c"), std::string{".c"}));
-expect(eq(fs_suffix("../.b.c"), std::string{".c"}));
-expect(eq(fs_suffix("日本語.語"), std::string{".語"}));
-expect(eq(fs_suffix("some space.txt"), std::string{".txt"}));
-
-if(ffilesystem::is_windows){
-expect(eq(fs_suffix(R"(C:\a\ball.text)"), std::string{".text"}));
-
-if(fs_win32_long_paths_enabled()) {
-
-expect(eq(fs_suffix(R"(\\?\)"), std::string{""}));
-expect(eq(fs_suffix(R"(\\.\)"), std::string{""}));
-
-expect(eq(fs_suffix(R"(\\?\C:\)"), std::string{""}));
-expect(eq(fs_suffix(R"(\\.\C:\)"), std::string{""}));
-expect(eq(fs_suffix(R"(\\?\UNC\server\share)"), std::string{""}));
-expect(eq(fs_suffix(R"(\\?\UNC\server\share\日本語.txt)"), std::string{".txt"}));
-
-expect(eq(fs_suffix(R"(\\server\share\some space here.txt)"), std::string{".txt"}));
-expect(eq(fs_suffix(R"(\\?\C:\some space here.txt)"), std::string{".txt"}));
-
-}
+    if (fs_win32_long_paths_enabled()) {
+        "stem Windows long paths"_test = [](auto const& test_case) {
+            expect(eq(ffilesystem::stem(test_case.first), std::string{test_case.second}));
+        } | std::vector<std::pair<std::string_view, std::string_view>>{
+                {R"(\\?\)", ""},
+                {R"(\\.\)", ""},
+                {R"(\\?\C:\)", ""},
+                {R"(\\.\C:\)", ""},
+                {R"(\\?\UNC\server\share)", "share"},
+                {R"(\\?\UNC\server\share\日本語.txt)", "日本語"},
+                {R"(\\server\share\some space here.txt)", "some space here"},
+                {R"(\\?\C:\some space here.txt)", "some space here"},
+            };
+    }
 }
 
-};
+"suffix"_test = [](auto const& test_case) {
+    expect(eq(ffilesystem::suffix(test_case.first), std::string{test_case.second}));
+} | std::vector<std::pair<std::string_view, std::string_view>>{
+        {"", ""},
+        {"a", ""},
+        {"a.", "."},
+        {"a.b", ".b"},
+        {"a.b.c", ".c"},
+        {"a/b.c", ".c"},
+        {"a/b.c.d", ".d"},
+        {"a/b/c.d", ".d"},
+        {"a/b/c.d.e", ".e"},
+        {"a/b/c.d/e", ""},
+        {".a", ""},
+        {".a.", "."},
+        {".a.b", ".b"},
+        {"./b.c", ".c"},
+        {"../.b.c", ".c"},
+        {"日本語.語", ".語"},
+        {"some space.txt", ".txt"},
+    };
+
+if (ffilesystem::is_windows) {
+    "suffix Windows"_test = [](auto const& test_case) {
+        expect(eq(ffilesystem::suffix(test_case.first), std::string{test_case.second}));
+    } | std::vector<std::pair<std::string_view, std::string_view>>{
+            {R"(C:\a\ball.text)", ".text"},
+        };
+
+    if (fs_win32_long_paths_enabled()) {
+        "suffix Windows long paths"_test = [](auto const& test_case) {
+            expect(eq(ffilesystem::suffix(test_case.first), std::string{test_case.second}));
+        } | std::vector<std::pair<std::string_view, std::string_view>>{
+                {R"(\\?\)", ""},
+                {R"(\\.\)", ""},
+                {R"(\\?\C:\)", ""},
+                {R"(\\.\C:\)", ""},
+                {R"(\\?\UNC\server\share)", ""},
+                {R"(\\?\UNC\server\share\日本語.txt)", ".txt"},
+                {R"(\\server\share\some space here.txt)", ".txt"},
+                {R"(\\?\C:\some space here.txt)", ".txt"},
+            };
+    }
+}
 
 }

@@ -15,9 +15,9 @@ struct permissions_ctx {
   std::string_view nonnull_file;
 
   ~permissions_ctx() {
-    fs_remove(read);
-    fs_remove(noread);
-    fs_remove(nowrite);
+   ffilesystem::remove(read);
+   ffilesystem::remove(noread);
+   ffilesystem::remove(nowrite);
   }
 };
 
@@ -30,17 +30,17 @@ void setup(permissions_ctx& ctx, std::string_view test_name) {
   ctx.noread = n + "nonreadable.txt";
   ctx.nowrite = n + "nonwritable.txt";
 
-  expect(fs_touch(ctx.read) >> fatal);
-  expect(fs_is_file(ctx.read) >> fatal);
+  expect(ffilesystem::touch(ctx.read) >> fatal);
+  expect(ffilesystem::is_file(ctx.read) >> fatal);
 
-  expect(fs_touch(ctx.noread) >> fatal);
-  expect(fs_is_file(ctx.noread) >> fatal);
-  if (!fs_is_file(ctx.nowrite)) {
-    expect(fs_touch(ctx.nowrite) >> fatal);
+  expect(ffilesystem::touch(ctx.noread) >> fatal);
+  expect(ffilesystem::is_file(ctx.noread) >> fatal);
+  if (!ffilesystem::is_file(ctx.nowrite)) {
+    expect(ffilesystem::touch(ctx.nowrite) >> fatal);
   }
 
-  expect(fs_exists(ctx.nowrite) >> fatal);
-  expect(fs_is_file(ctx.nowrite) >> fatal);
+  expect(ffilesystem::exists(ctx.nowrite) >> fatal);
+  expect(ffilesystem::is_file(ctx.nowrite) >> fatal);
 
   ctx.in_file = ctx.read + "-read_past_the_end_of_buffer";
   ctx.nonnull_file = std::string_view(ctx.in_file.data(), ctx.read.size());
@@ -52,7 +52,7 @@ void setup(permissions_ctx& ctx, std::string_view test_name) {
 int main() {
   using namespace boost::ut;
 
-if (!fs_is_writable("."))
+if (!ffilesystem::is_writable("."))
   {
     skip / "permissions_empty"_test = [] {};
     skip / "permissions_is_readable"_test = [] {};
@@ -65,19 +65,19 @@ if (!fs_is_writable("."))
     permissions_ctx ctx;
     setup(ctx, "permissions_empty");
 
-    expect(fs_get_permissions("").empty());
-    expect(fs_get_permissions("nonexistent.txt").empty());
-    expect(!fs_get_permissions(ctx.read).empty());
+    expect(ffilesystem::get_permissions("").empty());
+    expect(ffilesystem::get_permissions("nonexistent.txt").empty());
+    expect(!ffilesystem::get_permissions(ctx.read).empty());
   };
 
   "permissions_is_readable"_test = [] {
     permissions_ctx ctx;
     setup(ctx, "permissions_is_readable");
 
-    expect(fs_is_readable(ctx.read)) << ctx.read << " should be readable";
+    expect(ffilesystem::is_readable(ctx.read)) << ctx.read << " should be readable";
   };
 
-  if(ffilesystem::is_windows || fs_is_cygwin() || (fs_is_wsl() && fs_filesystem_type(fs_absolute(".")) == "v9fs")) {
+  if(ffilesystem::is_windows || fs_is_cygwin() || (ffilesystem::is_wsl() && ffilesystem::filesystem_type(ffilesystem::absolute(".")) == "v9fs")) {
     skip / "permissions_not_readable"_test = [] {};
   } else {
 
@@ -86,8 +86,8 @@ if (!fs_is_writable("."))
     setup(ctx, "permissions_not_readable");
 
     // for Ffilesystem, even non-readable files "exist" and are "is_file"
-    expect(fs_set_permissions(ctx.noread, -1, 0, 0) >> fatal);
-    const std::string p = fs_get_permissions(ctx.noread);
+    expect(ffilesystem::set_permissions(ctx.noread, -1, 0, 0) >> fatal);
+    const std::string p = ffilesystem::get_permissions(ctx.noread);
 
     std::cout << "Permissions: " << ctx.noread << " " << p << "\n";
 
@@ -99,12 +99,12 @@ if (!fs_is_writable("."))
     permissions_ctx ctx;
     setup(ctx, "permissions_read");
 
-    expect(fs_set_permissions(ctx.read, 1, 0, 0));
-    expect(fs_is_readable(ctx.read));
-    expect(fs_set_permissions(ctx.nonnull_file, 1, 0, 0));
+    expect(ffilesystem::set_permissions(ctx.read, 1, 0, 0));
+    expect(ffilesystem::is_readable(ctx.read));
+    expect(ffilesystem::set_permissions(ctx.nonnull_file, 1, 0, 0));
   };
 
-  if(ffilesystem::is_windows || fs_is_cygwin() || (fs_is_wsl() && fs_filesystem_type(fs_absolute(".")) == "v9fs")) {
+  if(ffilesystem::is_windows || fs_is_cygwin() || (ffilesystem::is_wsl() && ffilesystem::filesystem_type(ffilesystem::absolute(".")) == "v9fs")) {
     skip / "permissions_writable"_test = [] {};
   } else {
 
@@ -113,16 +113,16 @@ if (!fs_is_writable("."))
     setup(ctx, "permissions_writable");
 
     // writable
-    expect(fs_set_permissions(ctx.nowrite, 0, -1, 0) >> fatal);
+    expect(ffilesystem::set_permissions(ctx.nowrite, 0, -1, 0) >> fatal);
 
-    const std::string p = fs_get_permissions(ctx.nowrite);
+    const std::string p = ffilesystem::get_permissions(ctx.nowrite);
 
     // MSVC with <filesystem>, but we'll skip all windows
     if (!ffilesystem::is_windows && !fs_is_cygwin()) {
       expect(eq(p[1], '-'));
 
-      if (!fs_is_admin()) {
-        expect(!fs_is_writable(ctx.nowrite));
+      if (!ffilesystem::is_admin()) {
+        expect(!ffilesystem::is_writable(ctx.nowrite));
       }
     }
   };

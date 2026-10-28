@@ -7,16 +7,16 @@ int main() {
   using namespace boost::ut;
 
   "exe_path"_test = [] {
-    std::string path = fs_exe_path();
+    std::string path = ffilesystem::exe_path();
 
     expect(!path.empty());
-    expect(fs_exists(path));
-    expect(!fs_is_dir(path));
-    expect(fs_is_file(path));
-    expect(fs_is_exe(path));
-    expect(fs_is_readable(path));
+    expect(ffilesystem::exists(path));
+    expect(!ffilesystem::is_directory(path));
+    expect(ffilesystem::is_file(path));
+    expect(ffilesystem::is_exe(path));
+    expect(ffilesystem::is_readable(path));
 
     if(!fs_is_cygwin())
-      expect(fs_is_executable_binary(path));
+      expect(ffilesystem::is_executable_binary(path));
   };
 }

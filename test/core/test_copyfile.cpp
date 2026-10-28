@@ -19,8 +19,8 @@ auto make_ctx() {
   using namespace boost::ut;
   copyfile_ctx ctx{};
 
-  ctx.cwd = fs_get_cwd();
-  expect(!ctx.cwd.empty() && fs_is_writable(ctx.cwd) >> fatal);
+  ctx.cwd = ffilesystem::get_cwd();
+  expect(!ctx.cwd.empty() && ffilesystem::is_writable(ctx.cwd) >> fatal);
 
   std::string n = "TestCopyFile";
 
@@ -43,12 +43,12 @@ auto make_ctx() {
   ofs << ctx.t1;
   ofs.close(); // ensure flush
 
-  ctx.iref = fs_file_size(ctx.s1);
+  ctx.iref = ffilesystem::file_size(ctx.s1);
   expect(ctx.iref > 0 >> fatal);
 
-  fs_remove(ctx.s2);
+ ffilesystem::remove(ctx.s2);
 
-  expect(fs_touch(ctx.s3) >> fatal);
+  expect(ffilesystem::touch(ctx.s3) >> fatal);
 
   return std::optional<copyfile_ctx>{ctx};
 }
@@ -65,11 +65,11 @@ int main() {
     std::string t2;
 
     // Copy the file
-    expect(fs_copy_file(ctx->s1, ctx->s2, false));
-    expect(fs_is_file(ctx->s2));
-    expect(!fs_copy_file(ctx->s1, ctx->s2, false)); // Should fail since s2 already exists
+    expect(ffilesystem::copy_file(ctx->s1, ctx->s2, false));
+    expect(ffilesystem::is_file(ctx->s2));
+    expect(!ffilesystem::copy_file(ctx->s1, ctx->s2, false)); // Should fail since s2 already exists
 
-    expect(eq(fs_file_size(ctx->s2), ctx->iref));
+    expect(eq(ffilesystem::file_size(ctx->s2), ctx->iref));
 
     // Read from the copied file
     std::ifstream ifs(ctx->s2);
@@ -77,35 +77,35 @@ int main() {
     ifs.close();
 
     expect(eq(ctx->t1, t2));
-    expect(!fs_copy_file(ctx->s1, ctx->s1, true));
-    expect(eq(fs_file_size(ctx->s1), ctx->iref));
+    expect(!ffilesystem::copy_file(ctx->s1, ctx->s1, true));
+    expect(eq(ffilesystem::file_size(ctx->s1), ctx->iref));
 
-    expect(fs_copy_file(ctx->s3, ctx->s2, true));
-    expect(eq(fs_file_size(ctx->s2), static_cast<std::uintmax_t>(0)));
+    expect(ffilesystem::copy_file(ctx->s3, ctx->s2, true));
+    expect(eq(ffilesystem::file_size(ctx->s2), static_cast<std::uintmax_t>(0)));
 
     // Test copying from a file that does not exist
     const std::string missing = ctx->s1 + ".missing";
-    expect(!fs_copy_file(missing, ctx->s2, true));
-    expect(eq(fs_file_size(ctx->s2), static_cast<std::uintmax_t>(0)));
+    expect(!ffilesystem::copy_file(missing, ctx->s2, true));
+    expect(eq(ffilesystem::file_size(ctx->s2), static_cast<std::uintmax_t>(0)));
 
-    expect(fs_copy_file(ctx->s3, ctx->s4, true));
-    expect(fs_is_file(ctx->s4));
+    expect(ffilesystem::copy_file(ctx->s3, ctx->s4, true));
+    expect(ffilesystem::is_file(ctx->s4));
 
-    expect(eq(fs_file_size(ctx->s4), static_cast<std::uintmax_t>(0)));
+    expect(eq(ffilesystem::file_size(ctx->s4), static_cast<std::uintmax_t>(0)));
 
     if (!ctx->ext5.empty()) {
-      expect(fs_copy_file(ctx->ext1, ctx->ext5, false) >> fatal);
-      expect(fs_is_file(ctx->ext5) >> fatal);
-      expect(eq(fs_file_size(ctx->ext5), ctx->iref));
+      expect(ffilesystem::copy_file(ctx->ext1, ctx->ext5, false) >> fatal);
+      expect(ffilesystem::is_file(ctx->ext5) >> fatal);
+      expect(eq(ffilesystem::file_size(ctx->ext5), ctx->iref));
     }
 
     // Cleanup
-    fs_remove(ctx->s1);
-    fs_remove(ctx->s2);
-    fs_remove(ctx->s3);
-    fs_remove(ctx->s4);
+   ffilesystem::remove(ctx->s1);
+   ffilesystem::remove(ctx->s2);
+   ffilesystem::remove(ctx->s3);
+   ffilesystem::remove(ctx->s4);
     if (!ctx->ext5.empty()) {
-      fs_remove(ctx->ext5);
+     ffilesystem::remove(ctx->ext5);
     }
   };
 }

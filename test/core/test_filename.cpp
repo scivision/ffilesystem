@@ -9,7 +9,7 @@ int main() {
 using namespace boost::ut;
 
 "HasFilename"_test = [](auto const& test_case) {
-    expect(fs_has_filename(test_case.first) == test_case.second);
+    expect(ffilesystem::has_filename(test_case.first) == test_case.second);
 } | std::vector<std::pair<std::string, bool>>{
         {"", false},
         {"/", false},
@@ -34,7 +34,7 @@ using namespace boost::ut;
 
 if (ffilesystem::is_windows){
     "HasFilename Windows"_test = [](auto const& test_case) {
-        expect(fs_has_filename(test_case.first) == test_case.second);
+        expect(ffilesystem::has_filename(test_case.first) == test_case.second);
     } | std::vector<std::pair<std::string, bool>>{
             {"C:/", false},
             {R"(C:\ab\asb)", true},
@@ -43,7 +43,7 @@ if (ffilesystem::is_windows){
 
     if(fs_win32_long_paths_enabled()) {
         "HasFilename Windows long paths"_test = [](auto const& test_case) {
-            expect(fs_has_filename(test_case.first) == test_case.second);
+            expect(ffilesystem::has_filename(test_case.first) == test_case.second);
         } | std::vector<std::pair<std::string, bool>>{
                 {R"(\\.\)", false},
                 {R"(\\?\C:\)", false},
@@ -56,7 +56,7 @@ if (ffilesystem::is_windows){
 }
 
 "FileName"_test = [](auto const& test_case) {
-    expect(fs_file_name(test_case.first) == test_case.second);
+    expect(ffilesystem::file_name(test_case.first) == test_case.second);
 } | std::vector<std::pair<std::string, std::string>>{
         {"", ""},
         {"/", ""},
@@ -81,7 +81,7 @@ if (ffilesystem::is_windows){
 
 if (ffilesystem::is_windows){
     "FileName Windows"_test = [](auto const& test_case) {
-        expect(fs_file_name(test_case.first) == test_case.second);
+        expect(ffilesystem::file_name(test_case.first) == test_case.second);
     } | std::vector<std::pair<std::string, std::string>>{
             {"C:/", ""},
             {R"(C:\ab\asb)", "asb"},
@@ -89,7 +89,7 @@ if (ffilesystem::is_windows){
 
     if(fs_win32_long_paths_enabled()){
         "FileName Windows long paths"_test = [](auto const& test_case) {
-            expect(fs_file_name(test_case.first) == test_case.second);
+            expect(ffilesystem::file_name(test_case.first) == test_case.second);
         } | std::vector<std::pair<std::string, std::string>>{
                 {R"(\\?\)", ""},
                 {R"(\\.\)", ""},

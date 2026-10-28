@@ -11,7 +11,9 @@ namespace Filesystem = std::filesystem;
 #endif
 
 
-std::string fs_relative_to(std::string_view base, std::string_view other)
+namespace ffilesystem {
+
+std::string relative_to(std::string_view base, std::string_view other)
 {
   // find relative path from base to other
   // "base" and "other" are treated as weakly canonical paths
@@ -35,7 +37,7 @@ std::string fs_relative_to(std::string_view base, std::string_view other)
 }
 
 
-std::string fs_proximate_to(std::string_view base, std::string_view other)
+std::string proximate_to(std::string_view base, std::string_view other)
 {
   // find proximate path from base to other
   // "base" and "other" are treated as weakly canonical paths
@@ -55,3 +57,5 @@ std::string fs_proximate_to(std::string_view base, std::string_view other)
   fs_error_callback(base, other, ec);
   return {};
 }
+
+} // namespace ffilesystem

@@ -25,8 +25,9 @@ namespace Filesystem = std::filesystem;
 
 #endif
 
+namespace ffilesystem {
 
-bool fs_mkdir(std::string_view path)
+bool mkdir(std::string_view path)
 {
  // make directory with parents
 
@@ -44,16 +45,16 @@ if(path.empty())
   ec = std::make_error_code(std::errc::invalid_argument);
 else {
 
-  std::string const rp = fs_resolve(path, false);
+  std::string const rp = resolve(path, false);
   // Windows gives ERROR_PATH_NOT_FOUND if relative directory
 
-  const std::vector<std::string> parts = fs_split(rp);
+  const std::vector<std::string> parts = split_filesep(rp);
 
   std::string buf;
   buf.reserve(rp.size());
 
   // if first part is root
-  if(ffilesystem::is_file_separator(rp.front()))
+  if(is_file_separator(rp.front()))
     buf.push_back('/');
 
   // iterate over parts
@@ -96,3 +97,5 @@ else {
   fs_error_callback(path, ec);
   return false;
 }
+
+} // namespace ffilesystem

@@ -74,7 +74,10 @@ std::optional<std::string_view::size_type> fs_symlink_length(std::string_view pa
 #endif
 }
 
-bool fs_is_symlink(std::string_view path)
+
+namespace ffilesystem {
+
+bool is_symlink(std::string_view path)
 {
   std::error_code ec;
 
@@ -113,21 +116,21 @@ bool fs_is_symlink(std::string_view path)
 }
 
 
-bool fs_lexists(std::string_view path)
+bool lexists(std::string_view path)
 {
-  // fs_lexists() is true for broken symlinks, unlike fs_exists()
+  // lexists() is true for broken symlinks, unlike exists()
 #if defined(HAVE_CXX_FILESYSTEM) && !FS_USE_WIN32_SYMLINK
   std::error_code ec;
   const auto s = Filesystem::symlink_status(path, ec);
   return !ec && (Filesystem::exists(s) || Filesystem::is_symlink(s));
 #else
-  // For broken symlinks, fs_exists() returns false but fs_is_symlink() returns true
-  return fs_exists(path) || fs_is_symlink(path);
+  // For broken symlinks, exists() returns false but is_symlink() returns true
+  return exists(path) || is_symlink(path);
 #endif
 }
 
 
-std::string fs_read_symlink(std::string_view path)
+std::string read_symlink(std::string_view path)
 {
   // read the target of a symlink, which might itself be a symlink
   // returns empty string if the path is not a symlink or an error occurs
@@ -170,7 +173,7 @@ std::string fs_read_symlink(std::string_view path)
 }
 
 
-bool fs_create_symlink(std::string_view target, std::string_view link)
+bool create_symlink(std::string_view target, std::string_view link)
 {
   // create symlink to file or directory
 
@@ -189,8 +192,8 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
   // CreateSymbolicLinkW requires the target to use Windows-style file separator
   // for relative target path.
   std::string tgt{target};
-  fs_as_windows(tgt);
-  if(fs_is_dir(tgt))
+  as_windows(tgt);
+  if(is_directory(tgt))
     p |= SYMBOLIC_LINK_FLAG_DIRECTORY;
 
   if(CreateSymbolicLinkW(fs_win32_to_wide(link).c_str(), fs_win32_to_wide(tgt).c_str(), p))
@@ -198,7 +201,7 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
 
 #elif defined(HAVE_CXX_FILESYSTEM)
 
-  if(fs_is_dir(target) ? Filesystem::create_directory_symlink(target, link, ec) : Filesystem::create_symlink(target, link, ec); !ec)
+  if(is_directory(target) ? Filesystem::create_directory_symlink(target, link, ec) : Filesystem::create_symlink(target, link, ec); !ec)
     return true;
 
 #else
@@ -214,3 +217,6 @@ bool fs_create_symlink(std::string_view target, std::string_view link)
   fs_error_callback(target, link, ec);
   return false;
 }
+
+
+} // namespace ffilesystem

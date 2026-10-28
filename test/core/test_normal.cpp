@@ -9,7 +9,7 @@ int main() {
 using namespace boost::ut;
 
 "normalize"_test = [](auto const& test_case) {
-    expect(eq(fs_normal(test_case.first), test_case.second));
+    expect(eq(ffilesystem::normal(test_case.first), test_case.second));
 } | std::vector<std::pair<std::string_view, std::string_view>>{
 {"", "."},
 {"/", "/"},
@@ -76,7 +76,7 @@ using namespace boost::ut;
 
 #if defined(_WIN32)
     "normalize_windows"_test = [](auto const& test_case) {
-        expect(eq(fs_normal(test_case.first), test_case.second));
+        expect(eq(ffilesystem::normal(test_case.first), test_case.second));
     } | std::vector<std::pair<std::string_view, std::string_view>>{
             {R"(\/\///\/)", "/"},
             {R"(a/b/..\//..///\/../c\\/)", "../c"},

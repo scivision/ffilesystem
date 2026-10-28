@@ -17,8 +17,8 @@ namespace {
 std::string fs_which_generic(std::string_view name, std::string_view path, const bool find_all)
 {
 
-  if (fs_parent(name) != "." || name.substr(0, 2) == "./"){
-    if (fs_is_exe(name))
+  if (ffilesystem::parent(name) != "." || name.substr(0, 2) == "./"){
+    if (ffilesystem::is_exe(name))
       return std::string(name);
 
     return {};
@@ -26,7 +26,7 @@ std::string fs_which_generic(std::string_view name, std::string_view path, const
 
   std::string paths;
   if(path.empty()){
-    if (auto p = fs_getenv("PATH"); p)
+    if (auto p = ffilesystem::getenv("PATH"); p)
       paths = *p;
   } else {
     paths = std::string(path);
@@ -61,9 +61,9 @@ do {
 
     r = dir + "/" + n;
 
-    if (fs_trace) std::cout << "TRACE:which(" << r << "): is_file " << fs_is_file(r) << " is_exe " << fs_is_exe(r) << "\n";
+    if (fs_trace) std::cout << "TRACE:which(" << r << "): is_file " << ffilesystem::is_file(r) << " is_exe " << ffilesystem::is_exe(r) << "\n";
 
-    if (fs_is_file(r) && fs_is_exe(r)){
+    if (ffilesystem::is_file(r) && ffilesystem::is_exe(r)){
       if(find_all)
         t += r + ffilesystem::path_separator;
       else
@@ -84,12 +84,14 @@ do {
 }
 
 
-std::string fs_which(std::string_view name, std::string_view path, const bool find_all)
+namespace ffilesystem {
+
+std::string which(std::string_view name, std::string_view path, const bool find_all)
 {
   // find an executable file "name" under each path in
   // environment variable PATH or "path" if specified
 
-  if (!path.empty() && !fs_is_dir(path)){
+  if (!path.empty() && !is_directory(path)){
     fs_error_callback(path, std::make_error_code(std::errc::not_a_directory));
     return {};
   }
@@ -123,7 +125,7 @@ std::string fs_which(std::string_view name, std::string_view path, const bool fi
   std::string r = fs_win32_to_narrow(wr.substr(0, L));
 
   if(fs_trace) std::cout << "TRACE: which: SearchPath: " << r << "  length " << L << "\n";
-  if(!fs_is_exe(r))
+  if(!is_exe(r))
     return {};
 
   return r;
@@ -132,3 +134,4 @@ std::string fs_which(std::string_view name, std::string_view path, const bool fi
   return fs_which_generic(name, path, find_all);
 #endif
 }
+} // namespace ffilesystem

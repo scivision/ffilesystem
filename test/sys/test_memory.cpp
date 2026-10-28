@@ -24,7 +24,7 @@ using namespace boost::ut;
   expect(eq(fs_get_free_memory(), std::numeric_limits<unsigned long long>::max()));
   expect(error_message.find("system support disabled") != std::string::npos);
   error_message.clear();
-  expect(eq(fs_total_sys_memory(), 0ULL));
+  expect(eq(ffilesystem::total_sys_memory(), 0ULL));
   expect(error_message.find("system support disabled") != std::string::npos);
   fs_reset_error_callback();
 };
@@ -34,11 +34,11 @@ using namespace boost::ut;
 };
 
 "total_memory"_test = [] {
-  expect(gt(fs_total_sys_memory(), 0));
+  expect(gt(ffilesystem::total_sys_memory(), 0));
 };
 
 "free_less_than_total"_test = [] {
-  expect(le(fs_get_free_memory(), fs_total_sys_memory()));
+  expect(le(fs_get_free_memory(), ffilesystem::total_sys_memory()));
 };
 #endif
 

@@ -33,7 +33,10 @@ auto fs_random_generator() -> T {
 
 }
 
-std::string fs_generate_random_alphanumeric_string(const std::string::size_type len)
+
+namespace ffilesystem {
+
+std::string generate_random_alphanumeric_string(const std::string::size_type len)
 {
   constexpr std::string_view chars =
       "0123456789"
@@ -54,3 +57,5 @@ std::string fs_generate_random_alphanumeric_string(const std::string::size_type 
 
   return result;
 }
+
+} // namespace ffilesystem

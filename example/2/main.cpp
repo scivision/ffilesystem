@@ -14,20 +14,20 @@
 
 int main() {
 
-  auto cwd = fs_get_cwd();
+  auto cwd = ffilesystem::get_cwd();
   if (cwd.empty())
     err("current working dir not found");
 
   std::cout << "current working dir " << cwd << "\n";
 
   std::string h;
-  h = fs_get_homedir();
+  h = ffilesystem::get_homedir();
   if (h.empty())
     err("home dir not found");
 
   std::cout << "home dir " << h << "\n";
 
-  h = fs_expanduser("~");
+  h = ffilesystem::expanduser("~");
   if (h.empty())
     err("home dir not found");
 

@@ -97,30 +97,30 @@ constexpr bool strict = false;
 using fs_function = std::function<std::variant<std::string, bool>(std::string_view)>;
 
 std::unordered_map<std::string_view, fs_function> fs_function_map = {
-  {"absolute", [=](std::string_view p) { return fs_absolute(p); }},
-  {"canonical", [=](std::string_view p) { return fs_canonical(p, strict); }},
-  {"resolve", [=](std::string_view p) { return fs_resolve(p, strict); }},
-  {"drop_slash", [](std::string_view p) { return fs_drop_slash(p); }},
-  {"parent", [](std::string_view p) { return fs_parent(p); }},
-  {"file_name", [](std::string_view p) { return fs_file_name(p); }},
-  {"suffix", [](std::string_view p) { return fs_suffix(p); }},
-  {"normal", [](std::string_view p) { return fs_normal(p); }},
+  {"absolute", [=](std::string_view p) { return ffilesystem::absolute(p); }},
+  {"canonical", [=](std::string_view p) { return ffilesystem::canonical(p, strict); }},
+  {"resolve", [=](std::string_view p) { return ffilesystem::resolve(p, strict); }},
+  {"drop_slash", [](std::string_view p) { return ffilesystem::drop_slash(p); }},
+  {"parent", [](std::string_view p) { return ffilesystem::parent(p); }},
+  {"file_name", [](std::string_view p) { return ffilesystem::file_name(p); }},
+  {"suffix", [](std::string_view p) { return ffilesystem::suffix(p); }},
+  {"normal", [](std::string_view p) { return ffilesystem::normal(p); }},
   {"split", [](std::string_view p) {
     std::string s;
-    for (const auto& part : fs_split(p)) { s += part; s += '|'; }
+    for (const auto& part : ffilesystem::split_filesep(p)) { s += part; s += '|'; }
     return s;
   }},
-  {"reserved", [](std::string_view p) { return fs_is_reserved(p); }},
-  {"exists", [](std::string_view p) { return fs_exists(p); }},
-  {"is_dir", [](std::string_view p) { return fs_is_dir(p); }},
-  {"is_char", [](std::string_view p) { return fs_is_char_device(p); }},
-  {"is_file", [](std::string_view p) { return fs_is_file(p); }},
-  {"is_symlink", [](std::string_view p) { return fs_is_symlink(p); }},
-  {"read_symlink", [](std::string_view p) { return fs_read_symlink(p); }},
-  {"which", [](std::string_view p) { return fs_which(p); }},
-  {"homedir", [](std::string_view) { return fs_get_homedir(); }},
-  {"expanduser", [](std::string_view p) { return fs_expanduser(p); }},
-  {"cwd", [](std::string_view) { return fs_get_cwd(); }}
+  {"reserved", [](std::string_view p) { return ffilesystem::is_reserved(p); }},
+  {"exists", [](std::string_view p) { return ffilesystem::exists(p); }},
+  {"is_dir", [](std::string_view p) { return ffilesystem::is_directory(p); }},
+  {"is_char", [](std::string_view p) { return ffilesystem::is_char_device(p); }},
+  {"is_file", [](std::string_view p) { return ffilesystem::is_file(p); }},
+  {"is_symlink", [](std::string_view p) { return ffilesystem::is_symlink(p); }},
+  {"read_symlink", [](std::string_view p) { return ffilesystem::read_symlink(p); }},
+  {"which", [](std::string_view p) { return ffilesystem::which(p); }},
+  {"homedir", [](std::string_view) { return ffilesystem::get_homedir(); }},
+  {"expanduser", [](std::string_view p) { return ffilesystem::expanduser(p); }},
+  {"cwd", [](std::string_view) { return ffilesystem::get_cwd(); }}
 };
 
 std::string h;
@@ -193,7 +193,7 @@ if(argc > 1)
 
 std::string_view path;
 
-std::cout << fs_compiler() << "\n";
+std::cout << ffilesystem::compiler() << "\n";
 std::cout << "Ffilesystem backend: " << ffilesystem::backend << "\n";
 std::cout << "C++ standard: " << fs_cpp_lang() << "\n";
 std::cout << "C standard: " << fs_c_lang() << "\n";

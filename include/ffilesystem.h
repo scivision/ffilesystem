@@ -4,6 +4,7 @@
 #include <sys/types.h> // for pid_t, ino_t, dev_t, mode_t, ...
 // https://www.man7.org/linux/man-pages/man3/stat.3type.html
 
+
 #ifdef _MSC_VER
 
 #ifndef pid_t
@@ -67,6 +68,10 @@ constexpr std::uintmax_t fs_unknown_size = static_cast<std::uintmax_t>(-1);
 #include <system_error>
 #include <optional>
 
+#if __has_include(<version>)
+#include <version>
+#endif
+
 #if __has_include(<source_location>)
 #include <source_location>
 #endif
@@ -108,126 +113,199 @@ constexpr std::string_view backend =
   "C";
 #endif
 
+constexpr bool has_statx =
+// https://www.man7.org/linux/man-pages/man2/statx.2.html
+#if defined(HAVE_STATX)
+  true;
+#else
+  false;
+#endif
+
+ // C++ version compiler claims to support with given options
+constexpr long cpp_lang =
+#if defined(_MSVC_LANG) && (_MSVC_LANG > __cplusplus)
+  _MSVC_LANG;
+#else
+  __cplusplus;
+#endif
+
+constexpr long cpp_format =
+#ifdef __cpp_lib_format
+  __cpp_lib_format;
+#else
+  0;
+#endif
+
+constexpr long cpp_ranges =
+#if defined(__cpp_lib_ranges) && defined(HAVE_CPP_RANGES)
+  __cpp_lib_ranges;
+#else
+  0;
+#endif
+
+constexpr bool is_optimized =
+#if defined(__OPTIMIZE__) || defined(FFS_OPTIMIZED)
+  true;
+#else
+  false;
+#endif
+
+
+std::string libcxx();
+std::string compiler();
+
+void as_posix(std::string&);
+std::string as_posix(std::string_view);
+
+void as_windows(std::string&);
+void as_windows(std::wstring&);
+
+std::string absolute(std::string_view);
+std::string absolute(std::string_view, std::string_view);
+
+
+std::string get_homedir();
+std::string expanduser(std::string_view);
+
+bool is_absolute(std::string_view);
+
+
+std::optional<std::string> getenv(std::string_view);
+bool setenv(std::string_view, std::string_view);
+
+std::uintmax_t hard_link_count(std::string_view);
+std::uintmax_t file_size(std::string_view);
+std::uintmax_t space_available(std::string_view);
+std::uintmax_t space_capacity(std::string_view);
+
+std::string::size_type max_component(std::string_view);
+
+
+bool exists(std::string_view);
+
+bool has_root_name(std::string_view);
+bool has_root_directory(std::string_view);
+
+bool is_exe(std::string_view);
+bool is_executable_binary(std::string_view);
+
+bool is_case_sensitive(std::string_view);
+bool is_char_device(std::string_view);
+bool is_directory(std::string_view);
+bool is_fifo(std::string_view);
+bool is_file(std::string_view);
+bool is_other(std::string_view);
+bool is_reserved(std::string_view);
+bool is_wsl();
+
+bool is_readable(std::string_view);
+bool is_writable(std::string_view);
+
+bool is_symlink(std::string_view);
+bool lexists(std::string_view);
+
+
+std::size_t get_blksize(std::string_view);
+
+dev_t st_dev(std::string_view);
+ino_t inode(std::string_view);
+
+void ascii_lower(std::string&);
+void ascii_upper(std::string&);
+void trim(std::string&);
+
+bool copy_file(std::string_view, std::string_view, bool);
+
+bool equivalent(std::string_view, std::string_view);
+
+bool touch(std::string_view);
+
+std::string file_name(std::string_view);
+bool has_filename(std::string_view);
+
+
+std::string canonical(std::string_view, const bool = false);
+std::string cpu_arch();
+std::string exe_path();
+std::string filesystem_type(std::string_view);
+std::string generate_random_alphanumeric_string(const std::string::size_type);
+std::string get_cwd();
+std::string get_owner_group(std::string_view);
+std::string get_owner_name(std::string_view);
+std::string get_permissions(std::string_view);
+std::string get_profile_dir();
+std::string get_shell();
+std::string get_tempdir();
+std::string get_terminal();
+std::string get_username();
+std::string hostname();
+std::string lib_path();
+std::string longname(std::string_view);
+std::string join(std::string_view, std::string_view);
+std::string os_version();
+std::string parent(std::string_view);
+std::string proximate_to(std::string_view, std::string_view);
+std::string read_symlink(std::string_view);
+std::string realpath(std::string_view);
+std::string resolve(std::string_view, const bool = false);
+std::string relative_to(std::string_view, std::string_view);
+std::string root(std::string_view);
+std::string root_name(std::string_view);
+std::string root_directory(std::string_view);
+std::string shortname(std::string_view);
+std::string stem(std::string_view);
+std::string suffix(std::string_view);
+std::string to_cygpath(std::string_view);
+std::string to_winpath(std::string_view);
+std::string with_suffix(std::string_view, std::string_view);
+
+std::string drop_slash(std::string_view);
+void drop_trailing_slash(std::string&);
+std::string normal(std::string_view);
+
+std::string which(std::string_view, std::string_view = {}, const bool = false);
+
+
+std::time_t get_modtime(std::string_view);
+bool set_modtime(std::string_view, const bool = false);
+
+bool create_symlink(std::string_view, std::string_view);
+bool stdin_tty();
+bool is_admin();
+bool is_appexec_alias(std::string_view);
+bool is_empty(std::string_view);
+bool is_prefix(std::string_view, std::string_view);
+bool is_removable(std::string_view);
+bool is_rosetta();
+bool is_safe_char(const char c);
+bool is_safe_name(std::string_view);
+bool is_subdir(std::string_view, std::string_view);
+bool mkdir(std::string_view);
+bool non_ascii(std::string_view);
+bool remove(std::string_view);
+bool rename(std::string_view, std::string_view);
+
+bool set_cwd(std::string_view);
+bool set_permissions(std::string_view, const int, const int, const int);
+
+pid_t getpid();
+
+std::vector<std::string> split_filesep(std::string_view);
+std::vector<std::string> split_pathsep(std::string_view);
+
+unsigned long long total_sys_memory();
+unsigned long long get_free_memory();
 
 } // namespace ffilesystem
 
-std::string fs_absolute(std::string_view);
-std::string fs_absolute(std::string_view, std::string_view);
-
-void fs_as_posix(std::string&);
-std::string fs_as_posix(std::string_view);
-
-void fs_as_windows(std::string&);
-void fs_as_windows(std::wstring&);
-
-std::string fs_canonical(std::string_view, const bool = false);
-
-std::string fs_compiler();
-
-bool fs_copy_file(std::string_view, std::string_view, bool);
-
-std::string fs_cpu_arch();
-
-bool fs_create_symlink(std::string_view, std::string_view);
-
-std::string fs_drop_slash(std::string_view);
-void fs_drop_trailing_slash(std::string&);
-
-bool fs_equivalent(std::string_view, std::string_view);
-
-bool fs_is_removable(std::string_view);
-bool fs_exists(std::string_view);
-bool fs_lexists(std::string_view);
-
-std::string fs_exe_path();
-
-std::string fs_expanduser(std::string_view);
-
-std::string fs_file_name(std::string_view);
-
-std::uintmax_t fs_file_size(std::string_view);
-
-std::string fs_filesystem_type(std::string_view);
-
-std::string fs_generate_random_alphanumeric_string(const std::string::size_type);
-void fs_ascii_lower(std::string&);
-void fs_ascii_upper(std::string&);
-
-std::string fs_get_cwd();
-
-std::string fs_get_homedir();
 
 std::string fs_get_locale_name();
 
-std::time_t fs_get_modtime(std::string_view);
-
-std::string fs_get_owner_group(std::string_view);
-std::string fs_get_owner_name(std::string_view);
-
-std::string fs_get_permissions(std::string_view);
-
-std::string fs_get_profile_dir();
-
-std::string fs_get_shell();
-
-std::string fs_get_tempdir();
-
-std::string fs_get_terminal();
-
-std::string fs_get_username();
-
-std::optional<std::string> fs_getenv(std::string_view);
-
-std::uintmax_t fs_hard_link_count(std::string_view);
-
-std::string fs_hostname();
-bool fs_has_filename(std::string_view);
-
-bool fs_is_absolute(std::string_view);
-bool fs_is_appexec_alias(std::string_view);
-bool fs_is_case_sensitive(std::string_view);
-bool fs_is_char_device(std::string_view);
-bool fs_is_dir(std::string_view);
-bool fs_is_empty(std::string_view);
-
-bool fs_is_exe(std::string_view);
-bool fs_is_executable_binary(std::string_view);
-
-bool fs_is_fifo(std::string_view);
-bool fs_is_file(std::string_view);
-bool fs_is_other(std::string_view);
-
-bool fs_is_prefix(std::string_view, std::string_view);
-bool fs_is_readable(std::string_view);
-bool fs_is_reserved(std::string_view);
-bool fs_is_safe_name(std::string_view);
-bool fs_is_subdir(std::string_view, std::string_view);
-bool fs_is_symlink(std::string_view);
-bool fs_is_writable(std::string_view);
-
-std::string fs_join(std::string_view, std::string_view);
-
 std::string fs_lexically_normal(std::string_view);
 
-std::string fs_lib_path();
-
 std::string fs_libc();
-std::string fs_libcxx();
-
-std::string fs_longname(std::string_view);
 
 std::string fs_make_preferred(std::string_view);
-
-std::string::size_type fs_max_component(std::string_view);
-
-bool fs_mkdir(std::string_view);
-
-bool fs_non_ascii(std::string_view);
-
-std::string fs_normal(std::string_view);
-
-std::string fs_os_version();
-std::string fs_parent(std::string_view);
 
 void fs_error_callback(std::string_view
 #if defined(__cpp_lib_source_location)
@@ -253,66 +331,9 @@ void fs_error_callback(std::string_view, std::string_view, const std::error_code
 #endif
 );
 
-std::string fs_proximate_to(std::string_view, std::string_view);
-
-std::string fs_read_symlink(std::string_view);
-
-std::string fs_realpath(std::string_view);
-
-std::string fs_relative_to(std::string_view, std::string_view);
-
-bool fs_remove(std::string_view);
-
-bool fs_rename(std::string_view, std::string_view);
-
-std::string fs_resolve(std::string_view, const bool = false);
-
-std::string fs_root(std::string_view);
-
-std::string fs_root_name(std::string_view);
-bool fs_has_root_name(std::string_view);
-
-std::string fs_root_directory(std::string_view);
-bool fs_has_root_directory(std::string_view);
-
-bool fs_set_cwd(std::string_view);
-
-bool fs_set_modtime(std::string_view, const bool = false);
-
-bool fs_set_permissions(std::string_view, const int, const int, const int);
-
-bool fs_setenv(std::string_view, std::string_view);
-
-std::string fs_shortname(std::string_view);
-
-std::uintmax_t fs_space_available(std::string_view);
-std::uintmax_t fs_space_capacity(std::string_view);
-std::size_t fs_get_blksize(std::string_view);
-
-std::vector<std::string> fs_split(std::string_view);
-std::vector<std::string> fs_split_pathsep(std::string_view);
 bool fs_stdin_tty();
 
-std::string fs_stem(std::string_view);
-
 std::string::size_type fs_str2char(std::string_view, char*, const std::string::size_type);
-
-std::string fs_suffix(std::string_view);
-
-bool fs_touch(std::string_view);
-
-std::string fs_to_cygpath(std::string_view);
-
-std::string fs_to_winpath(std::string_view);
-
-void fs_trim(std::string&);
-
-std::string fs_which(std::string_view, std::string_view = {}, const bool = false);
-
-std::string fs_with_suffix(std::string_view, std::string_view);
-
-dev_t fs_st_dev(std::string_view);
-ino_t fs_inode(std::string_view);
 
 // ---------------------------------------------------------------------------
 
@@ -341,6 +362,7 @@ size_t fs_strncpy(const char*, char*, const size_t);
 long fs_cpp_lang();
 long fs_cpp_format();
 long fs_cpp_ranges();
+bool fs_is_optimized();
 
 unsigned long long fs_total_sys_memory();
 unsigned long long fs_get_free_memory();
@@ -353,7 +375,6 @@ size_t fs_get_max_path();
 long fs_get_max_open_files();
 size_t fs_max_component(const char*);
 
-bool fs_is_optimized();
 
 pid_t fs_getpid();
 

@@ -57,9 +57,12 @@ std::optional<Filesystem::file_time_type> fs_get_modtime_fs(std::string_view pat
 }
 #endif
 
-}
+} // namespace
 
-std::time_t fs_get_modtime(std::string_view path)
+
+namespace ffilesystem {
+
+std::time_t get_modtime(std::string_view path)
 {
 #if defined(HAVE_CLOCK_CAST) && defined(HAVE_CXX_FILESYSTEM)
   if(auto t_fs = fs_get_modtime_fs(path); t_fs){
@@ -86,7 +89,7 @@ std::time_t fs_get_modtime(std::string_view path)
 }
 
 
-bool fs_set_modtime(std::string_view path, const bool quiet)
+bool set_modtime(std::string_view path, const bool quiet)
 {
 
   std::error_code ec;
@@ -127,3 +130,5 @@ bool fs_set_modtime(std::string_view path, const bool quiet)
 
   return false;
 }
+
+} // namespace ffilesystem

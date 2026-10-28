@@ -5,8 +5,9 @@
 #include <sys/sysctl.h>
 #endif
 
-bool
-fs_is_rosetta()
+namespace ffilesystem {
+
+bool is_rosetta()
 {
 #if defined(FFS_DARWIN)
 // https://developer.apple.com/documentation/apple-silicon/about-the-rosetta-translation-environment
@@ -24,6 +25,8 @@ fs_is_rosetta()
     return false;
 #endif
 }
+
+} // namespace ffilesystem
 
 // Microsoft Prism detection
 // https://github.com/scivision/cmake-arm64-prism-rosetta/blob/main/is_prism.cpp

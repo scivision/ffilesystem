@@ -11,14 +11,14 @@ int main() {
 using namespace boost::ut;
 
 #ifndef FFS_SYSTEM_DISABLED
-bool const is_ci = fs_getenv("CI").value_or("") == "true";
+bool const is_ci = ffilesystem::getenv("CI").value_or("") == "true";
 #endif
 
 "Hostname"_test = [] {
 #ifdef FFS_SYSTEM_DISABLED
-  ffs_test::expect_disabled_string([] { return fs_hostname(); });
+  ffs_test::expect_disabled_string([] { return ffilesystem::hostname(); });
 #else
-  std::string s = fs_hostname();
+  std::string s = ffilesystem::hostname();
 
   expect(!s.empty());
 
@@ -27,21 +27,21 @@ bool const is_ci = fs_getenv("CI").value_or("") == "true";
 };
 
 "MaxComponent"_test = [] {
-  expect(fs_max_component("/") >= 1);
+  expect(ffilesystem::max_component("/") >= 1);
 };
 
 
 #ifdef FFS_SYSTEM_DISABLED
 "Shell"_test = [] {
-  ffs_test::expect_disabled_string([] { return fs_get_shell(); });
+  ffs_test::expect_disabled_string([] { return ffilesystem::get_shell(); });
 };
 
 "Terminal"_test = [] {
-  ffs_test::expect_disabled_string([] { return fs_get_terminal(); });
+  ffs_test::expect_disabled_string([] { return ffilesystem::get_terminal(); });
 };
 #else
 "Shell"_test = [is_ci] {
-  std::string s = fs_get_shell();
+  std::string s = ffilesystem::get_shell();
 
   if (!is_ci)
     expect(!s.empty()) << "shell is empty";
@@ -53,7 +53,7 @@ bool const is_ci = fs_getenv("CI").value_or("") == "true";
 
 "Terminal"_test = [] {
   // agents or CI runners may not have a terminal attached
-  std::string s = fs_get_terminal();
+  std::string s = ffilesystem::get_terminal();
 
   if (!s.empty())
     expect(s.length() != fs_get_max_path()) << "terminal has blank space";

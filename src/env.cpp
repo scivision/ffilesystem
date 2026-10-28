@@ -13,7 +13,9 @@
 #include "ffilesystem.h"
 
 
-std::optional<std::string> fs_getenv(std::string_view name)
+namespace ffilesystem {
+
+std::optional<std::string> getenv(std::string_view name)
 {
   // convenience function to get environment variable without needing to check for nullptr
   // don't emit error because sometimes we just check if envvar is defined
@@ -27,7 +29,7 @@ std::optional<std::string> fs_getenv(std::string_view name)
 }
 
 
-bool fs_setenv(std::string_view name, std::string_view value)
+bool setenv(std::string_view name, std::string_view value)
 {
   // if value is empty, remove the variable from the environment
 
@@ -49,4 +51,6 @@ const std::string n{name}, v{value};
 
   fs_error_callback(name);
   return false;
+}
+
 }

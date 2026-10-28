@@ -30,8 +30,10 @@
 #endif
 
 
+namespace ffilesystem {
 
-bool fs_is_executable_binary(std::string_view path)
+
+bool is_executable_binary(std::string_view path)
 {
   // is path a binary executable file as determined by the magic number
   // beginning the file.  This is a heuristic and may not be 100% accurate.
@@ -40,7 +42,7 @@ bool fs_is_executable_binary(std::string_view path)
 #if defined(_WIN32)
   // MinGW, MSVC, oneAPI at least need || is_appexec_alias()
   DWORD t;
-  ok = (GetBinaryTypeW(fs_win32_to_wide(path).c_str(), &t) != 0) || fs_is_appexec_alias(path);
+  ok = (GetBinaryTypeW(fs_win32_to_wide(path).c_str(), &t) != 0) || is_appexec_alias(path);
 #elif defined(__CYGWIN__)
   fs_error_callback(path, "not supported on Cygwin");
 #else
@@ -93,41 +95,43 @@ bool fs_is_executable_binary(std::string_view path)
 }
 
 
-bool fs_is_exe(std::string_view path)
+bool is_exe(std::string_view path)
 {
   // is file or symlink to a file executable by the user.
   // directories are not considered "executable file"
-  // use fs_get_permissions() for that.
+  // use get_permissions() for that.
 
-  if(!fs_is_file(path))
+  if(!is_file(path))
     return false;
 
 #if defined(_WIN32)
-  std::string suffix{fs_suffix(path)};
-  if (suffix.empty())
-    return fs_is_executable_binary(path);
+  std::string suf{suffix(path)};
+  if (suf.empty())
+    return is_executable_binary(path);
 
-  if(!fs_is_readable(path))
+  if(!is_readable(path))
     return false;
 
   std::string pathext;
-  if(auto e = fs_getenv("PATHEXT"); e) {
+  if(auto e = getenv("PATHEXT"); e) {
     pathext = *e;
-    fs_ascii_lower(pathext);
+    ascii_lower(pathext);
   } else {
     pathext = ".com;.exe;.bat;.cmd";
   }
 
-  fs_ascii_lower(suffix);
-  if(fs_trace) std::cout << "TRACE: is_exe(" << path << "):  suffix: " << suffix << " length " << suffix.length() << " pathext: " << pathext << "\n";
+  ascii_lower(suf);
+  if(fs_trace) std::cout << "TRACE: is_exe(" << path << "):  suffix: " << suf << " length " << suf.length() << " pathext: " << pathext << "\n";
 
 #if defined(__cpp_lib_string_contains) // C++23
-  return pathext.contains(suffix);
+  return pathext.contains(suf);
 #else
-  return pathext.find(suffix) != std::string::npos;
+  return pathext.find(suf) != std::string::npos;
 #endif
 
 #else
   return ::access(std::string{path}.c_str(), X_OK) == 0;
 #endif
+}
+
 }

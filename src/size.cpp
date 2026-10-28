@@ -30,15 +30,17 @@ namespace Filesystem = std::filesystem;
 #endif
 
 
-std::uintmax_t fs_file_size(std::string_view path)
+namespace ffilesystem {
+
+std::uintmax_t file_size(std::string_view path)
 {
-  // fs_file_size() like std::filesystem::file_size() is only for files, not directories, which are considered to have no size.
+  // like std::filesystem::file_size() is only for files, not directories, which are considered to have no size.
   // Returns (uintmax_t)(-1) on error, and sets errno or std::error_code.
-  // different platforms treat non-file size differently, so we need the fs_is_file() for consistency.
+  // different platforms treat non-file size differently, so we need is_file() for consistency.
 
   std::error_code ec;
 
-  if(!fs_is_file(path)) {
+  if(!is_file(path)) {
     fs_error_callback(path, "not a regular file");
     return fs_unknown_size;
   }
@@ -70,7 +72,7 @@ std::uintmax_t fs_file_size(std::string_view path)
 }
 
 
-bool fs_is_empty(std::string_view path)
+bool is_empty(std::string_view path)
 {
   // directory or file empty
   // returns false if path doesn't exist
@@ -82,8 +84,8 @@ bool fs_is_empty(std::string_view path)
     return e;
 #else
 
-  if (!fs_is_dir(path))
-    return fs_is_file(path) &&fs_file_size(path) == 0;
+  if (!is_directory(path))
+    return is_file(path) && file_size(path) == 0;
 
   // directory empty
 #if defined(_WIN32)
@@ -137,7 +139,7 @@ bool fs_is_empty(std::string_view path)
 #ifdef _DIRENT_HAVE_D_TYPE
     if (entry->d_type == DT_DIR)
 #else
-    if (fs_is_dir(cpath + "/" + entry->d_name))
+    if (is_directory(cpath + "/" + entry->d_name))
 #endif
     {
       if (std::string_view n(entry->d_name); n == "." || n == "..")
@@ -160,3 +162,5 @@ bool fs_is_empty(std::string_view path)
   return false;
 
 }
+
+} // namespace ffilesystem

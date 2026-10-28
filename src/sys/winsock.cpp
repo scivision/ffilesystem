@@ -18,9 +18,10 @@
 #include "ffilesystem.h"
 
 
-std::string fs_hostname()
-{
+namespace ffilesystem {
 
+std::string hostname()
+{
   std::error_code ec;
 
 #if defined(_WIN32)
@@ -29,12 +30,12 @@ std::string fs_hostname()
   if(WSADATA wsaData; !WSAStartup(MAKEWORD(2, 0), &wsaData)){
     std::string name(256, '\0');
 
-    int r = gethostname(name.data(), static_cast<int>(name.size()));
+    int r = ::gethostname(name.data(), static_cast<int>(name.size()));
 
     WSACleanup();
 
     if (r == 0) {
-      fs_trim(name);
+      trim(name);
       return name;
     }
   }
@@ -51,4 +52,6 @@ std::string fs_hostname()
 
   fs_error_callback("", ec);
   return {};
+}
+
 }

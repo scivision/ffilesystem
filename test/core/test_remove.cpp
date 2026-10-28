@@ -12,7 +12,7 @@ struct remove_ctx {
   std::string_view nonnull2;
 
   ~remove_ctx() {
-    fs_remove(file);
+   ffilesystem::remove(file);
   }
 };
 
@@ -20,7 +20,7 @@ void setup(remove_ctx& ctx) {
   using namespace boost::ut;
 
   ctx.file = "ffs_remove_test.txt";
-  expect(fs_touch(ctx.file) >> fatal);
+  expect(ffilesystem::touch(ctx.file) >> fatal);
 
   ctx.in2 = "./" + ctx.file;
   ctx.nonnull2 = std::string_view(ctx.in2.data(), 2);
@@ -32,15 +32,15 @@ void setup(remove_ctx& ctx) {
 int main() {
   using namespace boost::ut;
 
-if (!fs_is_writable(".")) {
+if (!ffilesystem::is_writable(".")) {
   skip / "remove"_test = [] {};
 } else {
   "remove"_test = [] {
     remove_ctx ctx;
     setup(ctx);
 
-    expect(!fs_remove(ctx.nonnull2)) << "Failed with input not null-terminated\n";
-    expect(fs_remove(ctx.file));
+    expect(!ffilesystem::remove(ctx.nonnull2)) << "Failed with input not null-terminated\n";
+    expect(ffilesystem::remove(ctx.file));
   };
 }
 }

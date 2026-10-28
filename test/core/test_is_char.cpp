@@ -10,32 +10,32 @@ int main() {
 
   "is_char"_test = [] {
     if (ffilesystem::is_windows) {
-      expect(fs_is_char_device("NUL"));
-      expect(fs_is_char_device("CONIN$"));
+      expect(ffilesystem::is_char_device("NUL"));
+      expect(ffilesystem::is_char_device("CONIN$"));
     } else {
-      expect(fs_is_char_device("/dev/null"));
+      expect(ffilesystem::is_char_device("/dev/null"));
     }
   };
 
   "is_file"_test = [] {
     if (ffilesystem::is_windows) {
-      expect(!fs_is_file("NUL"));
-      expect(!fs_is_file("CONIN$"));
+      expect(!ffilesystem::is_file("NUL"));
+      expect(!ffilesystem::is_file("CONIN$"));
     } else {
-      expect(!fs_is_file("/dev/null"));
+      expect(!ffilesystem::is_file("/dev/null"));
     }
   };
 
-if (ffilesystem::backend == "<filesystem>" && fs_is_mingw() && fs_compiler().substr(0, 5) == "Clang")
+if (ffilesystem::backend == "<filesystem>" && fs_is_mingw() && ffilesystem::compiler().substr(0, 5) == "Clang")
   {
     skip / "exists"_test = [] {};
   } else {
   "exists"_test = [] {
     if (ffilesystem::is_windows) {
-      expect(fs_exists("NUL"));
-      expect(fs_exists("CONIN$"));
+      expect(ffilesystem::exists("NUL"));
+      expect(ffilesystem::exists("CONIN$"));
     } else {
-      expect(fs_exists("/dev/null"));
+      expect(ffilesystem::exists("/dev/null"));
     }
   };
 }
