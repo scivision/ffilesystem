@@ -185,6 +185,7 @@ make
 ```
 
 We provide Fortran REPL "filesystem_cli" and C++ REPL "fs_cli" for interactive testing of Ffilesystem routines.
+In `fs_cli`, enter `backend` to print the active backend (`<filesystem>` or `C`).
 
 ### Build options
 

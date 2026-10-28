@@ -12,6 +12,14 @@ OUTPUT_VARIABLE out
 ERROR_VARIABLE err
 )
 
+if(DEFINED expected_backend)
+  string(REPLACE "\r\n" "\n" normalized_out "${out}")
+  string(FIND "${normalized_out}" "Ffs> ${expected_backend}\n" backend_position)
+  if(backend_position EQUAL -1)
+    message(FATAL_ERROR "Missing backend command response '${expected_backend}':\n${out}\n${err}")
+  endif()
+endif()
+
 if(out MATCHES "TRACE")
   message(FATAL_ERROR "TRACE found in stdout")
 endif()

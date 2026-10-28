@@ -108,6 +108,8 @@ static const std::unordered_map<std::string_view, fs_function> fs_function_map =
     auto result = it->second();
     if (std::holds_alternative<std::string>(result))
       std::cout << std::get<std::string>(result);
+    else if (std::holds_alternative<std::string_view>(result))
+      std::cout << std::get<std::string_view>(result);
     else if (std::holds_alternative<int>(result))
       std::cout << std::get<int>(result);
     else if (std::holds_alternative<bool>(result))

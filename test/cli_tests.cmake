@@ -1,6 +1,8 @@
 if(HAVE_CXX_FILESYSTEM)
+  set(cli_backend "<filesystem>")
   set(cli_regex "Backend: <filesystem>")
 else()
+  set(cli_backend "C")
   set(cli_regex "Backend: C")
 endif()
 
@@ -32,6 +34,7 @@ PASS_REGULAR_EXPRESSION ${cli_regex}
 add_test(NAME CppCLInoLeak
 COMMAND ${CMAKE_COMMAND} -Dexe:FILEPATH=$<TARGET_FILE:fs_cli>
   -Dffilesystem_system:BOOL=${ffilesystem_system}
+  -Dexpected_backend:STRING=${cli_backend}
   -P ${CMAKE_CURRENT_SOURCE_DIR}/stdin.cmake
 )
 
