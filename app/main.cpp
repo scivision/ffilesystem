@@ -96,7 +96,7 @@ static const std::unordered_map<std::string_view, fs_function> fs_function_map =
   {"homedir", []() { return ffilesystem::get_homedir(); }},
   {"terminal", []() { return ffilesystem::get_terminal(); }},
   {"tempdir", []() { return ffilesystem::get_tempdir(); }},
-  {"max_path", []() { return static_cast<unsigned long long>(fs_get_max_path()); }},
+  {"max_path", []() { return static_cast<unsigned long long>(ffilesystem::get_max_path()); }},
   {"cwd", []() { return ffilesystem::get_cwd(); }},
   {"max_open_files", []() { return fs_get_max_open_files(); }},
 };
@@ -166,7 +166,7 @@ bool one_arg(std::string_view fun, std::string_view a1)
       return std::string{};
     }},
     {"setenv", [](std::string_view a1) { std::cout << "unset " << a1 << "\n"; return ffilesystem::setenv(a1, ""); }},
-    {"realpath", [](std::string_view a1) { return ffilesystem::realpath(a1); }},
+    {"realpath", [](std::string_view a1) { return ffilesystem::real_path(a1); }},
     {"as_posix", [](std::string_view a1) { std::string s(a1); ffilesystem::as_posix(s); return s; }},
     {"as_windows", [](std::string_view a1) { std::string s(a1); ffilesystem::as_windows(s); return s; }},
     {"max_component", [](std::string_view a1) { return static_cast<std::uintmax_t>(ffilesystem::max_component(a1)); }},
@@ -414,16 +414,16 @@ const std::string cwd = ffilesystem::get_cwd();
 
 std::cout << "Ffilesystem. Backend: " << ffilesystem::backend << "\n";
 std::cout << ffilesystem::compiler() << "\n";
-std::cout << "Ffilesystem C++ standard " << fs_cpp_lang() << "  CLI C++ standard " << __cplusplus << "\n";
-std::cout << "Ffilesystem C++ <format> support: " << fs_cpp_format() << "\n";
-std::cout << "Ffilesystem C++ <ranges> support: " << fs_cpp_ranges() << "\n";
+std::cout << "Ffilesystem C++ standard " << ffilesystem::cpp_lang << "  CLI C++ standard " << __cplusplus << "\n";
+std::cout << "Ffilesystem C++ <format> support: " << ffilesystem::cpp_format << "\n";
+std::cout << "Ffilesystem C++ <ranges> support: " << ffilesystem::cpp_ranges << "\n";
 std::cout << "Ffilesystem C standard " << fs_c_lang() << "\n";
 std::cout << "libcpp: " << ffilesystem::libcxx() << "\n";
 std::cout << "libc: " << fs_libc() << "\n";
-std::cout << "maximum path length: " << fs_get_max_path() << "\n";
+std::cout << "maximum path length: " << ffilesystem::get_max_path() << "\n";
 std::cout << "current working directory (CWD): " << cwd << "\n";
 std::cout << "Compiler: " << ffilesystem::compiler() << "\n";
-std::cout << "Optimized: " << fs_is_optimized() << " Trace: " << fs_trace << "\n";
+std::cout << "Optimized: " << ffilesystem::is_optimized << " Trace: " << fs_trace << "\n";
 
 std::cout << "Homedir: " << ffilesystem::get_homedir() << "\n";
 

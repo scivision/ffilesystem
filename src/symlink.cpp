@@ -155,7 +155,7 @@ std::string read_symlink(std::string_view path)
   if (!s)
     return {};
 
-  const auto L = *s == 0 ? fs_get_max_path() : *s;
+  const auto L = *s == 0 ? get_max_path() : *s;
   // A priori links under /sys or /proc will have st_size = 0
 
   std::string p(L+1, '\0');

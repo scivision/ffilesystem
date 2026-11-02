@@ -14,7 +14,7 @@
 #include <windows.h>
 #include "win32_path.h"
 #else
-#include <limits.h>   // NAME_MAX
+#include <climits>   // NAME_MAX
 #include <unistd.h>  // pathconf
 #include <cerrno>
 #endif

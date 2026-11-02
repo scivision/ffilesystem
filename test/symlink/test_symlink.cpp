@@ -31,7 +31,7 @@ auto setup(symlink_ctx& ctx, std::string_view name) {
   using namespace boost::ut;
 
   const std::string n = "TestSymlink-" + std::string{name};
-  ctx.cwd = ffilesystem::realpath(ffilesystem::get_cwd());
+  ctx.cwd = ffilesystem::real_path(ffilesystem::get_cwd());
   // realpath is for Windows Dev Drive and Networked drives
   expect(!ctx.cwd.empty() >> fatal) << "get_cwd() should not return empty string";
 

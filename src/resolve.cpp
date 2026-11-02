@@ -38,7 +38,7 @@ std::string canonical(std::string_view path, const bool strict)
 
 #else
 
-  if (std::string c = realpath(path); !c.empty())
+  if (std::string c = real_path(path); !c.empty())
     return c;
 
   if (!strict)
@@ -67,7 +67,7 @@ std::string resolve(std::string_view path, const bool strict)
 
 
 
-std::string realpath(std::string_view path)
+std::string real_path(std::string_view path)
 {
   // resolve real existing path
   // not defined for non-existing path--may return empty string.
@@ -77,7 +77,7 @@ std::string realpath(std::string_view path)
 #if defined(_WIN32)
   return fs_win32_final_path(path);
 #else
-  std::string buf(fs_get_max_path(), '\0');
+  std::string buf(get_max_path(), '\0');
 
   if (::realpath(std::string{path}.c_str(), buf.data()))
     return std::string(buf.c_str());

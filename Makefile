@@ -55,7 +55,6 @@ COMM_SRCS = \
 	$(comdir)home.cpp \
 	$(comdir)internal.cpp \
 	$(comdir)lexical.cpp \
-	$(comdir)limits.cpp \
 	$(comdir)log.cpp \
 	$(comdir)mkdir.cpp \
 	$(comdir)move.cpp \

@@ -102,7 +102,7 @@ std::string which(std::string_view name, std::string_view path, const bool find_
 
   if(find_all) return fs_which_generic(name, path, true);
 
-  std::wstring wr(fs_get_max_path(), L'\0');
+  std::wstring wr(get_max_path(), L'\0');
 
   // https://learn.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-searchpathw
   DWORD const L = SearchPathW(

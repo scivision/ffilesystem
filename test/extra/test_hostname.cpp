@@ -22,7 +22,7 @@ bool const is_ci = ffilesystem::getenv("CI").value_or("") == "true";
 
   expect(!s.empty());
 
-  expect(s.length() != fs_get_max_path()) << "hostname length is equal to max path length";
+  expect(s.length() != ffilesystem::get_max_path()) << "hostname length is equal to max path length";
 #endif
 };
 
@@ -47,7 +47,7 @@ bool const is_ci = ffilesystem::getenv("CI").value_or("") == "true";
     expect(!s.empty()) << "shell is empty";
 
   if (!s.empty())
-    expect(s.length() != fs_get_max_path()) << "shell has blank space";
+    expect(s.length() != ffilesystem::get_max_path()) << "shell has blank space";
 };
 
 
@@ -56,7 +56,7 @@ bool const is_ci = ffilesystem::getenv("CI").value_or("") == "true";
   std::string s = ffilesystem::get_terminal();
 
   if (!s.empty())
-    expect(s.length() != fs_get_max_path()) << "terminal has blank space";
+    expect(s.length() != ffilesystem::get_max_path()) << "terminal has blank space";
 };
 #endif
 }

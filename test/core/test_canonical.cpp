@@ -21,7 +21,7 @@ auto make_ctx() {
 
   ctx.cwd = ffilesystem::get_cwd();
   expect(!ctx.cwd.empty() >> fatal);
-  ctx.cwd = ffilesystem::realpath(ctx.cwd);
+  ctx.cwd = ffilesystem::real_path(ctx.cwd);
   // realpath for symlinks (macOS), Dev Drive or short name on CI (Windows), network drives, etc.
   ffilesystem::as_posix(ctx.cwd);
   ctx.cwd = ffilesystem::drop_slash(ctx.cwd);
@@ -149,7 +149,7 @@ int main() {
     const auto ctx = make_ctx();
     expect(ctx.has_value() >> fatal);
 
-    std::string r = ffilesystem::realpath(".");
+    std::string r = ffilesystem::real_path(".");
     expect(!r.empty() >> fatal);
     ffilesystem::as_posix(r);
     expect(eq(r, ctx->cwd));

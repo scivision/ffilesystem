@@ -10,13 +10,13 @@ int main() {
 
   "system"_test = [] {
     expect(!ffilesystem::compiler().empty()) << "unknown compiler";
-    expect(neq(ffilesystem::compiler().length(), fs_get_max_path())) << "compiler has blank space";
+    expect(neq(ffilesystem::compiler().length(), ffilesystem::get_max_path())) << "compiler has blank space";
 
 #ifdef FFS_SYSTEM_DISABLED
     ffs_test::expect_disabled_string([] { return ffilesystem::get_username(); });
 #else
     expect(!ffilesystem::get_username().empty());
-    expect(neq(ffilesystem::get_username().length(), fs_get_max_path())) << "username has blank space";
+    expect(neq(ffilesystem::get_username().length(), ffilesystem::get_max_path())) << "username has blank space";
 #endif
   };
 }

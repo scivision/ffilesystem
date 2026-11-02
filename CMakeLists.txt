@@ -113,7 +113,6 @@ src/home.cpp
 src/inquire.cpp
 src/internal.cpp
 src/lexical.cpp
-src/limits.cpp
 src/extra/locale.cpp
 src/log.cpp
 src/mkdir.cpp

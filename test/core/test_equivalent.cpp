@@ -82,7 +82,7 @@ if (!ffilesystem::equivalent(".", ffilesystem::parent(argv[0]))) {
     expect(!ffilesystem::equivalent("..", cwd));
 
     // NOTE: This can be false on networked drive or Windows Dev Drive
-    // ffilesystem::equivalent(".", ffilesystem::realpath("."));
+    // ffilesystem::equivalent(".", ffilesystem::real_path("."));
   };
 }
 

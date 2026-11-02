@@ -60,7 +60,11 @@ constexpr std::uintmax_t fs_unknown_size = static_cast<std::uintmax_t>(-1);
 #  define FFS_LIKELY
 #endif
 
-#include <cstdlib>
+#include <cstdlib> // for _MAX_PATH on Windows
+#include <climits> // for PATH_MAX and _POSIX_PATH_MAX
+#if defined(FFS_DARWIN)
+#include <sys/syslimits.h> // for PATH_MAX
+#endif
 #include <vector>
 #include <string>
 #include <string_view>
@@ -150,6 +154,28 @@ constexpr bool is_optimized =
   false;
 #endif
 
+// inspired by Boost::filesystem
+constexpr std::size_t default_max_path = 4096u;
+constexpr std::size_t absolute_max_path = 8u * default_max_path;
+
+constexpr std::size_t get_max_path() noexcept
+{
+  // Returns the maximum path length supported by the file system.
+  constexpr std::size_t m =
+#if defined(PATH_MAX)
+  // POSIX
+  PATH_MAX;
+#elif defined(_MAX_PATH)
+  // https://learn.microsoft.com/en-us/cpp/c-runtime-library/path-field-limits
+  _MAX_PATH;
+#elif defined(_POSIX_PATH_MAX)
+  _POSIX_PATH_MAX;
+#else
+  default_max_path;
+#endif
+
+  return (m < absolute_max_path) ? m : absolute_max_path;
+}
 
 std::string libcxx();
 std::string compiler();
@@ -246,7 +272,7 @@ std::string os_version();
 std::string parent(std::string_view);
 std::string proximate_to(std::string_view, std::string_view);
 std::string read_symlink(std::string_view);
-std::string realpath(std::string_view);
+std::string real_path(std::string_view);
 std::string resolve(std::string_view, const bool = false);
 std::string relative_to(std::string_view, std::string_view);
 std::string root(std::string_view);

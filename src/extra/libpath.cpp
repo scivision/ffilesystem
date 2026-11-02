@@ -31,7 +31,7 @@ std::string lib_path()
   if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
                          GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
                          reinterpret_cast<LPCWSTR>(&module_anchor), &module)) {
-    std::wstring path(fs_get_max_path(), L'\0');
+    std::wstring path(get_max_path(), L'\0');
     const DWORD length = GetModuleFileNameW(module, path.data(),
                                             static_cast<DWORD>(path.size()));
     if (length > 0 && length < path.size())

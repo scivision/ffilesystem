@@ -187,20 +187,20 @@ int main(int argc, char** argv) {
     ondisk_ctx ctx;
     setup(ctx, argv[0]);
 
-    std::string expected = ffilesystem::realpath(ctx.cwd);
+    std::string expected = ffilesystem::real_path(ctx.cwd);
     expect(!expected.empty() >> fatal);
 
-    std::string r = ffilesystem::realpath(".");
+    std::string r = ffilesystem::real_path(".");
     expect(!r.empty() >> fatal);
     expect(eq(r, expected)) << r << " vs " << expected;
 
-    expect(ffilesystem::realpath("not-exist-realpath/b/c").empty());
+    expect(ffilesystem::real_path("not-exist-realpath/b/c").empty());
 
-    r = ffilesystem::realpath("..");
+    r = ffilesystem::real_path("..");
     expect(!r.empty() >> fatal);
     expect(eq(r, ffilesystem::parent(expected))) << r;
 
-    expect(eq(ffilesystem::realpath(ctx.nonnull_dir), expected))
+    expect(eq(ffilesystem::real_path(ctx.nonnull_dir), expected))
         << "problem with non null-terminated path " << ctx.nonnull_dir;
   };
 

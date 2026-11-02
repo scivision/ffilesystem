@@ -33,6 +33,8 @@ std::string::size_type fs_str2char(std::string_view s, char* result, const std::
   return s.length();
 }
 
+size_t fs_get_max_path() { return ffilesystem::get_max_path(); }
+
 pid_t fs_getpid() { return ffilesystem::getpid(); }
 bool fs_is_admin() { return ffilesystem::is_admin(); }
 bool fs_stdin_tty() { return ffilesystem::stdin_tty(); }
@@ -169,7 +171,7 @@ std::size_t fs_as_windows(char* path, const size_t buffer_size)
 
 std::size_t fs_realpath(const char* path, char* result, const size_t buffer_size)
 {
-  return fs_str2char(ffilesystem::realpath(path), result, buffer_size);
+  return fs_str2char(ffilesystem::real_path(path), result, buffer_size);
 }
 
 #if defined(HAVE_ISO_FORTRAN_BINDING)
@@ -203,7 +205,7 @@ int realpath_cfi(const CFI_cdesc_t *in_desc, CFI_cdesc_t *out_desc) {
 
     // Fortran character data is fixed-width and not null-terminated.
     const std::string in_value(in_ptr, Lin);
-    const std::string out_value = ffilesystem::realpath(in_value);
+    const std::string out_value = ffilesystem::real_path(in_value);
     if(out_value.empty())
       return 0;
 
